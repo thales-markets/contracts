@@ -188,22 +188,43 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         uint optionsAmount,
         ISportsAMM.Position position
     ) external nonReentrant whenNotPaused onlyAMM returns (address liquidityPoolRound) {
-        require(started, "Pool has not started");
+        if (optionsAmount > 0) {
+            require(started, "Pool has not started");
 
-        uint marketRound = getMarketRound(market);
-        liquidityPoolRound = _getOrCreateRoundPool(marketRound);
+            uint marketRound = getMarketRound(market);
+            liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
-        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        IPosition target = position == ISportsAMM.Position.Home ? home : away;
-        if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
-            target = position == ISportsAMM.Position.Away ? away : draw;
+            (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+            IPosition target = position == ISportsAMM.Position.Home ? home : away;
+            if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
+                target = position == ISportsAMM.Position.Away ? away : draw;
+            }
+
+            AMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
+                IERC20Upgradeable(address(target)),
+                optionsAmount,
+                address(sportsAMM)
+            );
         }
+    }
 
-        AMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
-            IERC20Upgradeable(address(target)),
-            optionsAmount,
-            address(sportsAMM)
-        );
+    function getOptionsForBuyByAddress(
+        address market,
+        uint optionsAmount,
+        address position
+    ) external nonReentrant whenNotPaused onlyAMM returns (address liquidityPoolRound) {
+        if (optionsAmount > 0) {
+            require(started, "Pool has not started");
+
+            uint marketRound = getMarketRound(market);
+            liquidityPoolRound = _getOrCreateRoundPool(marketRound);
+
+            AMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
+                IERC20Upgradeable(position),
+                optionsAmount,
+                address(sportsAMM)
+            );
+        }
     }
 
     function getMarketPool(address market) external view returns (address roundPool) {

@@ -579,6 +579,20 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 (address parentMarketPosition1, address parentMarketPosition2) = sportAmmUtils
                     .getParentMarketPositionAddresses(ISportPositionalMarket(parentMarket), position);
 
+                if (amount > IERC20Upgradeable(parentMarketPosition1).balanceOf(address(this))) {
+                    liquidityPool.getOptionsForBuyByAddress(
+                        parentMarket,
+                        amount - IERC20Upgradeable(parentMarketPosition1).balanceOf(address(this)),
+                        parentMarketPosition1
+                    );
+                }
+                if (amount > IERC20Upgradeable(parentMarketPosition2).balanceOf(address(this))) {
+                    liquidityPool.getOptionsForBuyByAddress(
+                        parentMarket,
+                        amount - IERC20Upgradeable(parentMarketPosition2).balanceOf(address(this)),
+                        parentMarketPosition2
+                    );
+                }
                 IERC20Upgradeable(parentMarketPosition1).safeTransfer(market, amount);
                 IERC20Upgradeable(parentMarketPosition2).safeTransfer(market, amount);
 
@@ -620,6 +634,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @notice This is deprecated as now the options will reside in the AMMLiquidityPoolRoundContract
     /// @param market to exercise
+    // TODO: on release of AMMLiquidityPool, all options should be moved out of this contract, or at least the PnL should be ignored for round1 in cumulative PnL
     function exerciseMaturedMarket(address market) external {
         if (canExerciseMaturedMarket(market)) {
             ISportPositionalMarket(market).exerciseOptions();

@@ -562,7 +562,7 @@ contract('ParlayAMM', (accounts) => {
 			TherundownConsumerDeployed.address,
 			StakingThales.address,
 			Referrals.address,
-			ZERO_ADDRESS,
+			ParlayAMM.address,
 			wrapper,
 			AMMLiquidityPool.address,
 			{ from: owner }
@@ -572,8 +572,8 @@ contract('ParlayAMM', (accounts) => {
 		await AMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
 			from: owner,
 		});
-		await Thales.transfer(firstLiquidityProvider, toUnit('100000'), { from: owner });
-		await Thales.approve(AMMLiquidityPool.address, toUnit('100000'), {
+		await Thales.transfer(firstLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(AMMLiquidityPool.address, toUnit('10000000'), {
 			from: firstLiquidityProvider,
 		});
 		await AMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
@@ -582,8 +582,8 @@ contract('ParlayAMM', (accounts) => {
 		await AMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
 		await AMMLiquidityPool.start({ from: owner });
 		await AMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, { from: owner });
-		await Thales.transfer(defaultLiquidityProvider, toUnit('100000'), { from: owner });
-		await Thales.approve(AMMLiquidityPool.address, toUnit('100000'), {
+		await Thales.transfer(defaultLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(AMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultLiquidityProvider,
 		});
 

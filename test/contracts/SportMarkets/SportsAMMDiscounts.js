@@ -34,12 +34,24 @@ const {
 } = require('../../utils/helpers');
 
 contract('SportsAMM', (accounts) => {
-	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
+	const [
+		manager,
+		first,
+		owner,
+		second,
+		third,
+		fourth,
+		safeBox,
+		wrapper,
+		firstLiquidityProvider,
+		defaultLiquidityProvider,
+	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
 		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
+	const AMMLiquidityPoolRoundMastercopy = artifacts.require('AMMLiquidityPoolRoundMastercopy');
 	const SportPositionContract = artifacts.require('SportPosition');
 	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
 	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
@@ -132,7 +144,8 @@ contract('SportsAMM', (accounts) => {
 		testUSDT,
 		testDAI,
 		Referrals,
-		SportsAMM;
+		SportsAMM,
+		AMMLiquidityPool;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -409,6 +422,22 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		let AMMLiquidityPoolContract = artifacts.require('AMMLiquidityPool');
+		AMMLiquidityPool = await AMMLiquidityPoolContract.new();
+
+		await AMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_sportsAmm: SportsAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(1000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -417,8 +446,28 @@ contract('SportsAMM', (accounts) => {
 			Referrals.address,
 			ZERO_ADDRESS,
 			wrapper,
+			AMMLiquidityPool.address,
 			{ from: owner }
 		);
+
+		let aMMLiquidityPoolRoundMastercopy = await AMMLiquidityPoolRoundMastercopy.new();
+		await AMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+		await Thales.transfer(firstLiquidityProvider, toUnit('1000000'), { from: owner });
+		await Thales.approve(AMMLiquidityPool.address, toUnit('1000000'), {
+			from: firstLiquidityProvider,
+		});
+		await AMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await AMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+		await AMMLiquidityPool.start({ from: owner });
+		await AMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, { from: owner });
+		await Thales.transfer(defaultLiquidityProvider, toUnit('1000000'), { from: owner });
+		await Thales.approve(AMMLiquidityPool.address, toUnit('1000000'), {
+			from: defaultLiquidityProvider,
+		});
 
 		await testUSDC.mint(first, toUnit(100000));
 		await testUSDC.mint(curveSUSD.address, toUnit(100000));

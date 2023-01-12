@@ -475,8 +475,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             if (!isSportTwoPositionsSport(sportsIdPerGame[_gameId])) {
                 if (sportsManager.isDoubleChanceSupported()) {
                     index = sportsManager.numActiveMarkets() - 4; // three double chance markets are following their parent
-                } else {
-                    index = sportsManager.numActiveMarkets() - 1;
                 }
             }
             address marketAddress = sportsManager.getActiveMarketAddress(index);

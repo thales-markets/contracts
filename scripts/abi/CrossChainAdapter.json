@@ -478,35 +478,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "name": "cryptoPositionBalances",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes",
         "name": "_message",
         "type": "bytes"
@@ -754,6 +725,29 @@
         "type": "uint8"
       }
     ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_dstChainId",
+        "type": "uint64"
+      }
+    ],
+    "name": "exerciseCryptoPosition",
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },

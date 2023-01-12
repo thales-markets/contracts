@@ -849,6 +849,11 @@ contract('SportsAMM', (accounts) => {
 					thalesAMM.address,
 					{ from: owner }
 				);
+				await CrossChainAdapter.setSelectorAddress(
+					'exerciseCryptoPosition(address,uint8)',
+					thalesAMM.address,
+					{ from: owner }
+				);
 				sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 				let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
 				//console.log('priceUp decimal is:' + priceUp / 1e18);
@@ -921,6 +926,67 @@ contract('SportsAMM', (accounts) => {
 				console.log('USER OWNING tokens: ', fromUnit(userTokenAmount));
 				assert.equal(fromUnit(userTokenAmount), 500);
 				assert.equal(fromUnit(userMarketPositionBalance), 500);
+
+				buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+					newMarket.address,
+					Position.DOWN,
+					toUnit(100)
+				);
+
+				tx = await CrossChainAdapter.buyFromCryptoAMM(
+					sUSDSynth.address,
+					newMarket.address,
+					'1',
+					toUnit(100),
+					buyFromAmmQuote,
+					additionalSlippage,
+					111,
+					{ from: second }
+				);
+
+				// console.log(tx.logs[0].args);
+				sUSD_adapter_balance = await sUSDSynth.balanceOf(CrossChainAdapter.address);
+				console.log('Adapter sUSD balance:', fromUnit(sUSD_adapter_balance));
+
+				tx2 = await CrossChainAdapter.executeSportBuyMessage(
+					second,
+					sUSDSynth.address,
+					toUnit(100),
+					111,
+					tx.logs[0].args.message,
+					third,
+					{ from: owner }
+				);
+				console.log('\n\nTX2');
+				console.log(tx2.logs[0].args);
+
+				await expect(thalesAMM.exerciseMaturedMarket(newMarket.address), {
+					from: second,
+				}).to.be.revertedWith("Can't exercise that market");
+				await fastForward(day * 20);
+				let phase = await newMarket.phase();
+				let canExerciseMaturedMarket = await thalesAMM.canExerciseMaturedMarket(newMarket.address);
+				console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
+
+				await thalesAMM.exerciseMaturedMarket(newMarket.address);
+
+				let marketResult = await newMarket.result();
+				console.log('Result market:', marketResult.toString());
+				answer = await sUSDSynth.balanceOf(second);
+				let initialBalance = fromUnit(answer);
+
+				tx = await CrossChainAdapter.exerciseCryptoPosition(newMarket.address, 1, 111, {
+					from: second,
+				});
+				console.log(tx.logs[0].args);
+				tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
+					from: owner,
+				});
+				console.log('\n\nTX2');
+				console.log(tx2.logs[0].args);
+				answer = await sUSDSynth.balanceOf(second);
+				console.log('\n\nInitial balance: ', initialBalance);
+				console.log('Final balance: ', fromUnit(answer));
 			});
 		});
 	});

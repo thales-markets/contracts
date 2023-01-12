@@ -33,7 +33,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     mapping(bytes4 => uint64) public noncePerSelector;
     mapping(address => mapping(address => uint)) public userOwningToken;
     uint private testChain;
-    mapping(address => mapping(address => mapping(uint8 => uint256))) public cryptoPositionBalances;
     mapping(address => bool) public marketExercised;
     mapping(address => mapping(uint8 => uint256)) public exercisedMarketBalance;
 
@@ -117,6 +116,24 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position);
         bytes4 selector = bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")));
+        bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
+        // Needs to be removed before deployment on mainchain
+        if (_dstChainId == testChain) {
+            emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+        } else {
+            sendMessage(adapterOnDestination, _dstChainId, message, msg.value);
+        }
+    }
+
+    function exerciseCryptoPosition(
+        address market,
+        uint8 position,
+        uint64 _dstChainId
+    ) external payable nonReentrant notPaused {
+        // todo specify
+        // packing: | msg.sender | chain id | function selector | payload |
+        bytes memory payload = abi.encode(market, position);
+        bytes4 selector = bytes4(keccak256(bytes("exerciseCryptoPosition(address,uint8)")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         // Needs to be removed before deployment on mainchain
         if (_dstChainId == testChain) {
@@ -282,7 +299,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 abi.encodeWithSelector(realSelector, market, position, amount, expectedPayout, additionalSlippage)
             );
             if (success) {
-                console.log("HERE");
                 userOwningToken[_sender][market] += amount;
                 userMarketBalances[_sender][market][position] += amount;
             }
@@ -326,7 +342,8 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 marketExercised[market] = true;
             }
             require(
-                exercisedMarketBalance[market][position] >= cryptoPositionBalances[_sender][market][position],
+                exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position] &&
+                    sUSD.balanceOf(address(this)) >= userMarketBalances[_sender][market][position],
                 "Invalid amount"
             );
             if (_sourceChain == block.chainid) {
@@ -344,8 +361,8 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                     msg.value
                 );
             }
-            exercisedMarketBalance[market][position] -= cryptoPositionBalances[_sender][market][position];
-            cryptoPositionBalances[_sender][market][position] = 0;
+            exercisedMarketBalance[market][position] -= userMarketBalances[_sender][market][position];
+            userMarketBalances[_sender][market][position] = 0;
             return true;
         } else if (_selector == bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")))) {
             noncePerSelector[_selector]++;
@@ -360,7 +377,8 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 marketExercised[market] = true;
             }
             require(
-                exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position],
+                exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position] &&
+                    sUSD.balanceOf(address(this)) >= userMarketBalances[_sender][market][position],
                 "Invalid amount"
             );
             if (_sourceChain == block.chainid) {

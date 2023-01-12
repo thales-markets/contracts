@@ -10,7 +10,7 @@ import "./framework/MessageApp.sol";
 import "../interfaces/ISportPositionalMarket.sol";
 import "../interfaces/IPositionalMarket.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -27,7 +27,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     mapping(address => mapping(address => uint256)) public sUSDBalances;
 
     // userAccount, game, poistion => balance
-    mapping(address => mapping(address => mapping(uint8 => uint256))) public gameBalances;
+    mapping(address => mapping(address => mapping(uint8 => uint256))) public userMarketBalances;
 
     address public sourceAdapter;
     mapping(bytes4 => uint64) public noncePerSelector;
@@ -89,7 +89,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         noncePerSelector[bytes4(keccak256(bytes("buyFromSportAMM(address,uint8,uint256,uint256,uint256)")))]++;
         // Needs to be removed before deployment on mainchain
         if (_dstChainId == testChain) {
-            IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, amount);
+            IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, expectedPayout);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
         } else {
             sendMessageWithTransfer(
@@ -127,42 +127,28 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     }
 
     function buyFromCryptoAMM(
-        address market,
-        uint8 position,
-        uint amount,
-        uint expectedPayout,
-        uint additionalSlippage
-    ) external nonReentrant notPaused returns (uint) {
-        //todo specify
-        // packing: | msg.sender | chain id | function selector | payload |
-        bytes memory payload = abi.encode(market, position, amount, expectedPayout, additionalSlippage);
-        bytes memory message = abi.encode(
-            msg.sender,
-            block.chainid,
-            bytes4(keccak256(bytes("buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)"))),
-            payload
-        );
-        emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
-    }
-
-    function buyFromCryptoAMM(
+        address _token,
         address market,
         uint8 position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage,
         uint64 _dstChainId
-    ) external nonReentrant notPaused returns (uint) {
+    ) external payable nonReentrant notPaused returns (uint) {
         //todo specify
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position, amount, expectedPayout, additionalSlippage);
-        bytes memory message = abi.encode(
-            msg.sender,
-            block.chainid,
-            bytes4(keccak256(bytes("buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)"))),
-            payload
-        );
-        emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+        bytes4 selector = bytes4(keccak256(bytes("buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)")));
+        bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
+        noncePerSelector[selector]++;
+        // Needs to be removed before deployment on mainchain
+        if (_dstChainId == testChain) {
+            IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, expectedPayout);
+            emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+        } else {
+            sendMessage(adapterOnDestination, _dstChainId, message, msg.value);
+        }
+        // emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
     }
 
     function buyFromParlay(
@@ -282,8 +268,8 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 abi.encodeWithSelector(realSelector, market, position, amount, expectedPayout, additionalSlippage)
             );
             if (success) {
-                userOwningToken[_sender][market] += expectedPayout;
-                gameBalances[_sender][market][position] += expectedPayout;
+                userOwningToken[_sender][market] += amount;
+                userMarketBalances[_sender][market][position] += amount;
             }
             return success;
         } else if (_selector == bytes4(keccak256(bytes("buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)")))) {
@@ -295,6 +281,11 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             (bool success, bytes memory result) = selectorAddress[_selector].call(
                 abi.encodeWithSelector(realSelector, market, position, amount, expectedPayout, additionalSlippage)
             );
+            if (success) {
+                console.log("HERE");
+                userOwningToken[_sender][market] += amount;
+                userMarketBalances[_sender][market][position] += amount;
+            }
             return success;
         } else if (
             _selector == bytes4(keccak256(bytes("buyFromParlay(address[],uint256[],uint256,uint256,uint256,address)")))
@@ -320,7 +311,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             );
             if (success) {
                 // userOwningToken[_sender][market] += expectedPayout;
-                // gameBalances[_sender][market][position] += expectedPayout;
+                // userMarketBalances[_sender][market][position] += expectedPayout;
             }
             return success;
         } else if (_selector == bytes4(keccak256(bytes("exerciseParlay(address)")))) {} else if (
@@ -339,12 +330,12 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 "Invalid amount"
             );
             if (_sourceChain == block.chainid) {
-                sUSD.transfer(_sender, gameBalances[_sender][market][position]);
+                sUSD.transfer(_sender, userMarketBalances[_sender][market][position]);
             } else {
                 sendMessageWithTransfer(
                     _sender,
                     address(sUSD),
-                    gameBalances[_sender][market][position],
+                    userMarketBalances[_sender][market][position],
                     uint64(_sourceChain),
                     noncePerSelector[_selector],
                     1000000,
@@ -368,18 +359,21 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 ISportPositionalMarket(market).exerciseOptions();
                 marketExercised[market] = true;
             }
-            require(exercisedMarketBalance[market][position] >= gameBalances[_sender][market][position], "Invalid amount");
+            require(
+                exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position],
+                "Invalid amount"
+            );
             if (_sourceChain == block.chainid) {
-                sUSD.transfer(_sender, gameBalances[_sender][market][position]);
+                sUSD.transfer(_sender, userMarketBalances[_sender][market][position]);
             } else {
                 require(
-                    exercisedMarketBalance[market][position] >= gameBalances[_sender][market][position],
+                    exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position],
                     "Invalid amount"
                 );
                 sendMessageWithTransfer(
                     _sender,
                     address(sUSD),
-                    gameBalances[_sender][market][position],
+                    userMarketBalances[_sender][market][position],
                     uint64(_sourceChain),
                     noncePerSelector[_selector],
                     1000000,
@@ -388,8 +382,8 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                     msg.value
                 );
             }
-            exercisedMarketBalance[market][position] -= gameBalances[_sender][market][position];
-            gameBalances[_sender][market][position] = 0;
+            exercisedMarketBalance[market][position] -= userMarketBalances[_sender][market][position];
+            userMarketBalances[_sender][market][position] = 0;
             return true;
         } else {
             return false;

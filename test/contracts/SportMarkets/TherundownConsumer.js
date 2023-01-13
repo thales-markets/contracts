@@ -592,6 +592,12 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(0, await gamesQueue.lastCreated());
 
+			assert.equal(false, await TherundownConsumerDeployed.gameFulfilledCreated(fightId));
+
+			await expect(
+				TherundownConsumerDeployed.reopenGameForCreationProcessing(fightId, { from: owner })
+			).to.be.revertedWith('ID22');
+
 			// req games
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdFightCreate,
@@ -608,6 +614,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(fightId));
+			assert.equal(true, await TherundownConsumerDeployed.gameFulfilledCreated(fightId));
 
 			// added into queue!!!
 			assert.equal(1, await gamesQueue.firstCreated());
@@ -638,6 +645,10 @@ contract('TheRundownConsumer', (accounts) => {
 			// dequeued
 			assert.equal(2, await gamesQueue.firstCreated());
 			assert.equal(1, await gamesQueue.lastCreated());
+
+			await TherundownConsumerDeployed.reopenGameForCreationProcessing(fightId, { from: owner });
+
+			assert.equal(false, await TherundownConsumerDeployed.gameFulfilledCreated(fightId));
 		});
 
 		it('Fulfill Games Created - Champions League Game 1, create market, check results', async () => {

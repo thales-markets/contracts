@@ -153,7 +153,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             GameCreate memory gameForProcessing = abi.decode(_games[i], (GameCreate));
             // new game
             if (
-                !queues.existingGamesInCreatedQueue(gameForProcessing.gameId) &&
+                !gameFulfilledCreated[gameForProcessing.gameId] &&
                 !verifier.isInvalidNames(gameForProcessing.homeTeam, gameForProcessing.awayTeam) &&
                 gameForProcessing.startTime > block.timestamp
             ) {
@@ -300,6 +300,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function pauseOrUnpauseMarketManually(address _market, bool _pause) external isAddressWhitelisted {
         require(gameIdPerMarket[_market] != 0 && gameFulfilledCreated[gameIdPerMarket[_market]], "ID20");
         _pauseOrUnpauseMarketManually(_market, _pause);
+    }
+
+    /// @notice reopen game for processing the creation again
+    /// @param gameId gameId
+    function reopenGameForCreationProcessing(bytes32 gameId) external isAddressWhitelisted {
+        require(gameFulfilledCreated[gameId], "ID22");
+        gameFulfilledCreated[gameId] = false;
     }
 
     /// @notice setting isPausedByCanceledStatus from obtainer see @GamesOddsObtainer

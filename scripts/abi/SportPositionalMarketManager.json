@@ -613,7 +613,7 @@
         "type": "address"
       }
     ],
-    "name": "getDoubleChanceMarkets",
+    "name": "getDoubleChanceMarketsByParentMarket",
     "outputs": [
       {
         "internalType": "address[]",

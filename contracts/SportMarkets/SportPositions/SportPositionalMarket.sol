@@ -109,6 +109,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         isDoubleChance = _parameters.isDoubleChance;
         parentMarket = ISportPositionalMarket(_parameters.parentMarket);
         require(optionsCount == _parameters.positions.length, "Position count mismatch");
+
         // Instantiate the options themselves
         options.home = SportPosition(_parameters.positions[0]);
         options.away = SportPosition(_parameters.positions[1]);
@@ -158,9 +159,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _isPaused() internal view returns (bool) {
-        if (isDoubleChance) return parentMarket.paused();
-
-        return paused;
+        return isDoubleChance ? parentMarket.paused() : paused;
     }
 
     function phase() external view override returns (Phase) {
@@ -179,8 +178,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         emit PauseUpdated(_paused);
     }
 
-    function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused {
-        require(!isDoubleChance, "Not supported for double chance markets");
+    function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused noDoubleChance {
         require(_maturity > block.timestamp, "Maturity must be in a future");
         times = Times(_maturity, _expiry);
         emit DatesUpdated(_maturity, _expiry);
@@ -397,34 +395,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         }
     }
 
-    function burnOptions(uint amount) external override {
-        require(!isDoubleChance, "Not supported for double chance markets");
-        require(msg.sender == sportsAMM, "Invalid burner");
-        _burnOptions(msg.sender, amount);
-    }
-
-    function _burnOptions(address account, uint amount) internal {
-        require(amount > 0, "Can not burn zero amount!");
-        require(!paused, "Market paused");
-        require(_getMaximumBurnable(account) >= amount, "There is not enough options!");
-
-        // decrease deposit
-        _decrementDeposited(amount);
-
-        // decrease home and away options
-        options.home.exerciseWithAmount(account, amount);
-        options.away.exerciseWithAmount(account, amount);
-        if (optionsCount > 2) {
-            options.draw.exerciseWithAmount(account, amount);
-        }
-
-        // transfer balance
-        sUSD.transfer(account, amount);
-
-        // emit events
-        emit OptionsBurned(account, amount);
-    }
-
     /* ---------- Custom oracle configuration ---------- */
     function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
         theRundownConsumer = ITherundownConsumer(_theRundownConsumer);
@@ -602,6 +572,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     modifier managerNotPaused() {
         _requireManagerNotPaused();
+        _;
+    }
+
+    modifier noDoubleChance() {
+        require(!isDoubleChance, "Not supported for double chance markets");
         _;
     }
 

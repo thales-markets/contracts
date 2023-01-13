@@ -470,7 +470,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			awayTeamNotLoseMarket = await SportPositionalMarketContract.at(awayTeamNotLoseAnswer);
 			noDrawMarket = await SportPositionalMarketContract.at(noDrawAnswer);
 
-			//console.log(await SportPositionalMarketManager.getDoubleChanceMarkets(answer));
+			//console.log(await SportPositionalMarketManager.getDoubleChanceMarketsByParentMarket(answer));
 
 			assert.equal(
 				await SportPositionalMarketManager.doubleChanceMarkets(answer, 0),
@@ -516,7 +516,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
 
 			let answer = await SportPositionalMarketManager.getActiveMarketAddress('4');
-			let markets = await SportPositionalMarketManager.getDoubleChanceMarkets(answer);
+			let markets = await SportPositionalMarketManager.getDoubleChanceMarketsByParentMarket(answer);
 			assert.equal(markets.length, 0);
 
 			await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
@@ -535,7 +535,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('5');
 
-			markets = await SportPositionalMarketManager.getDoubleChanceMarkets(answer);
+			markets = await SportPositionalMarketManager.getDoubleChanceMarketsByParentMarket(answer);
 			assert.equal(markets.length, 3);
 		});
 

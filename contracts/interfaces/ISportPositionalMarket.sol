@@ -107,6 +107,4 @@ interface ISportPositionalMarket {
         uint _awayOdds,
         uint _drawOdds
     ) external;
-
-    function burnOptions(uint amount) external;
 }

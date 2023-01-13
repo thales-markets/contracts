@@ -146,7 +146,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         }
     }
 
-    function getDoubleChanceMarkets(address market) external view returns (address[] memory) {
+    function getDoubleChanceMarketsByParentMarket(address market) external view returns (address[] memory) {
         if (doubleChanceMarkets[market].length > 0) {
             address[] memory markets = new address[](3);
             for (uint i = 0; i < doubleChanceMarkets[market].length; i++) {

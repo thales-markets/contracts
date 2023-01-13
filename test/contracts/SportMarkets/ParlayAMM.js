@@ -549,7 +549,7 @@ contract('ParlayAMM', (accounts) => {
 				_sportsAmm: SportsAMM.address,
 				_sUSD: Thales.address,
 				_roundLength: WEEK,
-				_maxAllowedDeposit: toUnit(1000).toString(),
+				_maxAllowedDeposit: toUnit(100000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
 			},

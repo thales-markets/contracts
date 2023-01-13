@@ -579,7 +579,7 @@ contract('ParlayAMM', (accounts) => {
 		await AMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
 			from: owner,
 		});
-		await AMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+		await AMMLiquidityPool.deposit(toUnit(100000), { from: firstLiquidityProvider });
 		await AMMLiquidityPool.start({ from: owner });
 		await AMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, { from: owner });
 		await Thales.transfer(defaultLiquidityProvider, toUnit('10000000'), { from: owner });

@@ -58,6 +58,11 @@ contract('SportsAMM', (accounts) => {
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
+	const ParlayAMMContract = artifacts.require('ParlayMarketsAMM');
+	const ParlayMarketContract = artifacts.require('ParlayMarketMastercopy');
+	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
+	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
+
 	const CrossChainAdapterContract = artifacts.require('CrossChainAdapter');
 	let CrossChainAdapter;
 
@@ -135,6 +140,10 @@ contract('SportsAMM', (accounts) => {
 		testUSDT,
 		testDAI,
 		Referrals,
+		ParlayAMM,
+		ParlayMarketData,
+		ParlayVerifier,
+		ParlayMarketMastercopy,
 		SportsAMM;
 
 	const game1NBATime = 1646958600;
@@ -142,6 +151,7 @@ contract('SportsAMM', (accounts) => {
 
 	const sportId_4 = 4; // NBA
 	const sportId_16 = 16; // CHL
+	const sportId_7 = 7; // UFC
 
 	const tagID_4 = 9000 + sportId_4;
 	const tagID_16 = 9000 + sportId_16;
@@ -184,6 +194,31 @@ contract('SportsAMM', (accounts) => {
 	let ThalesAMM, thalesAMM, ThalesAMMUtils, thalesAmmUtils;
 	let priceFeedAddress, MockPriceFeedDeployed;
 	let rewardTokenAddress;
+
+	let parlayMarkets = [];
+	let equalParlayMarkets = [];
+	let parlayPositions = [];
+	let parlaySingleMarketAddress;
+	let parlaySingleMarket;
+	let voucher;
+
+	let parlayAMMfee = toUnit('0.05');
+	let safeBoxImpact = toUnit('0.02');
+	let minUSDAmount = '10';
+	let maxSupportedAmount = '20000';
+	let maxSupportedOdd = '0.005';
+
+	let fightId,
+		fight_create,
+		fightCreated,
+		game_fight_resolve_draw,
+		reqIdFightCreate,
+		reqIdFightResolve,
+		game_fight_resolve,
+		gamesFightResolved,
+		reqIdFightResolveDraw,
+		gamesFightResolvedDraw;
+	const fightTime = 1660089600;
 
 	before(async () => {
 		fastForward(await currentTime());
@@ -427,6 +462,24 @@ contract('SportsAMM', (accounts) => {
 		gamesCreated = [game_1_create, game_2_create];
 		reqIdCreate = '0x65da2443ccd66b09d4e2693933e8fb9aab9addf46fb93300bd7c1d70c5e21666';
 
+		fightId = '0x3234376564326334663865313462396538343833353636353361373863393962';
+		// create fight props
+		fight_create =
+			'0x000000000000000000000000000000000000000000000000000000000000002032343765643263346638653134623965383438333536363533613738633939620000000000000000000000000000000000000000000000000000000062f2f500ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5f100000000000000000000000000000000000000000000000000000000000007c9c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000011436c6179746f6e2043617270656e746572000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d4564676172204368616972657a00000000000000000000000000000000000000';
+		fightCreated = [fight_create];
+		reqIdFightCreate = '0x1e4ef9996d321a4445068689e63fe393a5860cc98a0df22da1ac877d8cfd37d3';
+
+		// resolve game props
+		reqIdFightResolve = '0x6b5d983afa1e2da68d49e1e1e5d963cb7d93e971329e4dac36a9697234584c68';
+		game_fight_resolve =
+			'0x3234376564326334663865313462396538343833353636353361373863393962000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008';
+		gamesFightResolved = [game_fight_resolve];
+
+		reqIdFightResolveDraw = '0x6b5d983afa1e2da68d49e1e1e5d963cb7d93e971329e4dac36a9697234584c68';
+		game_fight_resolve_draw =
+			'0x3234376564326334663865313462396538343833353636353361373863393962000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008';
+		gamesFightResolvedDraw = [game_fight_resolve_draw];
+
 		// resolve game props
 		reqIdResolve = '0x30250573c4b099aeaf06273ef9fbdfe32ab2d6b8e33420de988be5d6886c92a7';
 		game_1_resolve =
@@ -468,9 +521,9 @@ contract('SportsAMM', (accounts) => {
 
 		await TherundownConsumerDeployed.initialize(
 			owner,
-			[sportId_4, sportId_16],
+			[sportId_4, sportId_16, sportId_7],
 			SportPositionalMarketManager.address,
-			[sportId_4],
+			[sportId_4, sportId_7],
 			gamesQueue.address,
 			[8, 12], // resolved statuses
 			[1, 2], // cancel statuses
@@ -571,6 +624,82 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
 		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 
+		ParlayMarketMastercopy = await ParlayMarketContract.new({ from: manager });
+
+		ParlayAMM = await ParlayAMMContract.new({ from: manager });
+
+		await ParlayAMM.initialize(
+			owner,
+			SportsAMM.address,
+			SportPositionalMarketManager.address,
+			parlayAMMfee,
+			toUnit(maxSupportedAmount),
+			toUnit(maxSupportedOdd),
+			Thales.address,
+			safeBox,
+			safeBoxImpact,
+			{ from: owner }
+		);
+
+		await ParlayAMM.setAmounts(
+			toUnit(minUSDAmount),
+			toUnit(maxSupportedAmount),
+			toUnit(maxSupportedOdd),
+			parlayAMMfee,
+			safeBoxImpact,
+			toUnit(0.05),
+			toUnit(1860),
+			{
+				from: owner,
+			}
+		);
+
+		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: first });
+		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: second });
+		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: third });
+
+		ParlayMarketData = await ParlayMarketDataContract.new({ from: manager });
+		ParlayVerifier = await ParlayVerifierContract.new({ from: manager });
+
+		await ParlayMarketData.initialize(owner, ParlayAMM.address);
+
+		await ParlayAMM.setAddresses(
+			SportsAMM.address,
+			safeBox,
+			Referrals.address,
+			ParlayMarketData.address,
+			ParlayVerifier.address,
+			{ from: owner }
+		);
+
+		await ParlayAMM.setParlayMarketMastercopies(ParlayMarketMastercopy.address, { from: owner });
+		await Thales.transfer(ParlayAMM.address, toUnit('20000'), { from: owner });
+
+		await ParlayAMM.setParameters(5, { from: owner });
+
+		await SportsAMM.setAddresses(
+			owner,
+			Thales.address,
+			TherundownConsumerDeployed.address,
+			StakingThales.address,
+			Referrals.address,
+			ParlayAMM.address,
+			wrapper,
+			{ from: owner }
+		);
+
+		await ParlayAMM.setCurveSUSD(
+			curveSUSD.address,
+			testDAI.address,
+			testUSDC.address,
+			testUSDT.address,
+			true,
+			toUnit(0.02),
+			{ from: owner }
+		);
+
+		Referrals.setSportsAMM(SportsAMM.address, ParlayAMM.address, { from: owner });
+
 		await CrossChainAdapter.setWhitelistedAddress(second, true, { from: owner });
 		await CrossChainAdapter.setPaymentToken(Thales.address, { from: owner });
 		await CrossChainAdapter.setParameters(CrossChainAdapter.address, 111, { from: owner });
@@ -581,12 +710,22 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 		await CrossChainAdapter.setSelectorAddress(
+			'buyFromParlay(address[],uint256[],uint256,uint256,uint256,address)',
+			ParlayAMM.address,
+			{ from: owner }
+		);
+		await CrossChainAdapter.setSelectorAddress(
 			'buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)',
 			thalesAMM.address,
 			{ from: owner }
 		);
 		await CrossChainAdapter.setSelectorAddress(
 			'exerciseSportPosition(address,uint8)',
+			CrossChainAdapter.address,
+			{ from: owner }
+		);
+		await CrossChainAdapter.setSelectorAddress(
+			'exerciseParlay(address)',
 			CrossChainAdapter.address,
 			{ from: owner }
 		);
@@ -988,6 +1127,269 @@ contract('SportsAMM', (accounts) => {
 				console.log('\n\nInitial balance: ', initialBalance);
 				console.log('Final balance: ', fromUnit(answer));
 			});
+		});
+	});
+
+	describe('Check ParlayAMM data', () => {
+		beforeEach(async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			let answer;
+			parlayMarkets = [];
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+
+			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let game_2 = await TherundownConsumerDeployed.gameCreated(gameid2);
+
+			// create markets
+			const tx_create_1 = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+			const tx_create_2 = await TherundownConsumerDeployed.createMarketForGame(gameid2);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			let marketAdd_2 = await TherundownConsumerDeployed.marketPerGameId(gameid2);
+
+			// check if event is emited
+			assert.eventEqual(tx_create_1.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+			assert.eventEqual(tx_create_2.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd_2,
+				_id: gameid2,
+				_game: game_2,
+			});
+
+			// console.log("1. game:");
+			// console.log("==> home: ", game.homeTeam);
+			// console.log("==> away: ", game.awayTeam);
+
+			// console.log("2. game:");
+			// console.log("==> home: ", game_2.homeTeam);
+			// console.log("==> away: ", game_2.awayTeam);
+
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			let deployedMarket_1 = await SportPositionalMarketContract.at(answer);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('1');
+			let deployedMarket_2 = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(deployedMarket_1.address, marketAdd);
+			assert.equal(deployedMarket_2.address, marketAdd_2);
+			await fastForward(fightTime - (await currentTime()) - SECOND);
+			fightCreated = [fight_create];
+
+			// req games
+			const tx_3 = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFightCreate,
+				[fight_create],
+				sportId_7,
+				fightTime,
+				{ from: wrapper }
+			);
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
+
+			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
+			assert.equal('Clayton Carpenter', fight.homeTeam);
+			assert.equal('Edgar Chairez', fight.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx_3.logs[0], 'GameCreated', {
+				_requestId: reqIdFightCreate,
+				_sportId: sportId_7,
+				_id: fightId,
+				_game: fight,
+			});
+
+			const tx_create_3 = await TherundownConsumerDeployed.createMarketForGame(fightId);
+
+			marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
+
+			// check if event is emited
+			assert.eventEqual(tx_create_3.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: fightId,
+				_game: fight,
+			});
+
+			// console.log("3. game:");
+			// console.log("==> home: ", fight.homeTeam);
+			// console.log("==> away: ", fight.awayTeam);
+
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('2');
+			let deployedMarket_3 = await SportPositionalMarketContract.at(answer);
+
+			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+
+			// req. games
+			const tx_4 = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
+				gameFootballTime,
+				{ from: wrapper }
+			);
+
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
+
+			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameFootballid1);
+			assert.bnEqual(40000, result[0]);
+			assert.bnEqual(-12500, result[1]);
+			assert.bnEqual(27200, result[2]);
+
+			let game_4 = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			let game_5 = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
+			assert.equal('Atletico Madrid Atletico Madrid', game_4.homeTeam);
+			assert.equal('Manchester City Manchester City', game_4.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx_4.logs[0], 'GameCreated', {
+				_requestId: reqIdFootballCreate,
+				_sportId: sportId_16,
+				_id: gameFootballid1,
+				_game: game_4,
+			});
+
+			// console.log("4. game:");
+			// console.log("==> home: ", game_4.homeTeam);
+			// console.log("==> away: ", game_4.awayTeam);
+
+			// console.log("5. game:");
+			// console.log("==> home: ", game_5.homeTeam);
+			// console.log("==> away: ", game_5.awayTeam);
+
+			// create markets
+			const tx_create_4 = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+			await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
+
+			let marketAdd_4 = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+			let marketAdd_5 = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
+
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('3');
+			let deployedMarket_4 = await SportPositionalMarketContract.at(answer);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('4');
+			let deployedMarket_5 = await SportPositionalMarketContract.at(answer);
+
+			// check if event is emited
+			assert.eventEqual(tx_create_4.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd_4,
+				_id: gameFootballid1,
+				_game: game_4,
+			});
+
+			assert.equal(deployedMarket_4.address, marketAdd_4);
+			assert.equal(deployedMarket_5.address, marketAdd_5);
+
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			await fastForward(await currentTime());
+
+			assert.equal(true, await deployedMarket_1.canResolve());
+			assert.equal(true, await deployedMarket_2.canResolve());
+			assert.equal(true, await deployedMarket_3.canResolve());
+			assert.equal(true, await deployedMarket_4.canResolve());
+			assert.equal(true, await deployedMarket_5.canResolve());
+
+			// console.log('parlay 1: ', deployedMarket_1.address);
+			// console.log('parlay 2: ', deployedMarket_2.address);
+			// console.log('parlay 3: ', deployedMarket_3.address);
+			// console.log('parlay 4: ', deployedMarket_4.address);
+
+			parlayMarkets = [deployedMarket_1, deployedMarket_5, deployedMarket_3, deployedMarket_4];
+			equalParlayMarkets = [deployedMarket_1, deployedMarket_2, deployedMarket_3, deployedMarket_4];
+			await Thales.approve(CrossChainAdapter.address, toUnit(101), { from: first });
+		});
+
+		it('Can create Parlay: YES', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let canCreateParlay = await ParlayAMM.canCreateParlayMarket(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			assert.equal(canCreateParlay, true);
+		});
+
+		it('Create Cross chain Parlay', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+
+			let initialBalance = await Thales.balanceOf(CrossChainAdapter.address);
+			console.log('CrossChain init balance: ', fromUnit(initialBalance));
+
+			let tx = await CrossChainAdapter.buyFromParlay(
+				Thales.address,
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				111,
+				{ from: first }
+			);
+			console.log(tx.logs[0].args);
+			let balance = await Thales.balanceOf(CrossChainAdapter.address);
+			console.log('CrossChain balance: ', fromUnit(balance));
+
+			let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, { from: owner });
+			console.log('\n\nTX2');
+			console.log(tx2.logs[0].args);
+
+			// let buyParlayTX = await ParlayAMM.buyFromParlay(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay,
+			// 	slippage,
+			// 	result[1],
+			// 	ZERO_ADDRESS,
+			// 	{ from: first }
+			// );
+			// console.log("event: \n", buyParlayTX.logs[0]);
+
+			// assert.eventEqual(tx2.logs[2], 'ParlayMarketCreated', {
+			// 	account: first,
+			// 	sUSDPaid: totalSUSDToPay,
+			// });
 		});
 	});
 });

@@ -169,33 +169,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     }
 
     function buyFromParlay(
-        address[] calldata _sportMarkets,
-        uint[] calldata _positions,
-        uint _sUSDPaid,
-        uint _additionalSlippage,
-        uint _expectedPayout,
-        address _differentRecepient
-    ) external nonReentrant notPaused {
-        //todo specify
-        // packing: | msg.sender | chain id | function selector | payload |
-        bytes memory payload = abi.encode(
-            _sportMarkets,
-            _positions,
-            _sUSDPaid,
-            _additionalSlippage,
-            _expectedPayout,
-            _differentRecepient
-        );
-        bytes memory message = abi.encode(
-            msg.sender,
-            block.chainid,
-            bytes4(keccak256(bytes("buyFromParlay(address[],uint256[],uint256,uint256,uint256,address)"))),
-            payload
-        );
-        emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
-    }
-
-    function buyFromParlay(
+        address _token,
         address[] calldata _sportMarkets,
         uint[] calldata _positions,
         uint _sUSDPaid,
@@ -203,7 +177,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         uint _expectedPayout,
         address _differentRecepient,
         uint64 _dstChainId
-    ) external nonReentrant notPaused {
+    ) external payable nonReentrant notPaused {
         //todo specify
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(
@@ -220,7 +194,13 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             bytes4(keccak256(bytes("buyFromParlay(address[],uint256[],uint256,uint256,uint256,address)"))),
             payload
         );
-        emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+        if (_dstChainId == testChain) {
+            IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, _sUSDPaid);
+            emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+        } else {
+            sendMessage(adapterOnDestination, _dstChainId, message, msg.value);
+        }
+        // emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
     }
 
     function executeBuyMessage(bytes calldata _message) external notPaused nonReentrant returns (bool success) {

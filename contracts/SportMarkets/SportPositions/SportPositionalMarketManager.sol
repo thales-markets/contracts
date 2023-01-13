@@ -51,9 +51,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     mapping(address => bool) public whitelistedCancelAddresses;
     address public oddsObtainer;
 
-    mapping(address => address[]) public doubleChanceMarkets;
+    mapping(address => address) public doubleChanceMarkets; // deprecated
     mapping(address => bool) public isDoubleChance;
     bool public override isDoubleChanceSupported;
+    mapping(address => address[]) public doubleChanceMarketsByParent;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -147,10 +148,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function getDoubleChanceMarketsByParentMarket(address market) external view returns (address[] memory) {
-        if (doubleChanceMarkets[market].length > 0) {
+        if (doubleChanceMarketsByParent[market].length > 0) {
             address[] memory markets = new address[](3);
-            for (uint i = 0; i < doubleChanceMarkets[market].length; i++) {
-                markets[i] = doubleChanceMarkets[market][i];
+            for (uint i = 0; i < doubleChanceMarketsByParent[market].length; i++) {
+                markets[i] = doubleChanceMarketsByParent[market][i];
             }
             return markets;
         }
@@ -333,7 +334,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             );
             _activeMarkets.add(address(doubleChanceMarket));
 
-            doubleChanceMarkets[address(market)].push(address(doubleChanceMarket));
+            doubleChanceMarketsByParent[address(market)].push(address(doubleChanceMarket));
             isDoubleChance[address(doubleChanceMarket)] = true;
             emit DoubleChanceMarketCreated(address(market), address(doubleChanceMarket), tagsDoubleChance[1]);
         }
@@ -369,31 +370,31 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
 
-        if (doubleChanceMarkets[market].length > 0) {
+        if (doubleChanceMarketsByParent[market].length > 0) {
             if (_outcome == 1) {
                 // HomeTeamNotLose, NoDraw
-                SportPositionalMarket(doubleChanceMarkets[market][0]).resolve(1);
-                SportPositionalMarket(doubleChanceMarkets[market][1]).resolve(2);
-                SportPositionalMarket(doubleChanceMarkets[market][2]).resolve(1);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][0]).resolve(1);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][1]).resolve(2);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][2]).resolve(1);
             } else if (_outcome == 2) {
                 // AwayTeamNotLose, NoDraw
-                SportPositionalMarket(doubleChanceMarkets[market][0]).resolve(2);
-                SportPositionalMarket(doubleChanceMarkets[market][1]).resolve(1);
-                SportPositionalMarket(doubleChanceMarkets[market][2]).resolve(1);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][0]).resolve(2);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][1]).resolve(1);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][2]).resolve(1);
             } else if (_outcome == 3) {
                 // HomeTeamNotLose, AwayTeamNotLose
-                SportPositionalMarket(doubleChanceMarkets[market][0]).resolve(1);
-                SportPositionalMarket(doubleChanceMarkets[market][1]).resolve(1);
-                SportPositionalMarket(doubleChanceMarkets[market][2]).resolve(2);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][0]).resolve(1);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][1]).resolve(1);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][2]).resolve(2);
             } else {
                 // cancelled
-                SportPositionalMarket(doubleChanceMarkets[market][0]).resolve(0);
-                SportPositionalMarket(doubleChanceMarkets[market][1]).resolve(0);
-                SportPositionalMarket(doubleChanceMarkets[market][2]).resolve(0);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][0]).resolve(0);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][1]).resolve(0);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][2]).resolve(0);
             }
-            for (uint i = 0; i < doubleChanceMarkets[market].length; i++) {
-                _activeMarkets.remove(doubleChanceMarkets[market][i]);
-                _maturedMarkets.add(doubleChanceMarkets[market][i]);
+            for (uint i = 0; i < doubleChanceMarketsByParent[market].length; i++) {
+                _activeMarkets.remove(doubleChanceMarketsByParent[market][i]);
+                _maturedMarkets.add(doubleChanceMarketsByParent[market][i]);
             }
         }
     }

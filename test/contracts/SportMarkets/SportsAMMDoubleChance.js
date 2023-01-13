@@ -473,16 +473,19 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			//console.log(await SportPositionalMarketManager.getDoubleChanceMarketsByParentMarket(answer));
 
 			assert.equal(
-				await SportPositionalMarketManager.doubleChanceMarkets(answer, 0),
+				await SportPositionalMarketManager.doubleChanceMarketsByParent(answer, 0),
 				homeTeamNotLoseAnswer
 			);
 
 			assert.equal(
-				await SportPositionalMarketManager.doubleChanceMarkets(answer, 1),
+				await SportPositionalMarketManager.doubleChanceMarketsByParent(answer, 1),
 				awayTeamNotLoseAnswer
 			);
 
-			assert.equal(await SportPositionalMarketManager.doubleChanceMarkets(answer, 2), noDrawAnswer);
+			assert.equal(
+				await SportPositionalMarketManager.doubleChanceMarketsByParent(answer, 2),
+				noDrawAnswer
+			);
 		});
 
 		let position = 0;

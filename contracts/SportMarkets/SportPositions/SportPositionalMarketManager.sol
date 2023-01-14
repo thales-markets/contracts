@@ -51,9 +51,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     mapping(address => bool) public whitelistedCancelAddresses;
     address public oddsObtainer;
 
-    mapping(address => address) public doubleChanceMarkets;
+    mapping(address => address) public doubleChanceMarkets; // deprecated
     mapping(address => bool) public isDoubleChance;
-    bool public isDoubleChanceSupported;
+    bool public override isDoubleChanceSupported;
+    mapping(address => address[]) public doubleChanceMarketsByParent;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -143,6 +144,16 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             return _activeMarkets.elements[_index];
         } else {
             return address(0);
+        }
+    }
+
+    function getDoubleChanceMarketsByParentMarket(address market) external view returns (address[] memory) {
+        if (doubleChanceMarketsByParent[market].length > 0) {
+            address[] memory markets = new address[](3);
+            for (uint i = 0; i < doubleChanceMarketsByParent[market].length; i++) {
+                markets[i] = doubleChanceMarketsByParent[market][i];
+            }
+            return markets;
         }
     }
 
@@ -261,32 +272,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         sUSD.transferFrom(msg.sender, address(market), initialMint);
 
         if (positionCount > 2 && isDoubleChanceSupported) {
-            // create double chance market
-            uint[] memory tagsDoubleChance = new uint[](2);
-            tagsDoubleChance[0] = tags[0];
-            tagsDoubleChance[1] = 10003;
-
-            ISportPositionalMarket doubleChanceMarket = _createMarket(
-                SportPositionalMarketFactory.SportPositionCreationMarketParameters(
-                    msg.sender,
-                    sUSD,
-                    gameId,
-                    gameLabel,
-                    [maturity, expiry],
-                    initialMint,
-                    positionCount,
-                    msg.sender,
-                    tagsDoubleChance,
-                    false,
-                    address(market),
-                    true
-                )
-            );
-
-            doubleChanceMarkets[address(market)] = address(doubleChanceMarket);
-            isDoubleChance[address(doubleChanceMarket)] = true;
-
-            emit DoubleChanceMarketCreated(address(market), address(doubleChanceMarket), tagsDoubleChance[1]);
+            _createDoubleChanceMarkets(msg.sender, gameId, maturity, expiry, initialMint, address(market), tags[0]);
         }
 
         return market;
@@ -314,6 +300,44 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         );
         emit MarketLabel(address(market), parameters.gameLabel);
         return market;
+    }
+
+    function _createDoubleChanceMarkets(
+        address creator,
+        bytes32 gameId,
+        uint maturity,
+        uint expiry,
+        uint initialMint,
+        address market,
+        uint tag
+    ) internal {
+        string[3] memory labels = ["HomeTeamNotToLose", "AwayTeamNotToLose", "NoDraw"];
+        uint[] memory tagsDoubleChance = new uint[](2);
+        tagsDoubleChance[0] = tag;
+        tagsDoubleChance[1] = 10003;
+        for (uint i = 0; i < 3; i++) {
+            ISportPositionalMarket doubleChanceMarket = _createMarket(
+                SportPositionalMarketFactory.SportPositionCreationMarketParameters(
+                    creator,
+                    sUSD,
+                    gameId,
+                    labels[i],
+                    [maturity, expiry],
+                    initialMint,
+                    2,
+                    creator,
+                    tagsDoubleChance,
+                    false,
+                    address(market),
+                    true
+                )
+            );
+            _activeMarkets.add(address(doubleChanceMarket));
+
+            doubleChanceMarketsByParent[address(market)].push(address(doubleChanceMarket));
+            isDoubleChance[address(doubleChanceMarket)] = true;
+            emit DoubleChanceMarketCreated(address(market), address(doubleChanceMarket), tagsDoubleChance[1]);
+        }
     }
 
     function transferSusdTo(
@@ -346,9 +370,32 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
 
-        if (doubleChanceMarkets[market] != address(0)) {
-            _activeMarkets.remove(doubleChanceMarkets[market]);
-            _maturedMarkets.add(doubleChanceMarkets[market]);
+        if (doubleChanceMarketsByParent[market].length > 0) {
+            if (_outcome == 1) {
+                // HomeTeamNotLose, NoDraw
+                SportPositionalMarket(doubleChanceMarketsByParent[market][0]).resolve(1);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][1]).resolve(2);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][2]).resolve(1);
+            } else if (_outcome == 2) {
+                // AwayTeamNotLose, NoDraw
+                SportPositionalMarket(doubleChanceMarketsByParent[market][0]).resolve(2);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][1]).resolve(1);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][2]).resolve(1);
+            } else if (_outcome == 3) {
+                // HomeTeamNotLose, AwayTeamNotLose
+                SportPositionalMarket(doubleChanceMarketsByParent[market][0]).resolve(1);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][1]).resolve(1);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][2]).resolve(2);
+            } else {
+                // cancelled
+                SportPositionalMarket(doubleChanceMarketsByParent[market][0]).resolve(0);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][1]).resolve(0);
+                SportPositionalMarket(doubleChanceMarketsByParent[market][2]).resolve(0);
+            }
+            for (uint i = 0; i < doubleChanceMarketsByParent[market].length; i++) {
+                _activeMarkets.remove(doubleChanceMarketsByParent[market][i]);
+                _maturedMarkets.add(doubleChanceMarketsByParent[market][i]);
+            }
         }
     }
 

@@ -295,6 +295,35 @@
         "type": "address"
       },
       {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAvailableOtherSide",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_availableOtherSide",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
         "internalType": "address",
         "name": "addressToCheck",
         "type": "address"
@@ -356,11 +385,6 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
       }
     ],
     "name": "getBaseOddsForDoubleChance",
@@ -406,14 +430,28 @@
   {
     "inputs": [
       {
-        "internalType": "contract ISportPositionalMarket",
-        "name": "parentMarket",
+        "internalType": "address",
+        "name": "_market",
         "type": "address"
-      },
+      }
+    ],
+    "name": "getMarketDefaultOdds",
+    "outputs": [
       {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
+        "internalType": "uint256[]",
+        "name": "odds",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
       }
     ],
     "name": "getParentMarketPositionAddresses",
@@ -438,11 +476,6 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
       }
     ],
     "name": "getParentMarketPositions",
@@ -460,6 +493,30 @@
       {
         "internalType": "address",
         "name": "parentMarket",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      }
+    ],
+    "name": "getTarget",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "target",
         "type": "address"
       }
     ],

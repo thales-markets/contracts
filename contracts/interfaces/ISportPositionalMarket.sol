@@ -45,10 +45,6 @@ interface ISportPositionalMarket {
 
     function resolved() external view returns (bool);
 
-    function isResolved() external view returns (bool);
-
-    function isCancelled() external view returns (bool);
-
     function cancelled() external view returns (bool);
 
     function paused() external view returns (bool);
@@ -62,6 +58,8 @@ interface ISportPositionalMarket {
     function isChild() external view returns (bool);
 
     function tags(uint idx) external view returns (uint);
+
+    function getParentMarketPositions() external view returns (IPosition position1, IPosition position2);
 
     function getStampedOdds()
         external
@@ -90,8 +88,6 @@ interface ISportPositionalMarket {
             uint draw
         );
 
-    function getMaximumBurnable(address account) external view returns (uint amount);
-
     function isDoubleChance() external view returns (bool);
 
     function parentMarket() external view returns (ISportPositionalMarket);
@@ -111,8 +107,4 @@ interface ISportPositionalMarket {
         uint _awayOdds,
         uint _drawOdds
     ) external;
-
-    function burnOptions(uint amount) external;
-
-    function burnOptionsMaximum() external;
 }

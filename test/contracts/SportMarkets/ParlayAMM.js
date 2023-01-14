@@ -796,11 +796,12 @@ contract('ParlayAMM', (accounts) => {
 
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('3');
 			let deployedMarket_4 = await SportPositionalMarketContract.at(answer);
-			answer = await SportPositionalMarketManager.getActiveMarketAddress('5');
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('7');
 			let deployedMarket_5 = await SportPositionalMarketContract.at(answer);
 
 			// check if event is emited
-			assert.eventEqual(tx_create_4.logs[2], 'CreateSportsMarket', {
+
+			assert.eventEqual(tx_create_4.logs[4], 'CreateSportsMarket', {
 				_marketAddress: marketAdd_4,
 				_id: gameFootballid1,
 				_game: game_4,
@@ -810,7 +811,7 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(deployedMarket_5.address, marketAdd_5);
 
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			await fastForward(await currentTime());
 
 			assert.equal(true, await deployedMarket_1.canResolve());
@@ -832,7 +833,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -851,7 +852,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -867,7 +868,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -890,7 +891,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '2'];
 			let parlayMarketsAddress = [];
@@ -918,7 +919,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -938,7 +939,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -973,7 +974,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1020,7 +1021,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1056,7 +1057,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1094,7 +1095,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1129,7 +1130,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1162,7 +1163,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1199,7 +1200,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1241,7 +1242,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '0', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1315,7 +1316,7 @@ contract('ParlayAMM', (accounts) => {
 			);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '7');
+			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1458,7 +1459,7 @@ contract('ParlayAMM', (accounts) => {
 				await fastForward(game1NBATime - (await currentTime()) - SECOND);
 				// await fastForward((await currentTime()) - SECOND);
 				answer = await SportPositionalMarketManager.numActiveMarkets();
-				assert.equal(answer.toString(), '7');
+				assert.equal(answer.toString(), '11');
 				let totalSUSDToPay = toUnit('10');
 				parlayPositions = ['1', '0', '1', '1'];
 				let parlayMarketsAddress = [];

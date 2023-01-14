@@ -1419,24 +1419,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "newFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMinSpreadPerAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_owner",
         "type": "address"
       }
@@ -1516,11 +1498,16 @@
       },
       {
         "internalType": "uint256",
-        "name": "newFee",
+        "name": "newSBFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newMSFee",
         "type": "uint256"
       }
     ],
-    "name": "setSafeBoxFeePerAddress",
+    "name": "setSafeBoxFeeAndMinSpreadPerAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

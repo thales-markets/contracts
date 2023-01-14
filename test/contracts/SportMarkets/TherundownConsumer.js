@@ -592,6 +592,12 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(0, await gamesQueue.lastCreated());
 
+			assert.equal(false, await TherundownConsumerDeployed.gameFulfilledCreated(fightId));
+
+			await expect(
+				TherundownConsumerDeployed.reopenGameForCreationProcessing(fightId, { from: owner })
+			).to.be.revertedWith('ID22');
+
 			// req games
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdFightCreate,
@@ -608,6 +614,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(fightId));
+			assert.equal(true, await TherundownConsumerDeployed.gameFulfilledCreated(fightId));
 
 			// added into queue!!!
 			assert.equal(1, await gamesQueue.firstCreated());
@@ -638,6 +645,10 @@ contract('TheRundownConsumer', (accounts) => {
 			// dequeued
 			assert.equal(2, await gamesQueue.firstCreated());
 			assert.equal(1, await gamesQueue.lastCreated());
+
+			await TherundownConsumerDeployed.reopenGameForCreationProcessing(fightId, { from: owner });
+
+			assert.equal(false, await TherundownConsumerDeployed.gameFulfilledCreated(fightId));
 		});
 
 		it('Fulfill Games Created - Champions League Game 1, create market, check results', async () => {
@@ -678,7 +689,7 @@ contract('TheRundownConsumer', (accounts) => {
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
 
 			// check if event is emited
-			assert.eventEqual(tx_create.logs[2], 'CreateSportsMarket', {
+			assert.eventEqual(tx_create.logs[tx_create.logs.length - 1], 'CreateSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameFootballid1,
 				_game: game,
@@ -727,7 +738,7 @@ contract('TheRundownConsumer', (accounts) => {
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
 
 			// check if event is emited
-			assert.eventEqual(tx_create.logs[2], 'CreateSportsMarket', {
+			assert.eventEqual(tx_create.logs[tx_create.logs.length - 1], 'CreateSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameFootballid2,
 				_game: game,
@@ -888,7 +899,7 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(true, await TherundownConsumerDeployed.canMarketBeUpdated(marketAdd));
 
 			// check if event is emited
-			assert.eventEqual(tx_create.logs[2], 'CreateSportsMarket', {
+			assert.eventEqual(tx_create.logs[tx_create.logs.length - 1], 'CreateSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameFootballid1,
 				_game: game,
@@ -994,7 +1005,7 @@ contract('TheRundownConsumer', (accounts) => {
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
 
 			// check if event is emited
-			assert.eventEqual(tx_create.logs[2], 'CreateSportsMarket', {
+			assert.eventEqual(tx_create.logs[tx_create.logs.length - 1], 'CreateSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameFootballid2,
 				_game: game,
@@ -2225,7 +2236,7 @@ contract('TheRundownConsumer', (accounts) => {
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
 
 			// check if event is emited
-			assert.eventEqual(tx_create.logs[2], 'CreateSportsMarket', {
+			assert.eventEqual(tx_create.logs[tx_create.logs.length - 1], 'CreateSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameFootballid1,
 				_game: game,
@@ -2327,7 +2338,7 @@ contract('TheRundownConsumer', (accounts) => {
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
 
 			// check if event is emited
-			assert.eventEqual(tx_create.logs[2], 'CreateSportsMarket', {
+			assert.eventEqual(tx_create.logs[tx_create.logs.length - 1], 'CreateSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameFootballid2,
 				_game: game,
@@ -2525,7 +2536,7 @@ contract('TheRundownConsumer', (accounts) => {
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
 
 			// check if event is emited
-			assert.eventEqual(tx_create.logs[2], 'CreateSportsMarket', {
+			assert.eventEqual(tx_create.logs[tx_create.logs.length - 1], 'CreateSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameFootballid1,
 				_game: game,
@@ -4507,7 +4518,7 @@ contract('TheRundownConsumer', (accounts) => {
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
 
 			// check if event is emited
-			assert.eventEqual(tx_create.logs[2], 'CreateSportsMarket', {
+			assert.eventEqual(tx_create.logs[tx_create.logs.length - 1], 'CreateSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameFootballid2,
 				_game: game,

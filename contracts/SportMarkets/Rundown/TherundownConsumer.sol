@@ -13,6 +13,7 @@ import "./GamesQueue.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/ITherundownConsumerVerifier.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
+import "../../interfaces/ISportPositionalMarket.sol";
 
 /// @title Consumer contract which stores all data from CL data feed (Link to docs: https://market.link/nodes/TheRundown/integrations), also creates all sports markets based on that data
 /// @author gruja
@@ -152,7 +153,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             GameCreate memory gameForProcessing = abi.decode(_games[i], (GameCreate));
             // new game
             if (
-                !queues.existingGamesInCreatedQueue(gameForProcessing.gameId) &&
+                !gameFulfilledCreated[gameForProcessing.gameId] &&
                 !verifier.isInvalidNames(gameForProcessing.homeTeam, gameForProcessing.awayTeam) &&
                 gameForProcessing.startTime > block.timestamp
             ) {
@@ -299,6 +300,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function pauseOrUnpauseMarketManually(address _market, bool _pause) external isAddressWhitelisted {
         require(gameIdPerMarket[_market] != 0 && gameFulfilledCreated[gameIdPerMarket[_market]], "ID20");
         _pauseOrUnpauseMarketManually(_market, _pause);
+    }
+
+    /// @notice reopen game for processing the creation again
+    /// @param gameId gameId
+    function reopenGameForCreationProcessing(bytes32 gameId) external isAddressWhitelisted {
+        require(gameFulfilledCreated[gameId], "ID22");
+        gameFulfilledCreated[gameId] = false;
     }
 
     /// @notice setting isPausedByCanceledStatus from obtainer see @GamesOddsObtainer
@@ -460,7 +468,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             uint[] memory tags = _calculateTags(sportsIdPerGame[_gameId]);
 
             // create
-            sportsManager.createMarket(
+            ISportPositionalMarket market = sportsManager.createMarket(
                 _gameId,
                 string(abi.encodePacked(game.homeTeam, " vs ", game.awayTeam)), // gameLabel
                 game.startTime, //maturity
@@ -471,19 +479,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 address(0)
             );
 
-            uint index = sportsManager.numActiveMarkets() - 1;
-            if (!isSportTwoPositionsSport(sportsIdPerGame[_gameId])) {
-                index = sportsManager.numActiveMarkets() - 2; // double chance market is the last one of active markets
-            }
-            address marketAddress = sportsManager.getActiveMarketAddress(index);
-            marketPerGameId[game.gameId] = marketAddress;
-            gameIdPerMarket[marketAddress] = game.gameId;
-            marketCreated[marketAddress] = true;
-            canMarketBeUpdated[marketAddress] = true;
+            marketPerGameId[game.gameId] = address(market);
+            gameIdPerMarket[address(market)] = game.gameId;
+            marketCreated[address(market)] = true;
+            canMarketBeUpdated[address(market)] = true;
 
             queues.dequeueGamesCreated();
 
-            emit CreateSportsMarket(marketAddress, game.gameId, game, tags, oddsObtainer.getNormalizedOdds(game.gameId));
+            emit CreateSportsMarket(address(market), game.gameId, game, tags, oddsObtainer.getNormalizedOdds(game.gameId));
         } else {
             queues.dequeueGamesCreated();
         }

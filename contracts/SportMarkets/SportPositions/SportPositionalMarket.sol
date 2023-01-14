@@ -73,8 +73,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     uint public override deposited;
     uint public initialMint;
     address public override creator;
-    bool public override isResolved;
-    bool public override isCancelled;
+    bool public override resolved;
+    bool public override cancelled;
     uint public cancelTimestamp;
     uint public homeOddsOnCancellation;
     uint public awayOddsOnCancellation;
@@ -109,6 +109,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         isDoubleChance = _parameters.isDoubleChance;
         parentMarket = ISportPositionalMarket(_parameters.parentMarket);
         require(optionsCount == _parameters.positions.length, "Position count mismatch");
+
         // Instantiate the options themselves
         options.home = SportPosition(_parameters.positions[0]);
         options.away = SportPosition(_parameters.positions[1]);
@@ -154,7 +155,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _expired() internal view returns (bool) {
-        return isResolved && (times.expiry < block.timestamp || deposited == 0);
+        return resolved && (times.expiry < block.timestamp || deposited == 0);
+    }
+
+    function _isPaused() internal view returns (bool) {
+        return isDoubleChance ? parentMarket.paused() : paused;
     }
 
     function phase() external view override returns (Phase) {
@@ -173,7 +178,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         emit PauseUpdated(_paused);
     }
 
-    function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused {
+    function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused noDoubleChance {
         require(_maturity > block.timestamp, "Maturity must be in a future");
         times = Times(_maturity, _expiry);
         emit DatesUpdated(_maturity, _expiry);
@@ -182,18 +187,30 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Market Resolution ---------- */
 
     function canResolve() public view override returns (bool) {
-        return !isResolved && _matured() && !paused;
+        return !resolved && _matured() && !paused;
     }
 
     function getGameDetails() external view override returns (bytes32 gameId, string memory gameLabel) {
         return (gameDetails.gameId, gameDetails.gameLabel);
     }
 
-    function _result() internal view returns (Side) {
+    function getParentMarketPositions() public view override returns (IPosition position1, IPosition position2) {
         if (isDoubleChance) {
-            return parentMarket.result();
+            (IPosition home, IPosition away, IPosition draw) = parentMarket.getOptions();
+            if (keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("HomeTeamNotToLose"))) {
+                (position1, position2) = (home, draw);
+            } else if (
+                keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("AwayTeamNotToLose"))
+            ) {
+                (position1, position2) = (away, draw);
+            } else {
+                (position1, position2) = (home, away);
+            }
         }
-        if (!isResolved || cancelled()) {
+    }
+
+    function _result() internal view returns (Side) {
+        if (!resolved || cancelled) {
             return Side.Cancelled;
         } else if (finalResult == 3 && optionsCount > 2) {
             return Side.Draw;
@@ -204,22 +221,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     function result() external view override returns (Side) {
         return _result();
-    }
-
-    function resolved() public view override returns (bool) {
-        if (isDoubleChance) {
-            return parentMarket.isResolved();
-        }
-
-        return isResolved;
-    }
-
-    function cancelled() public view override returns (bool) {
-        if (isDoubleChance) {
-            return parentMarket.isCancelled();
-        }
-
-        return isCancelled;
     }
 
     /* ---------- Option Balances and Mints ---------- */
@@ -237,11 +238,20 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             uint
         )
     {
-        if (cancelled()) {
+        if (cancelled) {
             if (isDoubleChance) {
                 (uint homeOddsParent, uint awayOddsParent, uint drawOddsParent) = parentMarket.getStampedOdds();
+                (IPosition position1, IPosition position2) = getParentMarketPositions();
+                (IPosition home, IPosition away, ) = parentMarket.getOptions();
 
-                return (homeOddsParent + drawOddsParent, awayOddsParent + drawOddsParent, homeOddsParent + awayOddsParent);
+                uint position1Odds = position1 == home ? homeOddsParent : position1 == away
+                    ? awayOddsParent
+                    : drawOddsParent;
+                uint position2Odds = position2 == home ? homeOddsParent : position2 == away
+                    ? awayOddsParent
+                    : drawOddsParent;
+
+                return (position1Odds + position2Odds, 0, 0);
             }
             return (homeOddsOnCancellation, awayOddsOnCancellation, drawOddsOnCancellation);
         } else {
@@ -295,10 +305,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             return (options.home.totalSupply(), options.away.totalSupply(), options.draw.totalSupply());
         }
         return (options.home.totalSupply(), options.away.totalSupply(), 0);
-    }
-
-    function getMaximumBurnable(address account) external view override returns (uint amount) {
-        return _getMaximumBurnable(account);
     }
 
     function getOptions()
@@ -359,7 +365,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Minting ---------- */
 
     function mint(uint value) external override {
-        require(!_matured() && !paused, "Minting inactive");
+        require(!_matured() && !_isPaused(), "Minting inactive");
         require(msg.sender == sportsAMM, "Invalid minter");
         if (value == 0) {
             return;
@@ -374,46 +380,19 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _mint(address minter, uint amount) internal {
-        options.home.mint(minter, amount);
-        options.away.mint(minter, amount);
-        emit Mint(Side.Home, minter, amount);
-        emit Mint(Side.Away, minter, amount);
-        if (optionsCount > 2) {
-            options.draw.mint(minter, amount);
-            emit Mint(Side.Draw, minter, amount);
+        if (isDoubleChance) {
+            options.home.mint(minter, amount);
+            emit Mint(Side.Home, minter, amount);
+        } else {
+            options.home.mint(minter, amount);
+            options.away.mint(minter, amount);
+            emit Mint(Side.Home, minter, amount);
+            emit Mint(Side.Away, minter, amount);
+            if (optionsCount > 2) {
+                options.draw.mint(minter, amount);
+                emit Mint(Side.Draw, minter, amount);
+            }
         }
-    }
-
-    function burnOptionsMaximum() external override {
-        require(msg.sender == sportsAMM, "Invalid burner");
-        _burnOptions(msg.sender, _getMaximumBurnable(msg.sender));
-    }
-
-    function burnOptions(uint amount) external override {
-        require(msg.sender == sportsAMM, "Invalid burner");
-        _burnOptions(msg.sender, amount);
-    }
-
-    function _burnOptions(address account, uint amount) internal {
-        require(amount > 0, "Can not burn zero amount!");
-        require(!paused, "Market paused");
-        require(_getMaximumBurnable(account) >= amount, "There is not enough options!");
-
-        // decrease deposit
-        _decrementDeposited(amount);
-
-        // decrease home and away options
-        options.home.exerciseWithAmount(account, amount);
-        options.away.exerciseWithAmount(account, amount);
-        if (optionsCount > 2) {
-            options.draw.exerciseWithAmount(account, amount);
-        }
-
-        // transfer balance
-        sUSD.transfer(account, amount);
-
-        // emit events
-        emit OptionsBurned(account, amount);
     }
 
     /* ---------- Custom oracle configuration ---------- */
@@ -430,18 +409,18 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Market Resolution ---------- */
 
     function resolve(uint _outcome) external onlyOwner managerNotPaused {
-        require(!isDoubleChance, "Resolve for double chance market not supported");
-
         require(_outcome <= optionsCount, "Invalid outcome");
         if (_outcome == 0) {
-            isCancelled = true;
+            cancelled = true;
             cancelTimestamp = block.timestamp;
-            stampOdds();
+            if (!isDoubleChance) {
+                stampOdds();
+            }
         } else {
             require(canResolve(), "Can not resolve market");
         }
         finalResult = _outcome;
-        isResolved = true;
+        resolved = true;
         emit MarketResolved(_result(), deposited, 0, 0);
     }
 
@@ -461,8 +440,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     function exerciseOptions() external override {
         // The market must be resolved if it has not been.
-        require(resolved(), "Unresolved");
-        require(!paused, "Paused");
+        require(resolved, "Unresolved");
+        require(!_isPaused(), "Paused");
         // If the account holds no options, revert.
         (uint homeBalance, uint awayBalance, uint drawBalance) = _balancesOf(msg.sender);
         require(homeBalance != 0 || awayBalance != 0 || drawBalance != 0, "Nothing to exercise");
@@ -477,12 +456,12 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         if (awayBalance != 0) {
             options.away.exercise(msg.sender);
         }
-        if (optionsCount > 2 && drawBalance != 0) {
+        if (drawBalance != 0) {
             options.draw.exercise(msg.sender);
         }
         uint payout = _getPayout(homeBalance, awayBalance, drawBalance);
 
-        if (cancelled()) {
+        if (cancelled) {
             require(
                 block.timestamp > cancelTimestamp.add(_manager().cancelTimeout()) && !invalidOdds,
                 "Unexpired timeout/ invalid odds"
@@ -518,12 +497,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         uint drawBalance
     ) internal view returns (uint payout) {
         if (isDoubleChance) {
-            if (parentMarket.result() == Side.Home) {
-                payout = homeBalance + drawBalance;
-            } else if (parentMarket.result() == Side.Away) {
-                payout = awayBalance + drawBalance;
-            } else {
-                payout = homeBalance + awayBalance;
+            if (_result() == Side.Home) {
+                payout = homeBalance;
             }
         } else {
             payout = (_result() == Side.Home) ? homeBalance : awayBalance;
@@ -552,14 +527,12 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         uint _awayBalance,
         uint _drawBalance
     ) public view returns (uint payout) {
-        if (!cancelled()) {
+        if (!cancelled) {
             return 0;
         } else {
             if (isDoubleChance) {
-                (uint homeOdds, uint awayOdds, uint drawOdds) = getStampedOdds();
+                (uint homeOdds, , ) = getStampedOdds();
                 payout = _homeBalance.mul(homeOdds).div(1e18);
-                payout = payout.add(_awayBalance.mul(awayOdds).div(1e18));
-                payout = payout.add(_drawBalance.mul(drawOdds).div(1e18));
             } else {
                 payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
                 payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
@@ -599,6 +572,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     modifier managerNotPaused() {
         _requireManagerNotPaused();
+        _;
+    }
+
+    modifier noDoubleChance() {
+        require(!isDoubleChance, "Not supported for double chance markets");
         _;
     }
 

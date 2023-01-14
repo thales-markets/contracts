@@ -45,6 +45,8 @@ interface ISportsAMM {
 
     function manager() external view returns (address);
 
+    function getLiquidityPool() external view returns (address);
+
     function buyFromAMM(
         address market,
         Position position,

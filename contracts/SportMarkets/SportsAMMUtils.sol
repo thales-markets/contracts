@@ -9,6 +9,8 @@ import "../interfaces/IPosition.sol";
 import "../interfaces/ITherundownConsumer.sol";
 import "../interfaces/ISportsAMM.sol";
 
+import "./LiquidityPool/AMMLiquidityPool.sol";
+
 /// @title Sports AMM utils
 contract SportsAMMUtils {
     uint private constant ONE = 1e18;
@@ -386,6 +388,62 @@ contract SportsAMMUtils {
                     position = ISportsAMM.Position.Draw;
                 }
                 odds[i] = sportsAMM.buyFromAmmQuote(_market, position, ONE);
+            }
+        }
+    }
+
+    function buyPriceImpact(
+        address market,
+        ISportsAMM.Position position,
+        uint amount,
+        uint _availableToBuyFromAMM,
+        uint _availableToBuyFromAMMOtherSide
+    ) public view returns (int priceImpact) {
+        (uint balancePosition, , uint balanceOtherSide) = balanceOfPositionsOnMarket(
+            market,
+            position,
+            AMMLiquidityPool(sportsAMM.getLiquidityPool()).getMarketPool(market)
+        );
+        bool isTwoPositional = ISportPositionalMarket(market).optionsCount() == 2;
+        uint balancePositionAfter = balancePosition > amount ? balancePosition - amount : 0;
+        uint balanceOtherSideAfter = balancePosition > amount
+            ? balanceOtherSide
+            : balanceOtherSide + (amount - balancePosition);
+        if (amount <= balancePosition) {
+            priceImpact = calculateDiscount(
+                SportsAMMUtils.DiscountParams(balancePosition, balanceOtherSide, amount, _availableToBuyFromAMMOtherSide)
+            );
+        } else {
+            if (balancePosition > 0) {
+                uint pricePosition = obtainOdds(market, position);
+                uint priceOtherPosition = isTwoPositional
+                    ? obtainOdds(
+                        market,
+                        position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home
+                    )
+                    : ONE - pricePosition;
+                priceImpact = calculateDiscountFromNegativeToPositive(
+                    NegativeDiscountsParams(
+                        amount,
+                        balancePosition,
+                        balanceOtherSide,
+                        _availableToBuyFromAMMOtherSide,
+                        _availableToBuyFromAMM,
+                        pricePosition,
+                        priceOtherPosition
+                    )
+                );
+            } else {
+                priceImpact = int(
+                    buyPriceImpactImbalancedSkew(
+                        amount,
+                        balanceOtherSide,
+                        balancePosition,
+                        balanceOtherSideAfter,
+                        balancePositionAfter,
+                        _availableToBuyFromAMM
+                    )
+                );
             }
         }
     }

@@ -81,6 +81,45 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_availableToBuyFromAMM",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_availableToBuyFromAMMOtherSide",
+        "type": "uint256"
+      }
+    ],
+    "name": "buyPriceImpact",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "priceImpact",
+        "type": "int256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"

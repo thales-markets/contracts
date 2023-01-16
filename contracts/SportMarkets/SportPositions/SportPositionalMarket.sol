@@ -71,7 +71,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     // `deposited` tracks the sum of all deposits.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
     uint public override deposited;
-    uint public initialMint;
+    uint public override initialMint;
     address public override creator;
     bool public override resolved;
     bool public override cancelled;

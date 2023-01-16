@@ -33,6 +33,8 @@ interface ISportPositionalMarket {
 
     function times() external view returns (uint maturity, uint destruction);
 
+    function initialMint() external view returns (uint);
+
     function getGameDetails() external view returns (bytes32 gameId, string memory gameLabel);
 
     function getGameId() external view returns (bytes32);

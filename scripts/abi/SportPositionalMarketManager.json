@@ -76,6 +76,12 @@
         "internalType": "uint256",
         "name": "tag",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "label",
+        "type": "string"
       }
     ],
     "name": "DoubleChanceMarketCreated",
@@ -454,6 +460,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "createDoubleChanceMarketsForParent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

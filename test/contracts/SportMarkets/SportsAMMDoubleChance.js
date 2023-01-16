@@ -592,6 +592,35 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			assert.equal(markets.length, 3);
 		});
 
+		it('Create double chance market for parent', async () => {
+			await SportPositionalMarketManager.setIsDoubleChanceSupported(false, { from: manager });
+
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
+				game1NBATime,
+				{ from: wrapper }
+			);
+			await TherundownConsumerDeployed.gameCreated(gameFootballid2);
+			await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
+			await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('4');
+			let markets = await SportPositionalMarketManager.getDoubleChanceMarketsByParentMarket(answer);
+			assert.equal(markets.length, 0);
+
+			await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
+
+			await SportPositionalMarketManager.createDoubleChanceMarketsForParent(answer, {
+				from: manager,
+			});
+
+			markets = await SportPositionalMarketManager.getDoubleChanceMarketsByParentMarket(answer);
+			assert.equal(markets.length, 3);
+		});
+
 		it('Are double chance markets in AMM trading', async () => {
 			answer = await SportsAMM.isMarketInAMMTrading(homeTeamNotLoseMarket.address);
 			assert.equal(answer, true);

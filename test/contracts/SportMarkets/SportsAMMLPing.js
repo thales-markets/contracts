@@ -702,11 +702,63 @@ contract('SportsAMM', (accounts) => {
 
 			await AMMLiquidityPool.closeRound();
 
-			let buyPriceImpactFirst = await SportsAMM.buyPriceImpact(
-				deployedMarket.address,
-				1,
-				toUnit(100)
+			balancesPerRoundLP = await AMMLiquidityPool.balancesPerRound(3, defaultLiquidityProvider);
+			console.log('balancesPerRound 3 defaultLiquidityProvider ' + balancesPerRoundLP / 1e18);
+
+			balancesPerRoundLP = await AMMLiquidityPool.balancesPerRound(3, firstLiquidityProvider);
+			console.log('balancesPerRound 3 firstLiquidityProvider ' + balancesPerRoundLP / 1e18);
+
+			balanceDefaultLiquidityProviderBefore = await Thales.balanceOf(defaultLiquidityProvider);
+			console.log(
+				'balanceDefaultLiquidityProviderAfter: ' + balanceDefaultLiquidityProviderBefore / 1e18
 			);
+
+			let profitAndLossPerRound = await AMMLiquidityPool.profitAndLossPerRound(2);
+			console.log('profitAndLossPerRound: ' + profitAndLossPerRound / 1e16 + '%');
+
+			let cumulativeProfitAndLoss = await AMMLiquidityPool.cumulativeProfitAndLoss(2);
+			console.log('cumulativeProfitAndLoss: ' + cumulativeProfitAndLoss / 1e16 + '%');
+
+			let allocationPerRound = await AMMLiquidityPool.allocationPerRound(2);
+			console.log('allocationPerRound: ' + allocationPerRound / 1e18);
+
+			allocationPerRound = await AMMLiquidityPool.allocationPerRound(3);
+			console.log('allocationPerRound3: ' + allocationPerRound / 1e18);
+
+			round = await AMMLiquidityPool.round();
+			console.log('round ' + round);
+
+			await AMMLiquidityPool.withdrawalRequest({ from: firstLiquidityProvider });
+
+			canCloseCurrentRound = await AMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound 3 ' + canCloseCurrentRound);
+
+			await fastForward(month * 2);
+
+			canCloseCurrentRound = await AMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound 3 ' + canCloseCurrentRound);
+
+			await AMMLiquidityPool.closeRound();
+
+			round = await AMMLiquidityPool.round();
+			console.log('round ' + round);
+
+			allocationPerRound = await AMMLiquidityPool.allocationPerRound(4);
+			console.log('allocationPerRound3: ' + allocationPerRound / 1e18);
+
+			balancesPerRoundLP = await AMMLiquidityPool.balancesPerRound(4, firstLiquidityProvider);
+			console.log('balancesPerRound 3 firstLiquidityProvider ' + balancesPerRoundLP / 1e18);
+
+			balanceDefaultLiquidityProviderBefore = await Thales.balanceOf(defaultLiquidityProvider);
+			console.log(
+				'balanceDefaultLiquidityProviderAfter: ' + balanceDefaultLiquidityProviderBefore / 1e18
+			);
+
+			profitAndLossPerRound = await AMMLiquidityPool.profitAndLossPerRound(3);
+			console.log('profitAndLossPerRound 3: ' + profitAndLossPerRound / 1e16 + '%');
+
+			cumulativeProfitAndLoss = await AMMLiquidityPool.cumulativeProfitAndLoss(3);
+			console.log('cumulativeProfitAndLoss: ' + cumulativeProfitAndLoss / 1e16 + '%');
 		});
 		// 	console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
 		// 	let buyPriceImpactSecond = await SportsAMM.buyPriceImpact(

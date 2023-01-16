@@ -52,7 +52,6 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
 
     mapping(uint => mapping(address => uint)) public balancesPerRound;
     mapping(uint => uint) public allocationPerRound;
-    mapping(uint => uint) public allocationSpentInARound;
 
     mapping(address => bool) public withdrawalRequested;
 

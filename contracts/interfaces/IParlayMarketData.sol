@@ -9,6 +9,8 @@ interface IParlayMarketData {
         uint _position
     ) external view returns (bool containsParlay);
 
+    function getLastUserParlay(address _userAccount) external view returns (address parlayMarket);
+
     function addParlayForGamePosition(
         address _game,
         uint _position,

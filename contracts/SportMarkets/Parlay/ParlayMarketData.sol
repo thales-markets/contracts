@@ -107,10 +107,14 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    function getLastUserParlay(address _userAccount) external view returns (address parlayMarket) {
+        parlayMarket = userParlays[_userAccount][userNumOfParlays[_userAccount]];
+    }
+
     function getUserParlays(address _userAccount) external view returns (address[] memory userAllParlays) {
         userAllParlays = new address[](userNumOfParlays[_userAccount]);
-        for (uint i = 0; i < userNumOfParlays[_userAccount]; i++) {
-            userAllParlays[i] = userParlays[_userAccount][i];
+        for (uint i = 1; i <= userNumOfParlays[_userAccount]; i++) {
+            userAllParlays[i - 1] = userParlays[_userAccount][i];
         }
     }
 

@@ -31,6 +31,25 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_userAccount",
+        "type": "address"
+      }
+    ],
+    "name": "getLastUserParlay",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "parlayMarket",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_parlay",
         "type": "address"
       },

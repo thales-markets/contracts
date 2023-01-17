@@ -9,6 +9,8 @@ import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "./framework/MessageApp.sol";
 import "../interfaces/ISportPositionalMarket.sol";
 import "../interfaces/IPositionalMarket.sol";
+import "../interfaces/IParlayMarketsAMM.sol";
+import "../interfaces/IParlayMarketData.sol";
 
 import "hardhat/console.sol";
 
@@ -30,6 +32,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     mapping(address => mapping(address => mapping(uint8 => uint256))) public userMarketBalances;
 
     address public sourceAdapter;
+    address public parlayAMM;
     mapping(bytes4 => uint64) public noncePerSelector;
     mapping(address => mapping(address => uint)) public userOwningToken;
     uint private testChain;
@@ -116,6 +119,20 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position);
         bytes4 selector = bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")));
+        bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
+        // Needs to be removed before deployment on mainchain
+        if (_dstChainId == testChain) {
+            emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+        } else {
+            sendMessage(adapterOnDestination, _dstChainId, message, msg.value);
+        }
+    }
+
+    function exerciseParlay(address market, uint64 _dstChainId) external payable nonReentrant notPaused {
+        // todo specify
+        // packing: | msg.sender | chain id | function selector | payload |
+        bytes memory payload = abi.encode(market);
+        bytes4 selector = bytes4(keccak256(bytes("exerciseParlay(address)")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         // Needs to be removed before deployment on mainchain
         if (_dstChainId == testChain) {
@@ -305,14 +322,46 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                     differentRecepient
                 )
             );
+
             if (success) {
-                // userOwningToken[_sender][market] += expectedPayout;
-                // userMarketBalances[_sender][market][position] += expectedPayout;
+                console.log("sender: ", _sender);
+                console.log("expectedPayout: ", expectedPayout);
+                _updateParlayDetails(_sender, expectedPayout);
+                // address parlayMarket = IParlayMarketData(IParlayMarketsAMM(parlayAMM).parlayMarketData()).getLastUserParlay(_sender);
+                // userOwningToken[_sender][parlayMarket] += expectedPayout;
+                // userMarketBalances[_sender][parlayMarket][0] += expectedPayout;
             }
             return success;
-        } else if (_selector == bytes4(keccak256(bytes("exerciseParlay(address)")))) {} else if (
-            _selector == bytes4(keccak256(bytes("exerciseCryptoPosition(address,uint8)")))
-        ) {
+        } else if (_selector == bytes4(keccak256(bytes("exerciseParlay(address)")))) {
+            console.log("\n\n\n --------> Enters IN PARLAY \n\n");
+            noncePerSelector[_selector]++;
+            address market = abi.decode(_message, (address));
+            console.log("PARLAY MARKET ADDRESS: ", market);
+            uint initalBalance = sUSD.balanceOf(address(this));
+            IParlayMarketsAMM(parlayAMM).exerciseParlay(market);
+            uint currentBalance = sUSD.balanceOf(address(this));
+            require((currentBalance - initalBalance) >= userOwningToken[_sender][market], "Balances dont match");
+            console.log("HERE");
+            console.log("user owning token: ", userOwningToken[_sender][market]);
+            console.log("\n");
+            if (_sourceChain == block.chainid) {
+                sUSD.transfer(_sender, userOwningToken[_sender][market]);
+            } else {
+                sendMessageWithTransfer(
+                    _sender,
+                    address(sUSD),
+                    userOwningToken[_sender][market],
+                    uint64(_sourceChain),
+                    noncePerSelector[_selector],
+                    1000000,
+                    "",
+                    MsgDataTypes.BridgeSendType.Liquidity,
+                    msg.value
+                );
+            }
+            exercisedMarketBalance[market][0] -= userOwningToken[_sender][market];
+            userOwningToken[_sender][market] = 0;
+        } else if (_selector == bytes4(keccak256(bytes("exerciseCryptoPosition(address,uint8)")))) {
             noncePerSelector[_selector]++;
             (address market, uint8 position) = abi.decode(_message, (address, uint8));
             if (!marketExercised[market]) {
@@ -499,9 +548,23 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
     }
 
-    function setParameters(address _adapterOnDestination, uint _testChain) external onlyOwner {
+    function setParameters(
+        address _adapterOnDestination,
+        uint _testChain,
+        address _parlayAMM
+    ) external onlyOwner {
         testChain = _testChain;
         adapterOnDestination = _adapterOnDestination;
+        parlayAMM = _parlayAMM;
+    }
+
+    function _updateParlayDetails(address _sender, uint _expectedPayout) internal {
+        address parlayMarket = IParlayMarketData(IParlayMarketsAMM(parlayAMM).parlayMarketData()).getLastUserParlay(
+            address(this)
+        );
+        console.log("=======> PARLAY MARKET:", parlayMarket);
+        userOwningToken[_sender][parlayMarket] += _expectedPayout;
+        userMarketBalances[_sender][parlayMarket][0] += _expectedPayout;
     }
 
     event MessageSent(address indexed sender, address receiver, uint chainId, bytes message);

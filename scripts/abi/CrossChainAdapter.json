@@ -726,6 +726,24 @@
         "type": "address"
       },
       {
+        "internalType": "uint64",
+        "name": "_dstChainId",
+        "type": "uint64"
+      }
+    ],
+    "name": "exerciseParlay",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
         "internalType": "uint8",
         "name": "position",
         "type": "uint8"
@@ -883,6 +901,19 @@
   {
     "inputs": [],
     "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parlayAMM",
     "outputs": [
       {
         "internalType": "address",
@@ -1070,6 +1101,11 @@
         "internalType": "uint256",
         "name": "_testChain",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayAMM",
+        "type": "address"
       }
     ],
     "name": "setParameters",

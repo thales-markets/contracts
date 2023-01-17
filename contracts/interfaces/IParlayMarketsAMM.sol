@@ -42,6 +42,8 @@ interface IParlayMarketsAMM {
 
     function isActiveParlay(address _parlayMarket) external view returns (bool isActiveParlayMarket);
 
+    function parlayMarketData() external view returns (address);
+
     function exerciseParlay(address _parlayMarket) external;
 
     function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket) external;

@@ -352,6 +352,9 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
             doubleChanceMarketsByParent[address(market)].push(address(doubleChanceMarket));
             isDoubleChance[address(doubleChanceMarket)] = true;
+
+            IGamesOddsObtainer(oddsObtainer).setChildMarketGameId(gameId, address(doubleChanceMarket));
+
             emit DoubleChanceMarketCreated(address(market), address(doubleChanceMarket), tagsDoubleChance[1], labels[i]);
         }
     }

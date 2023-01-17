@@ -377,6 +377,9 @@ contract('SportsAMM DoubleChance', (accounts) => {
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
 		});
+		await SportPositionalMarketManager.setOddsObtainer(GamesOddsObtainerDeployed.address, {
+			from: manager,
+		});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketData.setSportPositionalMarketManager(
@@ -496,6 +499,22 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			assert.bnEqual(await SportsAMM.max_spread(), toUnit('0.2'));
 			assert.bnEqual(await SportsAMM.defaultCapPerGame(), toUnit('5000'));
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
+		});
+
+		it('Checking consumer team variables', async () => {
+			// consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[_index])).homeTeam
+			let gameIdPerMarket = await TherundownConsumerDeployed.gameIdPerMarket(
+				homeTeamNotLoseMarket.address
+			);
+
+			console.log(
+				'home team',
+				(await TherundownConsumerDeployed.getGameCreatedById(gameIdPerMarket)).homeTeam
+			);
+			console.log(
+				'away team',
+				(await TherundownConsumerDeployed.getGameCreatedById(gameIdPerMarket)).awayTeam
+			);
 		});
 
 		it('Toggle manager flag for dc creation', async () => {
@@ -1295,6 +1314,147 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			console.log('USD balance of user 3 after excercising: ', fromUnit(balance));
 			cost = balance.sub(initial_balance_3);
 			console.log('User 3 gained after excercising: ', fromUnit(cost));
+		});
+
+		it('Buy from SportsAMM double chance - check spent on game', async () => {
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(homeTeamNotLoseMarket.address, 0);
+			console.log('available to buy double chance', availableToBuy / 1e18);
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				homeTeamNotLoseMarket.address,
+				0,
+				toUnit(100)
+			);
+			answer = await Thales.balanceOf(first);
+			let before_balance = answer;
+			console.log('acc balance: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				homeTeamNotLoseMarket.address,
+				0,
+				toUnit(100),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+			answer = await Thales.balanceOf(first);
+			console.log('acc after buy balance: ', fromUnit(answer));
+			console.log('cost: ', fromUnit(before_balance.sub(answer)));
+			let options = await homeTeamNotLoseMarket.balancesOf(first);
+			console.log('Balances', fromUnit(options[0]), fromUnit(options[1]));
+
+			console.log(
+				'Spent on game homeTeamNotLose',
+				(await SportsAMM.getSpentOnGame(homeTeamNotLoseMarket.address)) / 1e18
+			);
+			console.log(
+				'Spent on game deployedMarket',
+				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+			);
+
+			// individual buy
+			availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 0);
+			console.log('available to buy deployed market', availableToBuy / 1e18);
+			additionalSlippage = toUnit(0.01);
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(100));
+			answer = await Thales.balanceOf(second);
+			before_balance = answer;
+			console.log('second acc balance: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				0,
+				toUnit(100),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: second }
+			);
+			answer = await Thales.balanceOf(second);
+			console.log('sesond acc after buy balance: ', fromUnit(answer));
+			console.log('cost: ', fromUnit(before_balance.sub(answer)));
+
+			console.log(
+				'Spent on game deployedMarket',
+				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+			);
+
+			availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
+			console.log('available to buy deployed market', availableToBuy / 1e18);
+			additionalSlippage = toUnit(0.01);
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 2, toUnit(100));
+			answer = await Thales.balanceOf(third);
+			before_balance = answer;
+			console.log('third acc balance: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				2,
+				toUnit(100),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: third }
+			);
+			answer = await Thales.balanceOf(third);
+			console.log('sesond acc after buy balance: ', fromUnit(answer));
+			console.log('cost: ', fromUnit(before_balance.sub(answer)));
+
+			console.log(
+				'Spent on game deployedMarket',
+				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+			);
+		});
+
+		it('Buy from SportsAMM individual buy - check spent on game', async () => {
+			// individual buy
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 0);
+			console.log('available to buy deployed market', availableToBuy / 1e18);
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(100));
+			let answer = await Thales.balanceOf(second);
+			let before_balance = answer;
+			console.log('second acc balance: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				0,
+				toUnit(100),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: second }
+			);
+			answer = await Thales.balanceOf(second);
+			console.log('sesond acc after buy balance: ', fromUnit(answer));
+			console.log('cost: ', fromUnit(before_balance.sub(answer)));
+
+			console.log(
+				'Spent on game deployedMarket',
+				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+			);
+
+			availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
+			console.log('available to buy deployed market', availableToBuy / 1e18);
+			additionalSlippage = toUnit(0.01);
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 2, toUnit(100));
+			answer = await Thales.balanceOf(third);
+			before_balance = answer;
+			console.log('third acc balance: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				2,
+				toUnit(100),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: third }
+			);
+			answer = await Thales.balanceOf(third);
+			console.log('sesond acc after buy balance: ', fromUnit(answer));
+			console.log('cost: ', fromUnit(before_balance.sub(answer)));
+
+			console.log(
+				'Spent on game deployedMarket',
+				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+			);
 		});
 	});
 });

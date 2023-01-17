@@ -585,8 +585,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 IERC20Upgradeable(parentMarketPosition2).safeTransfer(market, amount);
             } else {
                 ISportPositionalMarket(market).mint(toMint);
+                spentOnGame[market] = spentOnGame[market] + toMint;
             }
-            spentOnGame[market] = spentOnGame[market] + toMint;
         }
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
@@ -607,7 +607,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ) {
             wrapper.callUpdateOddsForSpecificGame(market);
         }
-        _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
+        if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
+            ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
+            _updateSpentOnMarketOnBuy(address(parentMarket), sUSDPaid, msg.sender);
+        } else {
+            _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
+        }
 
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
     }
@@ -941,11 +946,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint toMintPosition1 = _getMintableAmount(parentMarket, position1, amount);
         uint toMintPosition2 = _getMintableAmount(parentMarket, position2, amount);
 
-        if (toMintPosition1 > toMintPosition2) {
-            ISportPositionalMarket(parentMarket).mint(toMintPosition1);
-        } else {
-            ISportPositionalMarket(parentMarket).mint(toMintPosition2);
+        uint toMint = toMintPosition1;
+        if (toMintPosition1 < toMintPosition2) {
+            toMint = toMintPosition2;
         }
+        ISportPositionalMarket(parentMarket).mint(toMint);
+        spentOnGame[parentMarket] = spentOnGame[parentMarket] + toMint;
     }
 
     function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {

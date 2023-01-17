@@ -50,6 +50,7 @@ contract('SportsAMM', (accounts) => {
 		wrapper,
 		defaultLiquidityProvider,
 		firstLiquidityProvider,
+		secondLiquidityProvider,
 	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -728,6 +729,9 @@ contract('SportsAMM', (accounts) => {
 			round = await AMMLiquidityPool.round();
 			console.log('round ' + round);
 
+			let totalDeposited = await AMMLiquidityPool.totalDeposited();
+			console.log('totalDeposited 3 ' + totalDeposited / 1e18);
+
 			await AMMLiquidityPool.withdrawalRequest({ from: firstLiquidityProvider });
 
 			canCloseCurrentRound = await AMMLiquidityPool.canCloseCurrentRound();
@@ -759,27 +763,55 @@ contract('SportsAMM', (accounts) => {
 
 			cumulativeProfitAndLoss = await AMMLiquidityPool.cumulativeProfitAndLoss(3);
 			console.log('cumulativeProfitAndLoss: ' + cumulativeProfitAndLoss / 1e16 + '%');
+
+			totalDeposited = await AMMLiquidityPool.totalDeposited();
+			console.log('totalDeposited 4 ' + totalDeposited / 1e18);
+
+			await Thales.transfer(secondLiquidityProvider, toUnit('1000'), { from: owner });
+			await Thales.approve(AMMLiquidityPool.address, toUnit('1000'), {
+				from: secondLiquidityProvider,
+			});
+
+			const MockStakingThales = artifacts.require('MockStakingThales');
+			let mockStakingThales = await MockStakingThales.new({ from: owner });
+			await Thales.approve(mockStakingThales.address, toUnit(1000), {
+				from: secondLiquidityProvider,
+			});
+			await mockStakingThales.stake(toUnit(100), { from: secondLiquidityProvider });
+
+			await expect(
+				AMMLiquidityPool.deposit(toUnit(1000), { from: secondLiquidityProvider })
+			).to.be.revertedWith('Deposit amount exceeds AMM LP cap');
+
+			await AMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
+				from: owner,
+			});
+
+			await AMMLiquidityPool.setStakingThales(mockStakingThales.address, {
+				from: owner,
+			});
+
+			await expect(
+				AMMLiquidityPool.deposit(toUnit(101), { from: secondLiquidityProvider })
+			).to.be.revertedWith('Not enough staked THALES');
+
+			await expect(
+				AMMLiquidityPool.deposit(toUnit(1), { from: secondLiquidityProvider })
+			).to.be.revertedWith('Amount less than minDepositAmount');
+
+			await AMMLiquidityPool.deposit(toUnit(100), { from: secondLiquidityProvider });
+
+			//	function setStakedThalesMultiplier(uint _stakedThalesMultiplier) external onlyOwner {
+			//         stakedThalesMultiplier = _stakedThalesMultiplier;
+			//         emit StakedThalesMultiplierChanged(_stakedThalesMultiplier);
+			//     }
+			//
+			//     /// @notice Set IStakingThales contract
+			//     /// @param _stakingThales IStakingThales address
+			//     function setStakingThales(IStakingThales _stakingThales) external onlyOwner {
+			//         stakingThales = _stakingThales;
+			//         emit StakingThalesChanged(address(_stakingThales));
+			//     }
 		});
-		// 	console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
-		// 	let buyPriceImpactSecond = await SportsAMM.buyPriceImpact(
-		// 		deployedMarket.address,
-		// 		0,
-		// 		toUnit(1)
-		// 	);
-		// 	console.log('buyPriceImpactSecond: ', fromUnit(buyPriceImpactSecond));
-		// 	buyPriceImpactSecond = await SportsAMM.buyPriceImpact(
-		// 		deployedMarket.address,
-		// 		0,
-		// 		toUnit(72000)
-		// 	);
-		// 	console.log('buyPriceImpactSecond ALL: ', fromUnit(buyPriceImpactSecond));
-		//
-		// 	buyPriceImpactSecond = await SportsAMM.buyPriceImpact(
-		// 		deployedMarket.address,
-		// 		0,
-		// 		toUnit(80000)
-		// 	);
-		// 	console.log('buyPriceImpactSecond with positive: ', fromUnit(buyPriceImpactSecond));
-		// });
 	});
 });

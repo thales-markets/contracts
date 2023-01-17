@@ -1410,6 +1410,7 @@ contract('SportsAMM', (accounts) => {
 					parlayPositions,
 					totalSUSDToPay
 				);
+				console.log('expected payout: ', fromUnit(result[1]));
 				let tx = await CrossChainAdapter.buyFromParlay(
 					Thales.address,
 					parlayMarketsAddress,
@@ -1495,10 +1496,10 @@ contract('SportsAMM', (accounts) => {
 					assert.equal(result, true);
 				});
 				it('Parlay Cross chain exercised', async () => {
-					let balance = await Thales.balanceOf(second);
+					let balance = await Thales.balanceOf(first);
 					let initialBalance = fromUnit(balance);
 					let tx = await CrossChainAdapter.exerciseParlay(parlaySingleMarket.address, 111, {
-						from: second,
+						from: first,
 					});
 					console.log(tx.logs[0].args);
 					let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
@@ -1506,9 +1507,12 @@ contract('SportsAMM', (accounts) => {
 					});
 					console.log('\n\nTX2');
 					console.log(tx2.logs[0].args);
-					balance = await Thales.balanceOf(second);
+					balance = await Thales.balanceOf(first);
 					console.log('\n\nInitial balance: ', initialBalance);
 					console.log('Final balance: ', fromUnit(balance));
+					assert.equal(await parlaySingleMarket.fundsIssued(), true);
+					assert.equal(await parlaySingleMarket.resolved(), true);
+					assert.equal(await parlaySingleMarket.parlayAlreadyLost(), false);
 				});
 			});
 		});

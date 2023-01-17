@@ -307,8 +307,8 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 address[] memory market,
                 uint8[] memory position,
                 uint amount,
-                uint expectedPayout,
                 uint additionalSlippage,
+                uint expectedPayout,
                 address differentRecepient
             ) = abi.decode(_message, (address[], uint8[], uint, uint, uint, address));
             (bool success, bytes memory result) = selectorAddress[_selector].call(
@@ -317,15 +317,13 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                     market,
                     position,
                     amount,
-                    expectedPayout,
                     additionalSlippage,
+                    expectedPayout,
                     differentRecepient
                 )
             );
 
             if (success) {
-                console.log("sender: ", _sender);
-                console.log("expectedPayout: ", expectedPayout);
                 _updateParlayDetails(_sender, expectedPayout);
                 // address parlayMarket = IParlayMarketData(IParlayMarketsAMM(parlayAMM).parlayMarketData()).getLastUserParlay(_sender);
                 // userOwningToken[_sender][parlayMarket] += expectedPayout;
@@ -333,24 +331,19 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             }
             return success;
         } else if (_selector == bytes4(keccak256(bytes("exerciseParlay(address)")))) {
-            console.log("\n\n\n --------> Enters IN PARLAY \n\n");
             noncePerSelector[_selector]++;
             address market = abi.decode(_message, (address));
-            console.log("PARLAY MARKET ADDRESS: ", market);
             uint initalBalance = sUSD.balanceOf(address(this));
             IParlayMarketsAMM(parlayAMM).exerciseParlay(market);
-            uint currentBalance = sUSD.balanceOf(address(this));
-            require((currentBalance - initalBalance) >= userOwningToken[_sender][market], "Balances dont match");
-            console.log("HERE");
-            console.log("user owning token: ", userOwningToken[_sender][market]);
-            console.log("\n");
+            uint issueBalance = sUSD.balanceOf(address(this)) - initalBalance;
+            require(issueBalance >= 0 && userOwningToken[_sender][market] > 0, "Balances dont match");
             if (_sourceChain == block.chainid) {
-                sUSD.transfer(_sender, userOwningToken[_sender][market]);
+                sUSD.transfer(_sender, issueBalance);
             } else {
                 sendMessageWithTransfer(
                     _sender,
                     address(sUSD),
-                    userOwningToken[_sender][market],
+                    issueBalance,
                     uint64(_sourceChain),
                     noncePerSelector[_selector],
                     1000000,
@@ -359,8 +352,8 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                     msg.value
                 );
             }
-            exercisedMarketBalance[market][0] -= userOwningToken[_sender][market];
             userOwningToken[_sender][market] = 0;
+            return true;
         } else if (_selector == bytes4(keccak256(bytes("exerciseCryptoPosition(address,uint8)")))) {
             noncePerSelector[_selector]++;
             (address market, uint8 position) = abi.decode(_message, (address, uint8));
@@ -562,9 +555,8 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         address parlayMarket = IParlayMarketData(IParlayMarketsAMM(parlayAMM).parlayMarketData()).getLastUserParlay(
             address(this)
         );
-        console.log("=======> PARLAY MARKET:", parlayMarket);
-        userOwningToken[_sender][parlayMarket] += _expectedPayout;
-        userMarketBalances[_sender][parlayMarket][0] += _expectedPayout;
+        userOwningToken[_sender][parlayMarket] = 1;
+        userMarketBalances[_sender][parlayMarket][0] = 1;
     }
 
     event MessageSent(address indexed sender, address receiver, uint chainId, bytes message);

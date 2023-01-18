@@ -212,7 +212,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         for (uint i = 0; i < _games.length; i++) {
             GameResolve memory game = abi.decode(_games[i], (GameResolve));
             // if game is not resolved already and there is market for that game
-            if (!queues.existingGamesInResolvedQueue(game.gameId) && marketPerGameId[game.gameId] != address(0)) {
+            if (!gameFulfilledResolved[game.gameId] && marketPerGameId[game.gameId] != address(0)) {
                 _resolveGameFulfill(_requestId, game, _sportId);
             }
         }
@@ -306,6 +306,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function reopenGameForCreationProcessing(bytes32 gameId) external isAddressWhitelisted {
         require(gameFulfilledCreated[gameId], "ID22");
         gameFulfilledCreated[gameId] = false;
+        gameFulfilledResolved[gameId] = false;
     }
 
     /// @notice setting isPausedByCanceledStatus from obtainer see @GamesOddsObtainer

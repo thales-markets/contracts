@@ -423,15 +423,15 @@
 		"TherundownConsumerImplementation": "0x8CD0dC65976F9847b50Fc9901d8c8036801BD192",
 		"TherundownConsumerWrapper": "0x29c24C43378513EdBDBcD8671CE2352d326905a4",
 		"SportPositionalMarketManager": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
-		"SportPositionalMarketManagerImplementation": "0xBba063e347b3303F99B41dc70C5EDB10e2d30Bb5",
+		"SportPositionalMarketManagerImplementation": "0xf0F2876Eb01365a53D129c84aED83A71Ae9479B1",
 		"SportPositionalMarketFactory": "0xB72f87AA15E8FE50Ed364eB4A94486A578fc1556",
 		"SportPositionalMarketFactoryImplementation": "0xbF6c6d81dae1eEfA6B45eF107BCBC1795dB18d42",
-		"SportPositionMastercopy": "0x9D04955fE2d2Df7dF368A77A3a85C1675E9DBd03",
-		"SportPositionalMarketMastercopy": "0xA55Aa39be6BCD7BEE0f79515Ea8690705772e9b6",
+		"SportPositionMastercopy": "0x7D820c6248b975B433b78f83839F456616B18a4c",
+		"SportPositionalMarketMastercopy": "0xae4fB5Dc9b2371Ef994D09DB1b4F341CdED0b1d6",
 		"SportPositionalMarketData": "0x202209397e2A26dc3243bD4bF46480C1f6661032",
 		"SportPositionalMarketDataImplementation": "0x919A79177f267C8873f9bf8f9F720530588B6F02",
 		"SportsAMM": "0x7465c5d60d3d095443CF9991Da03304A30D42Eae",
-		"SportsAMMImplementation": "0x0402b3F52b6f8b7bfe909203F5f2398c02BE46cC",
+		"SportsAMMImplementation": "0x68E0a872b193F338E4BE930EdA74D57Bd0089a37",
 		"Referrals": "0xB2947FC03d8Ee002726F4e28C42D513f7B6D6788",
 		"ReferralsImplementation": "0xF9e07A53765aC94d3d0aFfAA58F61551dDcC6bF5",
 		"OvertimeVoucher": "0x9483eFf448042c366a4297dB465FaE108d2e6ea6",
@@ -489,7 +489,7 @@
 		"ThalesAMMUtils": "0x5aA87dbA0F1486DB34Cd806eDa32f4d66ca4Ae30",
 		"OvertimeWorldCupZebro": "0xD66eE2D0F8810304402F6bE0E57E7C0a261b54A3",
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
-		"GamesOddsObtainerImplementation": "0x86089DAaB2444560Fd774307B5D0D854d7e9279d"
+		"GamesOddsObtainerImplementation": "0xeDe874f55B79Fc55Ac8860B6E4C14B04C30AD0bA"
 	},
 	"localhost": {
 		"Airdrop": "",

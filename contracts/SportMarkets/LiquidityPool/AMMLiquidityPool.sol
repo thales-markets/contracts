@@ -265,7 +265,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     function closeRound() external nonReentrant whenNotPaused {
         require(canCloseCurrentRound(), "Can't close current round");
         // excercise market options
-        _exerciseMarketsReadyToExercised();
+        exerciseMarketsReadyToExercised();
 
         address roundPool = roundPools[round];
         // final balance is the final amount of sUSD in the round pool
@@ -329,6 +329,16 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         emit RoundClosed(round - 1, profitAndLossPerRound[round - 1]);
     }
 
+    /// @notice Iterate all markets in the current round and exercise those ready to be exercised
+    function exerciseMarketsReadyToExercised() public {
+        AMMLiquidityPoolRound poolRound = AMMLiquidityPoolRound(roundPools[round]);
+        ISportPositionalMarket market;
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
+            poolRound.exerciseMarketReadyToExercised(market);
+        }
+    }
+
     /* ========== VIEWS ========== */
 
     function getMarketPool(address market) external view returns (address roundPool) {
@@ -358,35 +368,34 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         return (cumulativeProfitAndLoss[roundB] * profitAndLossPerRound[roundA]) / cumulativeProfitAndLoss[roundA];
     }
 
+    /// @notice Return the start time of the passed round
+    /// @param round number
+    /// @return uint the start time of the given round
     function getRoundStartTime(uint round) public view returns (uint) {
         return firstRoundStartTime + (round - 1) * roundLength;
     }
 
+    /// @notice Return the end time of the passed round
+    /// @param round number
+    /// @return uint the end time of the given round
     function getRoundEndTime(uint round) public view returns (uint) {
         return firstRoundStartTime + round * roundLength;
     }
 
+    /// @notice Return the round to which a market belongs to
+    /// @param market to get the round for
+    /// @return _round the round which the market belongs to
     function getMarketRound(address market) public view returns (uint _round) {
         ISportPositionalMarket marketContract = ISportPositionalMarket(market);
         (uint maturity, ) = marketContract.times();
         if (maturity > firstRoundStartTime) {
             _round = (maturity - firstRoundStartTime) / roundLength + 1;
         } else {
-            //TODO: a hack to get the tests working
             _round = 1;
         }
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
-
-    function _exerciseMarketsReadyToExercised() internal {
-        AMMLiquidityPoolRound poolRound = AMMLiquidityPoolRound(roundPools[round]);
-        ISportPositionalMarket market;
-        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            poolRound.exerciseMarketReadyToExercised(market);
-        }
-    }
 
     function _getOrCreateRoundPool(uint _round) internal returns (address roundPool) {
         roundPool = roundPools[_round];
@@ -401,11 +410,16 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     }
 
     /* ========== SETTERS ========== */
+
+    /// @notice Set _poolRoundMastercopy
+    /// @param _poolRoundMastercopy to clone round pools from
     function setPoolRoundMastercopy(address _poolRoundMastercopy) external onlyOwner {
         poolRoundMastercopy = _poolRoundMastercopy;
         emit PoolRoundMastercopyChanged(poolRoundMastercopy);
     }
 
+    /// @notice Set _stakedThalesMultiplier
+    /// @param _stakedThalesMultiplier the number of sUSD one can deposit per THALES staked
     function setStakedThalesMultiplier(uint _stakedThalesMultiplier) external onlyOwner {
         stakedThalesMultiplier = _stakedThalesMultiplier;
         emit StakedThalesMultiplierChanged(_stakedThalesMultiplier);

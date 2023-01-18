@@ -240,16 +240,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     {
         if (cancelled) {
             if (isDoubleChance) {
-                (uint homeOddsParent, uint awayOddsParent, uint drawOddsParent) = parentMarket.getStampedOdds();
-                (IPosition position1, IPosition position2) = getParentMarketPositions();
-                (IPosition home, IPosition away, ) = parentMarket.getOptions();
-
-                uint position1Odds = position1 == home ? homeOddsParent : position1 == away
-                    ? awayOddsParent
-                    : drawOddsParent;
-                uint position2Odds = position2 == home ? homeOddsParent : position2 == away
-                    ? awayOddsParent
-                    : drawOddsParent;
+                (uint position1Odds, uint position2Odds) = _getParentPositionOdds();
 
                 return (position1Odds + position2Odds, 0, 0);
             }
@@ -257,6 +248,15 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         } else {
             return (0, 0, 0);
         }
+    }
+
+    function _getParentPositionOdds() internal view returns (uint odds1, uint odds2) {
+        (uint homeOddsParent, uint awayOddsParent, uint drawOddsParent) = parentMarket.getStampedOdds();
+        (IPosition position1, IPosition position2) = getParentMarketPositions();
+        (IPosition home, IPosition away, ) = parentMarket.getOptions();
+
+        odds1 = position1 == home ? homeOddsParent : position1 == away ? awayOddsParent : drawOddsParent;
+        odds2 = position2 == home ? homeOddsParent : position2 == away ? awayOddsParent : drawOddsParent;
     }
 
     function _balancesOf(address account)
@@ -531,8 +531,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             return 0;
         } else {
             if (isDoubleChance) {
-                (uint homeOdds, , ) = getStampedOdds();
-                payout = _homeBalance.mul(homeOdds).div(1e18);
+                (uint position1Odds, uint position2Odds) = _getParentPositionOdds();
+                payout = _homeBalance.mul(position1Odds).div(1e18);
+                payout = payout.add((_homeBalance).mul(position2Odds).div(1e18));
             } else {
                 payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
                 payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));

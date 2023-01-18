@@ -637,6 +637,17 @@ contract('SportsAMM', (accounts) => {
 				{ from: first }
 			);
 
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(1));
+			console.log('Buy quote for positions 0 is ' + buyFromAmmQuote / 1e18 + ' !!!!!');
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				0,
+				toUnit(1),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
 			let balanceDefaultLiquidityProviderAfter = await Thales.balanceOf(defaultLiquidityProvider);
 			console.log(
 				'balanceDefaultLiquidityProviderAfter: ' + balanceDefaultLiquidityProviderAfter / 1e18

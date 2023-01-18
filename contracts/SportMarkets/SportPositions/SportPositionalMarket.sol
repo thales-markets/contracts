@@ -533,7 +533,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             if (isDoubleChance) {
                 (uint position1Odds, uint position2Odds) = _getParentPositionOdds();
                 payout = _homeBalance.mul(position1Odds).div(1e18);
-                payout = payout.add((_homeBalance).mul(position2Odds).div(1e18));
+                payout = payout.add(_homeBalance.mul(position2Odds).div(1e18));
             } else {
                 payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
                 payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));

@@ -10,14 +10,9 @@ const { expect } = require('chai');
 
 contract('TaleOfThalesNFTs', (accounts) => {
 	const [first, owner, second, third] = accounts;
-	let OvertimeWorldCupZebro;
     let TaleOfThalesNFTs;
 	let StakingThales, SNXRewards, Thales;
 	let taleOfThalesContract;
-	const uri_srb = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/srb.png';
-	const uri_bra = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/bra.png';
-	const uri_swiss = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/swiss.png';
-
 	const WEEK = 604800;
 
 	beforeEach(async () => {

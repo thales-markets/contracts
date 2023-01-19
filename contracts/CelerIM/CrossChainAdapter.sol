@@ -258,6 +258,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         require(selectorAddress[selector] != address(0), "Invalid selector");
         bool success = checkAndSendMessage(sender, selector, chainId, payload);
         if (success) {
+            emit MessageReceived(sender, uint64(chainId), payload);
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
             return true;
         } else {
@@ -475,9 +476,12 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bytes calldata _message,
         address _executor
     ) external payable virtual override onlyMessageBus returns (ExecutionStatus) {
-        (address sender, bytes memory note) = abi.decode((_message), (address, bytes));
-        emit MessageReceived(sender, _srcChainId, note);
-        return ExecutionStatus.Success;
+        bool success = _executeBuy(_message);
+        if (success) {
+            return ExecutionStatus.Success;
+        } else {
+            return ExecutionStatus.Fail;
+        }
     }
 
     function executeMessage(

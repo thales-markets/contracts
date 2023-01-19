@@ -1370,26 +1370,20 @@ contract('SportsAMM', (accounts) => {
 			console.log(tx.logs[0].args);
 			let balance = await Thales.balanceOf(CrossChainAdapter.address);
 			console.log('CrossChain balance: ', fromUnit(balance));
+			console.log('Sent tokens: ', fromUnit(totalSUSDToPay));
 
-			let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, { from: owner });
+			let tx2 = await CrossChainAdapter.executeSportBuyMessage(
+				second,
+				Thales.address,
+				totalSUSDToPay,
+				111,
+				tx.logs[0].args.message,
+				third,
+				{ from: owner }
+			);
+
 			console.log('\n\nTX2');
 			console.log(tx2.logs[0].args);
-
-			// let buyParlayTX = await ParlayAMM.buyFromParlay(
-			// 	parlayMarketsAddress,
-			// 	parlayPositions,
-			// 	totalSUSDToPay,
-			// 	slippage,
-			// 	result[1],
-			// 	ZERO_ADDRESS,
-			// 	{ from: first }
-			// );
-			// console.log("event: \n", buyParlayTX.logs[0]);
-
-			// assert.eventEqual(tx2.logs[2], 'ParlayMarketCreated', {
-			// 	account: first,
-			// 	sUSDPaid: totalSUSDToPay,
-			// });
 		});
 		describe('Exercise Parlay', () => {
 			beforeEach(async () => {

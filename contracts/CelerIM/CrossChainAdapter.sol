@@ -12,8 +12,6 @@ import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IParlayMarketsAMM.sol";
 import "../interfaces/IParlayMarketData.sol";
 
-import "hardhat/console.sol";
-
 contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -39,7 +37,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     mapping(address => bool) public marketExercised;
     mapping(address => mapping(uint8 => uint256)) public exercisedMarketBalance;
 
-    // constructor(address _messageBus) MessageApp(_messageBus) {}
     function initialize(address _owner, address _messageBus) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -62,7 +59,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         uint expectedPayout,
         uint additionalSlippage
     ) external nonReentrant notPaused {
-        // todo specify
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position, amount, expectedPayout, additionalSlippage);
         bytes memory message = abi.encode(
@@ -83,7 +79,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         uint additionalSlippage,
         uint64 _dstChainId
     ) external payable nonReentrant notPaused {
-        // todo specify
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position, amount, expectedPayout, additionalSlippage);
         bytes4 selector = bytes4(keccak256(bytes("buyFromSportAMM(address,uint8,uint256,uint256,uint256)")));
@@ -106,8 +101,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 msg.value
             );
         }
-        // sendMessage(adapterOnDestination, _dstChainId, message, msg.value);
-        // emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
     }
 
     function exerciseSportPosition(
@@ -115,7 +108,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         uint8 position,
         uint64 _dstChainId
     ) external payable nonReentrant notPaused {
-        // todo specify
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position);
         bytes4 selector = bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")));
@@ -129,7 +121,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     }
 
     function exerciseParlay(address market, uint64 _dstChainId) external payable nonReentrant notPaused {
-        // todo specify
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market);
         bytes4 selector = bytes4(keccak256(bytes("exerciseParlay(address)")));
@@ -182,7 +173,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         } else {
             sendMessage(adapterOnDestination, _dstChainId, message, msg.value);
         }
-        // emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
     }
 
     function buyFromParlay(
@@ -195,7 +185,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         address _differentRecepient,
         uint64 _dstChainId
     ) external payable nonReentrant notPaused {
-        //todo specify
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(
             _sportMarkets,
@@ -217,7 +206,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         } else {
             sendMessage(adapterOnDestination, _dstChainId, message, msg.value);
         }
-        // emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
     }
 
     function executeBuyMessage(bytes calldata _message) external notPaused nonReentrant returns (bool success) {
@@ -237,7 +225,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             _message,
             (address, uint, bytes4, bytes)
         );
-        // sUSDBalances[sender][_token] += _amount;
         require(selectorAddress[selector] != address(0), "Invalid selector");
         bool success = checkAndSendMessage(sender, selector, chainId, payload);
         if (success) {
@@ -323,12 +310,8 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                     differentRecepient
                 )
             );
-
             if (success) {
                 _updateParlayDetails(_sender, expectedPayout);
-                // address parlayMarket = IParlayMarketData(IParlayMarketsAMM(parlayAMM).parlayMarketData()).getLastUserParlay(_sender);
-                // userOwningToken[_sender][parlayMarket] += expectedPayout;
-                // userMarketBalances[_sender][parlayMarket][0] += expectedPayout;
             }
             return success;
         } else if (_selector == bytes4(keccak256(bytes("exerciseParlay(address)")))) {

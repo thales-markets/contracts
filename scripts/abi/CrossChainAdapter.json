@@ -270,6 +270,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "bridgeFeePercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -370,39 +383,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "uint8",
-        "name": "position",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "expectedPayout",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "additionalSlippage",
-        "type": "uint256"
-      }
-    ],
-    "name": "buyFromSportAMM",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_token",
         "type": "address"
       },
@@ -437,9 +417,28 @@
         "type": "uint64"
       }
     ],
-    "name": "buyFromSportAMM2",
+    "name": "buyFromSportAMM",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "message",
+        "type": "bytes"
+      }
+    ],
+    "name": "calculateMessageFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "fee",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -854,6 +853,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "minBridgeSlippage",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1106,6 +1118,16 @@
         "internalType": "address",
         "name": "_parlayAMM",
         "type": "address"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_minBridgeSlippage",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_bridgeFeePercentage",
+        "type": "uint256"
       }
     ],
     "name": "setParameters",

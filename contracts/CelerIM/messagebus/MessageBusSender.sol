@@ -131,8 +131,7 @@ contract MessageBusSender is Ownable {
      @ @return The required fee.
      */
     function calcFee(bytes calldata _message) public view returns (uint256) {
-        return 0;
-        // return feeBase + _message.length * feePerByte;
+        return feeBase + _message.length * feePerByte;
     }
 
     // -------------------- Admin --------------------

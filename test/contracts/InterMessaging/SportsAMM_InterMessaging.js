@@ -702,9 +702,16 @@ contract('SportsAMM', (accounts) => {
 
 		await CrossChainAdapter.setWhitelistedAddress(second, true, { from: owner });
 		await CrossChainAdapter.setPaymentToken(Thales.address, { from: owner });
-		await CrossChainAdapter.setParameters(CrossChainAdapter.address, 111, ParlayAMM.address, {
-			from: owner,
-		});
+		await CrossChainAdapter.setParameters(
+			CrossChainAdapter.address,
+			111,
+			ParlayAMM.address,
+			'1000000',
+			'40000000000000000',
+			{
+				from: owner,
+			}
+		);
 		await Thales.transfer(CrossChainAdapter.address, toUnit('1000'), { from: owner });
 		await CrossChainAdapter.setSelectorAddress(
 			'buyFromSportAMM(address,uint8,uint256,uint256,uint256)',
@@ -766,13 +773,16 @@ contract('SportsAMM', (accounts) => {
 
 			console.log('SPORTS AMM addres: ', SportsAMM.address);
 			console.log('Market addres: ', deployedMarket.address);
+			await Thales.approve(CrossChainAdapter.address, toUnit(101), { from: first });
 
 			let tx = await CrossChainAdapter.buyFromSportAMM(
+				Thales.address,
 				deployedMarket.address,
 				1,
 				toUnit(100),
 				buyFromAmmQuote,
 				additionalSlippage,
+				111,
 				{ from: first }
 			);
 			console.log(tx.logs[0].args);
@@ -794,7 +804,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('SPORTS AMM addres: ', SportsAMM.address);
 			console.log('Market addres: ', deployedMarket.address);
 
-			let tx = await CrossChainAdapter.buyFromSportAMM2(
+			let tx = await CrossChainAdapter.buyFromSportAMM(
 				Thales.address,
 				deployedMarket.address,
 				1,
@@ -876,7 +886,7 @@ contract('SportsAMM', (accounts) => {
 				answer = await Thales.balanceOf(first);
 				await Thales.approve(CrossChainAdapter.address, toUnit(101), { from: first });
 				let before_balance = answer;
-				let tx = await CrossChainAdapter.buyFromSportAMM2(
+				let tx = await CrossChainAdapter.buyFromSportAMM(
 					Thales.address,
 					deployedMarket.address,
 					1,
@@ -1379,7 +1389,7 @@ contract('SportsAMM', (accounts) => {
 				111,
 				tx.logs[0].args.message,
 				third,
-				{ from: owner }
+				{ from: owner, value: 10000 }
 			);
 
 			console.log('\n\nTX2');

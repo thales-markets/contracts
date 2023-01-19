@@ -445,6 +445,13 @@
   },
   {
     "inputs": [],
+    "name": "exerciseMarketsReadyToExercised",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "firstRoundStartTime",
     "outputs": [
       {

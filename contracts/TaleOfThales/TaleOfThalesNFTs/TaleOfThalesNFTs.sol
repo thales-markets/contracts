@@ -83,13 +83,13 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
 
     /* ========== OWC ========== */
 
-    function mintItem(uint256 _itemId) public {
+    function mintItem(uint256 _itemId) public whenNotPaused {
         require(isEligibleToMintItem(_itemId, msg.sender), "Address is not eligible to mint this item");
         _mint(msg.sender, _itemId, 1, "");
         emit ItemMinted(_itemId, msg.sender);
     }
 
-    function mintCollection(uint256 _collectionIndex) public {
+    function mintCollection(uint256 _collectionIndex) public whenNotPaused {
         require(isEligibleToMintCollection(_collectionIndex, msg.sender), "Address is not eligible to mint this collection");
 
         Item[] memory items = collectionToItems[_collectionIndex];
@@ -111,7 +111,7 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         bool _stakeCondition,
         uint256 _minimumStakeAmount,
         address[] calldata _whitelistedAddresses
-    ) public onlyOwner returns (uint256) {
+    ) public onlyOwner whenNotPaused returns (uint256) {
         _lastCollectionId.increment();
         if (_stakeCondition == true) {
             collectionToMinimumStakeAmount[_lastCollectionId.current()] = _minimumStakeAmount;
@@ -124,7 +124,7 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         return _lastCollectionId.current();
     }
 
-    function addItemToCollection(uint8 _itemType, uint256 _collectionIndex) public onlyOwner {
+    function addItemToCollection(uint8 _itemType, uint256 _collectionIndex) public onlyOwner whenNotPaused {
         require(_collectionIndex <= _lastCollectionId.current(), "Collection with given index do not exist.");
         require(
             collectionToTypeMapping[_collectionIndex][_itemType] == 0,
@@ -141,7 +141,7 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         uint256 _collectionId,
         address[] calldata _whitelistedAddresses,
         bool _flag
-    ) public onlyOwner returns (uint256) {
+    ) public onlyOwner whenNotPaused returns (uint256) {
         require(_whitelistedAddresses.length > 0, "Whitelist cannot be empty");
         require(_collectionId <= _lastCollectionId.current(), "Collection with entered id does not exists");
         for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
@@ -167,7 +167,7 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
 
     /* ========== CONTRACT MANAGMENT ========== */
 
-    function setURI(string memory newuri) public onlyOwner {
+    function setURI(string memory newuri) public onlyOwner whenNotPaused {
         _setURI(newuri);
     }
 

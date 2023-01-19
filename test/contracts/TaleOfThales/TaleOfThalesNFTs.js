@@ -306,5 +306,84 @@ contract('TaleOfThalesNFTs', (accounts) => {
             assert.bnEqual(1, await taleOfThalesContract.balanceOf(second, 3));
             assert.bnEqual(1, await taleOfThalesContract.balanceOf(second, 4));
         });
+
+        describe('Transfer minted item', () => {
+            it('Should transfer minted item to other address', async() => {
+                await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+                await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
+
+                await taleOfThalesContract.mintItem(1, { from: second });
+
+                // Confirm that address "second" has item
+                assert.bnEqual(1, await taleOfThalesContract.balanceOf(second, 1));
+
+                await taleOfThalesContract.safeTransferFrom(second, first, 1, 1, "0x", { from: second });
+
+                // Confirm of item transfer
+                assert.bnEqual(0, await taleOfThalesContract.balanceOf(second, 1));
+                assert.bnEqual(1, await taleOfThalesContract.balanceOf(first, 1));
+            });
+        })
     });
+
+    describe("Contract managment, pause", () => {
+        it('Should revert, trying to pause as non owner', async() => {
+            assert.bnEqual(false, await taleOfThalesContract.paused());
+            await expect(taleOfThalesContract.pause({ from: first })).to.be.revertedWith(
+                'Ownable: caller is not the owner'
+            );
+        });
+
+        it('Should pause contract', async() => {
+            assert.bnEqual(false, await taleOfThalesContract.paused());
+            await taleOfThalesContract.pause({ from: owner });
+            assert.bnEqual(true, await taleOfThalesContract.paused());
+        });
+
+        it('Should revert while minting, while contract is paused', async() => {
+            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
+            await taleOfThalesContract.pause({ from: owner });
+
+            // Confirmation that contract is paused
+            assert.bnEqual(true, await taleOfThalesContract.paused());
+
+            await expect(taleOfThalesContract.mintItem(1, { from: first })).to.be.revertedWith(
+                'Pausable: paused'
+            );
+        });
+
+        it('Should revert on creating collection, paused contract', async() => {
+            await taleOfThalesContract.pause({ from: owner });
+            assert.bnEqual(true, await taleOfThalesContract.paused());
+            await expect(taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner })).to.be.revertedWith(
+                'Pausable: paused'
+            )
+        });
+
+        it('Should revert on adding item to collection, paused contract', async() => {
+            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.pause({ from: owner });
+            assert.bnEqual(true, await taleOfThalesContract.paused());
+            await expect(taleOfThalesContract.addItemToCollection(0, 1, { from: owner })).to.be.revertedWith(
+                'Pausable: paused'
+            )
+        });
+
+        it('Should revert setURI, not owner', async() => {
+            await expect(taleOfThalesContract.setURI("https://test.com/{id}.json")).to.be.revertedWith(
+                'Ownable: caller is not the owner'
+            );
+        });
+
+        it('Should set new uri', async() => {
+            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
+
+            expect(await taleOfThalesContract.uri(1)).to.equal("");
+
+            await taleOfThalesContract.setURI("https://test.com/{id}.json", { from: owner })
+            expect(await taleOfThalesContract.uri(1)).to.equal("https://test.com/{id}.json");
+        });
+    })
 });

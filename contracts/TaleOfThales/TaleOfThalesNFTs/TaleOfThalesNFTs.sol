@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-4.4.1/security/Pausable.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC1155/extensions/ERC1155Burnable.sol";
 import "@openzeppelin/contracts-4.4.1/utils/Counters.sol";
 
-import "./../interfaces/IStakingThales.sol";
+import "../../interfaces/IStakingThales.sol";
 
 contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
     /* ========== LIBRARIES ========== */

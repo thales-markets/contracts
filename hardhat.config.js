@@ -60,7 +60,7 @@ module.exports = {
 			polygonMumbai: POLYGONSCAN_API_KEY,
 			bsc: BSC_API_KEY,
 			arbitrumOne: ARBITRUM_API_KEY,
-			arbitrumGoerli: ARBITRUM_API_KEY,
+			// arbitrumGoerli: ARBITRUM_API_KEY,
 			optimisticGoerli: OP_ETHERSCAN_KEY,
 		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
@@ -212,12 +212,12 @@ module.exports = {
 			//gasPrice: 5000000000,
 			accounts: [PRIVATE_KEY],
 		},
-		arbitrumGoerli: {
-			url: 'https://arbitrum-goerli.infura.io/v3/' + INFURA,
-			chainId: 421613,
-			//gasPrice: 5000000000,
-			accounts: [PRIVATE_KEY],
-		},
+		// arbitrumGoerli: {
+		// 	url: 'https://arbitrum-goerli.infura.io/v3/' + INFURA,
+		// 	chainId: 421613,
+		// 	//gasPrice: 5000000000,
+		// 	accounts: [PRIVATE_KEY],
+		// },
 		optimisticGoerli: {
 			gasPrice: 10000,
 			url: 'https://goerli.optimism.io',

@@ -13,10 +13,8 @@ async function main() {
 	let PaymentToken;
 
 	if (network == 'homestead') {
-		console.log(
-			"Error L1 network used! Deploy only on L2 Optimism. \nTry using '--network optimistic'"
-		);
-		return 0;
+		networkObj.name = 'mainnet';
+		network = 'mainnet';
 	}
 	if (networkObj.chainId == 42) {
 		networkObj.name = 'kovan';
@@ -52,7 +50,7 @@ async function main() {
 
 	const CelerIMAddress = await getTargetAddress('CrossChainAdapter', network);
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 5) {
+	if (networkObj.chainId == 10 || networkObj.name == 'mainnet') {
 		console.log('HERE');
 		const implementation = await upgrades.prepareUpgrade(CelerIMAddress, CelerIM);
 		await delay(5000);

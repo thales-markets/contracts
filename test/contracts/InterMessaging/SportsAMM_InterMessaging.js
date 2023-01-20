@@ -700,6 +700,7 @@ contract('SportsAMM', (accounts) => {
 
 		Referrals.setSportsAMM(SportsAMM.address, ParlayAMM.address, { from: owner });
 
+		await CrossChainAdapter.setWhitelistedOperator(owner, true, { from: owner });
 		await CrossChainAdapter.setWhitelistedAddress(second, true, { from: owner });
 		await CrossChainAdapter.setPaymentToken(Thales.address, { from: owner });
 		await CrossChainAdapter.setParameters(

@@ -33,6 +33,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     bool public override marketCreationEnabled;
     bool public customMarketCreationEnabled;
 
+    //deposited
     uint public totalDeposited;
 
     AddressSetLib.AddressSet internal _activeMarkets;

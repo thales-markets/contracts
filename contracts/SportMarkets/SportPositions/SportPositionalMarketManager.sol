@@ -33,7 +33,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     bool public override marketCreationEnabled;
     bool public customMarketCreationEnabled;
 
-    uint public override totalDeposited;
+    uint public totalDeposited;
 
     AddressSetLib.AddressSet internal _activeMarkets;
     AddressSetLib.AddressSet internal _maturedMarkets;
@@ -208,19 +208,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit SetsUSD(_address);
     }
 
-    /* ---------- Deposit Management ---------- */
-
-    function incrementTotalDeposited(uint delta) external onlyActiveMarkets notPaused {
-        totalDeposited = totalDeposited.add(delta);
-    }
-
-    function decrementTotalDeposited(uint delta) external onlyKnownMarkets notPaused {
-        // NOTE: As individual market debt is not tracked here, the underlying markets
-        //       need to be careful never to subtract more debt than they added.
-        //       This can't be enforced without additional state/communication overhead.
-        totalDeposited = totalDeposited.sub(delta);
-    }
-
     /* ---------- Market Lifecycle ---------- */
 
     function createMarket(
@@ -266,9 +253,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             )
         );
 
-        // The debt can't be incremented in the new market's constructor because until construction is complete,
-        // the manager doesn't know its address in order to grant it permission.
-        totalDeposited = totalDeposited.add(initialMint);
         sUSD.transferFrom(msg.sender, address(market), initialMint);
 
         if (positionCount > 2 && isDoubleChanceSupported) {

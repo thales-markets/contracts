@@ -343,13 +343,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     function _incrementDeposited(uint value) internal returns (uint _deposited) {
         _deposited = deposited.add(value);
         deposited = _deposited;
-        _manager().incrementTotalDeposited(value);
     }
 
     function _decrementDeposited(uint value) internal returns (uint _deposited) {
         _deposited = deposited.sub(value);
         deposited = _deposited;
-        _manager().decrementTotalDeposited(value);
     }
 
     function _requireManagerNotPaused() internal view {
@@ -545,11 +543,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Market Expiry ---------- */
 
     function _selfDestruct(address payable beneficiary) internal {
-        uint _deposited = deposited;
-        if (_deposited != 0) {
-            _decrementDeposited(_deposited);
-        }
-
         // Transfer the balance rather than the deposit value in case there are any synths left over
         // from direct transfers.
         uint balance = sUSD.balanceOf(address(this));

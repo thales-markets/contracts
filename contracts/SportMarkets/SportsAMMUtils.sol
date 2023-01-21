@@ -143,14 +143,9 @@ contract SportsAMMUtils {
         uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
         if ((capUsed + additionalBufferFromSelling) > spentOnThisGame) {
             uint availableUntilCapSUSD = capUsed + additionalBufferFromSelling - spentOnThisGame;
-            if (availableUntilCapSUSD > capUsed) {
-                availableUntilCapSUSD = capUsed;
-            }
-
             uint midImpactPriceIncrease = ((ONE - baseOdds) * (sportsAMM.max_spread() / 2)) / ONE;
             uint divider_price = ONE - (baseOdds + midImpactPriceIncrease);
-
-            availableAmount = balance + ((availableUntilCapSUSD * ONE) / divider_price);
+            availableAmount = (availableUntilCapSUSD * ONE) / divider_price;
         }
     }
 
@@ -281,17 +276,13 @@ contract SportsAMMUtils {
         address market,
         ISportsAMM.Position position,
         address addressToCheck
-    ) public view returns (uint) {
+    ) public view returns (uint balance) {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        uint balance = position == ISportsAMM.Position.Home
-            ? home.getBalanceOf(addressToCheck)
-            : away.getBalanceOf(addressToCheck);
+        IPosition target = position == ISportsAMM.Position.Home ? home : away;
         if (ISportPositionalMarket(market).optionsCount() == 3 && position != ISportsAMM.Position.Home) {
-            balance = position == ISportsAMM.Position.Away
-                ? away.getBalanceOf(addressToCheck)
-                : draw.getBalanceOf(addressToCheck);
+            target = position == ISportsAMM.Position.Away ? away : draw;
         }
-        return balance;
+        balance = target.getBalanceOf(addressToCheck);
     }
 
     function getParentMarketPositions(address market)

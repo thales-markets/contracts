@@ -545,19 +545,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "delta",
-        "type": "uint256"
-      }
-    ],
-    "name": "decrementTotalDeposited",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -660,19 +647,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "delta",
-        "type": "uint256"
-      }
-    ],
-    "name": "incrementTotalDeposited",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

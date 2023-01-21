@@ -8,8 +8,6 @@ interface ISportPositionalMarketManager {
 
     function marketCreationEnabled() external view returns (bool);
 
-    function totalDeposited() external view returns (uint);
-
     function numActiveMarkets() external view returns (uint);
 
     function activeMarkets(uint index, uint pageSize) external view returns (address[] memory);

@@ -162,8 +162,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param position The position (home/away/draw) to check availability
     /// @return _available The amount of position options (tokens) available to buy from AMM.
     function availableToBuyFromAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
+        uint baseOdds = _obtainOdds(market, position);
         if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
-            if (position == ISportsAMM.Position.Home) {
+            if (position == ISportsAMM.Position.Home && (baseOdds > 0 && baseOdds < maxSupportedOdds)) {
                 (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
                     .getParentMarketPositions(market);
 
@@ -174,7 +175,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             }
         } else {
             if (isMarketInAMMTrading(market)) {
-                uint baseOdds = _obtainOdds(market, position);
                 if (baseOdds > 0) {
                     baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
                     _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);

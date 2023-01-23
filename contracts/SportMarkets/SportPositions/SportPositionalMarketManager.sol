@@ -381,6 +381,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             "Invalid resolver"
         );
         require(_activeMarkets.contains(market), "Not an active market");
+        require(!isDoubleChance[market], "Not supported for double chance markets");
         // unpause if paused
         if (ISportPositionalMarket(market).paused()) {
             ISportPositionalMarket(market).setPaused(false);
@@ -426,6 +427,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         address _consumer
     ) external {
         require(msg.sender == owner || whitelistedCancelAddresses[msg.sender], "Invalid resolver");
+        require(!isDoubleChance[_market], "Not supported for double chance markets");
+
         if (_consumer == theRundownConsumer) {
             ITherundownConsumer(theRundownConsumer).resolveMarketManually(_market, _outcome, _homeScore, _awayScore);
         }

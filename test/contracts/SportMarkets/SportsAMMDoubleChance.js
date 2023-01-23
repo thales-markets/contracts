@@ -740,9 +740,48 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			console.log(Math.min(fromUnit(answer1), fromUnit(answer2)));
 		});
 
+		it('Test max odds - get Available to buy from SportsAMM', async () => {
+			answer = await SportsAMM.availableToBuyFromAMM(homeTeamNotLoseMarket.address, 0);
+			console.log('Available to buy with max odds 0.9 - pos 0: ', fromUnit(answer));
+
+			await SportsAMM.setParameters(
+				DAY,
+				toUnit('0.02'),
+				toUnit('0.2'),
+				toUnit('0.001'),
+				toUnit('0.1'),
+				toUnit('5000'),
+				toUnit('0.01'),
+				toUnit('0.005'),
+				{ from: owner }
+			);
+			answer = await SportsAMM.availableToBuyFromAMM(homeTeamNotLoseMarket.address, 0);
+			console.log('Available to buy with max odds 0.1 - pos 1: ', fromUnit(answer));
+		});
+
 		it('Get BuyQuote from SportsAMM, position 1, value: 100', async () => {
 			answer = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
 			console.log('buyAMMQuote: ', fromUnit(answer));
+		});
+
+		it('Test max odds -  Get BuyQuote from SportsAMM - double chance, value: 100', async () => {
+			answer = await SportsAMM.buyFromAmmQuote(homeTeamNotLoseMarket.address, 0, toUnit(100));
+			console.log('buyAMMQuote max odds 0.9: ', fromUnit(answer));
+
+			await SportsAMM.setParameters(
+				DAY,
+				toUnit('0.02'),
+				toUnit('0.2'),
+				toUnit('0.001'),
+				toUnit('0.1'),
+				toUnit('5000'),
+				toUnit('0.01'),
+				toUnit('0.005'),
+				{ from: owner }
+			);
+
+			answer = await SportsAMM.buyFromAmmQuote(homeTeamNotLoseMarket.address, 0, toUnit(100));
+			console.log('buyAMMQuote max odds 0.1: ', fromUnit(answer));
 		});
 
 		it('Get BuyQuote from SportsAMM - double chance, value: 100', async () => {
@@ -975,6 +1014,90 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			answer = await homeTeamNotLoseMarket.exerciseOptions({ from: second });
 			answer = await Thales.balanceOf(second);
 			console.log('Balance after exercise of second: ', fromUnit(answer));
+		});
+
+		it('Cannot resolve manually double chance', async () => {
+			position = 0;
+			value = 100;
+			let odds = [];
+			odds[0] = await SportsAMM.obtainOdds(homeTeamNotLoseMarket.address, 0);
+			odds[1] = await SportsAMM.obtainOdds(awayTeamNotLoseMarket.address, 0);
+			odds[2] = await SportsAMM.obtainOdds(noDrawMarket.address, 0);
+			console.log(
+				'Game odds: homeTeamNotLoseMarket=',
+				fromUnit(odds[0]),
+				', awayTeamNotLoseMarket=',
+				fromUnit(odds[1]),
+				', noDrawMarket=',
+				fromUnit(odds[2])
+			);
+
+			let additionalSlippage = toUnit(0.05);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				awayTeamNotLoseMarket.address,
+				position,
+				toUnit(value)
+			);
+			answer = await Thales.balanceOf(first);
+			let initial_balance = answer;
+			console.log('first acc sUSD balance before buy: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				awayTeamNotLoseMarket.address,
+				position,
+				toUnit(value),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			let balances = await deployedMarket.balancesOf(awayTeamNotLoseMarket.address);
+			console.log(
+				'balances double chance',
+				balances[0] / 1e18,
+				balances[1] / 1e18,
+				balances[2] / 1e18
+			);
+
+			balances = await awayTeamNotLoseMarket.balancesOf(first);
+			console.log('balances first', balances[0] / 1e18, balances[1] / 1e18, balances[2] / 1e18);
+			let cost;
+			answer = await Thales.balanceOf(first);
+			console.log('acc sUSD balance after buy: ', fromUnit(answer));
+			cost = initial_balance.sub(answer);
+			console.log('cost in sUSD: ', fromUnit(cost));
+
+			await fastForward(await currentTime());
+
+			assert.equal(true, await awayTeamNotLoseMarket.canResolve());
+
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolve,
+				gamesResolved,
+				sportId_4,
+				{ from: wrapper }
+			);
+
+			await assert.revert(
+				SportPositionalMarketManager.resolveMarketWithResult(
+					homeTeamNotLoseMarket.address,
+					2,
+					1,
+					2,
+					TherundownConsumerDeployed.address,
+					{
+						from: second,
+					}
+				),
+				'Not supported for double chance markets'
+			);
+
+			await assert.revert(
+				SportPositionalMarketManager.resolveMarket(homeTeamNotLoseMarket.address, 2, {
+					from: second,
+				}),
+				'Not supported for double chance markets'
+			);
 		});
 
 		it('Resolve manually, and claim double chance', async () => {

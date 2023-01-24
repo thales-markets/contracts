@@ -279,7 +279,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     function createDoubleChanceMarketsForParent(address market) external notPaused onlyOwner {
         require(marketCreationEnabled, "Market creation is disabled");
+        require(isDoubleChanceSupported, "Double chance not supported");
         ISportPositionalMarket marketContract = ISportPositionalMarket(market);
+
+        require(marketContract.optionsCount() > 2, "Not supported for 2 options market");
 
         (uint maturity, uint expiry) = marketContract.times();
         _createDoubleChanceMarkets(

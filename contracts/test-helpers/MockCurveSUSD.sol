@@ -41,7 +41,7 @@ contract MockCurveSUSD {
         uint256 _dx,
         uint256 _min_dy
     ) external returns (uint256) {
-        if(i==0 && j == 2) {
+        if (i == 0 && j == 2) {
             USDC.transfer(msg.sender, ((_dx) * (ONE + ONE_PERCENT)) / ONE);
             sUSD.transferFrom(msg.sender, address(this), _dx);
             return ((_dx) * (ONE + ONE_PERCENT)) / ONE;

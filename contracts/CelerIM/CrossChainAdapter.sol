@@ -147,13 +147,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     ) external payable nonReentrant notPaused {
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(_sportMarkets, _positions, _sUSDPaid, _expectedPayout, _token);
-        bytes4 selector = bytes4(
-            keccak256(
-                bytes(
-                    "buyFromParlay()"
-                )
-            )
-        );
+        bytes4 selector = bytes4(keccak256(bytes("buyFromParlay()")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         noncePerSelector[selector]++;
         if (_dstChainId == testChain) {
@@ -339,16 +333,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 userMarketBalances[_sender][market][position] += amount;
             }
             return success;
-        } else if (
-            _selector ==
-            bytes4(
-                keccak256(
-                    bytes(
-                        "buyFromParlay()"
-                    )
-                )
-            )
-        ) {
+        } else if (_selector == bytes4(keccak256(bytes("buyFromParlay()")))) {
             bytes4 realSelector = bytes4(
                 keccak256(
                     bytes(
@@ -610,22 +595,22 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
-    function _transferToCollateral(uint amount, address collateral) internal returns(uint transformedAmount) {
+    function _transferToCollateral(uint amount, address collateral) internal returns (uint transformedAmount) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0);
         //cant get a quote on how much collateral is needed from curve for sUSD,
         //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        uint collateralQuote = curveSUSD.get_dy_underlying(curveIndex, 0, (amount*(ONE+(ONE_PERCENT/5))/ONE));
+        uint collateralQuote = curveSUSD.get_dy_underlying(curveIndex, 0, ((amount * (ONE + (ONE_PERCENT / 5))) / ONE));
         uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
-            ? collateralQuote*(1e12)
+            ? collateralQuote * (1e12)
             : collateralQuote;
         require(
             maxAllowedPegSlippagePercentage > 0 &&
-                transformedCollateralForPegCheck >= (amount*(ONE-maxAllowedPegSlippagePercentage)/ONE),
+                transformedCollateralForPegCheck >= ((amount * (ONE - maxAllowedPegSlippagePercentage)) / ONE),
             "maxExceeded"
         );
 
-        require((collateralQuote*ONE/amount) <= (ONE+defaultSlippage), "SlippageHigh");
+        require(((collateralQuote * ONE) / amount) <= (ONE + defaultSlippage), "SlippageHigh");
         transformedAmount = curveSUSD.exchange_underlying(0, curveIndex, collateralQuote, amount);
     }
 

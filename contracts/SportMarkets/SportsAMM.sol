@@ -236,7 +236,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home
                 );
             if (amount <= _available) {
-                int skewImpact = _buyPriceImpact(market, position, amount, _available, 0);
+                int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
                 baseOdds = baseOdds + (min_spreadPerAddress[msg.sender] > 0 ? min_spreadPerAddress[msg.sender] : min_spread);
                 int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
                 returnQuote = ISportPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
@@ -796,7 +796,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             }
         } else {
             if (baseOdds == 0) {
-                uint baseOdds = _obtainOdds(market, position);
+                baseOdds = _obtainOdds(market, position);
                 if (baseOdds > 0) {
                     baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
                 }

@@ -781,140 +781,140 @@ contract('SportsAMM', (accounts) => {
 		let position = 0;
 		let value = 100;
 
-		// it('Multi-collateral buy from amm', async () => {
-		// 	position = 1;
-		// 	value = 100;
-		// 	let odds = [];
-		// 	odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
-		// 	odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
-		// 	odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
-		// 	console.log('Game odds: 0=', fromUnit(odds[0]), ', 1=', fromUnit(odds[1]));
-		// 	let optionsCount = await deployedMarket.optionsCount();
-		// 	console.log('Positions count: ', optionsCount.toString());
-		// 	let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
-		// 	let additionalSlippage = toUnit(0.5);
-		// 	let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
-		// 		deployedMarket.address,
-		// 		position,
-		// 		toUnit(value)
-		// 	);
-		// 	await Thales.approve(SportsAMM.address, toUnit(100000), { from: first });
-		// 	console.log('buyFromAmmQuote decimal is: ', fromUnit(buyFromAmmQuote));
+		it('Multi-collateral buy from amm', async () => {
+			position = 1;
+			value = 100;
+			let odds = [];
+			odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
+			odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
+			odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
+			console.log('Game odds: 0=', fromUnit(odds[0]), ', 1=', fromUnit(odds[1]));
+			let optionsCount = await deployedMarket.optionsCount();
+			console.log('Positions count: ', optionsCount.toString());
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
+			let additionalSlippage = toUnit(0.5);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				position,
+				toUnit(value)
+			);
+			await Thales.approve(SportsAMM.address, toUnit(100000), { from: first });
+			console.log('buyFromAmmQuote decimal is: ', fromUnit(buyFromAmmQuote));
 
-		// 	let buyFromAmmQuoteUSDCCollateralObject =
-		// 		await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-		// 			deployedMarket.address,
-		// 			position,
-		// 			toUnit(value),
-		// 			testUSDC.address
-		// 		);
-		// 	let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
-		// 	console.log(
-		// 		'buyFromAmmQuoteWithDifferentCollateral USDC: ',
-		// 		buyFromAmmQuoteUSDCCollateral / 1e6
-		// 	);
+			let buyFromAmmQuoteUSDCCollateralObject =
+				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					testUSDC.address
+				);
+			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
+			console.log(
+				'buyFromAmmQuoteWithDifferentCollateral USDC: ',
+				buyFromAmmQuoteUSDCCollateral / 1e6
+			);
 
-		// 	assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > fromUnit(buyFromAmmQuote), true);
+			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > fromUnit(buyFromAmmQuote), true);
 
-		// 	let buyFromAmmQuoteDAICollateralObject =
-		// 		await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-		// 			deployedMarket.address,
-		// 			position,
-		// 			toUnit(value),
-		// 			testDAI.address
-		// 		);
-		// 	let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
-		// 	console.log(
-		// 		'buyFromAmmQuoteWithDifferentCollateral DAI: ',
-		// 		buyFromAmmQuoteDAICollateral / 1e18
-		// 	);
+			let buyFromAmmQuoteDAICollateralObject =
+				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					testDAI.address
+				);
+			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
+			console.log(
+				'buyFromAmmQuoteWithDifferentCollateral DAI: ',
+				buyFromAmmQuoteDAICollateral / 1e18
+			);
 
-		// 	assert.equal(fromUnit(buyFromAmmQuoteDAICollateral) > fromUnit(buyFromAmmQuote), true);
+			assert.equal(fromUnit(buyFromAmmQuoteDAICollateral) > fromUnit(buyFromAmmQuote), true);
 
-		// 	answer = await Thales.balanceOf(first);
-		// 	let initial_balance = answer;
-		// 	console.log('acc sUSD balance before buy: ', fromUnit(answer));
-		// 	console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-		// 	answer = await SportsAMM.buyFromAMM(
-		// 		deployedMarket.address,
-		// 		position,
-		// 		toUnit(value),
-		// 		buyFromAmmQuote,
-		// 		additionalSlippage,
-		// 		{ from: first }
-		// 	);
+			answer = await Thales.balanceOf(first);
+			let initial_balance = answer;
+			console.log('acc sUSD balance before buy: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
 
-		// 	let userBalance = await testUSDC.balanceOf(first);
-		// 	let sportsAMMBalanceUSDC = await testUSDC.balanceOf(SportsAMM.address);
-		// 	let sportsAMMBalance = await Thales.balanceOf(SportsAMM.address);
-		// 	console.log('Balance of USDC for user: ', fromUnit(userBalance));
-		// 	console.log('Balance of USDC for sportsAMM: ', fromUnit(sportsAMMBalanceUSDC));
-		// 	console.log('Balance of sUSD for sportsAMM: ', fromUnit(sportsAMMBalance));
+			let userBalance = await testUSDC.balanceOf(first);
+			let sportsAMMBalanceUSDC = await testUSDC.balanceOf(SportsAMM.address);
+			let sportsAMMBalance = await Thales.balanceOf(SportsAMM.address);
+			console.log('Balance of USDC for user: ', fromUnit(userBalance));
+			console.log('Balance of USDC for sportsAMM: ', fromUnit(sportsAMMBalanceUSDC));
+			console.log('Balance of sUSD for sportsAMM: ', fromUnit(sportsAMMBalance));
 
-		// 	await SportsAMM.buyFromAMMWithDifferentCollateral(
-		// 		deployedMarket.address,
-		// 		position,
-		// 		toUnit(value),
-		// 		buyFromAmmQuoteUSDCCollateral,
-		// 		additionalSlippage,
-		// 		testUSDC.address,
-		// 		{ from: first }
-		// 	);
+			await SportsAMM.buyFromAMMWithDifferentCollateral(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				buyFromAmmQuoteUSDCCollateral,
+				additionalSlippage,
+				testUSDC.address,
+				{ from: first }
+			);
 
-		// 	userBalance = await testUSDC.balanceOf(first);
-		// 	sportsAMMBalanceUSDC = await testUSDC.balanceOf(SportsAMM.address);
-		// 	sportsAMMBalance = await Thales.balanceOf(SportsAMM.address);
-		// 	console.log('after buy user balance: ', fromUnit(userBalance));
-		// 	console.log('after buy sportsAMM USDC balance: ', fromUnit(sportsAMMBalanceUSDC));
-		// 	console.log('after buy sportsAMM sUSD balance: ', fromUnit(sportsAMMBalance));
-		// });
+			userBalance = await testUSDC.balanceOf(first);
+			sportsAMMBalanceUSDC = await testUSDC.balanceOf(SportsAMM.address);
+			sportsAMMBalance = await Thales.balanceOf(SportsAMM.address);
+			console.log('after buy user balance: ', fromUnit(userBalance));
+			console.log('after buy sportsAMM USDC balance: ', fromUnit(sportsAMMBalanceUSDC));
+			console.log('after buy sportsAMM sUSD balance: ', fromUnit(sportsAMMBalance));
+		});
 
-		// it('CrossChain Buy from SportsAMM, position 1, value: 100', async () => {
-		// 	position = 1;
-		// 	value = 100;
-		// 	let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
-		// 	let additionalSlippage = toUnit(0.01);
-		// 	let buyFromAmmQuoteUSDCCollateral = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-		// 		deployedMarket.address,
-		// 		position,
-		// 		toUnit(value),
-		// 		testUSDC.address
-		// 	);
-		// 	let buyFromAmmQuote = buyFromAmmQuoteUSDCCollateral[0];
-		// 	console.log(buyFromAmmQuote);
-		// 	answer = await Thales.balanceOf(first);
-		// 	let before_balance = answer;
-		// 	console.log('acc balance: ', fromUnit(answer));
-		// 	console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+		it('CrossChain Buy from SportsAMM, position 1, value: 100', async () => {
+			position = 1;
+			value = 100;
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuoteUSDCCollateral = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				testUSDC.address
+			);
+			let buyFromAmmQuote = buyFromAmmQuoteUSDCCollateral[0];
+			console.log(buyFromAmmQuote);
+			answer = await Thales.balanceOf(first);
+			let before_balance = answer;
+			console.log('acc balance: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
 
-		// 	console.log('SPORTS AMM addres: ', SportsAMM.address);
-		// 	console.log('Market addres: ', deployedMarket.address);
-		// 	await Thales.approve(CrossChainAdapter.address, toUnit(101), { from: first });
+			console.log('SPORTS AMM addres: ', SportsAMM.address);
+			console.log('Market addres: ', deployedMarket.address);
+			await Thales.approve(CrossChainAdapter.address, toUnit(101), { from: first });
 
-		// 	let tx = await CrossChainAdapter.buyFromSportAMM(
-		// 		testUSDC.address,
-		// 		deployedMarket.address,
-		// 		1,
-		// 		toUnit(100),
-		// 		buyFromAmmQuote,
-		// 		111,
-		// 		{ from: first }
-		// 	);
-		// 	console.log(tx.logs[0].args);
+			let tx = await CrossChainAdapter.buyFromSportAMM(
+				testUSDC.address,
+				deployedMarket.address,
+				1,
+				toUnit(100),
+				buyFromAmmQuote,
+				111,
+				{ from: first }
+			);
+			console.log(tx.logs[0].args);
 
-		// 	let tx2 = await CrossChainAdapter.executeSportBuyMessage(
-		// 			second,
-		// 			testUSDC.address,
-		// 			buyFromAmmQuote,
-		// 			111,
-		// 			tx.logs[0].args.message,
-		// 			third,
-		// 			{ from: owner, value: 10000 }
-		// 		);
-		// 	// let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, { from: owner });
-		// 	console.log('\n\nTX2');
-		// 	console.log(tx2.logs[0].args);
-		// });
+			let tx2 = await CrossChainAdapter.executeSportBuyMessage(
+				second,
+				testUSDC.address,
+				buyFromAmmQuote,
+				111,
+				tx.logs[0].args.message,
+				third,
+				{ from: owner, value: 10000 }
+			);
+			// let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, { from: owner });
+			console.log('\n\nTX2');
+			console.log(tx2.logs[0].args);
+		});
 
 		describe('Exercise market', () => {
 			let newMarket;
@@ -1202,420 +1202,420 @@ contract('SportsAMM', (accounts) => {
 		});
 	});
 
-	// describe('Check ParlayAMM data', () => {
-	// 	beforeEach(async () => {
-	// 		await fastForward(game1NBATime - (await currentTime()) - SECOND);
-	// 		let answer;
-	// 		parlayMarkets = [];
-	// 		// req. games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdCreate,
-	// 			gamesCreated,
-	// 			sportId_4,
-	// 			game1NBATime,
-	// 			{ from: wrapper }
-	// 		);
+	describe('Check ParlayAMM data', () => {
+		beforeEach(async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			let answer;
+			parlayMarkets = [];
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
 
-	// 		assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
-	// 		assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-	// 		assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-	// 		assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
+			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 
-	// 		let game = await TherundownConsumerDeployed.gameCreated(gameid1);
-	// 		let game_2 = await TherundownConsumerDeployed.gameCreated(gameid2);
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let game_2 = await TherundownConsumerDeployed.gameCreated(gameid2);
 
-	// 		// create markets
-	// 		const tx_create_1 = await TherundownConsumerDeployed.createMarketForGame(gameid1);
-	// 		const tx_create_2 = await TherundownConsumerDeployed.createMarketForGame(gameid2);
+			// create markets
+			const tx_create_1 = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+			const tx_create_2 = await TherundownConsumerDeployed.createMarketForGame(gameid2);
 
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
-	// 		let marketAdd_2 = await TherundownConsumerDeployed.marketPerGameId(gameid2);
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			let marketAdd_2 = await TherundownConsumerDeployed.marketPerGameId(gameid2);
 
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create_1.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameid1,
-	// 			_game: game,
-	// 		});
-	// 		assert.eventEqual(tx_create_2.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd_2,
-	// 			_id: gameid2,
-	// 			_game: game_2,
-	// 		});
+			// check if event is emited
+			assert.eventEqual(tx_create_1.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+			assert.eventEqual(tx_create_2.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd_2,
+				_id: gameid2,
+				_game: game_2,
+			});
 
-	// 		// console.log("1. game:");
-	// 		// console.log("==> home: ", game.homeTeam);
-	// 		// console.log("==> away: ", game.awayTeam);
+			// console.log("1. game:");
+			// console.log("==> home: ", game.homeTeam);
+			// console.log("==> away: ", game.awayTeam);
 
-	// 		// console.log("2. game:");
-	// 		// console.log("==> home: ", game_2.homeTeam);
-	// 		// console.log("==> away: ", game_2.awayTeam);
+			// console.log("2. game:");
+			// console.log("==> home: ", game_2.homeTeam);
+			// console.log("==> away: ", game_2.awayTeam);
 
-	// 		answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-	// 		let deployedMarket_1 = await SportPositionalMarketContract.at(answer);
-	// 		answer = await SportPositionalMarketManager.getActiveMarketAddress('1');
-	// 		let deployedMarket_2 = await SportPositionalMarketContract.at(answer);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			let deployedMarket_1 = await SportPositionalMarketContract.at(answer);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('1');
+			let deployedMarket_2 = await SportPositionalMarketContract.at(answer);
 
-	// 		assert.equal(deployedMarket_1.address, marketAdd);
-	// 		assert.equal(deployedMarket_2.address, marketAdd_2);
-	// 		await fastForward(fightTime - (await currentTime()) - SECOND);
-	// 		fightCreated = [fight_create];
+			assert.equal(deployedMarket_1.address, marketAdd);
+			assert.equal(deployedMarket_2.address, marketAdd_2);
+			await fastForward(fightTime - (await currentTime()) - SECOND);
+			fightCreated = [fight_create];
 
-	// 		// req games
-	// 		const tx_3 = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdFightCreate,
-	// 			[fight_create],
-	// 			sportId_7,
-	// 			fightTime,
-	// 			{ from: wrapper }
-	// 		);
+			// req games
+			const tx_3 = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFightCreate,
+				[fight_create],
+				sportId_7,
+				fightTime,
+				{ from: wrapper }
+			);
 
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
-	// 		assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
 
-	// 		let fight = await TherundownConsumerDeployed.gameCreated(fightId);
-	// 		assert.equal('Clayton Carpenter', fight.homeTeam);
-	// 		assert.equal('Edgar Chairez', fight.awayTeam);
+			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
+			assert.equal('Clayton Carpenter', fight.homeTeam);
+			assert.equal('Edgar Chairez', fight.awayTeam);
 
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_3.logs[0], 'GameCreated', {
-	// 			_requestId: reqIdFightCreate,
-	// 			_sportId: sportId_7,
-	// 			_id: fightId,
-	// 			_game: fight,
-	// 		});
+			// check if event is emited
+			assert.eventEqual(tx_3.logs[0], 'GameCreated', {
+				_requestId: reqIdFightCreate,
+				_sportId: sportId_7,
+				_id: fightId,
+				_game: fight,
+			});
 
-	// 		const tx_create_3 = await TherundownConsumerDeployed.createMarketForGame(fightId);
+			const tx_create_3 = await TherundownConsumerDeployed.createMarketForGame(fightId);
 
-	// 		marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
+			marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
 
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create_3.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: fightId,
-	// 			_game: fight,
-	// 		});
+			// check if event is emited
+			assert.eventEqual(tx_create_3.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: fightId,
+				_game: fight,
+			});
 
-	// 		// console.log("3. game:");
-	// 		// console.log("==> home: ", fight.homeTeam);
-	// 		// console.log("==> away: ", fight.awayTeam);
+			// console.log("3. game:");
+			// console.log("==> home: ", fight.homeTeam);
+			// console.log("==> away: ", fight.awayTeam);
 
-	// 		answer = await SportPositionalMarketManager.getActiveMarketAddress('2');
-	// 		let deployedMarket_3 = await SportPositionalMarketContract.at(answer);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('2');
+			let deployedMarket_3 = await SportPositionalMarketContract.at(answer);
 
-	// 		await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
 
-	// 		// req. games
-	// 		const tx_4 = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdFootballCreate,
-	// 			gamesFootballCreated,
-	// 			sportId_16,
-	// 			gameFootballTime,
-	// 			{ from: wrapper }
-	// 		);
+			// req. games
+			const tx_4 = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
+				gameFootballTime,
+				{ from: wrapper }
+			);
 
-	// 		assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
-	// 		assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
 
-	// 		let result = await GamesOddsObtainerDeployed.getOddsForGame(gameFootballid1);
-	// 		assert.bnEqual(40000, result[0]);
-	// 		assert.bnEqual(-12500, result[1]);
-	// 		assert.bnEqual(27200, result[2]);
+			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameFootballid1);
+			assert.bnEqual(40000, result[0]);
+			assert.bnEqual(-12500, result[1]);
+			assert.bnEqual(27200, result[2]);
 
-	// 		let game_4 = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
-	// 		let game_5 = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
-	// 		assert.equal('Atletico Madrid Atletico Madrid', game_4.homeTeam);
-	// 		assert.equal('Manchester City Manchester City', game_4.awayTeam);
+			let game_4 = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			let game_5 = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
+			assert.equal('Atletico Madrid Atletico Madrid', game_4.homeTeam);
+			assert.equal('Manchester City Manchester City', game_4.awayTeam);
 
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_4.logs[0], 'GameCreated', {
-	// 			_requestId: reqIdFootballCreate,
-	// 			_sportId: sportId_16,
-	// 			_id: gameFootballid1,
-	// 			_game: game_4,
-	// 		});
+			// check if event is emited
+			assert.eventEqual(tx_4.logs[0], 'GameCreated', {
+				_requestId: reqIdFootballCreate,
+				_sportId: sportId_16,
+				_id: gameFootballid1,
+				_game: game_4,
+			});
 
-	// 		// console.log("4. game:");
-	// 		// console.log("==> home: ", game_4.homeTeam);
-	// 		// console.log("==> away: ", game_4.awayTeam);
+			// console.log("4. game:");
+			// console.log("==> home: ", game_4.homeTeam);
+			// console.log("==> away: ", game_4.awayTeam);
 
-	// 		// console.log("5. game:");
-	// 		// console.log("==> home: ", game_5.homeTeam);
-	// 		// console.log("==> away: ", game_5.awayTeam);
+			// console.log("5. game:");
+			// console.log("==> home: ", game_5.homeTeam);
+			// console.log("==> away: ", game_5.awayTeam);
 
-	// 		// create markets
-	// 		const tx_create_4 = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
-	// 		await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
+			// create markets
+			const tx_create_4 = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+			await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
 
-	// 		let marketAdd_4 = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
-	// 		let marketAdd_5 = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
+			let marketAdd_4 = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+			let marketAdd_5 = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
 
-	// 		answer = await SportPositionalMarketManager.getActiveMarketAddress('3');
-	// 		let deployedMarket_4 = await SportPositionalMarketContract.at(answer);
-	// 		answer = await SportPositionalMarketManager.getActiveMarketAddress('4');
-	// 		let deployedMarket_5 = await SportPositionalMarketContract.at(answer);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('3');
+			let deployedMarket_4 = await SportPositionalMarketContract.at(answer);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('4');
+			let deployedMarket_5 = await SportPositionalMarketContract.at(answer);
 
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create_4.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd_4,
-	// 			_id: gameFootballid1,
-	// 			_game: game_4,
-	// 		});
+			// check if event is emited
+			assert.eventEqual(tx_create_4.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd_4,
+				_id: gameFootballid1,
+				_game: game_4,
+			});
 
-	// 		assert.equal(deployedMarket_4.address, marketAdd_4);
-	// 		assert.equal(deployedMarket_5.address, marketAdd_5);
+			assert.equal(deployedMarket_4.address, marketAdd_4);
+			assert.equal(deployedMarket_5.address, marketAdd_5);
 
-	// 		answer = await SportPositionalMarketManager.numActiveMarkets();
-	// 		assert.equal(answer.toString(), '5');
-	// 		await fastForward(await currentTime());
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			await fastForward(await currentTime());
 
-	// 		assert.equal(true, await deployedMarket_1.canResolve());
-	// 		assert.equal(true, await deployedMarket_2.canResolve());
-	// 		assert.equal(true, await deployedMarket_3.canResolve());
-	// 		assert.equal(true, await deployedMarket_4.canResolve());
-	// 		assert.equal(true, await deployedMarket_5.canResolve());
+			assert.equal(true, await deployedMarket_1.canResolve());
+			assert.equal(true, await deployedMarket_2.canResolve());
+			assert.equal(true, await deployedMarket_3.canResolve());
+			assert.equal(true, await deployedMarket_4.canResolve());
+			assert.equal(true, await deployedMarket_5.canResolve());
 
-	// 		// console.log('parlay 1: ', deployedMarket_1.address);
-	// 		// console.log('parlay 2: ', deployedMarket_2.address);
-	// 		// console.log('parlay 3: ', deployedMarket_3.address);
-	// 		// console.log('parlay 4: ', deployedMarket_4.address);
+			// console.log('parlay 1: ', deployedMarket_1.address);
+			// console.log('parlay 2: ', deployedMarket_2.address);
+			// console.log('parlay 3: ', deployedMarket_3.address);
+			// console.log('parlay 4: ', deployedMarket_4.address);
 
-	// 		parlayMarkets = [deployedMarket_1, deployedMarket_5, deployedMarket_3, deployedMarket_4];
-	// 		equalParlayMarkets = [deployedMarket_1, deployedMarket_2, deployedMarket_3, deployedMarket_4];
-	// 		await Thales.approve(CrossChainAdapter.address, toUnit(101), { from: first });
-	// 	});
+			parlayMarkets = [deployedMarket_1, deployedMarket_5, deployedMarket_3, deployedMarket_4];
+			equalParlayMarkets = [deployedMarket_1, deployedMarket_2, deployedMarket_3, deployedMarket_4];
+			await Thales.approve(CrossChainAdapter.address, toUnit(101), { from: first });
+		});
 
-	// 	it('Can create Parlay: YES', async () => {
-	// 		await fastForward(game1NBATime - (await currentTime()) - SECOND);
-	// 		// await fastForward((await currentTime()) - SECOND);
-	// 		answer = await SportPositionalMarketManager.numActiveMarkets();
-	// 		assert.equal(answer.toString(), '5');
-	// 		let totalSUSDToPay = toUnit('10');
-	// 		parlayPositions = ['1', '1', '1', '1'];
-	// 		let parlayMarketsAddress = [];
-	// 		for (let i = 0; i < parlayMarkets.length; i++) {
-	// 			parlayMarketsAddress[i] = parlayMarkets[i].address;
-	// 		}
-	// 		let canCreateParlay = await ParlayAMM.canCreateParlayMarket(
-	// 			parlayMarketsAddress,
-	// 			parlayPositions,
-	// 			totalSUSDToPay
-	// 		);
-	// 		assert.equal(canCreateParlay, true);
-	// 	});
+		it('Can create Parlay: YES', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let canCreateParlay = await ParlayAMM.canCreateParlayMarket(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			assert.equal(canCreateParlay, true);
+		});
 
-	// 	it('Multi-collateral buy from amm', async () => {
-	// 		await fastForward(game1NBATime - (await currentTime()) - SECOND);
-	// 		// await fastForward((await currentTime()) - SECOND);
-	// 		answer = await SportPositionalMarketManager.numActiveMarkets();
-	// 		assert.equal(answer.toString(), '5');
-	// 		let totalSUSDToPay = toUnit('10');
-	// 		parlayPositions = ['1', '1', '1', '1'];
-	// 		let parlayMarketsAddress = [];
-	// 		for (let i = 0; i < parlayMarkets.length; i++) {
-	// 			parlayMarketsAddress[i] = parlayMarkets[i].address;
-	// 		}
-	// 		let slippage = toUnit('0.01');
-	// 		let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
-	// 			parlayMarketsAddress,
-	// 			parlayPositions,
-	// 			totalSUSDToPay,
-	// 			testUSDC.address
-	// 		);
-	// 		let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
-	// 			parlayMarketsAddress,
-	// 			parlayPositions,
-	// 			totalSUSDToPay,
-	// 			slippage,
-	// 			result[2],
-	// 			testUSDC.address,
-	// 			ZERO_ADDRESS,
-	// 			{ from: first }
-	// 		);
-	// 		// console.log("event: \n", buyParlayTX.logs[0]);
+		it('Multi-collateral buy from amm', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				testUSDC.address
+			);
+			let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[2],
+				testUSDC.address,
+				ZERO_ADDRESS,
+				{ from: first }
+			);
+			// console.log("event: \n", buyParlayTX.logs[0]);
 
-	// 		assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-	// 			account: first,
-	// 			sUSDPaid: totalSUSDToPay,
-	// 			amount: result[2],
-	// 		});
-	// 	});
+			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+				account: first,
+				sUSDPaid: totalSUSDToPay,
+				amount: result[2],
+			});
+		});
 
-	// 	it('Create Cross chain Parlay', async () => {
-	// 		await fastForward(game1NBATime - (await currentTime()) - SECOND);
-	// 		// await fastForward((await currentTime()) - SECOND);
-	// 		answer = await SportPositionalMarketManager.numActiveMarkets();
-	// 		assert.equal(answer.toString(), '5');
-	// 		let totalSUSDToPay = toUnit('10');
-	// 		parlayPositions = ['1', '1', '1', '1'];
-	// 		let parlayMarketsAddress = [];
-	// 		for (let i = 0; i < parlayMarkets.length; i++) {
-	// 			parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-	// 			parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
-	// 		}
-	// 		let slippage = toUnit('0.01');
-	// 		let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
-	// 			parlayMarketsAddress,
-	// 			parlayPositions,
-	// 			totalSUSDToPay,
-	// 			testUSDC.address
-	// 		);
+		it('Create Cross chain Parlay', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				testUSDC.address
+			);
 
-	// 		let initialBalance = await Thales.balanceOf(CrossChainAdapter.address);
-	// 		console.log('CrossChain init balance: ', fromUnit(initialBalance));
+			let initialBalance = await Thales.balanceOf(CrossChainAdapter.address);
+			console.log('CrossChain init balance: ', fromUnit(initialBalance));
 
-	// 		let tx = await CrossChainAdapter.buyFromParlay(
-	// 			testUSDC.address,
-	// 			parlayMarketsAddress,
-	// 			parlayPositions,
-	// 			totalSUSDToPay,
-	// 			result[2],
-	// 			111,
-	// 			{ from: first }
-	// 		);
-	// 		console.log(tx.logs[0].args);
-	// 		let balance = await Thales.balanceOf(CrossChainAdapter.address);
-	// 		console.log('CrossChain balance: ', fromUnit(balance));
-	// 		console.log('Sent tokens: ', fromUnit(totalSUSDToPay));
+			let tx = await CrossChainAdapter.buyFromParlay(
+				testUSDC.address,
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				result[2],
+				111,
+				{ from: first }
+			);
+			console.log(tx.logs[0].args);
+			let balance = await Thales.balanceOf(CrossChainAdapter.address);
+			console.log('CrossChain balance: ', fromUnit(balance));
+			console.log('Sent tokens: ', fromUnit(totalSUSDToPay));
 
-	// 		let tx2 = await CrossChainAdapter.executeSportBuyMessage(
-	// 			second,
-	// 			testUSDC.address,
-	// 			totalSUSDToPay,
-	// 			111,
-	// 			tx.logs[0].args.message,
-	// 			third,
-	// 			{ from: owner, value: 10000 }
-	// 		);
+			let tx2 = await CrossChainAdapter.executeSportBuyMessage(
+				second,
+				testUSDC.address,
+				totalSUSDToPay,
+				111,
+				tx.logs[0].args.message,
+				third,
+				{ from: owner, value: 10000 }
+			);
 
-	// 		console.log('\n\nTX2');
-	// 		console.log(tx2.logs[0].args);
-	// 	});
-	// 	describe('Exercise Parlay', () => {
-	// 		beforeEach(async () => {
-	// 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-	// 			// await fastForward((await currentTime()) - SECOND);
-	// 			answer = await SportPositionalMarketManager.numActiveMarkets();
-	// 			assert.equal(answer.toString(), '5');
-	// 			let totalSUSDToPay = toUnit('10');
-	// 			parlayPositions = ['1', '0', '1', '1'];
-	// 			let parlayMarketsAddress = [];
-	// 			for (let i = 0; i < parlayMarkets.length; i++) {
-	// 				parlayMarketsAddress[i] = parlayMarkets[i].address;
-	// 			}
-	// 			let slippage = toUnit('0.01');
-	// 			//
-	// 			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
-	// 				parlayMarketsAddress,
-	// 				parlayPositions,
-	// 				totalSUSDToPay,
-	// 				testUSDC.address
-	// 			);
-	// 			console.log('expected payout: ', fromUnit(result[1]));
-	// 			let tx = await CrossChainAdapter.buyFromParlay(
-	// 				testUSDC.address,
-	// 				parlayMarketsAddress,
-	// 				parlayPositions,
-	// 				totalSUSDToPay,
-	// 				result[2],
-	// 				111,
-	// 				{ from: first }
-	// 			);
-	// 			let balance = await Thales.balanceOf(CrossChainAdapter.address);
+			console.log('\n\nTX2');
+			console.log(tx2.logs[0].args);
+		});
+		describe('Exercise Parlay', () => {
+			beforeEach(async () => {
+				await fastForward(game1NBATime - (await currentTime()) - SECOND);
+				// await fastForward((await currentTime()) - SECOND);
+				answer = await SportPositionalMarketManager.numActiveMarkets();
+				assert.equal(answer.toString(), '5');
+				let totalSUSDToPay = toUnit('10');
+				parlayPositions = ['1', '0', '1', '1'];
+				let parlayMarketsAddress = [];
+				for (let i = 0; i < parlayMarkets.length; i++) {
+					parlayMarketsAddress[i] = parlayMarkets[i].address;
+				}
+				let slippage = toUnit('0.01');
+				//
+				let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
+					parlayMarketsAddress,
+					parlayPositions,
+					totalSUSDToPay,
+					testUSDC.address
+				);
+				console.log('expected payout: ', fromUnit(result[1]));
+				let tx = await CrossChainAdapter.buyFromParlay(
+					testUSDC.address,
+					parlayMarketsAddress,
+					parlayPositions,
+					totalSUSDToPay,
+					result[2],
+					111,
+					{ from: first }
+				);
+				let balance = await Thales.balanceOf(CrossChainAdapter.address);
 
-	// 			let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
-	// 				from: owner,
-	// 			});
-	// 			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
+				let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
+					from: owner,
+				});
+				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
 
-	// 			parlaySingleMarketAddress = activeParlays[0];
-	// 			console.log('Parlay address: ', parlaySingleMarketAddress);
-	// 			parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
-	// 		});
-	// 		it('Get num of active parlays', async () => {
-	// 			let activeParlays = await ParlayAMM.numActiveParlayMarkets();
-	// 			assert.equal(activeParlays, 1);
-	// 		});
-	// 		it('Get active parlay address', async () => {
-	// 			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
-	// 			let result = await ParlayAMM.isActiveParlay(activeParlays[0]);
-	// 			assert.equal(result, true);
-	// 		});
-	// 		describe('Exercise whole parlay', () => {
-	// 			beforeEach(async () => {
-	// 				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-	// 				let resolveMatrix = ['2', '1', '2', '2'];
-	// 				console.log('Games resolved: ', resolveMatrix, '\n');
-	// 				// parlayPositions = ['0', '0', '0', '0'];
-	// 				let gameId;
-	// 				let homeResult = '0';
-	// 				let awayResult = '0';
-	// 				for (let i = 0; i < parlayMarkets.length; i++) {
-	// 					homeResult = '0';
-	// 					awayResult = '0';
-	// 					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
-	// 					if (resolveMatrix[i] == '1') {
-	// 						homeResult = '1';
-	// 					} else if (resolveMatrix[i] == '2') {
-	// 						awayResult = '1';
-	// 					} else if (resolveMatrix[i] == '3') {
-	// 						homeResult = '1';
-	// 						awayResult = '1';
-	// 					}
-	// 					// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-	// 					const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
-	// 						parlayMarkets[i].address,
-	// 						resolveMatrix[i],
-	// 						homeResult,
-	// 						awayResult,
-	// 						{ from: owner }
-	// 					);
-	// 				}
-	// 			});
-	// 			it('Get Parlay balances', async () => {
-	// 				let balances = await parlaySingleMarket.getSportMarketBalances();
-	// 				let sum = toUnit(0);
-	// 				for (let i = 0; i < parlayMarkets.length; i++) {
-	// 					console.log(i, ' position: ', fromUnit(balances[i]));
-	// 					sum = sum.add(balances[i]);
-	// 				}
-	// 				console.log('total balance: ', fromUnit(sum));
-	// 				let result = await parlaySingleMarket.amount();
+				parlaySingleMarketAddress = activeParlays[0];
+				console.log('Parlay address: ', parlaySingleMarketAddress);
+				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
+			});
+			it('Get num of active parlays', async () => {
+				let activeParlays = await ParlayAMM.numActiveParlayMarkets();
+				assert.equal(activeParlays, 1);
+			});
+			it('Get active parlay address', async () => {
+				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
+				let result = await ParlayAMM.isActiveParlay(activeParlays[0]);
+				assert.equal(result, true);
+			});
+			describe('Exercise whole parlay', () => {
+				beforeEach(async () => {
+					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
+					let resolveMatrix = ['2', '1', '2', '2'];
+					console.log('Games resolved: ', resolveMatrix, '\n');
+					// parlayPositions = ['0', '0', '0', '0'];
+					let gameId;
+					let homeResult = '0';
+					let awayResult = '0';
+					for (let i = 0; i < parlayMarkets.length; i++) {
+						homeResult = '0';
+						awayResult = '0';
+						gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
+						if (resolveMatrix[i] == '1') {
+							homeResult = '1';
+						} else if (resolveMatrix[i] == '2') {
+							awayResult = '1';
+						} else if (resolveMatrix[i] == '3') {
+							homeResult = '1';
+							awayResult = '1';
+						}
+						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+							parlayMarkets[i].address,
+							resolveMatrix[i],
+							homeResult,
+							awayResult,
+							{ from: owner }
+						);
+					}
+				});
+				it('Get Parlay balances', async () => {
+					let balances = await parlaySingleMarket.getSportMarketBalances();
+					let sum = toUnit(0);
+					for (let i = 0; i < parlayMarkets.length; i++) {
+						console.log(i, ' position: ', fromUnit(balances[i]));
+						sum = sum.add(balances[i]);
+					}
+					console.log('total balance: ', fromUnit(sum));
+					let result = await parlaySingleMarket.amount();
 
-	// 				console.log('Result balance: ', fromUnit(result));
-	// 				assert.approximately(parseFloat(fromUnit(result)), parseFloat(fromUnit(sum)), 0.000001);
-	// 				// assert.bnEqual(sum, await parlaySingleMarket.amount());
-	// 			});
-	// 			it('Parlay exercised', async () => {
-	// 				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
-	// 				assert.equal(await ParlayAMM.resolvedParlay(parlaySingleMarket.address), true);
-	// 			});
-	// 			it('IsUserTheWinner', async () => {
-	// 				let result = await parlaySingleMarket.isUserTheWinner();
-	// 				assert.equal(result, true);
-	// 			});
-	// 			it('Parlay Cross chain exercised', async () => {
-	// 				let balance = await Thales.balanceOf(first);
-	// 				let initialBalance = fromUnit(balance);
-	// 				let tx = await CrossChainAdapter.exerciseParlay(parlaySingleMarket.address, 111, {
-	// 					from: first,
-	// 				});
-	// 				console.log(tx.logs[0].args);
-	// 				let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
-	// 					from: owner,
-	// 				});
-	// 				console.log('\n\nTX2');
-	// 				console.log(tx2.logs[0].args);
-	// 				balance = await Thales.balanceOf(first);
-	// 				console.log('\n\nInitial balance: ', initialBalance);
-	// 				console.log('Final balance: ', fromUnit(balance));
-	// 				assert.equal(await parlaySingleMarket.fundsIssued(), true);
-	// 				assert.equal(await parlaySingleMarket.resolved(), true);
-	// 				assert.equal(await parlaySingleMarket.parlayAlreadyLost(), false);
-	// 			});
-	// 		});
-	// 	});
-	// });
+					console.log('Result balance: ', fromUnit(result));
+					assert.approximately(parseFloat(fromUnit(result)), parseFloat(fromUnit(sum)), 0.000001);
+					// assert.bnEqual(sum, await parlaySingleMarket.amount());
+				});
+				it('Parlay exercised', async () => {
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					assert.equal(await ParlayAMM.resolvedParlay(parlaySingleMarket.address), true);
+				});
+				it('IsUserTheWinner', async () => {
+					let result = await parlaySingleMarket.isUserTheWinner();
+					assert.equal(result, true);
+				});
+				it('Parlay Cross chain exercised', async () => {
+					let balance = await Thales.balanceOf(first);
+					let initialBalance = fromUnit(balance);
+					let tx = await CrossChainAdapter.exerciseParlay(parlaySingleMarket.address, 111, {
+						from: first,
+					});
+					console.log(tx.logs[0].args);
+					let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
+						from: owner,
+					});
+					console.log('\n\nTX2');
+					console.log(tx2.logs[0].args);
+					balance = await Thales.balanceOf(first);
+					console.log('\n\nInitial balance: ', initialBalance);
+					console.log('Final balance: ', fromUnit(balance));
+					assert.equal(await parlaySingleMarket.fundsIssued(), true);
+					assert.equal(await parlaySingleMarket.resolved(), true);
+					assert.equal(await parlaySingleMarket.parlayAlreadyLost(), false);
+				});
+			});
+		});
+	});
 });

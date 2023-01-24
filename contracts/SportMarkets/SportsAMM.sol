@@ -95,20 +95,20 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return Curve usage is enabled?
     bool public curveOnrampEnabled;
 
-    /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
-    uint public maxAllowedPegSlippagePercentage;
-
     /// @return Referrals contract address
     address public referrals;
 
     /// @return Default referrer fee
     uint public referrerFee;
 
+    /// @return The address of Parlay AMM
+    address public parlayAMM;
+
     /// @return The address of Apex Consumer
     address public apexConsumer; // deprecated
 
-    /// @return The address of Parlay AMM
-    address public parlayAMM;
+    /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
+    uint public maxAllowedPegSlippagePercentage;
 
     /// @return the cap per sportID. based on the tagID
     mapping(uint => uint) public capPerSport;
@@ -162,6 +162,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param position The position (home/away/draw) to check availability
     /// @return _available The amount of position options (tokens) available to buy from AMM.
     function availableToBuyFromAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
+        uint baseOdds = _obtainOdds(market, position);
         if (isMarketInAMMTrading(market)) {
             _available = _availableToBuyFromAMMWithDoubleChanceCheck(market, position, 0, 0);
         }

@@ -447,6 +447,32 @@
   },
   {
     "inputs": [],
+    "name": "curveSUSD",
+    "outputs": [
+      {
+        "internalType": "contract ICurveSUSD",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "dai",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "defaultSlippage",
     "outputs": [
       {
@@ -858,6 +884,19 @@
   },
   {
     "inputs": [],
+    "name": "maxAllowedPegSlippagePercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "messageBus",
     "outputs": [
       {
@@ -1002,71 +1041,38 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_dstContract",
-        "type": "address"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_dstChainId",
-        "type": "uint64"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_note",
-        "type": "bytes"
-      }
-    ],
-    "name": "sendNote",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_dstContract",
+        "name": "_curveSUSD",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "_token",
+        "name": "_dai",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_usdc",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_usdt",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_curveOnrampEnabled",
+        "type": "bool"
       },
       {
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "_maxAllowedPegSlippagePercentage",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_dstChainId",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_nonce",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint32",
-        "name": "_maxSlippage",
-        "type": "uint32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_note",
-        "type": "bytes"
-      },
-      {
-        "internalType": "enum MsgDataTypes.BridgeSendType",
-        "name": "_bridgeSendType",
-        "type": "uint8"
       }
     ],
-    "name": "sendTokenWithNote",
+    "name": "setCurveSUSD",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1250,6 +1256,32 @@
     "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "usdc",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "usdt",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

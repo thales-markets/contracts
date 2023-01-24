@@ -11,6 +11,9 @@ import "../interfaces/ISportPositionalMarket.sol";
 import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IParlayMarketsAMM.sol";
 import "../interfaces/IParlayMarketData.sol";
+import "../interfaces/ICurveSUSD.sol";
+
+import "hardhat/console.sol";
 
 contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -41,6 +44,13 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     uint public bridgeFeePercentage;
     uint public defaultSlippage;
     uint private constant ONE = 1e18;
+    uint private constant ONE_PERCENT = 1e16;
+
+    ICurveSUSD public curveSUSD;
+    address public usdc;
+    address public usdt;
+    address public dai;
+    uint public maxAllowedPegSlippagePercentage;
 
     function initialize(address _owner, address _messageBus) public initializer {
         setOwner(_owner);
@@ -50,15 +60,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
 
     function calculateMessageFee(bytes memory message) external view returns (uint fee) {
         fee = MessageBusSender(messageBus).calcFee(message);
-    }
-
-    function sendNote(
-        address _dstContract,
-        uint64 _dstChainId,
-        bytes memory _note
-    ) public payable {
-        bytes memory message = abi.encode(msg.sender, _note);
-        sendMessage(_dstContract, _dstChainId, _note, msg.value);
     }
 
     function buyFromSportAMM(
@@ -71,7 +72,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     ) external payable nonReentrant notPaused {
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position, amount, expectedPayout, _token);
-        bytes4 selector = bytes4(keccak256(bytes("buyFromSportAMM(address,uint8,uint256,uint256,address)")));
+        bytes4 selector = bytes4(keccak256(bytes("buyFromSportAMM()")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         noncePerSelector[selector]++;
         // Needs to be removed before deployment on mainchain
@@ -79,22 +80,22 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, expectedPayout);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
         } else {
-            IERC20Upgradeable(_token).safeTransferFrom(
-                msg.sender,
-                address(this),
-                ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE)
-            );
-            sendMessageWithTransfer(
-                adapterOnDestination,
-                _token,
-                ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE),
-                _dstChainId,
-                noncePerSelector[selector],
-                minBridgeSlippage,
-                message,
-                MsgDataTypes.BridgeSendType.Liquidity,
-                msg.value
-            );
+            // IERC20Upgradeable(_token).safeTransferFrom(
+            //     msg.sender,
+            //     address(this),
+            //     ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE)
+            // );
+            // sendMessageWithTransfer(
+            //     adapterOnDestination,
+            //     _token,
+            //     ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE),
+            //     _dstChainId,
+            //     noncePerSelector[selector],
+            //     minBridgeSlippage,
+            //     message,
+            //     MsgDataTypes.BridgeSendType.Liquidity,
+            //     msg.value
+            // );
         }
     }
 
@@ -109,7 +110,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         //todo specify
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position, amount, expectedPayout, _token);
-        bytes4 selector = bytes4(keccak256(bytes("buyFromCryptoAMM(address,uint8,uint256,uint256,address)")));
+        bytes4 selector = bytes4(keccak256(bytes("buyFromCryptoAMM()")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         noncePerSelector[selector]++;
         // Needs to be removed before deployment on mainchain
@@ -117,22 +118,22 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, expectedPayout);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
         } else {
-            IERC20Upgradeable(_token).safeTransferFrom(
-                msg.sender,
-                address(this),
-                ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE)
-            );
-            sendMessageWithTransfer(
-                adapterOnDestination,
-                _token,
-                ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE),
-                _dstChainId,
-                noncePerSelector[selector],
-                minBridgeSlippage,
-                message,
-                MsgDataTypes.BridgeSendType.Liquidity,
-                msg.value
-            );
+            // IERC20Upgradeable(_token).safeTransferFrom(
+            //     msg.sender,
+            //     address(this),
+            //     ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE)
+            // );
+            // sendMessageWithTransfer(
+            //     adapterOnDestination,
+            //     _token,
+            //     ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE),
+            //     _dstChainId,
+            //     noncePerSelector[selector],
+            //     minBridgeSlippage,
+            //     message,
+            //     MsgDataTypes.BridgeSendType.Liquidity,
+            //     msg.value
+            // );
         }
     }
 
@@ -149,7 +150,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bytes4 selector = bytes4(
             keccak256(
                 bytes(
-                    "buyFromParlayWithDifferentCollateralAndReferrer(address[],uint256[],uint256,uint256,uint256,address,address)"
+                    "buyFromParlay()"
                 )
             )
         );
@@ -159,22 +160,22 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, _sUSDPaid);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
         } else {
-            IERC20Upgradeable(_token).safeTransferFrom(
-                msg.sender,
-                address(this),
-                ((_sUSDPaid * (ONE + bridgeFeePercentage)) / ONE)
-            );
-            sendMessageWithTransfer(
-                adapterOnDestination,
-                _token,
-                ((_sUSDPaid * (ONE + bridgeFeePercentage)) / ONE),
-                _dstChainId,
-                noncePerSelector[selector],
-                minBridgeSlippage,
-                message,
-                MsgDataTypes.BridgeSendType.Liquidity,
-                msg.value
-            );
+            // IERC20Upgradeable(_token).safeTransferFrom(
+            //     msg.sender,
+            //     address(this),
+            //     ((_sUSDPaid * (ONE + bridgeFeePercentage)) / ONE)
+            // );
+            // sendMessageWithTransfer(
+            //     adapterOnDestination,
+            //     _token,
+            //     ((_sUSDPaid * (ONE + bridgeFeePercentage)) / ONE),
+            //     _dstChainId,
+            //     noncePerSelector[selector],
+            //     minBridgeSlippage,
+            //     message,
+            //     MsgDataTypes.BridgeSendType.Liquidity,
+            //     msg.value
+            // );
         }
     }
 
@@ -190,12 +191,12 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bytes calldata _message,
         address // executor
     ) external payable notPaused nonReentrant returns (ExecutionStatus) {
-        require(whitelistedToReceiveFrom[_sender], "Invalid sender");
+        require(whitelistedToReceiveFrom[_sender], "InvSender");
         (address sender, uint chainId, bytes4 selector, bytes memory payload) = abi.decode(
             _message,
             (address, uint, bytes4, bytes)
         );
-        require(selectorAddress[selector] != address(0), "Invalid selector");
+        require(selectorAddress[selector] != address(0), "InvSelector");
         bool success = checkAndSendMessage(sender, selector, chainId, payload);
         if (success) {
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
@@ -212,7 +213,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             _message,
             (address, uint, bytes4, bytes)
         );
-        require(selectorAddress[selector] != address(0), "Invalid selector");
+        require(selectorAddress[selector] != address(0), "InvSelector");
         bool success = checkAndSendMessage(sender, selector, chainId, payload);
         if (success) {
             emit MessageReceived(sender, uint64(chainId), payload);
@@ -278,7 +279,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         uint _sourceChain,
         bytes memory _message
     ) internal returns (bool) {
-        if (_selector == bytes4(keccak256(bytes("buyFromSportAMM(address,uint8,uint256,uint256,address)")))) {
+        if (_selector == bytes4(keccak256(bytes("buyFromSportAMM()")))) {
             bytes4 realSelector = bytes4(
                 keccak256(
                     bytes(
@@ -308,7 +309,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 userMarketBalances[_sender][market][position] += amount;
             }
             return success;
-        } else if (_selector == bytes4(keccak256(bytes("buyFromCryptoAMM(address,uint8,uint256,uint256,address)")))) {
+        } else if (_selector == bytes4(keccak256(bytes("buyFromCryptoAMM()")))) {
             bytes4 realSelector = bytes4(
                 keccak256(
                     bytes(
@@ -343,17 +344,24 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             bytes4(
                 keccak256(
                     bytes(
-                        "buyFromParlayWithDifferentCollateralAndReferrer(address[],uint256[],uint256,uint256,uint256,address,address)"
+                        "buyFromParlay()"
                     )
                 )
             )
         ) {
+            bytes4 realSelector = bytes4(
+                keccak256(
+                    bytes(
+                        "buyFromParlayWithDifferentCollateralAndReferrer(address[],uint256[],uint256,uint256,uint256,address,address)"
+                    )
+                )
+            );
             (address[] memory market, uint8[] memory position, uint amount, uint expectedPayout, address collateral) = abi
                 .decode(_message, (address[], uint8[], uint, uint, address));
             IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
             (bool success, bytes memory result) = selectorAddress[_selector].call(
                 abi.encodeWithSelector(
-                    _selector,
+                    realSelector,
                     market,
                     position,
                     amount,
@@ -373,21 +381,23 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             uint initalBalance = sUSD.balanceOf(address(this));
             IParlayMarketsAMM(parlayAMM).exerciseParlay(market);
             uint issueBalance = sUSD.balanceOf(address(this)) - initalBalance;
-            require(issueBalance >= 0 && userOwningToken[_sender][market] > 0, "Balances dont match");
+            require(issueBalance >= 0 && userOwningToken[_sender][market] > 0, "Not match");
+            uint amount = _transferToCollateral(issueBalance, usdc);
             if (_sourceChain == block.chainid) {
-                sUSD.transfer(_sender, issueBalance);
+                IERC20Upgradeable(usdc).transfer(_sender, amount);
+                // sUSD.transfer(_sender, issueBalance);
             } else {
-                sendMessageWithTransfer(
-                    _sender,
-                    address(sUSD),
-                    issueBalance,
-                    uint64(_sourceChain),
-                    noncePerSelector[_selector],
-                    minBridgeSlippage,
-                    "",
-                    MsgDataTypes.BridgeSendType.Liquidity,
-                    msg.value
-                );
+                // sendMessageWithTransfer(
+                //     _sender,
+                //     address(sUSD),
+                //     issueBalance,
+                //     uint64(_sourceChain),
+                //     noncePerSelector[_selector],
+                //     minBridgeSlippage,
+                //     "",
+                //     MsgDataTypes.BridgeSendType.Liquidity,
+                //     msg.value
+                // );
             }
             userOwningToken[_sender][market] = 0;
             return true;
@@ -403,22 +413,24 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             require(
                 exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position] &&
                     sUSD.balanceOf(address(this)) >= userMarketBalances[_sender][market][position],
-                "Invalid amount"
+                "InvaAmount"
             );
+            uint amount = _transferToCollateral(userMarketBalances[_sender][market][position], usdc);
             if (_sourceChain == block.chainid) {
-                sUSD.transfer(_sender, userMarketBalances[_sender][market][position]);
+                IERC20Upgradeable(usdc).transfer(_sender, amount);
+                // sUSD.transfer(_sender, userMarketBalances[_sender][market][position]);
             } else {
-                sendMessageWithTransfer(
-                    _sender,
-                    address(sUSD),
-                    userMarketBalances[_sender][market][position],
-                    uint64(_sourceChain),
-                    noncePerSelector[_selector],
-                    minBridgeSlippage,
-                    "",
-                    MsgDataTypes.BridgeSendType.Liquidity,
-                    msg.value
-                );
+                // sendMessageWithTransfer(
+                //     _sender,
+                //     address(sUSD),
+                //     userMarketBalances[_sender][market][position],
+                //     uint64(_sourceChain),
+                //     noncePerSelector[_selector],
+                //     minBridgeSlippage,
+                //     "",
+                //     MsgDataTypes.BridgeSendType.Liquidity,
+                //     msg.value
+                // );
             }
             exercisedMarketBalance[market][position] -= userMarketBalances[_sender][market][position];
             userMarketBalances[_sender][market][position] = 0;
@@ -438,26 +450,27 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             require(
                 exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position] &&
                     sUSD.balanceOf(address(this)) >= userMarketBalances[_sender][market][position],
-                "Invalid amount"
+                "InvAmount"
             );
+            uint amount = _transferToCollateral(userMarketBalances[_sender][market][position], usdc);
             if (_sourceChain == block.chainid) {
-                sUSD.transfer(_sender, userMarketBalances[_sender][market][position]);
+                IERC20Upgradeable(usdc).transfer(_sender, amount);
             } else {
-                require(
-                    exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position],
-                    "Invalid amount"
-                );
-                sendMessageWithTransfer(
-                    _sender,
-                    address(sUSD),
-                    userMarketBalances[_sender][market][position],
-                    uint64(_sourceChain),
-                    noncePerSelector[_selector],
-                    minBridgeSlippage,
-                    "",
-                    MsgDataTypes.BridgeSendType.Liquidity,
-                    msg.value
-                );
+                // require(
+                //     exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position],
+                //     "InvAmount"
+                // );
+                // sendMessageWithTransfer(
+                //     _sender,
+                //     address(sUSD),
+                //     userMarketBalances[_sender][market][position],
+                //     uint64(_sourceChain),
+                //     noncePerSelector[_selector],
+                //     minBridgeSlippage,
+                //     "",
+                //     MsgDataTypes.BridgeSendType.Liquidity,
+                //     msg.value
+                // );
             }
             exercisedMarketBalance[market][position] -= userMarketBalances[_sender][market][position];
             userMarketBalances[_sender][market][position] = 0;
@@ -468,14 +481,14 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     }
 
     function setSelectorAddress(string memory _selectorString, address _selectorAddress) external {
-        require(whitelistedOperator[msg.sender], "Invalid operator");
+        require(whitelistedOperator[msg.sender], "InvOperator");
         bytes4 selector = bytes4(keccak256(bytes(_selectorString)));
         selectorAddress[selector] = _selectorAddress;
         sUSD.approve(_selectorAddress, type(uint256).max);
     }
 
     function setWhitelistedAddress(address _account, bool _enable) external {
-        require(whitelistedOperator[msg.sender], "Invalid operator");
+        require(whitelistedOperator[msg.sender], "InvOperator");
         whitelistedToReceiveFrom[_account] = _account != address(0) ? _enable : false;
     }
 
@@ -487,55 +500,19 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         sUSD = IERC20Upgradeable(_paymentToken);
     }
 
-    function sendTokenWithNote(
-        address _dstContract,
-        address _token,
-        uint256 _amount,
-        uint64 _dstChainId,
-        uint64 _nonce,
-        uint32 _maxSlippage,
-        bytes calldata _note,
-        MsgDataTypes.BridgeSendType _bridgeSendType
-    ) external payable {
-        IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        bytes memory message = abi.encode(msg.sender, _note);
-        sendMessageWithTransfer(
-            _dstContract,
-            _token,
-            _amount,
-            _dstChainId,
-            _nonce,
-            _maxSlippage,
-            message,
-            _bridgeSendType,
-            msg.value
-        );
-    }
-
     function executeMessage(
         address _sender,
         uint64 _srcChainId,
         bytes calldata _message,
         address _executor
     ) external payable virtual override onlyMessageBus returns (ExecutionStatus) {
-        require(whitelistedToReceiveFrom[_sender], "Invalid sender");
+        require(whitelistedToReceiveFrom[_sender], "InvSender");
         bool success = _executeBuy(_message);
         if (success) {
             return ExecutionStatus.Success;
         } else {
             return ExecutionStatus.Fail;
         }
-    }
-
-    function executeMessage(
-        bytes calldata _sender,
-        uint64 _srcChainId,
-        bytes calldata _message,
-        address _executor
-    ) external payable virtual override onlyMessageBus returns (ExecutionStatus) {
-        (address sender, bytes memory note) = abi.decode((_message), (address, bytes));
-        emit MessageReceived(sender, _srcChainId, note);
-        return ExecutionStatus.Success;
     }
 
     // called by MessageBus on destination chain to receive message, record and emit info.
@@ -549,13 +526,13 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         address // executor
     ) external payable override onlyMessageBus returns (ExecutionStatus) {
         // (address sender, bytes memory note) = abi.decode((_message), (address, bytes));
-        require(whitelistedToReceiveFrom[_sender], "Invalid sender");
+        require(whitelistedToReceiveFrom[_sender], "InvSender");
         (address sender, uint chainId, bytes4 selector, bytes memory payload) = abi.decode(
             _message,
             (address, uint, bytes4, bytes)
         );
         balances[sender][_token] += _amount;
-        require(selectorAddress[selector] != address(0), "Invalid selector");
+        require(selectorAddress[selector] != address(0), "InvSelector");
         bool success = checkAndSendMessage(sender, selector, chainId, payload);
         if (success) {
             balances[sender][_token] -= _amount;
@@ -596,7 +573,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         uint _bridgeFeePercentage,
         uint _defaultSlippage
     ) external {
-        require(whitelistedOperator[msg.sender], "Invalid operator");
+        require(whitelistedOperator[msg.sender], "InvOperator");
         testChain = _testChain;
         adapterOnDestination = _adapterOnDestination;
         parlayAMM = _parlayAMM;
@@ -604,6 +581,65 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         minBridgeSlippage = _minBridgeSlippage;
         bridgeFeePercentage = _bridgeFeePercentage;
         defaultSlippage = _defaultSlippage;
+    }
+
+    /// @notice Setting the Curve collateral addresses for all collaterals
+    /// @param _curveSUSD Address of the Curve contract
+    /// @param _dai Address of the DAI contract
+    /// @param _usdc Address of the USDC contract
+    /// @param _usdt Address of the USDT (Tether) contract
+    /// @param _curveOnrampEnabled Enabling or restricting the use of multicollateral
+    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
+    function setCurveSUSD(
+        address _curveSUSD,
+        address _dai,
+        address _usdc,
+        address _usdt,
+        bool _curveOnrampEnabled,
+        uint _maxAllowedPegSlippagePercentage
+    ) external onlyOwner {
+        curveSUSD = ICurveSUSD(_curveSUSD);
+        dai = _dai;
+        usdc = _usdc;
+        usdt = _usdt;
+        IERC20Upgradeable(dai).approve(_curveSUSD, type(uint256).max);
+        IERC20Upgradeable(usdc).approve(_curveSUSD, type(uint256).max);
+        IERC20Upgradeable(usdt).approve(_curveSUSD, type(uint256).max);
+        sUSD.approve(_curveSUSD, type(uint256).max);
+        // not needed unless selling into different collateral is enabled
+        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
+    }
+
+    function _transferToCollateral(uint amount, address collateral) internal returns(uint transformedAmount) {
+        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
+        require(curveIndex > 0);
+        //cant get a quote on how much collateral is needed from curve for sUSD,
+        //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
+        uint collateralQuote = curveSUSD.get_dy_underlying(curveIndex, 0, (amount*(ONE+(ONE_PERCENT/5))/ONE));
+        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
+            ? collateralQuote*(1e12)
+            : collateralQuote;
+        require(
+            maxAllowedPegSlippagePercentage > 0 &&
+                transformedCollateralForPegCheck >= (amount*(ONE-maxAllowedPegSlippagePercentage)/ONE),
+            "maxExceeded"
+        );
+
+        require((collateralQuote*ONE/amount) <= (ONE+defaultSlippage), "SlippageHigh");
+        transformedAmount = curveSUSD.exchange_underlying(0, curveIndex, collateralQuote, amount);
+    }
+
+    function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
+        if (collateral == dai) {
+            return 1;
+        }
+        if (collateral == usdc) {
+            return 2;
+        }
+        if (collateral == usdt) {
+            return 3;
+        }
+        return 0;
     }
 
     function _updateParlayDetails(address _sender, uint _expectedPayout) internal {

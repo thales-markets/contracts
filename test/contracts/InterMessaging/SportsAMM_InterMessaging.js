@@ -732,18 +732,30 @@ contract('SportsAMM', (accounts) => {
 			}
 		);
 		await Thales.transfer(CrossChainAdapter.address, toUnit('1000'), { from: owner });
+		
+		
+		await CrossChainAdapter.setCurveSUSD(
+			curveSUSD.address,
+			testDAI.address,
+			testUSDC.address,
+			testUSDT.address,
+			true,
+			toUnit(0.02),
+			{ from: owner }
+		);
+
 		await CrossChainAdapter.setSelectorAddress(
-			'buyFromSportAMM(address,uint8,uint256,uint256,address)',
+			'buyFromSportAMM()',
 			SportsAMM.address,
 			{ from: owner }
 		);
 		await CrossChainAdapter.setSelectorAddress(
-			'buyFromParlayWithDifferentCollateralAndReferrer(address[],uint256[],uint256,uint256,uint256,address,address)',
+			'buyFromParlay()',
 			ParlayAMM.address,
 			{ from: owner }
 		);
 		await CrossChainAdapter.setSelectorAddress(
-			'buyFromCryptoAMM(address,uint8,uint256,uint256,address)',
+			'buyFromCryptoAMM()',
 			thalesAMM.address,
 			{ from: owner }
 		);
@@ -989,8 +1001,8 @@ contract('SportsAMM', (accounts) => {
 			});
 			it('Exercise position', async () => {
 				let position = 1;
-				answer = await Thales.balanceOf(first);
-				let initialBalance = fromUnit(answer);
+				answer = await testUSDC.balanceOf(first);
+				let initialBalance = parseInt(answer/1e12);
 				let tx = await CrossChainAdapter.exerciseSportPosition(
 					deployedMarket.address,
 					position,
@@ -1003,9 +1015,9 @@ contract('SportsAMM', (accounts) => {
 				});
 				console.log('\n\nTX2');
 				console.log(tx2.logs[0].args);
-				answer = await Thales.balanceOf(first);
+				answer = await testUSDC.balanceOf(first);
 				console.log('\n\nInitial balance: ', initialBalance);
-				console.log('Final balance: ', fromUnit(answer));
+				console.log('Final balance: ', parseInt(answer/1e12));
 			});
 			it('buying test using regular contract call', async () => {
 				let priceUp = await thalesAMM.price(newMarket.address, Position.UP);

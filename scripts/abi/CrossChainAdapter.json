@@ -334,11 +334,6 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "additionalSlippage",
-        "type": "uint256"
-      },
-      {
         "internalType": "uint64",
         "name": "_dstChainId",
         "type": "uint64"
@@ -379,18 +374,8 @@
       },
       {
         "internalType": "uint256",
-        "name": "_additionalSlippage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_expectedPayout",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_differentRecepient",
-        "type": "address"
       },
       {
         "internalType": "uint64",
@@ -431,11 +416,6 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "additionalSlippage",
-        "type": "uint256"
-      },
-      {
         "internalType": "uint64",
         "name": "_dstChainId",
         "type": "uint64"
@@ -459,6 +439,19 @@
       {
         "internalType": "uint256",
         "name": "fee",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "defaultSlippage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -1127,6 +1120,11 @@
       {
         "internalType": "uint256",
         "name": "_bridgeFeePercentage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_defaultSlippage",
         "type": "uint256"
       }
     ],

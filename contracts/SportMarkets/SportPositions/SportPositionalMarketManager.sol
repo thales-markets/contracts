@@ -51,7 +51,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     mapping(address => bool) public whitelistedCancelAddresses;
     address public oddsObtainer;
 
-    mapping(address => address) public doubleChanceMarkets; // deprecated
     mapping(address => bool) public isDoubleChance;
     bool public override isDoubleChanceSupported;
     mapping(address => address[]) public doubleChanceMarketsByParent;

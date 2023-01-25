@@ -165,6 +165,10 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    function setChildMarketGameId(bytes32 gameId, address market) external onlyManager {
+        consumer.setGameIdPerChildMarket(gameId, market);
+    }
+
     /// @notice resolve all child markets
     /// @param _main parent market for which we are resolving
     /// @param _outcome poitions thet is winning (homw, away, cancel)
@@ -625,6 +629,11 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
 
     modifier onlyConsumer() {
         require(msg.sender == address(consumer), "Only consumer");
+        _;
+    }
+
+    modifier onlyManager() {
+        require(msg.sender == address(sportsManager), "Only manager");
         _;
     }
 

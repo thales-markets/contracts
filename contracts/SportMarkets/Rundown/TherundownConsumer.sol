@@ -13,6 +13,7 @@ import "./GamesQueue.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/ITherundownConsumerVerifier.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
+import "../../interfaces/ISportPositionalMarket.sol";
 
 /// @title Consumer contract which stores all data from CL data feed (Link to docs: https://market.link/nodes/TheRundown/integrations), also creates all sports markets based on that data
 /// @author gruja
@@ -152,7 +153,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             GameCreate memory gameForProcessing = abi.decode(_games[i], (GameCreate));
             // new game
             if (
-                !queues.existingGamesInCreatedQueue(gameForProcessing.gameId) &&
+                !gameFulfilledCreated[gameForProcessing.gameId] &&
                 !verifier.isInvalidNames(gameForProcessing.homeTeam, gameForProcessing.awayTeam) &&
                 gameForProcessing.startTime > block.timestamp
             ) {
@@ -212,7 +213,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         for (uint i = 0; i < _games.length; i++) {
             GameResolve memory game = abi.decode(_games[i], (GameResolve));
             // if game is not resolved already and there is market for that game
-            if (!queues.existingGamesInResolvedQueue(game.gameId) && marketPerGameId[game.gameId] != address(0)) {
+            if (!gameFulfilledResolved[game.gameId] && marketPerGameId[game.gameId] != address(0)) {
                 _resolveGameFulfill(_requestId, game, _sportId);
             }
         }
@@ -299,6 +300,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function pauseOrUnpauseMarketManually(address _market, bool _pause) external isAddressWhitelisted {
         require(gameIdPerMarket[_market] != 0 && gameFulfilledCreated[gameIdPerMarket[_market]], "ID20");
         _pauseOrUnpauseMarketManually(_market, _pause);
+    }
+
+    /// @notice reopen game for processing the creation again
+    /// @param gameId gameId
+    function reopenGameForCreationProcessing(bytes32 gameId) external isAddressWhitelisted {
+        require(gameFulfilledCreated[gameId], "ID22");
+        gameFulfilledCreated[gameId] = false;
+        gameFulfilledResolved[gameId] = false;
     }
 
     /// @notice setting isPausedByCanceledStatus from obtainer see @GamesOddsObtainer
@@ -460,7 +469,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             uint[] memory tags = _calculateTags(sportsIdPerGame[_gameId]);
 
             // create
-            sportsManager.createMarket(
+            ISportPositionalMarket market = sportsManager.createMarket(
                 _gameId,
                 string(abi.encodePacked(game.homeTeam, " vs ", game.awayTeam)), // gameLabel
                 game.startTime, //maturity
@@ -471,15 +480,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 address(0)
             );
 
-            address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
-            marketPerGameId[game.gameId] = marketAddress;
-            gameIdPerMarket[marketAddress] = game.gameId;
-            marketCreated[marketAddress] = true;
-            canMarketBeUpdated[marketAddress] = true;
+            marketPerGameId[game.gameId] = address(market);
+            gameIdPerMarket[address(market)] = game.gameId;
+            marketCreated[address(market)] = true;
+            canMarketBeUpdated[address(market)] = true;
 
             queues.dequeueGamesCreated();
 
-            emit CreateSportsMarket(marketAddress, game.gameId, game, tags, oddsObtainer.getNormalizedOdds(game.gameId));
+            emit CreateSportsMarket(address(market), game.gameId, game, tags, oddsObtainer.getNormalizedOdds(game.gameId));
         } else {
             queues.dequeueGamesCreated();
         }

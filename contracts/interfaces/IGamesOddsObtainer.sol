@@ -94,4 +94,6 @@ interface IGamesOddsObtainer {
         uint8 _homeScore,
         uint8 _awayScore
     ) external;
+
+    function setChildMarketGameId(bytes32 gameId, address market) external;
 }

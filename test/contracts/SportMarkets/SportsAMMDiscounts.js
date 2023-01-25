@@ -174,6 +174,7 @@ contract('SportsAMM', (accounts) => {
 
 		await SportPositionalMarketManager.setExpiryDuration(5 * DAY, { from: manager });
 		// await SportPositionalMarketManager.setCancelTimeout(2 * HOUR, { from: manager });
+		//await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
@@ -228,7 +229,7 @@ contract('SportsAMM', (accounts) => {
 			from: owner,
 		});
 
-		sportsAMMUtils = await SportsAMMUtils.new();
+		sportsAMMUtils = await SportsAMMUtils.new(SportsAMM.address);
 		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
 			from: owner,
 		});

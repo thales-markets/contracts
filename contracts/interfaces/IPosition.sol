@@ -10,4 +10,6 @@ interface IPosition {
     function getBalanceOf(address account) external view returns (uint);
 
     function getTotalSupply() external view returns (uint);
+
+    function exerciseWithAmount(address claimant, uint amount) external;
 }

@@ -229,7 +229,7 @@ contract('SportsAMM', (accounts) => {
 			from: owner,
 		});
 
-		sportsAMMUtils = await SportsAMMUtils.new();
+		sportsAMMUtils = await SportsAMMUtils.new(SportsAMM.address);
 		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
 			from: owner,
 		});
@@ -376,6 +376,7 @@ contract('SportsAMM', (accounts) => {
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
 		});
+		//await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketData.setSportPositionalMarketManager(

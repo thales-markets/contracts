@@ -68,7 +68,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @param _teamA team A in string (Example: Liverpool)
     /// @param _teamB team B in string (Example: Arsenal)
     /// @return bool is names are the same
-    function areTeamsEqual(string memory _teamA, string memory _teamB) external view returns (bool) {
+    function areTeamsEqual(string memory _teamA, string memory _teamB) external pure returns (bool) {
         return keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked(_teamB));
     }
 
@@ -155,7 +155,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         int24 totalOverOdds,
         uint24 totalUnder,
         int24 totalUnderOdds
-    ) external view returns (bool) {
+    ) external pure returns (bool) {
         return totalOver == totalUnder && totalOver > 0 && totalUnder > 0 && totalOverOdds != 0 && totalUnderOdds != 0;
     }
 
@@ -176,14 +176,14 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         uint _outcome,
         uint _homeScore,
         uint _awayScore
-    ) external view returns (bool) {
+    ) external pure returns (bool) {
         return _isValidOutcomeWithResult(_outcome, _homeScore, _awayScore);
     }
 
     /// @notice calculate normalized odds based on american odds
     /// @param _americanOdds american odds in array of 3 [home,away,draw]
     /// @return uint[] array of normalized odds
-    function calculateAndNormalizeOdds(int[] memory _americanOdds) external view returns (uint[] memory) {
+    function calculateAndNormalizeOdds(int[] memory _americanOdds) external pure returns (uint[] memory) {
         return _calculateAndNormalizeOdds(_americanOdds);
     }
 
@@ -272,7 +272,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         int24 _homeOdds,
         int24 _awayOdds,
         int24 _drawOdds
-    ) internal view returns (bool) {
+    ) internal pure returns (bool) {
         if (_isTwoPositionalSport) {
             return _awayOdds != 0 && _homeOdds != 0;
         } else {
@@ -280,7 +280,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         }
     }
 
-    function _isValidOutcomeForGame(bool _isTwoPositionalSport, uint _outcome) internal view returns (bool) {
+    function _isValidOutcomeForGame(bool _isTwoPositionalSport, uint _outcome) internal pure returns (bool) {
         if (_isTwoPositionalSport) {
             return _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == CANCELLED;
         }

@@ -13,8 +13,6 @@ import "../interfaces/IParlayMarketsAMM.sol";
 import "../interfaces/IParlayMarketData.sol";
 import "../interfaces/ICurveSUSD.sol";
 
-import "hardhat/console.sol";
-
 contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -45,6 +43,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     uint public defaultSlippage;
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
+    int128 private constant USDC_INDEX = 2;
 
     ICurveSUSD public curveSUSD;
     address public usdc;
@@ -72,7 +71,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     ) external payable nonReentrant notPaused {
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position, amount, expectedPayout, _token);
-        bytes4 selector = bytes4(keccak256(bytes("buyFromSportAMM()")));
+        bytes4 selector = bytes4(keccak256(bytes("buySport")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         noncePerSelector[selector]++;
         // Needs to be removed before deployment on mainchain
@@ -80,62 +79,62 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, expectedPayout);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
         } else {
-            // IERC20Upgradeable(_token).safeTransferFrom(
-            //     msg.sender,
-            //     address(this),
-            //     ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE)
-            // );
-            // sendMessageWithTransfer(
-            //     adapterOnDestination,
-            //     _token,
-            //     ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE),
-            //     _dstChainId,
-            //     noncePerSelector[selector],
-            //     minBridgeSlippage,
-            //     message,
-            //     MsgDataTypes.BridgeSendType.Liquidity,
-            //     msg.value
-            // );
+            IERC20Upgradeable(_token).safeTransferFrom(
+                msg.sender,
+                address(this),
+                ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE)
+            );
+            sendMessageWithTransfer(
+                adapterOnDestination,
+                _token,
+                ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE),
+                _dstChainId,
+                noncePerSelector[selector],
+                minBridgeSlippage,
+                message,
+                MsgDataTypes.BridgeSendType.Liquidity,
+                msg.value
+            );
         }
     }
 
-    function buyFromCryptoAMM(
-        address _token,
-        address market,
-        uint8 position,
-        uint amount,
-        uint expectedPayout,
-        uint64 _dstChainId
-    ) external payable nonReentrant notPaused returns (uint) {
-        //todo specify
-        // packing: | msg.sender | chain id | function selector | payload |
-        bytes memory payload = abi.encode(market, position, amount, expectedPayout, _token);
-        bytes4 selector = bytes4(keccak256(bytes("buyFromCryptoAMM()")));
-        bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
-        noncePerSelector[selector]++;
-        // Needs to be removed before deployment on mainchain
-        if (_dstChainId == testChain) {
-            IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, expectedPayout);
-            emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
-        } else {
-            // IERC20Upgradeable(_token).safeTransferFrom(
-            //     msg.sender,
-            //     address(this),
-            //     ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE)
-            // );
-            // sendMessageWithTransfer(
-            //     adapterOnDestination,
-            //     _token,
-            //     ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE),
-            //     _dstChainId,
-            //     noncePerSelector[selector],
-            //     minBridgeSlippage,
-            //     message,
-            //     MsgDataTypes.BridgeSendType.Liquidity,
-            //     msg.value
-            // );
-        }
-    }
+    // function buyFromCryptoAMM(
+    //     address _token,
+    //     address market,
+    //     uint8 position,
+    //     uint amount,
+    //     uint expectedPayout,
+    //     uint64 _dstChainId
+    // ) external payable nonReentrant notPaused returns (uint) {
+    //     //todo specify
+    //     // packing: | msg.sender | chain id | function selector | payload |
+    //     bytes memory payload = abi.encode(market, position, amount, expectedPayout, _token);
+    //     bytes4 selector = bytes4(keccak256(bytes("buyCrypto")));
+    //     bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
+    //     noncePerSelector[selector]++;
+    //     // Needs to be removed before deployment on mainchain
+    //     if (_dstChainId == testChain) {
+    //         IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, expectedPayout);
+    //         emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+    //     } else {
+    //         IERC20Upgradeable(_token).safeTransferFrom(
+    //             msg.sender,
+    //             address(this),
+    //             ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE)
+    //         );
+    //         sendMessageWithTransfer(
+    //             adapterOnDestination,
+    //             _token,
+    //             ((expectedPayout * (ONE + bridgeFeePercentage)) / ONE),
+    //             _dstChainId,
+    //             noncePerSelector[selector],
+    //             minBridgeSlippage,
+    //             message,
+    //             MsgDataTypes.BridgeSendType.Liquidity,
+    //             msg.value
+    //         );
+    //     }
+    // }
 
     function buyFromParlay(
         address _token,
@@ -147,29 +146,29 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     ) external payable nonReentrant notPaused {
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(_sportMarkets, _positions, _sUSDPaid, _expectedPayout, _token);
-        bytes4 selector = bytes4(keccak256(bytes("buyFromParlay()")));
+        bytes4 selector = bytes4(keccak256(bytes("buyParlay")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         noncePerSelector[selector]++;
         if (_dstChainId == testChain) {
             IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, _sUSDPaid);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
         } else {
-            // IERC20Upgradeable(_token).safeTransferFrom(
-            //     msg.sender,
-            //     address(this),
-            //     ((_sUSDPaid * (ONE + bridgeFeePercentage)) / ONE)
-            // );
-            // sendMessageWithTransfer(
-            //     adapterOnDestination,
-            //     _token,
-            //     ((_sUSDPaid * (ONE + bridgeFeePercentage)) / ONE),
-            //     _dstChainId,
-            //     noncePerSelector[selector],
-            //     minBridgeSlippage,
-            //     message,
-            //     MsgDataTypes.BridgeSendType.Liquidity,
-            //     msg.value
-            // );
+            IERC20Upgradeable(_token).safeTransferFrom(
+                msg.sender,
+                address(this),
+                ((_sUSDPaid * (ONE + bridgeFeePercentage)) / ONE)
+            );
+            sendMessageWithTransfer(
+                adapterOnDestination,
+                _token,
+                ((_sUSDPaid * (ONE + bridgeFeePercentage)) / ONE),
+                _dstChainId,
+                noncePerSelector[selector],
+                minBridgeSlippage,
+                message,
+                MsgDataTypes.BridgeSendType.Liquidity,
+                msg.value
+            );
         }
     }
 
@@ -194,7 +193,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bool success = checkAndSendMessage(sender, selector, chainId, payload);
         if (success) {
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
-            emit MessageWithTransferReceived(sender, _token, _amount, _srcChainId, _message);
             return ExecutionStatus.Success;
         } else {
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
@@ -210,7 +208,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         require(selectorAddress[selector] != address(0), "InvSelector");
         bool success = checkAndSendMessage(sender, selector, chainId, payload);
         if (success) {
-            emit MessageReceived(sender, uint64(chainId), payload);
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
             return true;
         } else {
@@ -226,7 +223,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     ) external payable nonReentrant notPaused {
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position);
-        bytes4 selector = bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")));
+        bytes4 selector = bytes4(keccak256(bytes("exeSport")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         // Needs to be removed before deployment on mainchain
         if (_dstChainId == testChain) {
@@ -239,7 +236,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     function exerciseParlay(address market, uint64 _dstChainId) external payable nonReentrant notPaused {
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market);
-        bytes4 selector = bytes4(keccak256(bytes("exerciseParlay(address)")));
+        bytes4 selector = bytes4(keccak256(bytes("exeParlay")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         // Needs to be removed before deployment on mainchain
         if (_dstChainId == testChain) {
@@ -257,7 +254,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         // todo specify
         // packing: | msg.sender | chain id | function selector | payload |
         bytes memory payload = abi.encode(market, position);
-        bytes4 selector = bytes4(keccak256(bytes("exerciseCryptoPosition(address,uint8)")));
+        bytes4 selector = bytes4(keccak256(bytes("exeCrypto")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         // Needs to be removed before deployment on mainchain
         if (_dstChainId == testChain) {
@@ -273,7 +270,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         uint _sourceChain,
         bytes memory _message
     ) internal returns (bool) {
-        if (_selector == bytes4(keccak256(bytes("buyFromSportAMM()")))) {
+        if (_selector == bytes4(keccak256(bytes("buySport")))) {
             bytes4 realSelector = bytes4(
                 keccak256(
                     bytes(
@@ -303,37 +300,37 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 userMarketBalances[_sender][market][position] += amount;
             }
             return success;
-        } else if (_selector == bytes4(keccak256(bytes("buyFromCryptoAMM()")))) {
-            bytes4 realSelector = bytes4(
-                keccak256(
-                    bytes(
-                        "buyFromAMMWithDifferentCollateralAndReferrer(address,uint8,uint256,uint256,uint256,address,address)"
-                    )
-                )
-            );
-            (address market, uint8 position, uint amount, uint expectedPayout, address collateral) = abi.decode(
-                _message,
-                (address, uint8, uint, uint, address)
-            );
-            IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
-            (bool success, bytes memory result) = selectorAddress[_selector].call(
-                abi.encodeWithSelector(
-                    realSelector,
-                    market,
-                    position,
-                    amount,
-                    expectedPayout,
-                    defaultSlippage,
-                    collateral,
-                    address(0)
-                )
-            );
-            if (success) {
-                userOwningToken[_sender][market] += amount;
-                userMarketBalances[_sender][market][position] += amount;
-            }
-            return success;
-        } else if (_selector == bytes4(keccak256(bytes("buyFromParlay()")))) {
+            // } else if (_selector == bytes4(keccak256(bytes("buyCrypto")))) {
+            //     bytes4 realSelector = bytes4(
+            //         keccak256(
+            //             bytes(
+            //                 "buyFromAMMWithDifferentCollateralAndReferrer(address,uint8,uint256,uint256,uint256,address,address)"
+            //             )
+            //         )
+            //     );
+            //     (address market, uint8 position, uint amount, uint expectedPayout, address collateral) = abi.decode(
+            //         _message,
+            //         (address, uint8, uint, uint, address)
+            //     );
+            //     IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
+            //     (bool success, bytes memory result) = selectorAddress[_selector].call(
+            //         abi.encodeWithSelector(
+            //             realSelector,
+            //             market,
+            //             position,
+            //             amount,
+            //             expectedPayout,
+            //             defaultSlippage,
+            //             collateral,
+            //             address(0)
+            //         )
+            //     );
+            //     if (success) {
+            //         userOwningToken[_sender][market] += amount;
+            //         userMarketBalances[_sender][market][position] += amount;
+            //     }
+            //     return success;
+        } else if (_selector == bytes4(keccak256(bytes("buyParlay")))) {
             bytes4 realSelector = bytes4(
                 keccak256(
                     bytes(
@@ -357,70 +354,68 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 )
             );
             if (success) {
-                _updateParlayDetails(_sender, expectedPayout);
+                _updateParlayDetails(_sender);
             }
             return success;
-        } else if (_selector == bytes4(keccak256(bytes("exerciseParlay(address)")))) {
+        } else if (_selector == bytes4(keccak256(bytes("exeParlay")))) {
             noncePerSelector[_selector]++;
             address market = abi.decode(_message, (address));
             uint initalBalance = sUSD.balanceOf(address(this));
             IParlayMarketsAMM(parlayAMM).exerciseParlay(market);
             uint issueBalance = sUSD.balanceOf(address(this)) - initalBalance;
             require(issueBalance >= 0 && userOwningToken[_sender][market] > 0, "Not match");
-            uint amount = _transferToCollateral(issueBalance, usdc);
+            uint amount = _transferToCollateral(issueBalance);
             if (_sourceChain == block.chainid) {
                 IERC20Upgradeable(usdc).transfer(_sender, amount);
-                // sUSD.transfer(_sender, issueBalance);
             } else {
-                // sendMessageWithTransfer(
-                //     _sender,
-                //     address(sUSD),
-                //     issueBalance,
-                //     uint64(_sourceChain),
-                //     noncePerSelector[_selector],
-                //     minBridgeSlippage,
-                //     "",
-                //     MsgDataTypes.BridgeSendType.Liquidity,
-                //     msg.value
-                // );
+                sendMessageWithTransfer(
+                    _sender,
+                    usdc,
+                    amount,
+                    uint64(_sourceChain),
+                    noncePerSelector[_selector],
+                    minBridgeSlippage,
+                    "",
+                    MsgDataTypes.BridgeSendType.Liquidity,
+                    msg.value
+                );
             }
             userOwningToken[_sender][market] = 0;
             return true;
-        } else if (_selector == bytes4(keccak256(bytes("exerciseCryptoPosition(address,uint8)")))) {
-            noncePerSelector[_selector]++;
-            (address market, uint8 position) = abi.decode(_message, (address, uint8));
-            if (!marketExercised[market]) {
-                (exercisedMarketBalance[market][0], exercisedMarketBalance[market][1]) = IPositionalMarket(market)
-                    .balancesOf(address(this));
-                IPositionalMarket(market).exerciseOptions();
-                marketExercised[market] = true;
-            }
-            require(
-                exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position] &&
-                    sUSD.balanceOf(address(this)) >= userMarketBalances[_sender][market][position],
-                "InvaAmount"
-            );
-            uint amount = _transferToCollateral(userMarketBalances[_sender][market][position], usdc);
-            if (_sourceChain == block.chainid) {
-                IERC20Upgradeable(usdc).transfer(_sender, amount);
-                // sUSD.transfer(_sender, userMarketBalances[_sender][market][position]);
-            } else {
-                // sendMessageWithTransfer(
-                //     _sender,
-                //     address(sUSD),
-                //     userMarketBalances[_sender][market][position],
-                //     uint64(_sourceChain),
-                //     noncePerSelector[_selector],
-                //     minBridgeSlippage,
-                //     "",
-                //     MsgDataTypes.BridgeSendType.Liquidity,
-                //     msg.value
-                // );
-            }
-            exercisedMarketBalance[market][position] -= userMarketBalances[_sender][market][position];
-            userMarketBalances[_sender][market][position] = 0;
-            return true;
-        } else if (_selector == bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")))) {
+            // } else if (_selector == bytes4(keccak256(bytes("exeCrypto")))) {
+            //     noncePerSelector[_selector]++;
+            //     (address market, uint8 position) = abi.decode(_message, (address, uint8));
+            //     if (!marketExercised[market]) {
+            //         (exercisedMarketBalance[market][0], exercisedMarketBalance[market][1]) = IPositionalMarket(market)
+            //             .balancesOf(address(this));
+            //         IPositionalMarket(market).exerciseOptions();
+            //         marketExercised[market] = true;
+            //     }
+            //     require(
+            //         exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position] &&
+            //             sUSD.balanceOf(address(this)) >= userMarketBalances[_sender][market][position],
+            //         "InvaAmount"
+            //     );
+            //     uint amount = _transferToCollateral(userMarketBalances[_sender][market][position]);
+            //     if (_sourceChain == block.chainid) {
+            //         IERC20Upgradeable(usdc).transfer(_sender, amount);
+            //     } else {
+            //         sendMessageWithTransfer(
+            //             _sender,
+            //             usdc,
+            //             amount,
+            //             uint64(_sourceChain),
+            //             noncePerSelector[_selector],
+            //             minBridgeSlippage,
+            //             "",
+            //             MsgDataTypes.BridgeSendType.Liquidity,
+            //             msg.value
+            //         );
+            //     }
+            //     exercisedMarketBalance[market][position] -= userMarketBalances[_sender][market][position];
+            //     userMarketBalances[_sender][market][position] = 0;
+            //     return true;
+        } else if (_selector == bytes4(keccak256(bytes("exeSport")))) {
             noncePerSelector[_selector]++;
             (address market, uint8 position) = abi.decode(_message, (address, uint8));
             if (!marketExercised[market]) {
@@ -437,25 +432,25 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                     sUSD.balanceOf(address(this)) >= userMarketBalances[_sender][market][position],
                 "InvAmount"
             );
-            uint amount = _transferToCollateral(userMarketBalances[_sender][market][position], usdc);
+            uint amount = _transferToCollateral(userMarketBalances[_sender][market][position]);
             if (_sourceChain == block.chainid) {
                 IERC20Upgradeable(usdc).transfer(_sender, amount);
             } else {
-                // require(
-                //     exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position],
-                //     "InvAmount"
-                // );
-                // sendMessageWithTransfer(
-                //     _sender,
-                //     address(sUSD),
-                //     userMarketBalances[_sender][market][position],
-                //     uint64(_sourceChain),
-                //     noncePerSelector[_selector],
-                //     minBridgeSlippage,
-                //     "",
-                //     MsgDataTypes.BridgeSendType.Liquidity,
-                //     msg.value
-                // );
+                require(
+                    exercisedMarketBalance[market][position] >= userMarketBalances[_sender][market][position],
+                    "InvAmount"
+                );
+                sendMessageWithTransfer(
+                    _sender,
+                    usdc,
+                    amount,
+                    uint64(_sourceChain),
+                    noncePerSelector[_selector],
+                    minBridgeSlippage,
+                    "",
+                    MsgDataTypes.BridgeSendType.Liquidity,
+                    msg.value
+                );
             }
             exercisedMarketBalance[market][position] -= userMarketBalances[_sender][market][position];
             userMarketBalances[_sender][market][position] = 0;
@@ -465,20 +460,14 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         }
     }
 
-    function setSelectorAddress(string memory _selectorString, address _selectorAddress) external {
-        require(whitelistedOperator[msg.sender], "InvOperator");
+    function setSelectorAddress(string memory _selectorString, address _selectorAddress) external onlyOwner {
         bytes4 selector = bytes4(keccak256(bytes(_selectorString)));
         selectorAddress[selector] = _selectorAddress;
         sUSD.approve(_selectorAddress, type(uint256).max);
     }
 
-    function setWhitelistedAddress(address _account, bool _enable) external {
-        require(whitelistedOperator[msg.sender], "InvOperator");
+    function setWhitelistedAddress(address _account, bool _enable) external onlyOwner {
         whitelistedToReceiveFrom[_account] = _account != address(0) ? _enable : false;
-    }
-
-    function setWhitelistedOperator(address _account, bool _enable) external onlyOwner {
-        whitelistedOperator[_account] = _account != address(0) ? _enable : false;
     }
 
     function setPaymentToken(address _paymentToken) external onlyOwner {
@@ -557,8 +546,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         uint32 _minBridgeSlippage,
         uint _bridgeFeePercentage,
         uint _defaultSlippage
-    ) external {
-        require(whitelistedOperator[msg.sender], "InvOperator");
+    ) external onlyOwner {
         testChain = _testChain;
         adapterOnDestination = _adapterOnDestination;
         parlayAMM = _parlayAMM;
@@ -595,39 +583,22 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
-    function _transferToCollateral(uint amount, address collateral) internal returns (uint transformedAmount) {
-        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        require(curveIndex > 0);
+    function _transferToCollateral(uint amount) internal returns (uint transformedAmount) {
         //cant get a quote on how much collateral is needed from curve for sUSD,
         //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        uint collateralQuote = curveSUSD.get_dy_underlying(curveIndex, 0, ((amount * (ONE + (ONE_PERCENT / 5))) / ONE));
-        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
-            ? collateralQuote * (1e12)
-            : collateralQuote;
+        uint collateralQuote = curveSUSD.get_dy_underlying(USDC_INDEX, 0, ((amount * (ONE + (ONE_PERCENT / 5))) / ONE));
+
         require(
             maxAllowedPegSlippagePercentage > 0 &&
-                transformedCollateralForPegCheck >= ((amount * (ONE - maxAllowedPegSlippagePercentage)) / ONE),
+                (collateralQuote * 1e12) >= ((amount * (ONE - maxAllowedPegSlippagePercentage)) / ONE),
             "maxExceeded"
         );
 
         require(((collateralQuote * ONE) / amount) <= (ONE + defaultSlippage), "SlippageHigh");
-        transformedAmount = curveSUSD.exchange_underlying(0, curveIndex, collateralQuote, amount);
+        transformedAmount = curveSUSD.exchange_underlying(0, USDC_INDEX, collateralQuote, amount);
     }
 
-    function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
-        if (collateral == dai) {
-            return 1;
-        }
-        if (collateral == usdc) {
-            return 2;
-        }
-        if (collateral == usdt) {
-            return 3;
-        }
-        return 0;
-    }
-
-    function _updateParlayDetails(address _sender, uint _expectedPayout) internal {
+    function _updateParlayDetails(address _sender) internal {
         address parlayMarket = IParlayMarketData(IParlayMarketsAMM(parlayAMM).parlayMarketData()).getLastUserParlay(
             address(this)
         );
@@ -636,7 +607,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     }
 
     event MessageSent(address indexed sender, address receiver, uint chainId, bytes message);
-    event Message(address indexed sender, address receiver, uint256 dstChainId, bytes message, uint256 fee);
     event MessageExercised(address sender, address contractAddress, bool success, bytes result);
     event MessageReceived(address sender, uint64 srcChainId, bytes note);
     event MessageWithTransferReceived(address sender, address token, uint256 amount, uint64 srcChainId, bytes note);

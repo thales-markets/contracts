@@ -717,7 +717,7 @@ contract('SportsAMM', (accounts) => {
 
 		await testUSDC.approve(thalesAMM.address, usdcQuantity, { from: first });
 
-		await CrossChainAdapter.setWhitelistedOperator(owner, true, { from: owner });
+		// await CrossChainAdapter.setWhitelistedOperator(owner, true, { from: owner });
 		await CrossChainAdapter.setWhitelistedAddress(second, true, { from: owner });
 		await CrossChainAdapter.setPaymentToken(Thales.address, { from: owner });
 		await CrossChainAdapter.setParameters(
@@ -743,21 +743,19 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
-		await CrossChainAdapter.setSelectorAddress('buyFromSportAMM()', SportsAMM.address, {
+		await CrossChainAdapter.setSelectorAddress('buySport', SportsAMM.address, {
 			from: owner,
 		});
-		await CrossChainAdapter.setSelectorAddress('buyFromParlay()', ParlayAMM.address, {
+		await CrossChainAdapter.setSelectorAddress('buyParlay', ParlayAMM.address, {
 			from: owner,
 		});
-		await CrossChainAdapter.setSelectorAddress('buyFromCryptoAMM()', thalesAMM.address, {
+		await CrossChainAdapter.setSelectorAddress('buyCrypto', thalesAMM.address, {
 			from: owner,
 		});
-		await CrossChainAdapter.setSelectorAddress(
-			'exerciseSportPosition(address,uint8)',
-			CrossChainAdapter.address,
-			{ from: owner }
-		);
-		await CrossChainAdapter.setSelectorAddress('exerciseParlay(address)', ParlayAMM.address, {
+		await CrossChainAdapter.setSelectorAddress('exeSport', CrossChainAdapter.address, {
+			from: owner,
+		});
+		await CrossChainAdapter.setSelectorAddress('exeParlay', ParlayAMM.address, {
 			from: owner,
 		});
 	});
@@ -887,9 +885,9 @@ contract('SportsAMM', (accounts) => {
 			);
 			let buyFromAmmQuote = buyFromAmmQuoteUSDCCollateral[0];
 			console.log(buyFromAmmQuote);
-			answer = await Thales.balanceOf(first);
+			answer = await testUSDC.balanceOf(first);
 			let before_balance = answer;
-			console.log('acc balance: ', fromUnit(answer));
+			console.log('acc USDC balance: ', parseFloat(answer / 1e12));
 			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
 
 			console.log('SPORTS AMM addres: ', SportsAMM.address);
@@ -905,7 +903,7 @@ contract('SportsAMM', (accounts) => {
 				111,
 				{ from: first }
 			);
-			console.log(tx.logs[0].args);
+			// console.log(tx.logs[0].args);
 
 			let tx2 = await CrossChainAdapter.executeSportBuyMessage(
 				second,
@@ -916,9 +914,11 @@ contract('SportsAMM', (accounts) => {
 				third,
 				{ from: owner, value: 10000 }
 			);
+			answer = await testUSDC.balanceOf(first);
+			console.log('acc USDC balance after buy: ', parseFloat(answer / 1e12));
 			// let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, { from: owner });
-			console.log('\n\nTX2');
-			console.log(tx2.logs[0].args);
+			// console.log('\n\nTX2');
+			// console.log(tx2.logs[0].args);
 		});
 
 		describe('Exercise market', () => {
@@ -946,7 +946,7 @@ contract('SportsAMM', (accounts) => {
 					testUSDC.address
 				);
 				let buyFromAmmQuote = buyFromAmmQuoteUSDCCollateral[0];
-				console.log(buyFromAmmQuote);
+				// console.log(buyFromAmmQuote);
 				answer = await Thales.balanceOf(first);
 				let before_balance = answer;
 				await Thales.approve(CrossChainAdapter.address, toUnit(101), { from: first });
@@ -995,215 +995,215 @@ contract('SportsAMM', (accounts) => {
 			it('Exercise position', async () => {
 				let position = 1;
 				answer = await testUSDC.balanceOf(first);
-				let initialBalance = parseInt(answer / 1e12);
+				let initialBalance = parseFloat(answer / 1e12);
 				let tx = await CrossChainAdapter.exerciseSportPosition(
 					deployedMarket.address,
 					position,
 					111,
 					{ from: first }
 				);
-				console.log(tx.logs[0].args);
+				// console.log(tx.logs[0].args);
 				let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
 					from: owner,
 				});
-				console.log('\n\nTX2');
-				console.log(tx2.logs[0].args);
+				// console.log('\n\nTX2');
+				// console.log(tx2.logs[0].args);
 				answer = await testUSDC.balanceOf(first);
 				console.log('\n\nInitial balance: ', initialBalance);
-				console.log('Final balance: ', parseInt(answer / 1e12));
+				console.log('Final balance: ', parseFloat(answer / 1e12));
 			});
-			it('buying test using regular contract call', async () => {
-				let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-				//console.log('priceUp decimal is:' + priceUp / 1e18);
+			// it('buying test using regular contract call', async () => {
+			// 	let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			// 	//console.log('priceUp decimal is:' + priceUp / 1e18);
 
-				let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-					newMarket.address,
-					Position.UP
-				);
-				//console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+			// 	let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+			// 		newMarket.address,
+			// 		Position.UP
+			// 	);
+			// 	//console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
 
-				let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
-					newMarket.address,
-					Position.UP,
-					toUnit(availableToBuyFromAMM / 1e18)
-				);
-				//console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
+			// 	let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+			// 		newMarket.address,
+			// 		Position.UP,
+			// 		toUnit(availableToBuyFromAMM / 1e18)
+			// 	);
+			// 	//console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
 
-				let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
-					newMarket.address,
-					Position.UP,
-					toUnit(availableToBuyFromAMM / 1e18)
-				);
-				//console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+			// 	let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+			// 		newMarket.address,
+			// 		Position.UP,
+			// 		toUnit(availableToBuyFromAMM / 1e18)
+			// 	);
+			// 	//console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
-				await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: second });
-				let additionalSlippage = toUnit(0.01);
-				buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
-					newMarket.address,
-					Position.UP,
-					toUnit(500)
-				);
-				await thalesAMM.buyFromAMM(
-					newMarket.address,
-					Position.UP,
-					toUnit(500),
-					buyFromAmmQuote,
-					additionalSlippage,
-					{ from: second }
-				);
+			// 	await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: second });
+			// 	let additionalSlippage = toUnit(0.01);
+			// 	buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+			// 		newMarket.address,
+			// 		Position.UP,
+			// 		toUnit(500)
+			// 	);
+			// 	await thalesAMM.buyFromAMM(
+			// 		newMarket.address,
+			// 		Position.UP,
+			// 		toUnit(500),
+			// 		buyFromAmmQuote,
+			// 		additionalSlippage,
+			// 		{ from: second }
+			// 	);
 
-				//console.log('availableToBuyFromAMM post buy max decimal is:' + availableToBuyFromAMM / 1e18);
-			});
+			// 	//console.log('availableToBuyFromAMM post buy max decimal is:' + availableToBuyFromAMM / 1e18);
+			// });
 
-			it('buying test using Cross-Chain logic', async () => {
-				await CrossChainAdapter.setPaymentToken(sUSDSynth.address, { from: owner });
-				await CrossChainAdapter.setSelectorAddress(
-					'buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)',
-					thalesAMM.address,
-					{ from: owner }
-				);
-				await CrossChainAdapter.setSelectorAddress(
-					'exerciseCryptoPosition(address,uint8)',
-					thalesAMM.address,
-					{ from: owner }
-				);
-				sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
-				let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-				//console.log('priceUp decimal is:' + priceUp / 1e18);
+			// it('buying test using Cross-Chain logic', async () => {
+			// 	await CrossChainAdapter.setPaymentToken(sUSDSynth.address, { from: owner });
+			// 	await CrossChainAdapter.setSelectorAddress(
+			// 		'buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)',
+			// 		thalesAMM.address,
+			// 		{ from: owner }
+			// 	);
+			// 	await CrossChainAdapter.setSelectorAddress(
+			// 		'exerciseCryptoPosition(address,uint8)',
+			// 		thalesAMM.address,
+			// 		{ from: owner }
+			// 	);
+			// 	sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+			// 	let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			// 	//console.log('priceUp decimal is:' + priceUp / 1e18);
 
-				let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-					newMarket.address,
-					Position.UP
-				);
-				console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+			// 	let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+			// 		newMarket.address,
+			// 		Position.UP
+			// 	);
+			// 	console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
 
-				let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
-					newMarket.address,
-					Position.UP,
-					toUnit(availableToBuyFromAMM / 1e18)
-				);
-				//console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
+			// 	let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+			// 		newMarket.address,
+			// 		Position.UP,
+			// 		toUnit(availableToBuyFromAMM / 1e18)
+			// 	);
+			// 	//console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
 
-				let buyFromAmmQuoteArray = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
-					newMarket.address,
-					Position.UP,
-					toUnit(500),
-					testUSDC.address
-				);
-				console.log(
-					'buyQuote array: ',
-					fromUnit(buyFromAmmQuoteArray[0]),
-					fromUnit(buyFromAmmQuoteArray[1])
-				);
-				let buyFromAmmQuote = buyFromAmmQuoteArray[1];
-				console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+			// 	let buyFromAmmQuoteArray = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
+			// 		newMarket.address,
+			// 		Position.UP,
+			// 		toUnit(500),
+			// 		testUSDC.address
+			// 	);
+			// 	console.log(
+			// 		'buyQuote array: ',
+			// 		fromUnit(buyFromAmmQuoteArray[0]),
+			// 		fromUnit(buyFromAmmQuoteArray[1])
+			// 	);
+			// 	let buyFromAmmQuote = buyFromAmmQuoteArray[1];
+			// 	console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
-				await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: second });
-				let additionalSlippage = toUnit(0.01);
+			// 	await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: second });
+			// 	let additionalSlippage = toUnit(0.01);
 
-				console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+			// 	console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
-				await sUSDSynth.approve(CrossChainAdapter.address, buyFromAmmQuote + 1, { from: second });
-				await sUSDSynth.issue(CrossChainAdapter.address, toUnit(100));
-				let tx = await CrossChainAdapter.buyFromCryptoAMM(
-					testUSDC.address,
-					newMarket.address,
-					'0',
-					toUnit(500),
-					buyFromAmmQuote,
-					111,
-					{ from: first }
-				);
+			// 	await sUSDSynth.approve(CrossChainAdapter.address, buyFromAmmQuote + 1, { from: second });
+			// 	await sUSDSynth.issue(CrossChainAdapter.address, toUnit(100));
+			// 	let tx = await CrossChainAdapter.buyFromCryptoAMM(
+			// 		testUSDC.address,
+			// 		newMarket.address,
+			// 		'0',
+			// 		toUnit(500),
+			// 		buyFromAmmQuote,
+			// 		111,
+			// 		{ from: first }
+			// 	);
 
-				console.log(tx.logs[0].args);
-				let sUSD_adapter_balance = await testUSDC.balanceOf(CrossChainAdapter.address);
-				console.log('Adapter sUSD balance:', fromUnit(sUSD_adapter_balance));
+			// 	console.log(tx.logs[0].args);
+			// 	let sUSD_adapter_balance = await testUSDC.balanceOf(CrossChainAdapter.address);
+			// 	console.log('Adapter sUSD balance:', fromUnit(sUSD_adapter_balance));
 
-				let tx2 = await CrossChainAdapter.executeSportBuyMessage(
-					second,
-					sUSDSynth.address,
-					toUnit(500),
-					111,
-					tx.logs[0].args.message,
-					third,
-					{ from: owner }
-				);
-				console.log('\n\nTX2');
-				console.log(tx2.logs[0].args);
+			// 	let tx2 = await CrossChainAdapter.executeSportBuyMessage(
+			// 		second,
+			// 		sUSDSynth.address,
+			// 		toUnit(500),
+			// 		111,
+			// 		tx.logs[0].args.message,
+			// 		third,
+			// 		{ from: owner }
+			// 	);
+			// 	console.log('\n\nTX2');
+			// 	console.log(tx2.logs[0].args);
 
-				let userTokenAmount = await CrossChainAdapter.userOwningToken(first, newMarket.address);
-				let userMarketPositionBalance = await CrossChainAdapter.userMarketBalances(
-					first,
-					newMarket.address,
-					0
-				);
-				console.log('USER OWNING tokens: ', fromUnit(userTokenAmount));
-				assert.equal(fromUnit(userTokenAmount), 500);
-				assert.equal(fromUnit(userMarketPositionBalance), 500);
-				buyFromAmmQuoteArray = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
-					newMarket.address,
-					Position.DOWN,
-					toUnit(100),
-					testUSDC.address
-				);
+			// 	let userTokenAmount = await CrossChainAdapter.userOwningToken(first, newMarket.address);
+			// 	let userMarketPositionBalance = await CrossChainAdapter.userMarketBalances(
+			// 		first,
+			// 		newMarket.address,
+			// 		0
+			// 	);
+			// 	console.log('USER OWNING tokens: ', fromUnit(userTokenAmount));
+			// 	assert.equal(fromUnit(userTokenAmount), 500);
+			// 	assert.equal(fromUnit(userMarketPositionBalance), 500);
+			// 	buyFromAmmQuoteArray = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
+			// 		newMarket.address,
+			// 		Position.DOWN,
+			// 		toUnit(100),
+			// 		testUSDC.address
+			// 	);
 
-				buyFromAmmQuote = buyFromAmmQuoteArray[1];
+			// 	buyFromAmmQuote = buyFromAmmQuoteArray[1];
 
-				tx = await CrossChainAdapter.buyFromCryptoAMM(
-					testUSDC.address,
-					newMarket.address,
-					'1',
-					toUnit(100),
-					buyFromAmmQuote,
-					111,
-					{ from: first }
-				);
+			// 	tx = await CrossChainAdapter.buyFromCryptoAMM(
+			// 		testUSDC.address,
+			// 		newMarket.address,
+			// 		'1',
+			// 		toUnit(100),
+			// 		buyFromAmmQuote,
+			// 		111,
+			// 		{ from: first }
+			// 	);
 
-				// console.log(tx.logs[0].args);
-				sUSD_adapter_balance = await testUSDC.balanceOf(CrossChainAdapter.address);
-				console.log('Adapter sUSD balance:', fromUnit(sUSD_adapter_balance));
+			// 	// console.log(tx.logs[0].args);
+			// 	sUSD_adapter_balance = await testUSDC.balanceOf(CrossChainAdapter.address);
+			// 	console.log('Adapter sUSD balance:', fromUnit(sUSD_adapter_balance));
 
-				tx2 = await CrossChainAdapter.executeSportBuyMessage(
-					second,
-					sUSDSynth.address,
-					toUnit(100),
-					111,
-					tx.logs[0].args.message,
-					third,
-					{ from: owner }
-				);
-				console.log('\n\nTX2');
-				console.log(tx2.logs[0].args);
+			// 	tx2 = await CrossChainAdapter.executeSportBuyMessage(
+			// 		second,
+			// 		sUSDSynth.address,
+			// 		toUnit(100),
+			// 		111,
+			// 		tx.logs[0].args.message,
+			// 		third,
+			// 		{ from: owner }
+			// 	);
+			// 	console.log('\n\nTX2');
+			// 	console.log(tx2.logs[0].args);
 
-				await expect(thalesAMM.exerciseMaturedMarket(newMarket.address), {
-					from: first,
-				}).to.be.revertedWith("Can't exercise that market");
-				await fastForward((await currentTime()) + day * 20);
-				let phase = await newMarket.phase();
-				console.log('PHASE: ', phase.toString());
-				let canExerciseMaturedMarket = await thalesAMM.canExerciseMaturedMarket(newMarket.address);
-				console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
+			// 	await expect(thalesAMM.exerciseMaturedMarket(newMarket.address), {
+			// 		from: first,
+			// 	}).to.be.revertedWith("Can't exercise that market");
+			// 	await fastForward((await currentTime()) + day * 20);
+			// 	let phase = await newMarket.phase();
+			// 	console.log('PHASE: ', phase.toString());
+			// 	let canExerciseMaturedMarket = await thalesAMM.canExerciseMaturedMarket(newMarket.address);
+			// 	console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
 
-				await thalesAMM.exerciseMaturedMarket(newMarket.address);
+			// 	await thalesAMM.exerciseMaturedMarket(newMarket.address);
 
-				let marketResult = await newMarket.result();
-				console.log('Result market:', marketResult.toString());
-				answer = await testUSDC.balanceOf(first);
-				let initialBalance = fromUnit(answer);
+			// 	let marketResult = await newMarket.result();
+			// 	console.log('Result market:', marketResult.toString());
+			// 	answer = await testUSDC.balanceOf(first);
+			// 	let initialBalance = fromUnit(answer);
 
-				tx = await CrossChainAdapter.exerciseCryptoPosition(newMarket.address, 1, 111, {
-					from: first,
-				});
-				console.log(tx.logs[0].args);
-				tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
-					from: owner,
-				});
-				console.log('\n\nTX2');
-				console.log(tx2.logs[0].args);
-				answer = await testUSDC.balanceOf(first);
-				console.log('\n\nInitial balance: ', initialBalance);
-				console.log('Final balance: ', fromUnit(answer));
-			});
+			// 	tx = await CrossChainAdapter.exerciseCryptoPosition(newMarket.address, 1, 111, {
+			// 		from: first,
+			// 	});
+			// 	console.log(tx.logs[0].args);
+			// 	tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
+			// 		from: owner,
+			// 	});
+			// 	console.log('\n\nTX2');
+			// 	console.log(tx2.logs[0].args);
+			// 	answer = await testUSDC.balanceOf(first);
+			// 	console.log('\n\nInitial balance: ', initialBalance);
+			// 	console.log('Final balance: ', fromUnit(answer));
+			// });
 		});
 	});
 
@@ -1468,8 +1468,8 @@ contract('SportsAMM', (accounts) => {
 				testUSDC.address
 			);
 
-			let initialBalance = await Thales.balanceOf(CrossChainAdapter.address);
-			console.log('CrossChain init balance: ', fromUnit(initialBalance));
+			let initialBalance = await testUSDC.balanceOf(CrossChainAdapter.address);
+			console.log('CrossChain init balance: ', parseFloat(initialBalance / 1e12));
 
 			let tx = await CrossChainAdapter.buyFromParlay(
 				testUSDC.address,
@@ -1480,9 +1480,9 @@ contract('SportsAMM', (accounts) => {
 				111,
 				{ from: first }
 			);
-			console.log(tx.logs[0].args);
-			let balance = await Thales.balanceOf(CrossChainAdapter.address);
-			console.log('CrossChain balance: ', fromUnit(balance));
+			// console.log(tx.logs[0].args);
+			let balance = await testUSDC.balanceOf(CrossChainAdapter.address);
+			console.log('CrossChain balance: ', parseFloat(balance / 1e12));
 			console.log('Sent tokens: ', fromUnit(totalSUSDToPay));
 
 			let tx2 = await CrossChainAdapter.executeSportBuyMessage(
@@ -1495,8 +1495,8 @@ contract('SportsAMM', (accounts) => {
 				{ from: owner, value: 10000 }
 			);
 
-			console.log('\n\nTX2');
-			console.log(tx2.logs[0].args);
+			// console.log('\n\nTX2');
+			// console.log(tx2.logs[0].args);
 		});
 		describe('Exercise Parlay', () => {
 			beforeEach(async () => {
@@ -1518,7 +1518,7 @@ contract('SportsAMM', (accounts) => {
 					totalSUSDToPay,
 					testUSDC.address
 				);
-				console.log('expected payout: ', fromUnit(result[1]));
+				// console.log('expected payout: ', fromUnit(result[1]));
 				let tx = await CrossChainAdapter.buyFromParlay(
 					testUSDC.address,
 					parlayMarketsAddress,
@@ -1536,7 +1536,7 @@ contract('SportsAMM', (accounts) => {
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
 
 				parlaySingleMarketAddress = activeParlays[0];
-				console.log('Parlay address: ', parlaySingleMarketAddress);
+				// console.log('Parlay address: ', parlaySingleMarketAddress);
 				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 			});
 			it('Get num of active parlays', async () => {
@@ -1552,7 +1552,7 @@ contract('SportsAMM', (accounts) => {
 				beforeEach(async () => {
 					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
 					let resolveMatrix = ['2', '1', '2', '2'];
-					console.log('Games resolved: ', resolveMatrix, '\n');
+					// console.log('Games resolved: ', resolveMatrix, '\n');
 					// parlayPositions = ['0', '0', '0', '0'];
 					let gameId;
 					let homeResult = '0';
@@ -1583,7 +1583,7 @@ contract('SportsAMM', (accounts) => {
 					let balances = await parlaySingleMarket.getSportMarketBalances();
 					let sum = toUnit(0);
 					for (let i = 0; i < parlayMarkets.length; i++) {
-						console.log(i, ' position: ', fromUnit(balances[i]));
+						// console.log(i, ' position: ', fromUnit(balances[i]));
 						sum = sum.add(balances[i]);
 					}
 					console.log('total balance: ', fromUnit(sum));
@@ -1602,20 +1602,20 @@ contract('SportsAMM', (accounts) => {
 					assert.equal(result, true);
 				});
 				it('Parlay Cross chain exercised', async () => {
-					let balance = await Thales.balanceOf(first);
-					let initialBalance = fromUnit(balance);
+					let balance = await testUSDC.balanceOf(first);
+					let initialBalance = parseFloat(balance);
 					let tx = await CrossChainAdapter.exerciseParlay(parlaySingleMarket.address, 111, {
 						from: first,
 					});
-					console.log(tx.logs[0].args);
+					// console.log(tx.logs[0].args);
 					let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
 						from: owner,
 					});
-					console.log('\n\nTX2');
-					console.log(tx2.logs[0].args);
-					balance = await Thales.balanceOf(first);
+					// console.log('\n\nTX2');
+					// console.log(tx2.logs[0].args);
+					balance = await testUSDC.balanceOf(first);
 					console.log('\n\nInitial balance: ', initialBalance);
-					console.log('Final balance: ', fromUnit(balance));
+					console.log('Final balance: ', parseFloat(balance));
 					assert.equal(await parlaySingleMarket.fundsIssued(), true);
 					assert.equal(await parlaySingleMarket.resolved(), true);
 					assert.equal(await parlaySingleMarket.parlayAlreadyLost(), false);

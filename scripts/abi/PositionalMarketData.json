@@ -63,6 +63,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_rangedMarketsAMM",
+        "type": "address"
+      }
+    ],
+    "name": "SetRangedMarketsAMM",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_thalesAMM",
         "type": "address"
       }
@@ -132,9 +145,14 @@
             "type": "address"
           },
           {
-            "internalType": "uint256[]",
-            "name": "liquidity",
-            "type": "uint256[]"
+            "internalType": "uint256",
+            "name": "upLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "downLiquidity",
+            "type": "uint256"
           }
         ],
         "internalType": "struct PositionalMarketData.ActiveMarketsLiquidity[]",
@@ -360,9 +378,14 @@
             "type": "address"
           },
           {
-            "internalType": "int256[]",
-            "name": "priceImpact",
-            "type": "int256[]"
+            "internalType": "int256",
+            "name": "upPriceImpact",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "downPriceImpact",
+            "type": "int256"
           }
         ],
         "internalType": "struct PositionalMarketData.ActiveMarketsPriceImpact[]",
@@ -385,14 +408,60 @@
             "type": "address"
           },
           {
-            "internalType": "uint256[]",
-            "name": "prices",
-            "type": "uint256[]"
+            "internalType": "uint256",
+            "name": "upPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "downPrice",
+            "type": "uint256"
           }
         ],
         "internalType": "struct PositionalMarketData.ActiveMarketsPrices[]",
         "name": "",
         "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract RangedMarket",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "getRangedMarketPricesAndLiquidity",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "inPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "outPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "inLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "outLiquidity",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PositionalMarketData.RangedMarketPricesAndLiqudity",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -490,6 +559,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "rangedMarketsAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -524,6 +606,19 @@
       }
     ],
     "name": "setPositionalMarketManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_rangedMarketsAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setRangedMarketsAMM",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

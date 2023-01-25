@@ -40,6 +40,7 @@ async function main() {
 	const MarketData = await ethers.getContractFactory('PositionalMarketData');
 	const MarketManagerAddress = getTargetAddress('PositionalMarketManager', network);
 	const ThalesAMMAddress = getTargetAddress('ThalesAMM', network);
+	const RangedAMMAddress = getTargetAddress('RangedAMM', network);
 
 	const MarketDataDeployed = await upgrades.deployProxy(MarketData, [owner.address]);
 	await MarketDataDeployed.deployed;
@@ -62,6 +63,8 @@ async function main() {
 	});
 	await delay(5000);
 	await MarketDataDeployed.setThalesAMM(ThalesAMMAddress, { from: owner.address });
+	await delay(5000);
+	await MarketDataDeployed.setRangedMarketsAMM(RangedAMMAddress, { from: owner.address });
 	await delay(5000);
 
 	try {

@@ -6,6 +6,8 @@ pragma solidity ^0.8.0;
 import "./Position.sol";
 import "./PositionalMarket.sol";
 import "./PositionalMarketManager.sol";
+import "../RangedMarkets/RangedMarket.sol";
+import "../RangedMarkets/RangedMarketsAMM.sol";
 import "../interfaces/IThalesAMM.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
@@ -55,23 +57,34 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
 
     struct ActiveMarketsPriceImpact {
         address market;
-        int[] priceImpact;
+        int upPriceImpact;
+        int downPriceImpact;
     }
 
     struct ActiveMarketsLiquidity {
         address market;
-        uint[] liquidity;
+        uint upLiquidity;
+        uint downLiquidity;
     }
 
     struct ActiveMarketsPrices {
         address market;
-        uint[] prices;
+        uint upPrice;
+        uint downPrice;
+    }
+
+    struct RangedMarketPricesAndLiqudity {
+        uint inPrice;
+        uint outPrice;
+        uint inLiquidity;
+        uint outLiquidity;
     }
 
     uint private constant ONE = 1e18;
 
     address public manager;
     address public thalesAMM;
+    address public rangedMarketsAMM;
 
     function initialize(address _owner) external initializer {
         setOwner(_owner);
@@ -136,17 +149,18 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         ActiveMarketsPriceImpact[] memory marketPriceImpact = new ActiveMarketsPriceImpact[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             marketPriceImpact[i].market = activeMarkets[i];
-            marketPriceImpact[i].priceImpact = new int[](2);
 
-            for (uint j = 0; j < marketPriceImpact[i].priceImpact.length; j++) {
-                if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                    IThalesAMM.Position position = j == 0 ? IThalesAMM.Position.Up : IThalesAMM.Position.Down;
-                    marketPriceImpact[i].priceImpact[j] = IThalesAMM(thalesAMM).buyPriceImpact(
-                        activeMarkets[i],
-                        position,
-                        ONE
-                    );
-                }
+            if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
+                marketPriceImpact[i].upPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
+                    activeMarkets[i],
+                    IThalesAMM.Position.Up,
+                    ONE
+                );
+                marketPriceImpact[i].downPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
+                    activeMarkets[i],
+                    IThalesAMM.Position.Down,
+                    ONE
+                );
             }
         }
         return marketPriceImpact;
@@ -162,16 +176,16 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         ActiveMarketsLiquidity[] memory marketLiquidity = new ActiveMarketsLiquidity[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             marketLiquidity[i].market = activeMarkets[i];
-            marketLiquidity[i].liquidity = new uint[](2);
 
-            for (uint j = 0; j < marketLiquidity[i].liquidity.length; j++) {
-                if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                    IThalesAMM.Position position = j == 0 ? IThalesAMM.Position.Up : IThalesAMM.Position.Down;
-                    marketLiquidity[i].liquidity[j] = IThalesAMM(thalesAMM).availableToBuyFromAMM(
-                        activeMarkets[i],
-                        position
-                    );
-                }
+            if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
+                marketLiquidity[i].upLiquidity = IThalesAMM(thalesAMM).availableToBuyFromAMM(
+                    activeMarkets[i],
+                    IThalesAMM.Position.Up
+                );
+                marketLiquidity[i].downLiquidity = IThalesAMM(thalesAMM).availableToBuyFromAMM(
+                    activeMarkets[i],
+                    IThalesAMM.Position.Down
+                );
             }
         }
         return marketLiquidity;
@@ -187,16 +201,37 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         ActiveMarketsPrices[] memory marketPrices = new ActiveMarketsPrices[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             marketPrices[i].market = activeMarkets[i];
-            marketPrices[i].prices = new uint[](2);
 
-            for (uint j = 0; j < marketPrices[i].prices.length; j++) {
-                if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                    IThalesAMM.Position position = j == 0 ? IThalesAMM.Position.Up : IThalesAMM.Position.Down;
-                    marketPrices[i].prices[j] = IThalesAMM(thalesAMM).buyFromAmmQuote(activeMarkets[i], position, ONE);
-                }
+            if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
+                marketPrices[i].upPrice = IThalesAMM(thalesAMM).buyFromAmmQuote(
+                    activeMarkets[i],
+                    IThalesAMM.Position.Up,
+                    ONE
+                );
+                marketPrices[i].downPrice = IThalesAMM(thalesAMM).buyFromAmmQuote(
+                    activeMarkets[i],
+                    IThalesAMM.Position.Down,
+                    ONE
+                );
             }
         }
         return marketPrices;
+    }
+
+    /// @notice getRangedMarketPricesAndLiquidity returns prices and liquidity for ranged market
+    /// @param market RangedMarket
+    /// @return RangedMarketPricesAndLiqudity
+    function getRangedMarketPricesAndLiquidity(RangedMarket market)
+        external
+        view
+        returns (RangedMarketPricesAndLiqudity memory)
+    {
+        uint inPrice = RangedMarketsAMM(rangedMarketsAMM).buyFromAmmQuote(market, RangedMarket.Position.In, ONE);
+        uint outPrice = RangedMarketsAMM(rangedMarketsAMM).buyFromAmmQuote(market, RangedMarket.Position.Out, ONE);
+        uint inLiquidity = RangedMarketsAMM(rangedMarketsAMM).availableToBuyFromAMM(market, RangedMarket.Position.In);
+        uint outLiquidity = RangedMarketsAMM(rangedMarketsAMM).availableToBuyFromAMM(market, RangedMarket.Position.Out);
+
+        return RangedMarketPricesAndLiqudity(inPrice, outPrice, inLiquidity, outLiquidity);
     }
 
     function setPositionalMarketManager(address _manager) external onlyOwner {
@@ -209,6 +244,12 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         emit SetThalesAMM(_thalesAMM);
     }
 
+    function setRangedMarketsAMM(address _rangedMarketsAMM) external onlyOwner {
+        rangedMarketsAMM = _rangedMarketsAMM;
+        emit SetRangedMarketsAMM(_rangedMarketsAMM);
+    }
+
     event PositionalMarketManagerChanged(address _manager);
     event SetThalesAMM(address _thalesAMM);
+    event SetRangedMarketsAMM(address _rangedMarketsAMM);
 }

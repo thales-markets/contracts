@@ -228,6 +228,11 @@
             "internalType": "address",
             "name": "parentMarket",
             "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDoubleChance",
+            "type": "bool"
           }
         ],
         "internalType": "struct SportPositionalMarketFactory.SportPositionCreationMarketParameters",

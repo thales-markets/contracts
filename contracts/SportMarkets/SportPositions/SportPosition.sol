@@ -91,7 +91,7 @@ contract SportPosition is IERC20, IPosition {
     }
 
     // This must only be invoked after maturity.
-    function exerciseWithAmount(address claimant, uint amount) external onlyMarket {
+    function exerciseWithAmount(address claimant, uint amount) external override onlyMarket {
         require(amount > 0, "Can not exercise zero amount!");
 
         require(balanceOf[claimant] >= amount, "Balance must be greather or equal amount that is burned");

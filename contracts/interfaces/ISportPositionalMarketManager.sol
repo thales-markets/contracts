@@ -20,6 +20,10 @@ interface ISportPositionalMarketManager {
 
     function isActiveMarket(address candidate) external view returns (bool);
 
+    function isDoubleChanceMarket(address candidate) external view returns (bool);
+
+    function isDoubleChanceSupported() external view returns (bool);
+
     function isKnownMarket(address candidate) external view returns (bool);
 
     function getActiveMarketAddress(uint _index) external view returns (address);

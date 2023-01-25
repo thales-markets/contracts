@@ -29,26 +29,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "burnOptions",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "burnOptionsMaximum",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "canResolve",
     "outputs": [
@@ -139,25 +119,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "getMaximumBurnable",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "getOptions",
     "outputs": [
@@ -174,6 +135,24 @@
       {
         "internalType": "contract IPosition",
         "name": "draw",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getParentMarketPositions",
+    "outputs": [
+      {
+        "internalType": "contract IPosition",
+        "name": "position1",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IPosition",
+        "name": "position2",
         "type": "address"
       }
     ],
@@ -205,7 +184,33 @@
   },
   {
     "inputs": [],
+    "name": "initialMint",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "isChild",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isDoubleChance",
     "outputs": [
       {
         "internalType": "bool",
@@ -237,6 +242,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parentMarket",
+    "outputs": [
+      {
+        "internalType": "contract ISportPositionalMarket",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

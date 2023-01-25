@@ -52,7 +52,7 @@ async function main() {
 	const SportsAMMDeployed = SportsAMM.attach(SportsAMMAddress);
 
 	const SportsAMMUtils = await ethers.getContractFactory('SportsAMMUtils');
-	const SportsAMMUtilsDeployed = await SportsAMMUtils.deploy();
+	const SportsAMMUtilsDeployed = await SportsAMMUtils.deploy(SportsAMMAddress);
 	await SportsAMMUtilsDeployed.deployed();
 
 	console.log('Implementation SportsAMMUtils: ', SportsAMMUtilsDeployed.address);
@@ -69,6 +69,7 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: SportsAMMUtilsDeployed.address,
+			constructorArguments: [SportsAMMAddress],
 		});
 	} catch (e) {
 		console.log(e);

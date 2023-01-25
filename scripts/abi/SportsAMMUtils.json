@@ -2,75 +2,13 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "capUsed",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "spentOnThisGame",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "baseOdds",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "max_spread",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "balance",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_sportsAMM",
+        "type": "address"
       }
     ],
-    "name": "_calculateAvailableToBuy",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "availableAmount",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "balanceOfTheOtherSide",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "sell_max_price",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "capPlusBalance",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "spentOnThisGame",
-        "type": "uint256"
-      }
-    ],
-    "name": "_calculateAvailableToSell",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "_available",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
     "inputs": [
@@ -171,11 +109,6 @@
         "internalType": "uint256",
         "name": "availableToBuyFromAMM",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "max_spread",
-        "type": "uint256"
       }
     ],
     "name": "buyPriceImpactImbalancedSkew",
@@ -183,6 +116,40 @@
       {
         "internalType": "uint256",
         "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "capUsed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "spentOnThisGame",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "baseOdds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateAvailableToBuy",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "availableAmount",
         "type": "uint256"
       }
     ],
@@ -211,11 +178,6 @@
           {
             "internalType": "uint256",
             "name": "availableToBuyFromAMM",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "max_spread",
             "type": "uint256"
           }
         ],
@@ -273,11 +235,6 @@
             "internalType": "uint256",
             "name": "priceOtherPosition",
             "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "max_spread",
-            "type": "uint256"
           }
         ],
         "internalType": "struct SportsAMMUtils.NegativeDiscountsParams",
@@ -327,7 +284,7 @@
         "type": "int256"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -336,11 +293,6 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
       },
       {
         "internalType": "address",
@@ -404,15 +356,34 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
+      }
+    ],
+    "name": "getBaseOddsForDoubleChance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "oddsPosition1",
+        "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "oddsPosition2",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
-        "name": "toCheck",
+        "name": "market",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "manager",
+        "name": "toCheck",
         "type": "address"
       }
     ],
@@ -433,16 +404,59 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
-      },
+      }
+    ],
+    "name": "getParentMarketPositionAddresses",
+    "outputs": [
       {
         "internalType": "address",
-        "name": "manager",
+        "name": "parentMarketPosition1",
         "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "minimalTimeLeftToMaturity",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "parentMarketPosition2",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "getParentMarketPositions",
+    "outputs": [
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position1",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position2",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address",
+        "name": "parentMarket",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
       }
     ],
     "name": "isMarketInAMMTrading",
@@ -467,11 +481,6 @@
         "internalType": "enum ISportsAMM.Position",
         "name": "_position",
         "type": "uint8"
-      },
-      {
-        "internalType": "address",
-        "name": "theRundownConsumer",
-        "type": "address"
       }
     ],
     "name": "obtainOdds",
@@ -486,49 +495,13 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "balanceOtherSide",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_balancePosition",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "balanceOtherSideAfter",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "balancePositionAfter",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "available",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "max_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "sellPriceImpactImbalancedSkew",
+    "inputs": [],
+    "name": "sportsAMM",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "_sellImpactReturned",
-        "type": "uint256"
+        "internalType": "contract ISportsAMM",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

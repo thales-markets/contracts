@@ -162,7 +162,17 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param position The position (home/away/draw) to check availability
     /// @return _available The amount of position options (tokens) available to buy from AMM.
     function availableToBuyFromAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
-        uint baseOdds = _obtainOdds(market, position);
+        if (isMarketInAMMTrading(market)) {
+            uint baseOdds = _obtainOdds(market, position);
+            _available = _availableToBuyFromAMMInternal(market, position, baseOdds);
+        }
+    }
+
+    function _availableToBuyFromAMMInternal(
+        address market,
+        ISportsAMM.Position position,
+        uint baseOdds
+    ) internal view returns (uint _available) {
         if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
             if (position == ISportsAMM.Position.Home && (baseOdds > 0 && baseOdds < maxSupportedOdds)) {
                 (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
@@ -174,11 +184,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 _available = availableFirst > availableSecond ? availableSecond : availableFirst;
             }
         } else {
-            if (isMarketInAMMTrading(market)) {
-                if (baseOdds > 0) {
-                    baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
-                    _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
-                }
+            if (baseOdds > 0) {
+                baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+                _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
             }
         }
     }
@@ -548,7 +556,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
 
-        uint availableToBuyFromAMMatm = availableToBuyFromAMM(market, position);
+        uint availableToBuyFromAMMatm = _availableToBuyFromAMMInternal(market, position, baseOdds);
         require(amount > ZERO_POINT_ONE && amount <= availableToBuyFromAMMatm, "Low liquidity || 0 amount");
 
         if (sendSUSD) {

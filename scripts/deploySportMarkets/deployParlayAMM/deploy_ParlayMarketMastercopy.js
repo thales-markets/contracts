@@ -44,6 +44,12 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
+
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
 	const ParlayAMMDeployed = await ParlayAMM.attach(ParlayAMMAddress);
@@ -56,7 +62,12 @@ async function main() {
 	console.log('ParlayMarketDeployed Deployed on', ParlayMarketDeployed.address);
 	setTargetAddress('ParlayMarketMastercopy', network, ParlayMarketDeployed.address);
 
-	if (networkObj.chainId == 5 || networkObj.chainId == 42 || networkObj.chainId == 420) {
+	if (
+		networkObj.chainId == 5 ||
+		networkObj.chainId == 42 ||
+		networkObj.chainId == 420 ||
+		networkObj.chainId == 42161
+	) {
 		await delay(5000);
 		await ParlayAMMDeployed.setParlayMarketMastercopies(ParlayMarketDeployed.address, {
 			from: owner.address,

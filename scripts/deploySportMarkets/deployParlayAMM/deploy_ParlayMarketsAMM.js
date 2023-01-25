@@ -57,6 +57,15 @@ async function main() {
 		SafeBox = owner.address;
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+		SportsAMMContract = getTargetAddress('SportsAMM', network);
+		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
+		SafeBox = getTargetAddress('SafeBox', network);
+	}
+
 	const parlayAMMfee = w3utils.toWei('0.03');
 	const safeBoxImpact = w3utils.toWei('0.03');
 	const maxSupportedAmount = w3utils.toWei('5000');

@@ -53,6 +53,11 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
 	// if there is sport menager deployed:

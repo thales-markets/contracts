@@ -47,6 +47,12 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxysUSD', network);
+	}
+
 	// min_spread = 0.01
 	// max_spread = 0.05
 	// max_supported = 1 (1 usd)
@@ -67,7 +73,7 @@ async function main() {
 	const SportMarketFactory = await ethers.getContractFactory('SportPositionalMarketFactory');
 	const SportMarketFactoryAddress = getTargetAddress('SportPositionalMarketFactory', network);
 	const SportMarketManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
-	const TherundownConsumerAddress = getTargetAddress('TherundownConsumer', network);
+	//const TherundownConsumerAddress = getTargetAddress('TherundownConsumer', network);
 	let PaymentAddress;
 	const SportMarketFactoryDeployed = await SportMarketFactory.attach(SportMarketFactoryAddress);
 
@@ -124,16 +130,16 @@ async function main() {
 	);
 	console.log('setParameters set');
 
-	let referals = getTargetAddress('Referrals', network);
-	await SportsAMMDeployed.setAddresses(
-		owner.address,
-		PaymentToken,
-		TherundownConsumerAddress,
-		ZERO_ADDRESS,
-		referals,
-		{ from: owner.address }
-	);
-	console.log('set setAddresses');
+	// let referals = getTargetAddress('Referrals', network);
+	// await SportsAMMDeployed.setAddresses(
+	// 	owner.address,
+	// 	PaymentToken,
+	// 	TherundownConsumerAddress,
+	// 	ZERO_ADDRESS,
+	// 	referals,
+	// 	{ from: owner.address }
+	// );
+	// console.log('set setAddresses');
 	await delay(5000);
 	await SportsAMMDeployed.setSportsPositionalMarketManager(SportMarketManagerAddress, {
 		from: owner.address,

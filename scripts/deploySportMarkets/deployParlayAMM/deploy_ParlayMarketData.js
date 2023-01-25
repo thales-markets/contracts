@@ -49,6 +49,12 @@ async function main() {
 		SafeBox = owner.address;
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
+
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
 	const ParlayAMMDeployed = await ParlayAMM.attach(ParlayAMMAddress);
@@ -82,16 +88,18 @@ async function main() {
 	let Referrals = getTargetAddress('Referrals', network);
 	let ParlayVerifier = getTargetAddress('ParlayVerifier', network);
 
-	await ParlayAMMDeployed.setAddresses(
-		SportsAMMContract,
-		SafeBox,
-		Referrals,
-		ParlayMarketDataDeployed.address,
-		ParlayVerifier,
-		{ from: owner.address }
-	);
+	if (networkObj.chainId != 10 || networkObj.chainId != 42161) {
+		await ParlayAMMDeployed.setAddresses(
+			SportsAMMContract,
+			SafeBox,
+			Referrals,
+			ParlayMarketDataDeployed.address,
+			ParlayVerifier,
+			{ from: owner.address }
+		);
 
-	console.log('ParlayMarketData address set on ParlayAMM');
+		console.log('ParlayMarketData address set on ParlayAMM');
+	}
 	await delay(65000);
 
 	try {

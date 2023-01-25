@@ -51,6 +51,11 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	const paymentCreate = w3utils.toWei('0.01');
 	const paymentResolve = w3utils.toWei('0.01');
 	const paymentOdds = w3utils.toWei('0.01');

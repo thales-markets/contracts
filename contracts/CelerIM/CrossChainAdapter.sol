@@ -79,6 +79,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, expectedPayout);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
         } else {
+            require(expectedPayout > 20 * ONE, "LowAmount");
             IERC20Upgradeable(_token).safeTransferFrom(
                 msg.sender,
                 address(this),
@@ -153,6 +154,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, _sUSDPaid);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
         } else {
+            require(_sUSDPaid > 20 * ONE, "LowAmount");
             IERC20Upgradeable(_token).safeTransferFrom(
                 msg.sender,
                 address(this),
@@ -282,7 +284,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 _message,
                 (address, uint8, uint, uint, address)
             );
-            IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
+            // IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
             (bool success, bytes memory result) = selectorAddress[_selector].call(
                 abi.encodeWithSelector(
                     realSelector,
@@ -312,7 +314,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             //         _message,
             //         (address, uint8, uint, uint, address)
             //     );
-            //     IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
+            IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
             //     (bool success, bytes memory result) = selectorAddress[_selector].call(
             //         abi.encodeWithSelector(
             //             realSelector,
@@ -340,7 +342,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             );
             (address[] memory market, uint8[] memory position, uint amount, uint expectedPayout, address collateral) = abi
                 .decode(_message, (address[], uint8[], uint, uint, address));
-            IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
+            // IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
             (bool success, bytes memory result) = selectorAddress[_selector].call(
                 abi.encodeWithSelector(
                     realSelector,
@@ -464,6 +466,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bytes4 selector = bytes4(keccak256(bytes(_selectorString)));
         selectorAddress[selector] = _selectorAddress;
         sUSD.approve(_selectorAddress, type(uint256).max);
+        IERC20Upgradeable(usdc).approve(_selectorAddress, type(uint256).max);
     }
 
     function setWhitelistedAddress(address _account, bool _enable) external onlyOwner {
@@ -537,6 +540,13 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     function withdraw(address _token, uint256 _amount) external {
         balances[msg.sender][_token] -= _amount;
         IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
+    }
+
+    function withdrawFromContract(address _token) external onlyOwner {
+        uint amount = IERC20Upgradeable(_token).balanceOf(address(this));
+        if (amount > 0) {
+            IERC20Upgradeable(_token).safeTransfer(msg.sender, amount);
+        }
     }
 
     function setParameters(

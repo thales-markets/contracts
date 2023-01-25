@@ -655,6 +655,271 @@
           }
         }
       }
+    },
+    "73b526eb02dbb6413b352d3409de288754d0d146f212f2979cd6a6641b752bfc": {
+      "address": "0x4AA471CA56A6188d50D0b401b982ed286aC098d7",
+      "txHash": "0xad3da3a2f9bff5cf5ea79a467b61bad9a522cdc232d404af69b7a4a14abcec7e",
+      "layout": {
+        "storage": [
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "MessageBusAddress",
+            "label": "messageBus",
+            "type": "t_address",
+            "src": "contracts/CelerIM/framework/MessageBusAddress.sol:10"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "selectorAddress",
+            "type": "t_mapping(t_bytes4,t_address)",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:19"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "adapterOnDestination",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:20"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "sportsAMM",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:23"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)151",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:24"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "balances",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:27"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "userMarketBalances",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint8,t_uint256)))",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:30"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "whitelistedToReceiveFrom",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:31"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "whitelistedOperator",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:32"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "sourceAdapter",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:34"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "parlayAMM",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:35"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "noncePerSelector",
+            "type": "t_mapping(t_bytes4,t_uint64)",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:36"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "userOwningToken",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:37"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "testChain",
+            "type": "t_uint256",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:38"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "marketExercised",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:39"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "exercisedMarketBalance",
+            "type": "t_mapping(t_address,t_mapping(t_uint8,t_uint256))",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:40"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "minBridgeSlippage",
+            "type": "t_uint32",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:41"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "bridgeFeePercentage",
+            "type": "t_uint256",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:42"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "defaultSlippage",
+            "type": "t_uint256",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:43"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "curveSUSD",
+            "type": "t_contract(ICurveSUSD)6598",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:48"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "usdc",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:49"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "usdt",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:50"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "dai",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:51"
+          },
+          {
+            "contract": "CrossChainAdapter",
+            "label": "maxAllowedPegSlippagePercentage",
+            "type": "t_uint256",
+            "src": "contracts/CelerIM/CrossChainAdapter.sol:52"
+          }
+        ],
+        "types": {
+          "t_mapping(t_bytes4,t_address)": {
+            "label": "mapping(bytes4 => address)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_contract(IERC20Upgradeable)151": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint8,t_uint256)))": {
+            "label": "mapping(address => mapping(address => mapping(uint8 => uint256)))"
+          },
+          "t_mapping(t_address,t_mapping(t_uint8,t_uint256))": {
+            "label": "mapping(address => mapping(uint8 => uint256))"
+          },
+          "t_mapping(t_uint8,t_uint256)": {
+            "label": "mapping(uint8 => uint256)"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_bytes4,t_uint64)": {
+            "label": "mapping(bytes4 => uint64)"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_uint32": {
+            "label": "uint32"
+          },
+          "t_contract(ICurveSUSD)6598": {
+            "label": "contract ICurveSUSD"
+          }
+        }
+      }
     }
   }
 }

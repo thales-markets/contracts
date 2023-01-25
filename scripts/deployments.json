@@ -110,7 +110,7 @@
 		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"MessageBus": "0x0D71D18126E03646eb09FEc929e2ae87b7CAE69d",
 		"CrossChainAdapter": "0xd927170E3669cd14Fa07937B778B1649257F8ee6",
-		"CrossChainAdapterImplementation": "0x2062b7caf899cF2eBc9D07ED45D323F6B096383e",
+		"CrossChainAdapterImplementation": "0x032540E69963235B3A1F56e61f8659A425655083",
 		"GamesOddsObtainer": "0x3ff20410003767edE94c06c5Df56968d90ABAe6c",
 		"GamesOddsObtainerImplementation": "0x7FE0E7F9b8Ad85C0F2dFE8073Ebe5F41D67a7B9e",
 		"ThalesAMMNew": "0x278B5A44397c9D8E52743fEdec263c4760dc1A1A",
@@ -205,7 +205,7 @@
 		"ThalesCouncilNFT": "0xA71F5fACaF3e021897931BE44b10d68F89EC6a3B",
 		"MessageBus": "0x4066D196A423b2b3B8B054f4F40efB47a74E200C",
 		"CrossChainAdapter": "0x4dB7AfB6b777fB47101C86Bdeb56669ffA8cD656",
-		"CrossChainAdapterImplementation": "0xc62E56E756a3D14ffF838e820F38d845a16D49dE"
+		"CrossChainAdapterImplementation": "0x4AA471CA56A6188d50D0b401b982ed286aC098d7"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

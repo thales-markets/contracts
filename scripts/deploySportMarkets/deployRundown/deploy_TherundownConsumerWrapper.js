@@ -75,6 +75,7 @@ async function main() {
 
 	console.log('TherundownConsumerVerifier address: ', verifierAddress);
 
+	// ODDS ID in bytes32
 	let oddsSpecId = '0x3230646438613738373265343436303862386438323239636566333666623638';
 	console.log('oddsSpecId: ', oddsSpecId);
 

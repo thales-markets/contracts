@@ -903,7 +903,7 @@ contract('SportsAMM', (accounts) => {
 				111,
 				{ from: first }
 			);
-			// console.log(tx.logs[0].args);
+			console.log(tx.logs[0].args);
 
 			let tx2 = await CrossChainAdapter.executeSportBuyMessage(
 				second,
@@ -916,6 +916,9 @@ contract('SportsAMM', (accounts) => {
 			);
 			answer = await testUSDC.balanceOf(first);
 			console.log('acc USDC balance after buy: ', parseFloat(answer / 1e12));
+
+			answer = await CrossChainAdapter.userOwningToken(first, deployedMarket.address);
+			console.log('Market amount: ', fromUnit(answer));
 			// let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, { from: owner });
 			// console.log('\n\nTX2');
 			// console.log(tx2.logs[0].args);

@@ -79,7 +79,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, expectedPayout);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
         } else {
-            require(expectedPayout > 20 * ONE, "LowAmount");
             IERC20Upgradeable(_token).safeTransferFrom(
                 msg.sender,
                 address(this),
@@ -154,7 +153,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, _sUSDPaid);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
         } else {
-            require(_sUSDPaid > 20 * ONE, "LowAmount");
             IERC20Upgradeable(_token).safeTransferFrom(
                 msg.sender,
                 address(this),
@@ -293,7 +291,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                     amount,
                     expectedPayout,
                     defaultSlippage,
-                    collateral,
+                    usdc,
                     address(0)
                 )
             );
@@ -314,7 +312,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             //         _message,
             //         (address, uint8, uint, uint, address)
             //     );
-            IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
+            // IERC20Upgradeable(collateral).approve(selectorAddress[_selector], amount);
             //     (bool success, bytes memory result) = selectorAddress[_selector].call(
             //         abi.encodeWithSelector(
             //             realSelector,
@@ -351,7 +349,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                     amount,
                     defaultSlippage,
                     expectedPayout,
-                    collateral,
+                    usdc,
                     address(0)
                 )
             );

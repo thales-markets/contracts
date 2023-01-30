@@ -37,6 +37,7 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
 
     IStakingThales public staking;
     mapping(uint256 => uint256) public collectionToMinimumStakeAmount;
+    mapping(uint256 => uint256) public collectionToMinimalVolume;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -63,6 +64,8 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
 
         if (checkIsStakingAmountConditionForMinting(_itemIndex)) {
             if (!(staking.stakedBalanceOf(_minter) >= collectionToMinimumStakeAmount[_collectionIndex])) return false;
+        } else if(checkIsVolumeAmountConditionForMinting(_itemIndex)) {
+            if (!(staking.getAMMVolume(_minter) >= collectionToMinimalVolume[_collectionIndex])) return false;
         } else {
             if (!addressCanMintCollection[_collectionIndex][_minter]) return false;
         }
@@ -75,6 +78,8 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         require(items.length > 0, "There are no items in this collection");
         if (collectionToMinimumStakeAmount[_collectionIndex] > 0) {
             if (!(staking.stakedBalanceOf(_minter) >= collectionToMinimumStakeAmount[_collectionIndex])) return false;
+        } else if(collectionToMinimalVolume[_collectionIndex] > 0) {
+            if (!(staking.getAMMVolume(_minter) >= collectionToMinimalVolume[_collectionIndex])) return false; 
         } else {
             if (!addressCanMintCollection[_collectionIndex][_minter]) return false;
         }
@@ -109,12 +114,16 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
 
     function addNewCollection(
         bool _stakeCondition,
+        bool _volumeCondition,
         uint256 _minimumStakeAmount,
+        uint256 _minimumVolumeAmount,
         address[] calldata _whitelistedAddresses
     ) public onlyOwner whenNotPaused returns (uint256) {
         _lastCollectionId.increment();
         if (_stakeCondition == true) {
             collectionToMinimumStakeAmount[_lastCollectionId.current()] = _minimumStakeAmount;
+        } else if(_volumeCondition == true) {
+            collectionToMinimalVolume[_lastCollectionId.current()] = _minimumVolumeAmount;
         } else {
             require(_whitelistedAddresses.length > 0, "Whitelist cannot be empty");
             for (uint256 i = 0; i < _whitelistedAddresses.length; i++) {
@@ -163,6 +172,16 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
     function checkIsStakingAmountConditionForMinting(uint256 _itemIndex) internal view returns (bool) {
         require(itemIndexToCollection[_itemIndex] != 0, "Item is not part of any colllection");
         return collectionToMinimumStakeAmount[itemIndexToCollection[_itemIndex]] != 0;
+    }
+
+    function checkIsVolumeAmountConditionForMinting(uint256 _itemIndex) internal view returns (bool) {
+        require(itemIndexToCollection[_itemIndex] != 0, "Item is not part of any colllection");
+        return collectionToMinimalVolume[itemIndexToCollection[_itemIndex]] != 0;
+    }
+
+    function checkIsWhitelistConditionForMinting(uint256 _itemIndex) internal view returns (bool) {
+        require(itemIndexToCollection[_itemIndex] != 0, "Item is not part of any colllection");
+        return collectionToMinimalVolume[itemIndexToCollection[_itemIndex]] == 0 && collectionToMinimumStakeAmount[itemIndexToCollection[_itemIndex]] == 0;
     }
 
     /* ========== CONTRACT MANAGMENT ========== */

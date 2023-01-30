@@ -262,8 +262,18 @@
         "type": "bool"
       },
       {
+        "internalType": "bool",
+        "name": "_volumeCondition",
+        "type": "bool"
+      },
+      {
         "internalType": "uint256",
         "name": "_minimumStakeAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minimumVolumeAmount",
         "type": "uint256"
       },
       {
@@ -425,6 +435,25 @@
         "internalType": "enum TaleOfThalesNFTs.Type",
         "name": "itemType",
         "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "collectionToMinimalVolume",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

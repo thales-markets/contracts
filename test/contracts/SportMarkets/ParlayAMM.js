@@ -1299,6 +1299,7 @@ contract('ParlayAMM', (accounts) => {
 			await voucher.setParlayAMM(ParlayAMM.address, { from: owner });
 			await voucher.setPause(false, { from: owner });
 			await voucher.setTokenUris('', '', '', '', '', '', '', '', { from: owner });
+			await voucher.setMultiplier(toUnit(1), { from: owner });
 
 			Thales.approve(voucher.address, toUnit(20), { from: third });
 

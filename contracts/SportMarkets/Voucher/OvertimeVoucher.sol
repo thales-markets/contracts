@@ -40,19 +40,21 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
     ISportsAMM public sportsAMM;
     IParlayMarketsAMM public parlayAMM;
 
+    uint public multiplier;
+
     IERC20 public sUSD;
     mapping(uint => uint) public amountInVoucher;
 
     /* ========== CONSTANTS ========== */
-    uint private constant ONE = 1e18;
-    uint private constant FIVE = 5 * 1e18;
-    uint private constant TEN = 10 * 1e18;
-    uint private constant TWENTY = 20 * 1e18;
-    uint private constant FIFTY = 50 * 1e18;
-    uint private constant HUNDRED = 100 * 1e18;
-    uint private constant TWO_HUNDRED = 200 * 1e18;
-    uint private constant FIVE_HUNDRED = 500 * 1e18;
-    uint private constant THOUSAND = 1000 * 1e18;
+    uint private constant ONE = 1;
+    uint private constant FIVE = 5;
+    uint private constant TEN = 10;
+    uint private constant TWENTY = 20;
+    uint private constant FIFTY = 50;
+    uint private constant HUNDRED = 100;
+    uint private constant TWO_HUNDRED = 200;
+    uint private constant FIVE_HUNDRED = 500;
+    uint private constant THOUSAND = 1000;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -89,17 +91,7 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
     function mint(address recipient, uint amount) external returns (uint newItemId) {
         require(!paused, "Cant mint while paused");
 
-        require(
-            amount == FIVE ||
-                amount == TEN ||
-                amount == TWENTY ||
-                amount == FIFTY ||
-                amount == HUNDRED ||
-                amount == TWO_HUNDRED ||
-                amount == FIVE_HUNDRED ||
-                amount == THOUSAND,
-            "Invalid amount"
-        );
+        require(_checkAmount(amount), "Invalid amount");
 
         sUSD.safeTransferFrom(msg.sender, address(this), amount);
 
@@ -109,18 +101,7 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
 
         _mint(recipient, newItemId);
 
-        _setTokenURI(
-            newItemId,
-            amount == FIVE ? tokenURIFive : amount == TEN ? tokenURITen : amount == TWENTY ? tokenURITwenty : amount == FIFTY
-                ? tokenURIFifty
-                : amount == HUNDRED
-                ? tokenURIHundred
-                : amount == TWO_HUNDRED
-                ? tokenURITwoHundred
-                : amount == FIVE_HUNDRED
-                ? tokenURIFiveHundred
-                : tokenURIThousand
-        );
+        _setTokenURI(newItemId, _retrieveTokenURI(amount));
 
         amountInVoucher[newItemId] = amount;
     }
@@ -146,7 +127,7 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         IERC20(address(target)).safeTransfer(msg.sender, amount);
 
         //if less than 1 sUSD, transfer the rest to the owner and burn
-        if (amountInVoucher[tokenId] < 1e18) {
+        if (amountInVoucher[tokenId] < multiplier) {
             sUSD.safeTransfer(address(msg.sender), amountInVoucher[tokenId]);
             super._burn(tokenId);
         }
@@ -170,7 +151,7 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         amountInVoucher[tokenId] = amountInVoucher[tokenId] - _sUSDPaid;
 
         //if less than 1 sUSD, transfer the rest to the owner and burn
-        if (amountInVoucher[tokenId] < 1e18) {
+        if (amountInVoucher[tokenId] < multiplier) {
             sUSD.safeTransfer(address(msg.sender), amountInVoucher[tokenId]);
             super._burn(tokenId);
         }
@@ -180,6 +161,39 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
     /* ========== VIEW ========== */
 
     /* ========== INTERNALS ========== */
+
+    function _transformConstant(uint value) internal view returns (uint) {
+        return value * multiplier;
+    }
+
+    function _checkAmount(uint amount) internal view returns (bool) {
+        return
+            amount == _transformConstant(FIVE) ||
+            amount == _transformConstant(TEN) ||
+            amount == _transformConstant(TWENTY) ||
+            amount == _transformConstant(FIFTY) ||
+            amount == _transformConstant(HUNDRED) ||
+            amount == _transformConstant(TWO_HUNDRED) ||
+            amount == _transformConstant(FIVE_HUNDRED) ||
+            amount == _transformConstant(THOUSAND);
+    }
+
+    function _retrieveTokenURI(uint amount) internal view returns (string memory) {
+        return
+            amount == _transformConstant(FIVE) ? tokenURIFive : amount == _transformConstant(TEN)
+                ? tokenURITen
+                : amount == _transformConstant(TWENTY)
+                ? tokenURITwenty
+                : amount == _transformConstant(FIFTY)
+                ? tokenURIFifty
+                : amount == _transformConstant(HUNDRED)
+                ? tokenURIHundred
+                : amount == _transformConstant(TWO_HUNDRED)
+                ? tokenURITwoHundred
+                : amount == _transformConstant(FIVE_HUNDRED)
+                ? tokenURIFiveHundred
+                : tokenURIThousand;
+    }
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
@@ -241,6 +255,11 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         emit NewSportsAMM(_sportsAMM);
     }
 
+    function setMultiplier(uint _multiplier) external onlyOwner {
+        multiplier = _multiplier;
+        emit MultiplierChanged(multiplier);
+    }
+
     /* ========== EVENTS ========== */
 
     event BoughtFromAmmWithVoucher(
@@ -264,4 +283,5 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
     event NewSportsAMM(address _sportsAMM);
     event NewParlayAMM(address _parlayAMM);
     event Paused(bool _state);
+    event MultiplierChanged(uint multiplier);
 }

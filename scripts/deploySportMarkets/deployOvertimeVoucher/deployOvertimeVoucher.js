@@ -10,6 +10,8 @@ async function main() {
 	let sportsAMMAddress;
 	let PaymentToken;
 
+	let multiplier = toUnit(1);
+
 	if (network === 'unknown') {
 		network = 'localhost';
 	}
@@ -51,6 +53,7 @@ async function main() {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
 		PaymentToken = getTargetAddress('ProxyUSDC', network);
+		multiplier = toBN(1 * 1e6);
 	}
 
 	sUSDAddress = PaymentToken;
@@ -91,6 +94,12 @@ async function main() {
 	setTargetAddress('OvertimeVoucher', network, OvertimeVoucherDeployed.address);
 
 	console.log('OvertimeVoucher deployed to:', OvertimeVoucherDeployed.address);
+
+	await OvertimeVoucherDeployed.setMultiplier(multiplier, { from: owner.address });
+
+	console.log('OvertimeVoucher set multiplier');
+
+	await delay(65000);
 
 	await hre.run('verify:verify', {
 		address: OvertimeVoucherDeployed.address,

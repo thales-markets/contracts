@@ -1139,6 +1139,19 @@
   {
     "inputs": [
       {
+        "internalType": "bool",
+        "name": "_needsTransformingCollateral",
+        "type": "bool"
+      }
+    ],
+    "name": "setNeedsTransformingCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_oddsObtainer",
         "type": "address"

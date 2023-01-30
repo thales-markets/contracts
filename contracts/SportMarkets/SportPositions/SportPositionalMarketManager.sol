@@ -84,6 +84,12 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit SetObtainerAddress(_oddsObtainer);
     }
 
+    /// @notice setNeedsTransformingCollateral sets needsTransformingCollateral value
+    /// @param _needsTransformingCollateral boolen value to be set
+    function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
+        needsTransformingCollateral = _needsTransformingCollateral;
+    }
+
     /// @notice setWhitelistedAddresses enables whitelist addresses of given array
     /// @param _whitelistedAddresses array of whitelisted addresses
     /// @param _flag adding or removing from whitelist (true: add, false: remove)

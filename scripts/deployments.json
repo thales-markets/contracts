@@ -63,7 +63,7 @@
 		"TherundownConsumerWrapper": "0x2167af59e68Ea29387EE2EAa60B7663d6158F1fd",
 		"Vault": "0xF4507b4E2ff47c8008072B232Ce332e89a167f4D",
 		"VaultImplementation": "0x5ebC0a9278a87caFFc090f8E1e53f2fE60f76F9E",
-		"OvertimeVoucher": "0xF29Ba1A2F947D3c416382Dd853a1831e0d31DE9A",
+		"OvertimeVoucher": "0x4393F1470317Da64e277b29D96e5bf203f28eFbE",
 		"ApexConsumer": "0x0a6851C7D112A27019d84DCCb9cE0c0cd8b75325",
 		"ApexConsumerImplementation": "0x2DB7789c691E4d086ba167F34923BBBC9d844703",
 		"ThalesAMMUtils": "0x279c0D239d0C036E74AAdF872d604af37E341373",
@@ -220,7 +220,8 @@
 		"ParlayMarketData": "0xff9d1B34f369CAf91c6b69761e2A06f78ed3cd9d",
 		"ParlayMarketDataImplementation": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
 		"GamesOddsObtainer": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
-		"GamesOddsObtainerImplementation": "0x707075f0B619acF5A614Efb54FA8aC9B2FB55188"
+		"GamesOddsObtainerImplementation": "0x707075f0B619acF5A614Efb54FA8aC9B2FB55188",
+		"OvertimeVoucher": "0xcF05d2Fa3013bB78256341e1FB9b1F40D48b4c72"
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",

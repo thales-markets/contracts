@@ -48,13 +48,13 @@ contract('TaleOfThalesNFTs', (accounts) => {
 
 	describe('Adding collection', () => {
 		it('Should revert, not owner', async () => {
-            await expect(taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: third })).to.be.revertedWith(
+            await expect(taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: third })).to.be.revertedWith(
                 'Ownable: caller is not the owner'
             )
 		});
 
         it('Should revert because whitelist is empty', async () => {
-            await expect(taleOfThalesContract.addNewCollection(false, 0, [], { from: owner })).to.be.revertedWith(
+            await expect(taleOfThalesContract.addNewCollection(false, false, 0, 0, [], { from: owner })).to.be.revertedWith(
                 'Whitelist cannot be empty'
             )
         });
@@ -62,7 +62,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
         it('Should pass with staking minimal amount', async () => {
             let minimalStakingAmount = '10';
 
-            await taleOfThalesContract.addNewCollection(true, toUnit(minimalStakingAmount), [], { from: owner });
+            await taleOfThalesContract.addNewCollection(true, false, toUnit(minimalStakingAmount), 0, [], { from: owner });
 
             let lastCollectionIndex = await taleOfThalesContract.getLatestCollectionIndex();
 
@@ -71,15 +71,15 @@ contract('TaleOfThalesNFTs', (accounts) => {
         });
 
         it('Should create two new collections and return last created collection index', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
-            await taleOfThalesContract.addNewCollection(true, toUnit('10'), [], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addNewCollection(true, false, toUnit('10'), 0, [], { from: owner });
 
             assert.bnEqual(2, await taleOfThalesContract.getLatestCollectionIndex());
         });
 
         it('Should create two new collections and check if address is in addressCanMintCollection mapping', async () => {
-            await taleOfThalesContract.addNewCollection(true, toUnit('10'), [], { from: owner });
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+            await taleOfThalesContract.addNewCollection(true, false, toUnit('10'), 0, [], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
 
             assert.bnEqual(true, await taleOfThalesContract.addressCanMintCollection(await taleOfThalesContract.getLatestCollectionIndex(), first));
             assert.bnEqual(false, await taleOfThalesContract.addressCanMintCollection(await taleOfThalesContract.getLatestCollectionIndex(), third));
@@ -88,21 +88,21 @@ contract('TaleOfThalesNFTs', (accounts) => {
 	    describe('Updating whitelist for existing collection', () => {
             
             it('Should revert, whitelist empty array', async () => {
-                await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+                await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
                 await expect(taleOfThalesContract.updateWhitelistForCollection(1, [], false , { from: owner })).to.be.revertedWith(
                     'Whitelist cannot be empty'
                 );
             });
 
             it('Should revert, not owner', async () => {
-                await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+                await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
                 await expect(taleOfThalesContract.updateWhitelistForCollection(1, [], false , { from: third })).to.be.revertedWith(
                     'Ownable: caller is not the owner'
                 );
             });
 
             it('Should update whitelist for existing collection', async () => {
-                await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+                await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
                 await taleOfThalesContract.updateWhitelistForCollection(1, [third], true, { from: owner });
                 assert.bnEqual(true, await taleOfThalesContract.addressCanMintCollection(1, third));
             });
@@ -111,21 +111,21 @@ contract('TaleOfThalesNFTs', (accounts) => {
 
     describe('Adding item to collection', () => {
         it('Should revert adding the item, not owner user', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
             await expect(taleOfThalesContract.addItemToCollection(0, await taleOfThalesContract.getLatestCollectionIndex(), { from: third })).to.be.revertedWith(
                 'Ownable: caller is not the owner'
             )
         });
 
         it('Should revert adding item, wrong collection index', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
             await expect(taleOfThalesContract.addItemToCollection(0, 2, { from: owner })).to.be.revertedWith(
                 'Collection with given index do not exist.'
             );
         })
 
         it('Should add items to collection and emit events', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
             const txFirstItem = await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
             const txSecondItem = await taleOfThalesContract.addItemToCollection(1, 1, { from: owner });
 
@@ -158,7 +158,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
         });
 
         it('Should revert while trying to add item with same type', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
             await expect(taleOfThalesContract.addItemToCollection(0, 1, { from: owner })).to.be.revertedWith(
                 'This type of wear is already added to collection.'
@@ -166,7 +166,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
         });
 
         it('Should revert while trying to add item with same type', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
             await expect(taleOfThalesContract.addItemToCollection(0, 1, { from: owner })).to.be.revertedWith(
                 'This type of wear is already added to collection.'
@@ -174,10 +174,10 @@ contract('TaleOfThalesNFTs', (accounts) => {
         });
 
         it('Should return collection index from item index', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(1, 1, { from: owner });
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 2, { from: owner });
             await taleOfThalesContract.addItemToCollection(1, 2, { from: owner });
 
@@ -189,7 +189,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
 
     describe('Minting', () => {
         it('Should revert, address not whitelisted, minting item', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(1, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(2, 1, { from: owner });
@@ -199,7 +199,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
         });
 
         it('Should mint item', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
 
             const tx = await taleOfThalesContract.mintItem(1, { from: second });
@@ -212,7 +212,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
         })
 
         it('Should revert, address not whitelisted, minting collection', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(1, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(2, 1, { from: owner });
@@ -222,14 +222,14 @@ contract('TaleOfThalesNFTs', (accounts) => {
         });
 
         it('Should revert, minting collection, no items added to collection', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
             await expect(taleOfThalesContract.mintCollection(1, { from: second })).to.be.revertedWith(
                 'There are no items in this collection'
             );
         });
 
         it('Should mint collection, also revert when user try to mint item from that collection', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(1, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(2, 1, { from: owner });
@@ -253,7 +253,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
         });
 
         it('Should mint collection, but skip item that already minted', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(1, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(2, 1, { from: owner });
@@ -276,7 +276,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
         });
 
         it('Should mint collection with two items, then add items to collection and again mint same collection', async () => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(1, 1, { from: owner });
 
@@ -309,7 +309,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
 
         describe('Transfer minted item', () => {
             it('Should transfer minted item to other address', async() => {
-                await taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner });
+                await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
                 await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
 
                 await taleOfThalesContract.mintItem(1, { from: second });
@@ -341,7 +341,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
         });
 
         it('Should revert while minting, while contract is paused', async() => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
             await taleOfThalesContract.pause({ from: owner });
 
@@ -356,13 +356,13 @@ contract('TaleOfThalesNFTs', (accounts) => {
         it('Should revert on creating collection, paused contract', async() => {
             await taleOfThalesContract.pause({ from: owner });
             assert.bnEqual(true, await taleOfThalesContract.paused());
-            await expect(taleOfThalesContract.addNewCollection(false, 0, [first, second], { from: owner })).to.be.revertedWith(
+            await expect(taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner })).to.be.revertedWith(
                 'Pausable: paused'
             )
         });
 
         it('Should revert on adding item to collection, paused contract', async() => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
             await taleOfThalesContract.pause({ from: owner });
             assert.bnEqual(true, await taleOfThalesContract.paused());
             await expect(taleOfThalesContract.addItemToCollection(0, 1, { from: owner })).to.be.revertedWith(
@@ -377,7 +377,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
         });
 
         it('Should set new uri', async() => {
-            await taleOfThalesContract.addNewCollection(false, 0, [first, second, third], { from: owner });
+            await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
 
             expect(await taleOfThalesContract.uri(1)).to.equal("");

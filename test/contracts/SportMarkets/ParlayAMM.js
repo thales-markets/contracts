@@ -1306,8 +1306,8 @@ contract('ParlayAMM', (accounts) => {
 			console.log('sUSD balance of third = ' + balanceOfMinter);
 			const id = 1;
 
-			const tenSUSD = toUnit(10);
-			await expect(voucher.mint(first, tenSUSD, { from: third })).to.be.revertedWith(
+			const fifteenSUSD = toUnit(15);
+			await expect(voucher.mint(first, fifteenSUSD, { from: third })).to.be.revertedWith(
 				'Invalid amount'
 			);
 

@@ -156,12 +156,12 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             IERC20Upgradeable(_token).safeTransferFrom(
                 msg.sender,
                 address(this),
-                ((_sUSDPaid * (ONE + bridgeFeePercentage)) / ONE)
+                ((_expectedPayout * (ONE + bridgeFeePercentage)) / ONE)
             );
             sendMessageWithTransfer(
                 adapterOnDestination,
                 _token,
-                ((_sUSDPaid * (ONE + bridgeFeePercentage)) / ONE),
+                ((_expectedPayout * (ONE + bridgeFeePercentage)) / ONE),
                 _dstChainId,
                 noncePerSelector[selector],
                 minBridgeSlippage,
@@ -483,11 +483,12 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     ) external payable virtual override onlyMessageBus returns (ExecutionStatus) {
         require(whitelistedToReceiveFrom[_sender], "InvSender");
         bool success = _executeBuy(_message);
-        if (success) {
-            return ExecutionStatus.Success;
-        } else {
-            return ExecutionStatus.Fail;
-        }
+        require(success, "Failed msgExec");
+        // if (success) {
+        return ExecutionStatus.Success;
+        // } else {
+        //     return ExecutionStatus.Fail;
+        // }
     }
 
     // called by MessageBus on destination chain to receive message, record and emit info.
@@ -509,15 +510,16 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         balances[sender][_token] += _amount;
         require(selectorAddress[selector] != address(0), "InvSelector");
         bool success = checkAndSendMessage(sender, selector, chainId, payload);
-        if (success) {
-            balances[sender][_token] -= _amount;
-            emit MessageExercised(sender, selectorAddress[selector], success, payload);
-            emit MessageWithTransferReceived(sender, _token, _amount, _srcChainId, _message);
-            return ExecutionStatus.Success;
-        } else {
-            emit MessageExercised(sender, selectorAddress[selector], success, payload);
-            return ExecutionStatus.Fail;
-        }
+        require(success, "Failed buy");
+        // if (success) {
+        balances[sender][_token] -= _amount;
+        emit MessageExercised(sender, selectorAddress[selector], success, payload);
+        emit MessageWithTransferReceived(sender, _token, _amount, _srcChainId, _message);
+        return ExecutionStatus.Success;
+        // } else {
+        //     emit MessageExercised(sender, selectorAddress[selector], success, payload);
+        //     return ExecutionStatus.Fail;
+        // }
     }
 
     // called by MessageBus on source chain to handle message with failed token transfer

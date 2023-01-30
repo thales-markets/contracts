@@ -110,7 +110,7 @@
 		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"MessageBus": "0x0D71D18126E03646eb09FEc929e2ae87b7CAE69d",
 		"CrossChainAdapter": "0xd927170E3669cd14Fa07937B778B1649257F8ee6",
-		"CrossChainAdapterImplementation": "0xfeD78b2d1DAeb1B82C528293c73601dd8436B383",
+		"CrossChainAdapterImplementation": "0x84F6cdb2b94A0a943BFC66Bac5861b141e5605bE",
 		"GamesOddsObtainer": "0x3ff20410003767edE94c06c5Df56968d90ABAe6c",
 		"GamesOddsObtainerImplementation": "0x7FE0E7F9b8Ad85C0F2dFE8073Ebe5F41D67a7B9e",
 		"ThalesAMMNew": "0x278B5A44397c9D8E52743fEdec263c4760dc1A1A",

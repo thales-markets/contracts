@@ -1483,7 +1483,7 @@ contract('SportsAMM', (accounts) => {
 				111,
 				{ from: first }
 			);
-			// console.log(tx.logs[0].args);
+			console.log(tx.logs[0].args);
 			let balance = await testUSDC.balanceOf(CrossChainAdapter.address);
 			console.log('CrossChain balance: ', parseFloat(balance / 1e12));
 			console.log('Sent tokens: ', fromUnit(totalSUSDToPay));

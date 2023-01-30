@@ -28,6 +28,8 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
     string public _name = "Overtime Voucher";
     string public _symbol = "OVER";
     bool public paused = false;
+    string public tokenURIFive;
+    string public tokenURITen;
     string public tokenURITwenty;
     string public tokenURIFifty;
     string public tokenURIHundred;
@@ -43,6 +45,8 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
 
     /* ========== CONSTANTS ========== */
     uint private constant ONE = 1e18;
+    uint private constant FIVE = 5 * 1e18;
+    uint private constant TEN = 10 * 1e18;
     uint private constant TWENTY = 20 * 1e18;
     uint private constant FIFTY = 50 * 1e18;
     uint private constant HUNDRED = 100 * 1e18;
@@ -54,6 +58,8 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
 
     constructor(
         address _sUSD,
+        string memory _tokenURIFive,
+        string memory _tokenURITen,
         string memory _tokenURITwenty,
         string memory _tokenURIFifty,
         string memory _tokenURIHundred,
@@ -64,6 +70,8 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         address _parlayAMM
     ) ERC721(_name, _symbol) {
         sUSD = IERC20(_sUSD);
+        tokenURIFive = _tokenURIFive;
+        tokenURITen = _tokenURITen;
         tokenURITwenty = _tokenURITwenty;
         tokenURIFifty = _tokenURIFifty;
         tokenURIHundred = _tokenURIHundred;
@@ -82,7 +90,9 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         require(!paused, "Cant mint while paused");
 
         require(
-            amount == TWENTY ||
+            amount == FIVE ||
+                amount == TEN ||
+                amount == TWENTY ||
                 amount == FIFTY ||
                 amount == HUNDRED ||
                 amount == TWO_HUNDRED ||
@@ -101,7 +111,9 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
 
         _setTokenURI(
             newItemId,
-            amount == TWENTY ? tokenURITwenty : amount == FIFTY ? tokenURIFifty : amount == HUNDRED
+            amount == FIVE ? tokenURIFive : amount == TEN ? tokenURITen : amount == TWENTY ? tokenURITwenty : amount == FIFTY
+                ? tokenURIFifty
+                : amount == HUNDRED
                 ? tokenURIHundred
                 : amount == TWO_HUNDRED
                 ? tokenURITwoHundred
@@ -187,6 +199,8 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
     // }
 
     function setTokenUris(
+        string memory _tokenURIFive,
+        string memory _tokenURITen,
         string memory _tokenURITwenty,
         string memory _tokenURIFifty,
         string memory _tokenURIHundred,
@@ -194,6 +208,8 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         string memory _tokenURIFiveHundred,
         string memory _tokenURIThousand
     ) external onlyOwner {
+        tokenURIFive = _tokenURIFive;
+        tokenURITen = _tokenURITen;
         tokenURITwenty = _tokenURITwenty;
         tokenURIFifty = _tokenURIFifty;
         tokenURIHundred = _tokenURIHundred;

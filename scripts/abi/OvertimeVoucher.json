@@ -8,6 +8,16 @@
       },
       {
         "internalType": "string",
+        "name": "_tokenURIFive",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_tokenURITen",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
         "name": "_tokenURITwenty",
         "type": "string"
       },
@@ -724,6 +734,16 @@
     "inputs": [
       {
         "internalType": "string",
+        "name": "_tokenURIFive",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_tokenURITen",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
         "name": "_tokenURITwenty",
         "type": "string"
       },
@@ -837,6 +857,19 @@
   },
   {
     "inputs": [],
+    "name": "tokenURIFive",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "tokenURIFiveHundred",
     "outputs": [
       {
@@ -851,6 +884,19 @@
   {
     "inputs": [],
     "name": "tokenURIHundred",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "tokenURITen",
     "outputs": [
       {
         "internalType": "string",

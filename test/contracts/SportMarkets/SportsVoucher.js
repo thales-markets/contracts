@@ -423,13 +423,15 @@ contract('SportsVauchers', (accounts) => {
 				'',
 				'',
 				'',
+				'',
+				'',
 				SportsAMM.address,
 				SportsAMM.address
 			);
 
 			await voucher.setSportsAMM(SportsAMM.address);
 			await voucher.setPause(false);
-			await voucher.setTokenUris('', '', '', '', '', '');
+			await voucher.setTokenUris('', '', '', '', '', '', '', '', '', '');
 
 			position = artifacts.require('SportPosition');
 		});

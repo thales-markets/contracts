@@ -1288,6 +1288,8 @@ contract('ParlayAMM', (accounts) => {
 				'',
 				'',
 				'',
+				'',
+				'',
 				SportsAMM.address,
 				ParlayAMM.address,
 				{ from: owner }
@@ -1296,7 +1298,7 @@ contract('ParlayAMM', (accounts) => {
 			await voucher.setSportsAMM(SportsAMM.address, { from: owner });
 			await voucher.setParlayAMM(ParlayAMM.address, { from: owner });
 			await voucher.setPause(false, { from: owner });
-			await voucher.setTokenUris('', '', '', '', '', '', { from: owner });
+			await voucher.setTokenUris('', '', '', '', '', '', '', '', { from: owner });
 
 			Thales.approve(voucher.address, toUnit(20), { from: third });
 

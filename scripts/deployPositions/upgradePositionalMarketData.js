@@ -5,8 +5,6 @@ const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 
@@ -38,38 +36,29 @@ async function main() {
 	}
 
 	const MarketData = await ethers.getContractFactory('PositionalMarketData');
-	const MarketManagerAddress = getTargetAddress('PositionalMarketManager', network);
-	const ThalesAMMAddress = getTargetAddress('ThalesAMM', network);
-	const RangedAMMAddress = getTargetAddress('RangedAMM', network);
+	const MarketDataAddress = getTargetAddress('PositionalMarketData', network);
 
-	const MarketDataDeployed = await upgrades.deployProxy(MarketData, [owner.address]);
-	await MarketDataDeployed.deployed;
+	let implementation;
+	if (networkObj.chainId == 10) {
+		implementation = await upgrades.prepareUpgrade(MarketDataAddress, MarketData);
+	}
 
-	console.log('PositionalMarketData deployed on', MarketDataDeployed.address);
-	setTargetAddress('PositionalMarketData', network, MarketDataDeployed.address);
+	// upgrade if test networks
+	if (networkObj.chainId == 420) {
+		await upgrades.upgradeProxy(MarketDataAddress, MarketData);
+
+		implementation = await getImplementationAddress(ethers.provider, MarketDataAddress);
+	}
+
+	console.log('PositionalMarketData upgraded');
+
+	console.log('PositionalMarketDataImplementation: ', implementation);
+	setTargetAddress('PositionalMarketDataImplementation', network, implementation);
 
 	await delay(5000);
-	const MarketDataImplementation = await getImplementationAddress(
-		ethers.provider,
-		MarketDataDeployed.address
-	);
-
-	console.log('Implementation PositionalMarketData: ', MarketDataImplementation);
-	setTargetAddress('PositionalMarketDataImplementation', network, MarketDataImplementation);
-
-	await delay(5000);
-	await MarketDataDeployed.setPositionalMarketManager(MarketManagerAddress, {
-		from: owner.address,
-	});
-	await delay(5000);
-	await MarketDataDeployed.setThalesAMM(ThalesAMMAddress, { from: owner.address });
-	await delay(5000);
-	await MarketDataDeployed.setRangedMarketsAMM(RangedAMMAddress, { from: owner.address });
-	await delay(5000);
-
 	try {
 		await hre.run('verify:verify', {
-			address: MarketDataImplementation,
+			address: implementation,
 		});
 	} catch (e) {
 		console.log(e);

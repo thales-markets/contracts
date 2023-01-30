@@ -661,6 +661,29 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
+    /// @notice used to update gamified Staking bonuses from Parlay contract
+    /// @param _account Address to update volume for
+    /// @param _amount of the volume
+    function updateParlayVolume(address _account, uint _amount) external {
+        require(msg.sender == parlayAMM, "Invalid caller");
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(_account, _amount);
+        }
+    }
+
+    /// @notice Retrive all sUSD funds of the SportsAMM contract, in case of destroying
+    /// @param account Address where to send the funds
+    /// @param amount Amount of sUSD to be sent
+    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        sUSD.safeTransfer(account, amount);
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _ammUtils address of AMMUtils
+    function setAmmUtils(SportsAMMUtils _ammUtils) external onlyOwner {
+        sportAmmUtils = _ammUtils;
+    }
+
     // Internal
 
     /// @notice calculate which cap needs to be applied to the given market
@@ -795,12 +818,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             wrapper.callUpdateOddsForSpecificGame(params.market);
         }
 
-        if (isDoubleChance) {
-            ISportPositionalMarket parentMarket = ISportPositionalMarket(params.market).parentMarket();
-            _updateSpentOnMarketOnBuy(address(parentMarket), params.sUSDPaid, msg.sender);
-        } else {
-            _updateSpentOnMarketOnBuy(params.market, params.sUSDPaid, msg.sender);
-        }
+        _updateSpentOnMarketOnBuy(
+            isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market,
+            params.sUSDPaid,
+            msg.sender
+        );
 
         emit BoughtFromAmm(
             msg.sender,
@@ -888,23 +910,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal {
         uint safeBoxShare;
         if (safeBoxImpact > 0 && buyer != parlayAMM) {
-            safeBoxShare =
-                sUSDPaid -
-                (sUSDPaid * ONE) /
-                (ONE + (safeBoxFeePerAddress[msg.sender] > 0 ? safeBoxFeePerAddress[msg.sender] : safeBoxImpact));
+            safeBoxShare = sUSDPaid - (sUSDPaid * ONE) / (ONE + _getSafeBoxFeePerAddress(buyer));
             sUSD.safeTransfer(safeBox, safeBoxShare);
         }
 
-        if (
-            spentOnGame[market] <=
-            ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid - (safeBoxShare))
-        ) {
-            spentOnGame[market] = 0;
-        } else {
-            spentOnGame[market] =
-                spentOnGame[market] -
-                (ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid - (safeBoxShare)));
-        }
+        uint toSubtract = ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid - safeBoxShare);
+
+        spentOnGame[market] = spentOnGame[market] <= toSubtract
+            ? 0
+            : (spentOnGame[market] = spentOnGame[market] - toSubtract);
 
         if (referrerFee > 0 && referrals != address(0)) {
             uint referrerShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + (referrerFee)));
@@ -1020,29 +1034,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             return 3;
         }
         return 0;
-    }
-
-    /// @notice used to update gamified Staking bonuses from Parlay contract
-    /// @param _account Address to update volume for
-    /// @param _amount of the volume
-    function updateParlayVolume(address _account, uint _amount) external {
-        require(msg.sender == parlayAMM, "Invalid caller");
-        if (address(stakingThales) != address(0)) {
-            stakingThales.updateVolume(_account, _amount);
-        }
-    }
-
-    /// @notice Retrive all sUSD funds of the SportsAMM contract, in case of destroying
-    /// @param account Address where to send the funds
-    /// @param amount Amount of sUSD to be sent
-    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
-        sUSD.safeTransfer(account, amount);
-    }
-
-    /// @notice Updates contract parametars
-    /// @param _ammUtils address of AMMUtils
-    function setAmmUtils(SportsAMMUtils _ammUtils) external onlyOwner {
-        sportAmmUtils = _ammUtils;
     }
 
     // events

@@ -1288,6 +1288,8 @@ contract('ParlayAMM', (accounts) => {
 				'',
 				'',
 				'',
+				'',
+				'',
 				SportsAMM.address,
 				ParlayAMM.address,
 				{ from: owner }

@@ -46,6 +46,13 @@ async function main() {
 		network = 'goerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
+
 	sUSDAddress = PaymentToken;
 
 	console.log('Account is: ' + owner.address);
@@ -67,6 +74,8 @@ async function main() {
 	const OvertimeVoucher = await ethers.getContractFactory('OvertimeVoucher');
 	const OvertimeVoucherDeployed = await OvertimeVoucher.deploy(
 		sUSDAddress,
+		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-5.png',
+		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-10.png',
 		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-20.png',
 		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-50.png',
 		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-100.png',
@@ -87,6 +96,8 @@ async function main() {
 		address: OvertimeVoucherDeployed.address,
 		constructorArguments: [
 			sUSDAddress,
+			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-5.png',
+			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-10.png',
 			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-20.png',
 			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-50.png',
 			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-100.png',

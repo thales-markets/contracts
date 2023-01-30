@@ -216,6 +216,9 @@ contract('PostitionalMarketData', (accounts) => {
 
 			let pricesForAllActiveMarkets = await marketData.getPricesForAllActiveMarkets();
 			assert.bnEqual(pricesForAllActiveMarkets.length, 1);
+
+			let basePricesForAllActiveMarkets = await marketData.getBasePricesForAllActiveMarkets();
+			assert.bnEqual(basePricesForAllActiveMarkets.length, 1);
 		});
 	});
 });

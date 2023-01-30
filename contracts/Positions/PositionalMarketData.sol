@@ -218,6 +218,25 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         return marketPrices;
     }
 
+    /// @notice getBasePricesForAllActiveMarkets returns base prices for all active markets
+    /// @return ActiveMarketsPrices
+    function getBasePricesForAllActiveMarkets() external view returns (ActiveMarketsPrices[] memory) {
+        address[] memory activeMarkets = PositionalMarketManager(manager).activeMarkets(
+            0,
+            PositionalMarketManager(manager).numActiveMarkets()
+        );
+        ActiveMarketsPrices[] memory marketPrices = new ActiveMarketsPrices[](activeMarkets.length);
+        for (uint i = 0; i < activeMarkets.length; i++) {
+            marketPrices[i].market = activeMarkets[i];
+
+            if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
+                marketPrices[i].upPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Up);
+                marketPrices[i].downPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Down);
+            }
+        }
+        return marketPrices;
+    }
+
     /// @notice getRangedMarketPricesAndLiquidity returns prices and liquidity for ranged market
     /// @param market RangedMarket
     /// @return RangedMarketPricesAndLiqudity

@@ -445,8 +445,8 @@ contract('SportsVauchers', (accounts) => {
 			console.log('sUSD balance of minter = ' + balanceOfMinter);
 			const id = 1;
 
-			const tenSUSD = toUnit(10);
-			await expect(voucher.mint(first, tenSUSD, { from: minter })).to.be.revertedWith(
+			const fifteenSUSD = toUnit(15);
+			await expect(voucher.mint(first, fifteenSUSD, { from: minter })).to.be.revertedWith(
 				'Invalid amount'
 			);
 

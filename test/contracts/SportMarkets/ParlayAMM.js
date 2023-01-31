@@ -1288,6 +1288,8 @@ contract('ParlayAMM', (accounts) => {
 				'',
 				'',
 				'',
+				'',
+				'',
 				SportsAMM.address,
 				ParlayAMM.address,
 				{ from: owner }
@@ -1296,7 +1298,8 @@ contract('ParlayAMM', (accounts) => {
 			await voucher.setSportsAMM(SportsAMM.address, { from: owner });
 			await voucher.setParlayAMM(ParlayAMM.address, { from: owner });
 			await voucher.setPause(false, { from: owner });
-			await voucher.setTokenUris('', '', '', '', '', '', { from: owner });
+			await voucher.setTokenUris('', '', '', '', '', '', '', '', { from: owner });
+			await voucher.setMultiplier(toUnit(1), { from: owner });
 
 			Thales.approve(voucher.address, toUnit(20), { from: third });
 
@@ -1304,8 +1307,8 @@ contract('ParlayAMM', (accounts) => {
 			console.log('sUSD balance of third = ' + balanceOfMinter);
 			const id = 1;
 
-			const tenSUSD = toUnit(10);
-			await expect(voucher.mint(first, tenSUSD, { from: third })).to.be.revertedWith(
+			const fifteenSUSD = toUnit(15);
+			await expect(voucher.mint(first, fifteenSUSD, { from: third })).to.be.revertedWith(
 				'Invalid amount'
 			);
 

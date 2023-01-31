@@ -44,6 +44,12 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxysUSD', network);
+	}
+
 	const SportMarketManager = await ethers.getContractFactory('SportPositionalMarketManager');
 	const SportMarketManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
 	const SportMarketManagerDeployed = await SportMarketManager.attach(SportMarketManagerAddress);
@@ -67,7 +73,8 @@ async function main() {
 		networkObj.chainId == 69 ||
 		networkObj.chainId == 42 ||
 		networkObj.chainId == 420 ||
-		networkObj.chainId == 5
+		networkObj.chainId == 5 ||
+		networkObj.chainId == 42161
 	) {
 		await SportMarketFactoryDeployed.setSportPositionMastercopy(SportPositionDeployed.address, {
 			from: owner.address,

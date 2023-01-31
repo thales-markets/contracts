@@ -10,6 +10,8 @@ async function main() {
 	let sportsAMMAddress;
 	let PaymentToken;
 
+	let multiplier = toUnit(1);
+
 	if (network === 'unknown') {
 		network = 'localhost';
 	}
@@ -46,6 +48,14 @@ async function main() {
 		network = 'goerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+		multiplier = toBN(1 * 1e6);
+	}
+
 	sUSDAddress = PaymentToken;
 
 	console.log('Account is: ' + owner.address);
@@ -67,6 +77,8 @@ async function main() {
 	const OvertimeVoucher = await ethers.getContractFactory('OvertimeVoucher');
 	const OvertimeVoucherDeployed = await OvertimeVoucher.deploy(
 		sUSDAddress,
+		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-5.png',
+		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-10.png',
 		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-20.png',
 		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-50.png',
 		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-100.png',
@@ -83,10 +95,18 @@ async function main() {
 
 	console.log('OvertimeVoucher deployed to:', OvertimeVoucherDeployed.address);
 
+	await OvertimeVoucherDeployed.setMultiplier(multiplier, { from: owner.address });
+
+	console.log('OvertimeVoucher set multiplier');
+
+	await delay(65000);
+
 	await hre.run('verify:verify', {
 		address: OvertimeVoucherDeployed.address,
 		constructorArguments: [
 			sUSDAddress,
+			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-5.png',
+			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-10.png',
 			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-20.png',
 			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-50.png',
 			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-100.png',

@@ -135,6 +135,36 @@
   },
   {
     "inputs": [],
+    "name": "getBasePricesForAllActiveMarkets",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "upPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "downPrice",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PositionalMarketData.ActiveMarketsPrices[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getLiquidityForAllActiveMarkets",
     "outputs": [
       {

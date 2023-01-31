@@ -45,10 +45,6 @@ interface ISportsAMM {
 
     function manager() external view returns (address);
 
-    function apexConsumer() external view returns (address);
-
-    function calculateCapToBeUsed(address market) external view returns (uint);
-
     function buyFromAMM(
         address market,
         Position position,

@@ -41,7 +41,7 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(address _stakingAddress) ERC1155("") {
+    constructor(address _stakingAddress, string memory newuri) ERC1155(newuri) {
         require(_stakingAddress != address(0), "Invalid address");
         staking = IStakingThales(_stakingAddress);
     }

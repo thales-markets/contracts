@@ -19,6 +19,8 @@ contract('TaleOfThalesNFTs', (accounts) => {
 		const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 		const SNXRewardsContract = artifacts.require('SNXRewards');
 
+        const metaUri = 'https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/{id}.json';
+
 		SNXRewards = await SNXRewardsContract.new({ from: owner });
 		Thales = await ThalesContract.new({ from: owner });
 
@@ -40,6 +42,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
 
 		taleOfThalesContract = await TaleOfThalesNFTs.new(
 			StakingThales.address,
+            metaUri,
 			{
 				from: owner,
 			}

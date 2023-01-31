@@ -5,6 +5,11 @@
         "internalType": "address",
         "name": "_stakingAddress",
         "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "newuri",
+        "type": "string"
       }
     ],
     "stateMutability": "nonpayable",

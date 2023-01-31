@@ -109,6 +109,11 @@
         "internalType": "uint256",
         "name": "availableToBuyFromAMM",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max_spread",
+        "type": "uint256"
       }
     ],
     "name": "buyPriceImpactImbalancedSkew",
@@ -142,6 +147,11 @@
       {
         "internalType": "uint256",
         "name": "balance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max_spread",
         "type": "uint256"
       }
     ],
@@ -178,6 +188,11 @@
           {
             "internalType": "uint256",
             "name": "availableToBuyFromAMM",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max_spread",
             "type": "uint256"
           }
         ],
@@ -234,6 +249,11 @@
           {
             "internalType": "uint256",
             "name": "priceOtherPosition",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max_spread",
             "type": "uint256"
           }
         ],
@@ -457,6 +477,11 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimalTimeLeftToMaturity",
+        "type": "uint256"
       }
     ],
     "name": "isMarketInAMMTrading",

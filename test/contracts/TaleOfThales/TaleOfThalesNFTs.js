@@ -109,6 +109,13 @@ contract('TaleOfThalesNFTs', (accounts) => {
                 await taleOfThalesContract.updateWhitelistForCollection(1, [third], true, { from: owner });
                 assert.bnEqual(true, await taleOfThalesContract.addressCanMintCollection(1, third));
             });
+
+            it('Should revert whitelist update, because condition for minting is not whitelist', async () => {
+                await taleOfThalesContract.addNewCollection(false, true, 0, toUnit('100'), [first, second], { from: owner });
+                await expect(taleOfThalesContract.updateWhitelistForCollection(1, [third], true, { from: owner })).to.be.revertedWith(
+                    'Collection has minimal volume as minting condition'
+                );
+            });
         });
 	});
 
@@ -383,7 +390,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
             await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second, third], { from: owner });
             await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
 
-            expect(await taleOfThalesContract.uri(1)).to.equal("");
+            expect(await taleOfThalesContract.uri(1)).to.equal("https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/{id}.json");
 
             await taleOfThalesContract.setURI("https://test.com/{id}.json", { from: owner })
             expect(await taleOfThalesContract.uri(1)).to.equal("https://test.com/{id}.json");

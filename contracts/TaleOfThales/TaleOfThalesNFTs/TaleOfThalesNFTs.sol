@@ -153,6 +153,9 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
     ) public onlyOwner whenNotPaused returns (uint256) {
         require(_whitelistedAddresses.length > 0, "Whitelist cannot be empty");
         require(_collectionId <= _lastCollectionId.current(), "Collection with entered id does not exists");
+        require(collectionToMinimumStakeAmount[_collectionId] == 0, "Collection has minimal staking as minting condition");
+        require(collectionToMinimalVolume[_collectionId] == 0, "Collection has minimal volume as minting condition");
+        
         for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
             // only if current flag is different, if same skip it
             if (addressCanMintCollection[_collectionId][_whitelistedAddresses[index]] != _flag) {

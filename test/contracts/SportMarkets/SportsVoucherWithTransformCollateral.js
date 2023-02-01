@@ -32,6 +32,9 @@ const {
 	encodeCall,
 	assertRevert,
 } = require('../../utils/helpers');
+const { toWei } = require('web3-utils');
+
+const toUnitSix = (amount) => toBN(toWei(amount.toString(), 'ether') / 1e12);
 
 contract('SportsVauchers', (accounts) => {
 	const [manager, first, owner, second, third, fourth, safeBox, wrapper, minter] = accounts;
@@ -51,7 +54,7 @@ contract('SportsVauchers', (accounts) => {
 	const SportPositionMasterCopyContract = artifacts.require('SportPositionMastercopy');
 	const StakingThalesContract = artifacts.require('StakingThales');
 	const SportsAMMContract = artifacts.require('SportsAMM');
-	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
+	const ThalesContract = artifacts.require('TestUSDC');
 	const SNXRewardsContract = artifacts.require('SNXRewards');
 	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	const TestOddsContract = artifacts.require('TestOdds');
@@ -142,7 +145,7 @@ contract('SportsVauchers', (accounts) => {
 		// TestOdds = await TestOddsContract.new();
 		await AddressResolver.setSNXRewardsAddress(SNXRewards.address);
 
-		Thales = await ThalesContract.new({ from: owner });
+		Thales = await ThalesContract.new();
 		let GamesQueue = artifacts.require('GamesQueue');
 		gamesQueue = await GamesQueue.new({ from: owner });
 		await gamesQueue.initialize(owner, { from: owner });
@@ -151,6 +154,7 @@ contract('SportsVauchers', (accounts) => {
 		await SportPositionalMarketFactory.initialize(manager, { from: manager });
 
 		await SportPositionalMarketManager.setExpiryDuration(5 * DAY, { from: manager });
+		await SportPositionalMarketManager.setNeedsTransformingCollateral(true, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
@@ -227,14 +231,14 @@ contract('SportsVauchers', (accounts) => {
 			{ from: owner }
 		);
 
-		await Thales.transfer(first, toUnit('1000'), { from: owner });
-		await Thales.transfer(minter, toUnit('1000'), { from: owner });
-		await Thales.transfer(third, toUnit('1000'), { from: owner });
-		await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
+		await Thales.mint(first, toUnitSix('1000'));
+		await Thales.mint(minter, toUnitSix('1000'));
+		await Thales.mint(third, toUnitSix('1000'));
+		await Thales.mint(SportsAMM.address, toUnit('100000'), { from: owner });
 
-		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: first });
-		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: second });
-		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: third });
+		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: first });
+		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: second });
+		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: third });
 
 		// ids
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';
@@ -326,7 +330,7 @@ contract('SportsVauchers', (accounts) => {
 			{ from: owner }
 		);
 
-		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
+		await Thales.mint(TherundownConsumerDeployed.address, toUnit('1000'));
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
 			gamesQueue.address,
@@ -432,7 +436,7 @@ contract('SportsVauchers', (accounts) => {
 			await voucher.setSportsAMM(SportsAMM.address);
 			await voucher.setPause(false);
 			await voucher.setTokenUris('', '', '', '', '', '', '', '');
-			await voucher.setMultiplier(toUnit(1));
+			await voucher.setMultiplier(toUnitSix(1));
 
 			position = artifacts.require('SportPosition');
 		});
@@ -440,34 +444,48 @@ contract('SportsVauchers', (accounts) => {
 		let value = 100;
 
 		it('Mint voucher', async () => {
-			Thales.approve(voucher.address, toUnit(20), { from: minter });
+			let odds = [];
+			odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
+			odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
+			odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
+			console.log(
+				'Game odds: 0=',
+				fromUnit(odds[0]),
+				', 1=',
+				fromUnit(odds[1]),
+				' 2=',
+				fromUnit(odds[2])
+			);
+
+			console.log(toUnitSix(20) / 1e6);
+			Thales.approve(voucher.address, toUnitSix(20), { from: minter });
 
 			let balanceOfMinter = await Thales.balanceOf(minter);
-			console.log('sUSD balance of minter = ' + balanceOfMinter);
+			console.log('sUSD balance of minter = ' + balanceOfMinter / 1e6);
 			const id = 1;
 
-			const fifteenSUSD = toUnit(15);
+			const fifteenSUSD = toUnitSix(15);
 			await expect(voucher.mint(first, fifteenSUSD, { from: minter })).to.be.revertedWith(
 				'Invalid amount'
 			);
 
-			const twentysUSD = toUnit(20);
+			const twentysUSD = toUnitSix(20);
 			await voucher.mint(first, twentysUSD, { from: minter });
 			balanceOfMinter = await Thales.balanceOf(minter);
-			console.log('sUSD balance of minter = ' + balanceOfMinter);
+			console.log('sUSD balance of minter = ' + balanceOfMinter / 1e6);
 
 			let balanceOfVoucher = await Thales.balanceOf(voucher.address);
-			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
+			console.log('sUSD balance of voucher = ' + balanceOfVoucher / 1e6);
 
 			assert.bnEqual(1, await voucher.balanceOf(first));
 			assert.equal(first, await voucher.ownerOf(id));
-			assert.bnEqual(toUnit(20), await voucher.amountInVoucher(id));
+			assert.bnEqual(toUnitSix(20), await voucher.amountInVoucher(id));
 
 			await voucher.safeTransferFrom(first, second, id, { from: first });
 			assert.equal(second, await voucher.ownerOf(id));
 
 			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(20));
-			console.log('Quote is ' + buyFromAmmQuote / 1e18);
+			console.log('Quote is ' + buyFromAmmQuote / 1e6);
 
 			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(20), id, {
 				from: second,
@@ -487,10 +505,10 @@ contract('SportsVauchers', (accounts) => {
 			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
 
 			let amountInVoucher = await voucher.amountInVoucher(id);
-			console.log('Amount in voucher is ' + amountInVoucher / 1e18);
+			console.log('Amount in voucher is ' + amountInVoucher / 1e6);
 
 			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
-			console.log('100 Quote is ' + buyFromAmmQuote / 1e18);
+			console.log('100 Quote is ' + buyFromAmmQuote / 1e6);
 
 			await expect(
 				voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(100), id, {
@@ -505,7 +523,7 @@ contract('SportsVauchers', (accounts) => {
 			).to.be.revertedWith('You are not the voucher owner!');
 
 			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(65));
-			console.log('65 Quote is ' + buyFromAmmQuote / 1e18);
+			console.log('65 Quote is ' + buyFromAmmQuote / 1e6);
 
 			let secondBalanceBeforeBurn = await voucher.balanceOf(second);
 			console.log('Second balance before burn is ' + secondBalanceBeforeBurn);

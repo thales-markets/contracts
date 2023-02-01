@@ -8,6 +8,16 @@
       },
       {
         "internalType": "string",
+        "name": "_tokenURIFive",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_tokenURITen",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
         "name": "_tokenURITwenty",
         "type": "string"
       },
@@ -190,6 +200,19 @@
       }
     ],
     "name": "BoughtFromParlayWithVoucher",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "multiplier",
+        "type": "uint256"
+      }
+    ],
+    "name": "MultiplierChanged",
     "type": "event"
   },
   {
@@ -505,6 +528,19 @@
   },
   {
     "inputs": [],
+    "name": "multiplier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "name",
     "outputs": [
       {
@@ -684,6 +720,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_multiplier",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMultiplier",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_parlayAMM",
         "type": "address"
@@ -722,6 +771,16 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "string",
+        "name": "_tokenURIFive",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_tokenURITen",
+        "type": "string"
+      },
       {
         "internalType": "string",
         "name": "_tokenURITwenty",
@@ -837,6 +896,19 @@
   },
   {
     "inputs": [],
+    "name": "tokenURIFive",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "tokenURIFiveHundred",
     "outputs": [
       {
@@ -851,6 +923,19 @@
   {
     "inputs": [],
     "name": "tokenURIHundred",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "tokenURITen",
     "outputs": [
       {
         "internalType": "string",

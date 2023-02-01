@@ -47,12 +47,18 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxysUSD', network);
+	}
+
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
 	const SportsAMM = await ethers.getContractFactory('SportsAMM');
 	const SportsAMMDeployed = SportsAMM.attach(SportsAMMAddress);
 
 	const SportsAMMUtils = await ethers.getContractFactory('SportsAMMUtils');
-	const SportsAMMUtilsDeployed = await SportsAMMUtils.deploy();
+	const SportsAMMUtilsDeployed = await SportsAMMUtils.deploy(SportsAMMAddress);
 	await SportsAMMUtilsDeployed.deployed();
 
 	console.log('Implementation SportsAMMUtils: ', SportsAMMUtilsDeployed.address);
@@ -69,6 +75,7 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: SportsAMMUtilsDeployed.address,
+			constructorArguments: [SportsAMMAddress],
 		});
 	} catch (e) {
 		console.log(e);

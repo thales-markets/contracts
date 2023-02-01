@@ -92,7 +92,7 @@ contract Position is IERC20, IPosition {
     /// @dev This must only be invoked after maturity.
     /// @param claimant address of the claiming address
     /// @param amount amount of tokens for exercising
-    function exerciseWithAmount(address claimant, uint amount) external onlyMarket {
+    function exerciseWithAmount(address claimant, uint amount) external override onlyMarket {
         require(amount > 0, "Can not exercise zero amount!");
 
         require(balanceOf[claimant] >= amount, "Balance must be greather or equal amount that is burned");

@@ -33,6 +33,8 @@ interface ISportPositionalMarket {
 
     function times() external view returns (uint maturity, uint destruction);
 
+    function initialMint() external view returns (uint);
+
     function getGameDetails() external view returns (bytes32 gameId, string memory gameLabel);
 
     function getGameId() external view returns (bytes32);
@@ -58,6 +60,8 @@ interface ISportPositionalMarket {
     function isChild() external view returns (bool);
 
     function tags(uint idx) external view returns (uint);
+
+    function getParentMarketPositions() external view returns (IPosition position1, IPosition position2);
 
     function getStampedOdds()
         external
@@ -86,7 +90,9 @@ interface ISportPositionalMarket {
             uint draw
         );
 
-    function getMaximumBurnable(address account) external view returns (uint amount);
+    function isDoubleChance() external view returns (bool);
+
+    function parentMarket() external view returns (ISportPositionalMarket);
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
@@ -103,8 +109,4 @@ interface ISportPositionalMarket {
         uint _awayOdds,
         uint _drawOdds
     ) external;
-
-    function burnOptions(uint amount) external;
-
-    function burnOptionsMaximum() external;
 }

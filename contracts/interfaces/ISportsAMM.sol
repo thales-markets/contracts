@@ -10,6 +10,15 @@ interface ISportsAMM {
         Draw
     }
 
+    struct SellRequirements {
+        address user;
+        address market;
+        Position position;
+        uint amount;
+        uint expectedPayout;
+        uint additionalSlippage;
+    }
+
     function theRundownConsumer() external view returns (address);
 
     function getMarketDefaultOdds(address _market, bool isSell) external view returns (uint[] memory);
@@ -19,6 +28,22 @@ interface ISportsAMM {
     function availableToBuyFromAMM(address market, Position position) external view returns (uint _available);
 
     function parlayAMM() external view returns (address);
+
+    function minSupportedOdds() external view returns (uint);
+
+    function maxSupportedOdds() external view returns (uint);
+
+    function min_spread() external view returns (uint);
+
+    function max_spread() external view returns (uint);
+
+    function minimalTimeLeftToMaturity() external view returns (uint);
+
+    function getSpentOnGame(address market) external view returns (uint);
+
+    function safeBoxImpact() external view returns (uint);
+
+    function manager() external view returns (address);
 
     function buyFromAMM(
         address market,

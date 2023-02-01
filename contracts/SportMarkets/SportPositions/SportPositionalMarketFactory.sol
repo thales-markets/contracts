@@ -32,6 +32,7 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
         uint[] tags;
         bool isChild;
         address parentMarket;
+        bool isDoubleChance;
     }
 
     /* ========== INITIALIZER ========== */
@@ -69,7 +70,8 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
                 positions,
                 _parameters.tags,
                 _parameters.isChild,
-                _parameters.parentMarket
+                _parameters.parentMarket,
+                _parameters.isDoubleChance
             )
         );
         emit MarketCreated(

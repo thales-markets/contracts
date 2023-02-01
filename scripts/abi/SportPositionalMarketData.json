@@ -79,6 +79,31 @@
   },
   {
     "inputs": [],
+    "name": "getBaseOddsForAllActiveMarkets",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "odds",
+            "type": "uint256[]"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.ActiveMarketsOdds[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getOddsForAllActiveMarkets",
     "outputs": [
       {
@@ -95,6 +120,31 @@
           }
         ],
         "internalType": "struct SportPositionalMarketData.ActiveMarketsOdds[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getPriceImpactForAllActiveMarkets",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "int256[]",
+            "name": "priceImpact",
+            "type": "int256[]"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.ActiveMarketsPriceImpact[]",
         "name": "",
         "type": "tuple[]"
       }

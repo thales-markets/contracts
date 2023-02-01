@@ -177,16 +177,6 @@ contract SportsAMMUtils {
         }
     }
 
-    function isMarketInAMMTrading(address market, uint minimalTimeLeftToMaturity) public view returns (bool isTrading) {
-        if (ISportPositionalMarketManager(sportsAMM.manager()).isActiveMarket(market)) {
-            (uint maturity, ) = ISportPositionalMarket(market).times();
-            if (maturity >= block.timestamp) {
-                uint timeLeftToMaturity = maturity - block.timestamp;
-                isTrading = timeLeftToMaturity > minimalTimeLeftToMaturity;
-            }
-        }
-    }
-
     function obtainOdds(address _market, ISportsAMM.Position _position) public view returns (uint oddsToReturn) {
         address theRundownConsumer = sportsAMM.theRundownConsumer();
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {

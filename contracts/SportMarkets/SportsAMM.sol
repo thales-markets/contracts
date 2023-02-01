@@ -403,7 +403,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param market The address of the SportPositional market of a game
     /// @return isTrading Returns true if market is active, returns false if not active.
     function isMarketInAMMTrading(address market) public view returns (bool isTrading) {
-        isTrading = sportAmmUtils.isMarketInAMMTrading(market, minimalTimeLeftToMaturity);
+        if (ISportPositionalMarketManager(manager).isActiveMarket(market)) {
+            (uint maturity, ) = ISportPositionalMarket(market).times();
+            if (maturity >= block.timestamp) {
+                uint timeLeftToMaturity = maturity - block.timestamp;
+                isTrading = timeLeftToMaturity > minimalTimeLeftToMaturity;
+            }
+        }
     }
 
     /// @notice Checks if a `market` options can be excercised. Winners get the full options amount 1 option = 1 sUSD.
@@ -889,7 +895,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 uint baseOddsFirst = sportAmmUtils.obtainOdds(parentMarket, position1);
                 baseOddsFirst = baseOddsFirst < minSupportedOdds ? minSupportedOdds : baseOddsFirst;
 
-                uint baseOddsSecond = sportAmmUtils.obtainOdds(parentMarket, position1);
+                uint baseOddsSecond = sportAmmUtils.obtainOdds(parentMarket, position2);
                 baseOddsSecond = baseOddsSecond < minSupportedOdds ? minSupportedOdds : baseOddsSecond;
 
                 uint availableFirst = _availableToBuyFromAMMWithBaseOdds(parentMarket, position1, baseOddsFirst, 0, false);

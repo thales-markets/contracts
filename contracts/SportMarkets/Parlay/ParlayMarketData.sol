@@ -118,8 +118,68 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         return _getAllParlaysForGamePosition(_sportMarket, _position);
     }
 
+    function getAllParlaysForGames(address[] memory _sportMarket)
+        external
+        view
+        returns (address[] memory parlays, uint numOfParlays)
+    {
+        address[] memory homeParlays;
+        address[] memory awayParlays;
+        address[] memory drawParlays;
+        uint max_length;
+        uint totalNumOfParlays;
+        bool isExercisable;
+        for (uint i = 0; i < _sportMarket.length; i++) {
+            totalNumOfParlays +=
+                numOfParlaysInGamePosition[_sportMarket[i]][0] +
+                numOfParlaysInGamePosition[_sportMarket[i]][1] +
+                numOfParlaysInGamePosition[_sportMarket[i]][2];
+        }
+        parlays = new address[](totalNumOfParlays);
+        for (uint i = 0; i < _sportMarket.length; i++) {
+            (homeParlays, awayParlays, drawParlays) = _getAllParlaysForGame(_sportMarket[i]);
+            max_length = homeParlays.length > awayParlays.length ? homeParlays.length : awayParlays.length;
+            max_length = drawParlays.length > 0 && drawParlays.length > max_length ? drawParlays.length : max_length;
+            for (uint j = 0; j < max_length; j++) {
+                if (homeParlays.length > j) {
+                    (isExercisable, ) = ParlayMarket(homeParlays[j]).isParlayExercisable();
+                    if (isExercisable) {
+                        parlays[numOfParlays] = homeParlays[j];
+                        numOfParlays++;
+                    }
+                }
+                if (awayParlays.length > j) {
+                    (isExercisable, ) = ParlayMarket(awayParlays[j]).isParlayExercisable();
+                    if (isExercisable) {
+                        parlays[numOfParlays] = awayParlays[j];
+                        numOfParlays++;
+                    }
+                }
+                if (drawParlays.length > j) {
+                    (isExercisable, ) = ParlayMarket(drawParlays[j]).isParlayExercisable();
+                    if (isExercisable) {
+                        parlays[numOfParlays] = drawParlays[j];
+                        numOfParlays++;
+                    }
+                }
+            }
+        }
+    }
+
     function getAllParlaysForGame(address _sportMarket)
         external
+        view
+        returns (
+            address[] memory homeParlays,
+            address[] memory awayParlays,
+            address[] memory drawParlays
+        )
+    {
+        (homeParlays, awayParlays, drawParlays) = _getAllParlaysForGame(_sportMarket);
+    }
+
+    function _getAllParlaysForGame(address _sportMarket)
+        internal
         view
         returns (
             address[] memory homeParlays,

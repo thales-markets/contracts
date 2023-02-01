@@ -227,7 +227,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
             await taleOfThalesContract.addItemToCollection(1, 1, { from: owner });
             await taleOfThalesContract.addItemToCollection(2, 1, { from: owner });
             await expect(taleOfThalesContract.mintCollection(1, { from: third })).to.be.revertedWith(
-                'Address is not whitelisted'
+                'Address is not eligible to mint this collection'
             );
         });
 
@@ -258,7 +258,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
             assert.bnEqual(1, await taleOfThalesContract.balanceOf(second, 4));
 
             await expect(taleOfThalesContract.mintItem(1, { from: second })).to.be.revertedWith(
-                'Address is not eligible to mint this item'
+                'Item is already minted by this address.'
             );
         });
 
@@ -333,6 +333,22 @@ contract('TaleOfThalesNFTs', (accounts) => {
                 assert.bnEqual(0, await taleOfThalesContract.balanceOf(second, 1));
                 assert.bnEqual(1, await taleOfThalesContract.balanceOf(first, 1));
             });
+
+            it('Should revert minting already minted and transfered item', async() => {
+                await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
+                await taleOfThalesContract.addItemToCollection(0, 1, { from: owner });
+
+                await taleOfThalesContract.mintItem(1, { from: second });
+
+                // Confirm that address "second" has item
+                assert.bnEqual(1, await taleOfThalesContract.balanceOf(second, 1));
+
+                await taleOfThalesContract.safeTransferFrom(second, first, 1, 1, "0x", { from: second });
+
+                await expect(taleOfThalesContract.mintItem(1, { from: second })).to.be.revertedWith(
+                    'Item is already minted by this address.'                    
+                );
+            })
         })
     });
 

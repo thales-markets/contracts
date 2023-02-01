@@ -35,6 +35,8 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
     mapping(uint256 => mapping(address => bool)) public addressCanMintCollection;
     mapping(uint256 => mapping(uint8 => uint256)) public collectionToTypeMapping;
 
+    mapping(address => mapping(uint256 => bool)) public addressAlreadyMintedItem;
+
     IStakingThales public staking;
     mapping(uint256 => uint256) public collectionToMinimumStakeAmount;
     mapping(uint256 => uint256) public collectionToMinimalVolume;
@@ -58,6 +60,7 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
 
     function isEligibleToMintItem(uint256 _itemIndex, address _minter) public view returns (bool) {
         require(itemIndexToCollection[_itemIndex] != 0, "Item is not in any collection");
+        require(addressAlreadyMintedItem[_minter][_itemIndex] == false, "Item is already minted by this address.");
         if (balanceOf(_minter, _itemIndex) > 0) return false;
 
         uint256 _collectionIndex = getCollectionIndexFromItemIndex(_itemIndex);
@@ -90,6 +93,7 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
     function mintItem(uint256 _itemId) external whenNotPaused {
         require(isEligibleToMintItem(_itemId, msg.sender), "Address is not eligible to mint this item");
         _mint(msg.sender, _itemId, 1, "");
+        addressAlreadyMintedItem[msg.sender][_itemId] = true;
         emit ItemMinted(_itemId, msg.sender);
     }
 
@@ -104,6 +108,8 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
 
         for (uint256 i = 0; i < items.length; i++) {
             if (balanceOf(msg.sender, collectionToItems[_collectionIndex][i].index) > 0) continue;
+            if (addressAlreadyMintedItem[msg.sender][collectionToItems[_collectionIndex][i].index] == true) continue;
+            addressAlreadyMintedItem[msg.sender][collectionToItems[_collectionIndex][i].index] = true;
             itemsToMint[i] = collectionToItems[_collectionIndex][i].index;
             amountToMint[i] = 1;
         }

@@ -50,8 +50,10 @@ async function main() {
 	stakingAddress = getTargetAddress('StakingThales', network);
 	console.log('Found stakingAddress at:' + stakingAddress);
 
+    const uriAddress = 'https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/{id}.json';
+
     const TaleOfThalesContract = await ethers.getContractFactory('TaleOfThalesNFTs');
-    const TaleOfThalesDeployed = await TaleOfThalesContract.deploy()
+    const TaleOfThalesDeployed = await TaleOfThalesContract.deploy(stakingAddress, uriAddress);
 
 	await TaleOfThalesDeployed.deployed();
 	setTargetAddress('TaleOfThalesNFTs', network, TaleOfThalesDeployed.address);
@@ -60,7 +62,7 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: TaleOfThalesDeployed.address,
-		constructorArguments: [stakingAddress],
+		constructorArguments: [stakingAddress, uriAddress],
 	});
 }
 

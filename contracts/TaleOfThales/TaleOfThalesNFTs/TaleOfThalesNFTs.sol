@@ -97,13 +97,19 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         uint256[] memory itemsToMint = new uint256[](4);
         uint256[] memory amountToMint = new uint256[](4);
 
+        bool anythingToMint = false;
+
         for (uint256 i = 0; i < items.length; i++) {
             if (balanceOf(msg.sender, collectionToItems[_collectionIndex][i].index) > 0) continue;
             if (addressAlreadyMintedItem[msg.sender][collectionToItems[_collectionIndex][i].index] == true) continue;
             addressAlreadyMintedItem[msg.sender][collectionToItems[_collectionIndex][i].index] = true;
+            anythingToMint = true;
             itemsToMint[i] = collectionToItems[_collectionIndex][i].index;
             amountToMint[i] = 1;
         }
+
+        require(anythingToMint, "There is nothing to mint.");
+
         _mintBatch(msg.sender, itemsToMint, amountToMint, "");
         emit CollectionMinted(itemsToMint, msg.sender);
     }

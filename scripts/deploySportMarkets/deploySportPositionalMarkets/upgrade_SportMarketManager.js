@@ -45,11 +45,18 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
+
 	const SportMarketManager = await ethers.getContractFactory('SportPositionalMarketManager');
 	const SportMarketManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
 
+	console.log('SportMarketManagerAddress', SportMarketManagerAddress);
 	let implementation;
-	if (networkObj.chainId == 10) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
 		implementation = await upgrades.prepareUpgrade(SportMarketManagerAddress, SportMarketManager);
 	}
 

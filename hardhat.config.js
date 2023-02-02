@@ -180,7 +180,7 @@ module.exports = {
 			gasPrice: 10000,
 		},
 		optimisticEthereum: {
-			url: 'https://mainnet.optimism.io',
+			url: 'https://optimism-mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
 		optimisticGoerli: {

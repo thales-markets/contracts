@@ -51,7 +51,7 @@
 		"SportPositionalMarketFactoryImplementation": "0x9fb1EF2B3cf9B62955ad18FC5e03e47FDCE15a4a",
 		"SportPositionalMarketMastercopy": "0x17D8eb2EA0E9D640b97927BFDEAD5CC83f81a216",
 		"SportPositionMastercopy": "0x4f1f0665Ef05Eb734d2a19eBf9948AAbef898e7d",
-		"SportsAMMImplementation": "0x0e4641f7bA379d20e8Bb84819b07c9234D0BddcF",
+		"SportsAMMImplementation": "0x2c59CeF6fb58250aA649b91EcD1f401adA629370",
 		"SportPositionalMarketData": "0xd8Bc9D6840C701bFAd5E7cf98CAdC2ee637c0701",
 		"SportPositionalMarketDataImplementation": "0xe6dc152E7B0C7614F589fA1f54d149cD3CDccc11",
 		"GamesQueue": "0x5417c847b6ce4163C43116E8D9670395Ba08B503",
@@ -65,7 +65,7 @@
 		"ThalesAMMUtils": "0x279c0D239d0C036E74AAdF872d604af37E341373",
 		"TherundownConsumerVerifier": "0x56d0A5098AD74F5e635797753644521173be89dB",
 		"TherundownConsumerVerifierImplementation": "0xD41469706802dBbcF78e985c50092bbBdE9431Fb",
-		"SportsAMMUtils": "0xEEEaC1CFBeEcEA670bc42e76163E10eDf125C458",
+		"SportsAMMUtils": "0x7F804722948571f575D06A52c7A414Ae42f6F89A",
 		"OvertimeWorldCupZebro": "0x0a47d5F27149270d45D74abD45FA30E567aB9b7D",
 		"ParlayAMMImplementation": "0x7039CCD356e0995bEa3D748DD69677243f23B7f0",
 		"ParlayMarketMastercopy": "0x99bF9D0d03689Ac2a8C20C17FD757c5763ABc5d9",
@@ -107,7 +107,8 @@
 		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"GamesOddsObtainer": "0x3ff20410003767edE94c06c5Df56968d90ABAe6c",
 		"GamesOddsObtainerImplementation": "0x519579c64cA400C5c38750c21e6573DF16D01dDe",
-		"ThalesAMMNewImplementation": "0x9043CF6B9319b07f52D9C8d8964A8B457A64e0Ca"
+		"ThalesAMMNewImplementation": "0x9043CF6B9319b07f52D9C8d8964A8B457A64e0Ca",
+		"TaleOfThalesNFTs": "0x890b559E10aD1aAE73713f2f1924aab4e60cf505"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -190,7 +191,7 @@
 		"VaultImplementation": "",
 		"ThalesAMMUtils": "0x33A9e28a06A55706644b5b2c88d7cd8f71A57cc2",
 		"SportPositionalMarketManager": "0x72ca0765d4bE0529377d656c9645600606214610",
-		"SportPositionalMarketManagerImplementation": "0xece0eEFFF3003d23e366C917104C6CF5Cdb404F1",
+		"SportPositionalMarketManagerImplementation": "0x33bf0378242c7C814942197ea4AE584b52681197",
 		"SportPositionalMarketFactory": "0x85b827d133FEDC36B844b20f4a198dA583B25BAA",
 		"SportPositionalMarketFactoryImplementation": "0x1Ac7eBfa70AB18bf0a8C36e51ecD6C969E88B1d1",
 		"SportPositionalMarketMastercopy": "0x7F6fB7CB277fa68972F350CE426ef9090821bd5e",
@@ -216,7 +217,7 @@
 		"ParlayMarketDataImplementation": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
 		"GamesOddsObtainer": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
 		"GamesOddsObtainerImplementation": "0x707075f0B619acF5A614Efb54FA8aC9B2FB55188",
-		"OvertimeVoucher": "0xcF05d2Fa3013bB78256341e1FB9b1F40D48b4c72"
+		"OvertimeVoucher": "0xD1fe5a0256AcaeA497ecD30dc0b816cce95e23E9"
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",
@@ -457,7 +458,7 @@
 		"SportPositionalMarketData": "0x202209397e2A26dc3243bD4bF46480C1f6661032",
 		"SportPositionalMarketDataImplementation": "0x4d205a3f286D562880330113D6F67A571Ec29eBc",
 		"SportsAMM": "0x7465c5d60d3d095443CF9991Da03304A30D42Eae",
-		"SportsAMMImplementation": "0x68E0a872b193F338E4BE930EdA74D57Bd0089a37",
+		"SportsAMMImplementation": "0xa01AD492B19314bEfBcE4891B927A030d660ffA5",
 		"Referrals": "0xB2947FC03d8Ee002726F4e28C42D513f7B6D6788",
 		"ReferralsImplementation": "0xF9e07A53765aC94d3d0aFfAA58F61551dDcC6bF5",
 		"OvertimeVoucher": "0x9483eFf448042c366a4297dB465FaE108d2e6ea6",

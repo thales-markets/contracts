@@ -55,7 +55,7 @@ async function main() {
 	/* ========== PROPERTIES ========== */
 
 	// CHANGE addresses
-	const whitelist = ['0x088cda4c48750442548ab476af5eea7135394063'];
+	const whitelist = ['0x088cda4c48750442548ab476af5eea7135394063', '0x169379d950ceffa34f5d92e33e40B7F3787F0f71'];
 
 	// ---> Conditions
 
@@ -66,6 +66,9 @@ async function main() {
 
 	const collectionToWhitelistMap = new Map();
 	collectionToWhitelistMap.set(1, whitelist);
+	collectionToWhitelistMap.set(2, whitelist);
+	collectionToWhitelistMap.set(3, whitelist);
+	collectionToWhitelistMap.set(4, whitelist);
 	collectionToWhitelistMap.set(5, whitelist);
 	collectionToWhitelistMap.set(6, whitelist);
 	collectionToWhitelistMap.set(7, whitelist);
@@ -109,18 +112,21 @@ async function main() {
 
 			console.log('Latest collection index is ', latestCollectionIndexFromContract);
 
+			const collectionAlreadyExists = latestCollectionIndexFromContract.toNumber() >= collection;
+
 			let txAddingCollection;
-			if (collectionToVolumeMinimumAmountMap.get(collection)) {
+			if (collectionToVolumeMinimumAmountMap.get(collection) && !collectionAlreadyExists) {
 				txAddingCollection = await taleOfThales.addNewCollection(
 					false,
 					true,
 					0,
 					w3utils.toWei(collectionToVolumeMinimumAmountMap.get(collection)),
-					[], {
+					collectionToWhitelistMap.get(collection),
+					{
 						from: owner.address,
 					}
 				);
-			} else if (collectionToWhitelistMap.get(collection)) {
+			} else if (collectionToWhitelistMap.get(collection) && !collectionAlreadyExists) {
 				txAddingCollection = await taleOfThales.addNewCollection(
 					false,
 					false,
@@ -133,12 +139,22 @@ async function main() {
 				);
 			}
 
-			await txAddingCollection.wait().then((e) => {
-				txLog(txAddingCollection, `Collection with index ${collection} addded`);
-			});
-			await delay(5000);
+			if (txAddingCollection !== undefined) {
+				await txAddingCollection.wait().then((e) => {
+					txLog(txAddingCollection, `Collection with index ${collection} addded`);
+				});
+				await delay(5000);
+			} else {
+				console.log(`Collection already exists => ${collection}`);
+			}
 
 			for (let item = 0; item < itemsFromCollectionIndex.length; item++) {
+				const latestItemIndexFromContract = await taleOfThales.getLatestItemIndex();
+				if (latestItemIndexFromContract.toNumber() >= itemsFromCollectionIndex[item].itemIndex) {
+					console.log(`Item already exists => ${itemsFromCollectionIndex[item].itemIndex}`);
+					continue;
+				};
+
 				const addItemTx = await taleOfThales.addItemToCollection(itemsFromCollectionIndex[item].type, itemsFromCollectionIndex[item].collectionIndex);
 				await addItemTx.wait().then((e) => {
 					txLog(addItemTx, `Item with index ${itemsFromCollectionIndex[item].itemIndex} is added.`);

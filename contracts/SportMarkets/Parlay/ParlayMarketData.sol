@@ -147,7 +147,10 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
                 for (uint j = 0; j < max_length; j++) {
                     if (homeParlays.length > j) {
                         alreadyLost = ParlayMarket(homeParlays[j]).parlayAlreadyLost();
-                        addToExercise = (!alreadyLost && marketResult != 1) || (alreadyLost && marketResult == 1);
+                        addToExercise = ParlayMarket(homeParlays[j]).fundsIssued();
+                        addToExercise =
+                            (!alreadyLost && marketResult != 1) ||
+                            (alreadyLost && marketResult == 1 && !addToExercise);
                         if (addToExercise) {
                             parlays[numOfParlays] = homeParlays[j];
                             numOfParlays++;
@@ -155,7 +158,10 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
                     }
                     if (awayParlays.length > j) {
                         alreadyLost = ParlayMarket(awayParlays[j]).parlayAlreadyLost();
-                        addToExercise = (!alreadyLost && marketResult != 2) || (alreadyLost && marketResult == 2);
+                        addToExercise = ParlayMarket(awayParlays[j]).fundsIssued();
+                        addToExercise =
+                            (!alreadyLost && marketResult != 2) ||
+                            (alreadyLost && marketResult == 2 && !addToExercise);
                         if (addToExercise) {
                             parlays[numOfParlays] = awayParlays[j];
                             numOfParlays++;
@@ -163,7 +169,10 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
                     }
                     if (drawParlays.length > j) {
                         alreadyLost = ParlayMarket(drawParlays[j]).parlayAlreadyLost();
-                        addToExercise = (!alreadyLost && marketResult != 3) || (alreadyLost && marketResult == 3);
+                        addToExercise = ParlayMarket(drawParlays[j]).fundsIssued();
+                        addToExercise =
+                            (!alreadyLost && marketResult != 3) ||
+                            (alreadyLost && marketResult == 3 && !addToExercise);
                         if (addToExercise) {
                             parlays[numOfParlays] = drawParlays[j];
                             numOfParlays++;

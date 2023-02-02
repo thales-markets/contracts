@@ -107,7 +107,8 @@
 		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"GamesOddsObtainer": "0x3ff20410003767edE94c06c5Df56968d90ABAe6c",
 		"GamesOddsObtainerImplementation": "0x519579c64cA400C5c38750c21e6573DF16D01dDe",
-		"ThalesAMMNewImplementation": "0x9043CF6B9319b07f52D9C8d8964A8B457A64e0Ca"
+		"ThalesAMMNewImplementation": "0x9043CF6B9319b07f52D9C8d8964A8B457A64e0Ca",
+		"TaleOfThalesNFTs": "0x890b559E10aD1aAE73713f2f1924aab4e60cf505"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

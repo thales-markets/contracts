@@ -107,6 +107,25 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minVolumeAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minStakingAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "MintingConditionUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "previousOwner",
@@ -307,13 +326,7 @@
       }
     ],
     "name": "addNewCollection",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -636,7 +649,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "eligible",
         "type": "bool"
       }
     ],
@@ -660,7 +673,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "eligible",
         "type": "bool"
       }
     ],
@@ -897,6 +910,29 @@
   {
     "inputs": [],
     "name": "unpause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_collectionIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minVolumeAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minStakingAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateMintingCondition",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

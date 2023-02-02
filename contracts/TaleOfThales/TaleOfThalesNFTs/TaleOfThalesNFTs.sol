@@ -58,34 +58,25 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         return _lastCollectionId.current();
     }
 
-    function isEligibleToMintItem(uint256 _itemIndex, address _minter) public view returns (bool) {
+    function isEligibleToMintItem(uint256 _itemIndex, address _minter) public view returns (bool eligible) {
         require(itemIndexToCollection[_itemIndex] != 0, "Item is not in any collection");
         require(addressAlreadyMintedItem[_minter][_itemIndex] == false, "Item is already minted by this address.");
         if (balanceOf(_minter, _itemIndex) > 0) return false;
 
         uint256 _collectionIndex = getCollectionIndexFromItemIndex(_itemIndex);
 
-        if (_checkIsStakingAmountConditionForMinting(_itemIndex)) {
-            if (!(staking.stakedBalanceOf(_minter) >= collectionToMinimumStakeAmount[_collectionIndex])) return false;
-        } else if (_checkIsVolumeAmountConditionForMinting(_itemIndex)) {
-            if (!(staking.getAMMVolume(_minter) >= collectionToMinimalVolume[_collectionIndex])) return false;
-        } else {
-            if (!addressCanMintCollection[_collectionIndex][_minter]) return false;
-        }
-        return true;
+        return isEligibleToMintCollection(_collectionIndex, _minter);
     }
 
-    function isEligibleToMintCollection(uint256 _collectionIndex, address _minter) public view returns (bool) {
-        Item[] memory items = collectionToItems[_collectionIndex];
-        require(items.length > 0, "There are no items in this collection");
-        if (collectionToMinimumStakeAmount[_collectionIndex] > 0) {
-            if (!(staking.stakedBalanceOf(_minter) >= collectionToMinimumStakeAmount[_collectionIndex])) return false;
-        } else if (collectionToMinimalVolume[_collectionIndex] > 0) {
-            if (!(staking.getAMMVolume(_minter) >= collectionToMinimalVolume[_collectionIndex])) return false;
+    function isEligibleToMintCollection(uint256 _collectionIndex, address _minter) public view returns (bool eligible) {
+        if (_checkStakingConditionForAddress(_minter, 0, _collectionIndex)) {
+            eligible = true;
+        } else if (_checkVolumeConditionForAddress(_minter, 0, _collectionIndex)) {
+            eligible = true;
         } else {
-            if (!addressCanMintCollection[_collectionIndex][_minter]) return false;
+            if (addressCanMintCollection[_collectionIndex][_minter]) eligible = true;
         }
-        return true;
+        return eligible;
     }
 
     /* ========== OWC ========== */
@@ -123,19 +114,21 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         uint256 _minimumStakeAmount,
         uint256 _minimumVolumeAmount,
         address[] calldata _whitelistedAddresses
-    ) external onlyOwner whenNotPaused returns (uint256) {
+    ) external onlyOwner whenNotPaused {
         _lastCollectionId.increment();
-        if (_stakeCondition == true) {
+        if (_stakeCondition) {
             collectionToMinimumStakeAmount[_lastCollectionId.current()] = _minimumStakeAmount;
-        } else if (_volumeCondition == true) {
+        } else if (_volumeCondition) {
             collectionToMinimalVolume[_lastCollectionId.current()] = _minimumVolumeAmount;
         } else {
             require(_whitelistedAddresses.length > 0, "Whitelist cannot be empty");
+        }
+
+        if (_whitelistedAddresses.length > 0) {
             for (uint256 i = 0; i < _whitelistedAddresses.length; i++) {
                 addressCanMintCollection[_lastCollectionId.current()][_whitelistedAddresses[i]] = true;
             }
         }
-        return _lastCollectionId.current();
     }
 
     function addItemToCollection(uint8 _itemType, uint256 _collectionIndex) external onlyOwner whenNotPaused {
@@ -158,8 +151,6 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
     ) public onlyOwner whenNotPaused {
         require(_whitelistedAddresses.length > 0, "Whitelist cannot be empty");
         require(_collectionId <= _lastCollectionId.current(), "Collection with entered id does not exists");
-        require(collectionToMinimumStakeAmount[_collectionId] == 0, "Collection has minimal staking as minting condition");
-        require(collectionToMinimalVolume[_collectionId] == 0, "Collection has minimal volume as minting condition");
 
         for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
             // only if current flag is different, if same skip it
@@ -170,6 +161,23 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         }
     }
 
+    function updateMintingCondition(
+        uint256 _collectionIndex,
+        uint256 _minVolumeAmount,
+        uint256 _minStakingAmount
+    ) external onlyOwner whenNotPaused {
+        require(_minVolumeAmount > 0 || _minStakingAmount > 0, "One of the condition must be entered.");
+        require(!(_minVolumeAmount > 0 && _minStakingAmount > 0), "Can not add both conditions");
+        if (_minStakingAmount > 0) {
+            collectionToMinimalVolume[_collectionIndex] = 0;
+            collectionToMinimumStakeAmount[_collectionIndex] = _minStakingAmount;
+        } else {
+            collectionToMinimalVolume[_collectionIndex] = _minVolumeAmount;
+            collectionToMinimumStakeAmount[_collectionIndex] = 0;
+        }
+        emit MintingConditionUpdated(_minVolumeAmount, _minStakingAmount);
+    }
+
     function getCollectionIndexFromItemIndex(uint256 _itemIndex) public view returns (uint256) {
         require(itemIndexToCollection[_itemIndex] != 0, "Item is not added into collection or not created");
         return itemIndexToCollection[_itemIndex];
@@ -177,19 +185,37 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
 
     /* ========== INTERNAL ========== */
 
-    function _checkIsStakingAmountConditionForMinting(uint256 _itemIndex) internal view returns (bool) {
-        return collectionToMinimumStakeAmount[itemIndexToCollection[_itemIndex]] != 0;
-    }
-
-    function _checkIsVolumeAmountConditionForMinting(uint256 _itemIndex) internal view returns (bool) {
-        return collectionToMinimalVolume[itemIndexToCollection[_itemIndex]] != 0;
-    }
-
-    function _checkIsWhitelistConditionForMinting(uint256 _itemIndex) internal view returns (bool) {
-        require(itemIndexToCollection[_itemIndex] != 0, "Item is not part of any colllection");
+    function _checkStakingConditionForAddress(
+        address _minter,
+        uint256 _itemIndex,
+        uint256 _collectionIndex
+    ) internal view returns (bool) {
+        uint256 _collectionId = _collectionIndex != 0 ? _collectionIndex : itemIndexToCollection[_itemIndex];
         return
-            collectionToMinimalVolume[itemIndexToCollection[_itemIndex]] == 0 &&
-            collectionToMinimumStakeAmount[itemIndexToCollection[_itemIndex]] == 0;
+            collectionToMinimumStakeAmount[_collectionId] != 0 &&
+            (staking.stakedBalanceOf(_minter) > collectionToMinimumStakeAmount[_collectionId] ||
+                addressCanMintCollection[_collectionId][_minter]);
+    }
+
+    function _checkVolumeConditionForAddress(
+        address _minter,
+        uint256 _itemIndex,
+        uint256 _collectionIndex
+    ) internal view returns (bool) {
+        uint256 _collectionId = _collectionIndex != 0 ? _collectionIndex : itemIndexToCollection[_itemIndex];
+        return
+            collectionToMinimalVolume[_collectionId] != 0 &&
+            (staking.stakedBalanceOf(_minter) > collectionToMinimalVolume[_collectionId] ||
+                addressCanMintCollection[_collectionId][_minter]);
+    }
+
+    function _checkWhitelistConditionForAddress(
+        address _minter,
+        uint256 _itemIndex,
+        uint256 _collectionIndex
+    ) internal view returns (bool) {
+        uint256 _collectionId = _collectionIndex != 0 ? _collectionIndex : itemIndexToCollection[_itemIndex];
+        return addressCanMintCollection[_collectionId][_minter];
     }
 
     /* ========== CONTRACT MANAGMENT ========== */
@@ -210,4 +236,5 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
     event ItemMinted(uint256 _itemIndex, address _minter);
     event CollectionMinted(uint256[] _items, address _minter);
     event WhitelistUpdated(address whitelisted, uint256 _collectionIndex);
+    event MintingConditionUpdated(uint256 _minVolumeAmount, uint256 _minStakingAmount);
 }

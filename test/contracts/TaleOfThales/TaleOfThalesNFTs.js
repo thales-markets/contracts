@@ -88,7 +88,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
             assert.bnEqual(false, await taleOfThalesContract.addressCanMintCollection(await taleOfThalesContract.getLatestCollectionIndex(), third));
         });
 
-	    describe('Updating whitelist for existing collection', () => {
+	    describe('Updating conditions for existing collection', () => {
             
             it('Should revert, whitelist empty array', async () => {
                 await taleOfThalesContract.addNewCollection(false, false, 0, 0, [first, second], { from: owner });
@@ -110,12 +110,39 @@ contract('TaleOfThalesNFTs', (accounts) => {
                 assert.bnEqual(true, await taleOfThalesContract.addressCanMintCollection(1, third));
             });
 
-            it('Should revert whitelist update, because condition for minting is not whitelist', async () => {
+            it('Should update whitelist update also for collection that have minting condition staking', async () => {
                 await taleOfThalesContract.addNewCollection(false, true, 0, toUnit('100'), [first, second], { from: owner });
-                await expect(taleOfThalesContract.updateWhitelistForCollection(1, [third], true, { from: owner })).to.be.revertedWith(
-                    'Collection has minimal volume as minting condition'
-                );
+                await taleOfThalesContract.updateWhitelistForCollection(1, [third], true, { from: owner });
+
+                assert.bnEqual(await taleOfThalesContract.addressCanMintCollection(1, third), true);
+                assert.bnEqual(await taleOfThalesContract.addressCanMintCollection(1, first), true);
+                assert.bnEqual(await taleOfThalesContract.addressCanMintCollection(1, second), true);
             });
+
+            it('Should change minting condition from staking to volume', async() => {
+                await taleOfThalesContract.addNewCollection(true, false, toUnit('100'), 0, [first, second], { from: owner });
+
+                assert.bnEqual(await taleOfThalesContract.collectionToMinimumStakeAmount(1), toUnit('100'));
+
+                await taleOfThalesContract.updateMintingCondition(1, toUnit('10'), 0, { from: owner });
+
+                assert.bnEqual(await taleOfThalesContract.collectionToMinimumStakeAmount(1), 0);
+                assert.bnEqual(await taleOfThalesContract.collectionToMinimalVolume(1), toUnit('10'));
+            })
+
+            it('Should revert while updating minting condition, both condition entered', async() => {
+                await taleOfThalesContract.addNewCollection(true, false, toUnit('100'), 0, [first, second], { from: owner });
+                await expect(taleOfThalesContract.updateMintingCondition(1, toUnit('10'), toUnit('10'), { from: owner })).to.be.revertedWith(
+                    'Can not add both conditions'
+                );
+            })
+            
+            it('Should revert while updating minting condition, none of the conditions entered', async() => {
+                await taleOfThalesContract.addNewCollection(true, false, toUnit('100'), 0, [first, second], { from: owner });
+                await expect(taleOfThalesContract.updateMintingCondition(1, 0, 0, { from: owner })).to.be.revertedWith(
+                    'One of the condition must be entered.'
+                );
+            })
         });
 	});
 

@@ -186,6 +186,18 @@ contract SportsAMMUtils {
         }
     }
 
+    function obtainOddsMulti(
+        address _market,
+        ISportsAMM.Position _position1,
+        ISportsAMM.Position _position2
+    ) public view returns (uint oddsToReturn1, uint oddsToReturn2) {
+        address theRundownConsumer = sportsAMM.theRundownConsumer();
+        uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
+        odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
+        oddsToReturn1 = odds[uint(_position1)];
+        oddsToReturn2 = odds[uint(_position2)];
+    }
+
     function getBalanceOtherSideOnThreePositions(
         ISportsAMM.Position position,
         address addressToCheck,
@@ -216,6 +228,21 @@ contract SportsAMMUtils {
         if (ISportPositionalMarket(market).optionsCount() == 3) {
             drawBalance = draw.getBalanceOf(address(addressToCheck));
         }
+    }
+
+    function getBalanceOfPositionsOnMarketByPositions(
+        address market,
+        address addressToCheck,
+        ISportsAMM.Position position1,
+        ISportsAMM.Position position2
+    ) public view returns (uint firstBalance, uint secondBalance) {
+        (uint homeBalance, uint awayBalance, uint drawBalance) = getBalanceOfPositionsOnMarket(market, addressToCheck);
+        firstBalance = position1 == ISportsAMM.Position.Home ? homeBalance : position1 == ISportsAMM.Position.Away
+            ? awayBalance
+            : drawBalance;
+        secondBalance = position2 == ISportsAMM.Position.Home ? homeBalance : position2 == ISportsAMM.Position.Away
+            ? awayBalance
+            : drawBalance;
     }
 
     function balanceOfPositionsOnMarket(

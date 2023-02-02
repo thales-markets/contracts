@@ -128,7 +128,9 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         address[] memory drawParlays;
         uint max_length;
         uint totalNumOfParlays;
-        bool isExercisable;
+        bool addToExercise;
+        uint8 marketResult;
+        bool alreadyLost;
         for (uint i = 0; i < _sportMarket.length; i++) {
             totalNumOfParlays +=
                 numOfParlaysInGamePosition[_sportMarket[i]][0] +
@@ -140,26 +142,32 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
             (homeParlays, awayParlays, drawParlays) = _getAllParlaysForGame(_sportMarket[i]);
             max_length = homeParlays.length > awayParlays.length ? homeParlays.length : awayParlays.length;
             max_length = drawParlays.length > 0 && drawParlays.length > max_length ? drawParlays.length : max_length;
-            for (uint j = 0; j < max_length; j++) {
-                if (homeParlays.length > j) {
-                    (isExercisable, ) = ParlayMarket(homeParlays[j]).isParlayExercisable();
-                    if (isExercisable) {
-                        parlays[numOfParlays] = homeParlays[j];
-                        numOfParlays++;
+            if (ISportPositionalMarket(_sportMarket[i]).resolved() && !ISportPositionalMarket(_sportMarket[i]).cancelled()) {
+                marketResult = uint8(ISportPositionalMarket(_sportMarket[i]).result());
+                for (uint j = 0; j < max_length; j++) {
+                    if (homeParlays.length > j) {
+                        alreadyLost = ParlayMarket(homeParlays[j]).parlayAlreadyLost();
+                        addToExercise = (!alreadyLost && marketResult != 1) || (alreadyLost && marketResult == 1);
+                        if (addToExercise) {
+                            parlays[numOfParlays] = homeParlays[j];
+                            numOfParlays++;
+                        }
                     }
-                }
-                if (awayParlays.length > j) {
-                    (isExercisable, ) = ParlayMarket(awayParlays[j]).isParlayExercisable();
-                    if (isExercisable) {
-                        parlays[numOfParlays] = awayParlays[j];
-                        numOfParlays++;
+                    if (awayParlays.length > j) {
+                        alreadyLost = ParlayMarket(awayParlays[j]).parlayAlreadyLost();
+                        addToExercise = (!alreadyLost && marketResult != 2) || (alreadyLost && marketResult == 2);
+                        if (addToExercise) {
+                            parlays[numOfParlays] = awayParlays[j];
+                            numOfParlays++;
+                        }
                     }
-                }
-                if (drawParlays.length > j) {
-                    (isExercisable, ) = ParlayMarket(drawParlays[j]).isParlayExercisable();
-                    if (isExercisable) {
-                        parlays[numOfParlays] = drawParlays[j];
-                        numOfParlays++;
+                    if (drawParlays.length > j) {
+                        alreadyLost = ParlayMarket(drawParlays[j]).parlayAlreadyLost();
+                        addToExercise = (!alreadyLost && marketResult != 3) || (alreadyLost && marketResult == 3);
+                        if (addToExercise) {
+                            parlays[numOfParlays] = drawParlays[j];
+                            numOfParlays++;
+                        }
                     }
                 }
             }

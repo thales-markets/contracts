@@ -58,9 +58,9 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         return _lastCollectionId.current();
     }
 
-    function isEligibleToMintItem(uint256 _itemIndex, address _minter) public view returns (bool eligible) {
-        require(itemIndexToCollection[_itemIndex] != 0, "Item is not in any collection");
-        require(addressAlreadyMintedItem[_minter][_itemIndex] == false, "Item is already minted by this address.");
+    function isEligibleToMintItem(uint256 _itemIndex, address _minter) public view returns (bool) {
+        if (itemIndexToCollection[_itemIndex] == 0) return false;
+        if (addressAlreadyMintedItem[_minter][_itemIndex] == true) return false;
         if (balanceOf(_minter, _itemIndex) > 0) return false;
 
         uint256 _collectionIndex = getCollectionIndexFromItemIndex(_itemIndex);
@@ -207,15 +207,6 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
             collectionToMinimalVolume[_collectionId] != 0 &&
             (staking.stakedBalanceOf(_minter) > collectionToMinimalVolume[_collectionId] ||
                 addressCanMintCollection[_collectionId][_minter]);
-    }
-
-    function _checkWhitelistConditionForAddress(
-        address _minter,
-        uint256 _itemIndex,
-        uint256 _collectionIndex
-    ) internal view returns (bool) {
-        uint256 _collectionId = _collectionIndex != 0 ? _collectionIndex : itemIndexToCollection[_itemIndex];
-        return addressCanMintCollection[_collectionId][_minter];
     }
 
     /* ========== CONTRACT MANAGMENT ========== */

@@ -673,7 +673,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "eligible",
+        "name": "",
         "type": "bool"
       }
     ],

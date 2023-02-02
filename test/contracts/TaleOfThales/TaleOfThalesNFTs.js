@@ -285,7 +285,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
             assert.bnEqual(1, await taleOfThalesContract.balanceOf(second, 4));
 
             await expect(taleOfThalesContract.mintItem(1, { from: second })).to.be.revertedWith(
-                'Item is already minted by this address.'
+                'Address is not eligible to mint this item'
             );
         });
 
@@ -373,7 +373,7 @@ contract('TaleOfThalesNFTs', (accounts) => {
                 await taleOfThalesContract.safeTransferFrom(second, first, 1, 1, "0x", { from: second });
 
                 await expect(taleOfThalesContract.mintItem(1, { from: second })).to.be.revertedWith(
-                    'Item is already minted by this address.'                    
+                    'Address is not eligible to mint this item'                    
                 );
             })
         })

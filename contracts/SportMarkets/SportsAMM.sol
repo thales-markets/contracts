@@ -914,8 +914,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             if (position == ISportsAMM.Position.Home && (baseOdds > 0 && baseOdds < maxSupportedOdds)) {
                 (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
                     .getParentMarketPositions(market);
-
-                (uint availableFirst, uint availableSecond) = _getAvailableForPositions(market, position1, position2);
+                (uint availableFirst, uint availableSecond) = _getAvailableForPositions(parentMarket, position1, position2);
                 _available = availableFirst > availableSecond ? availableSecond : availableFirst;
             }
         } else {

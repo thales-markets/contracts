@@ -192,10 +192,15 @@ contract SportsAMMUtils {
         ISportsAMM.Position _position2
     ) public view returns (uint oddsToReturn1, uint oddsToReturn2) {
         address theRundownConsumer = sportsAMM.theRundownConsumer();
+        uint positionsCount = ISportPositionalMarket(_market).optionsCount();
         uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
         odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
-        oddsToReturn1 = odds[uint(_position1)];
-        oddsToReturn2 = odds[uint(_position2)];
+        if (positionsCount > uint(_position1)) {
+            oddsToReturn1 = odds[uint(_position1)];
+        }
+        if (positionsCount > uint(_position2)) {
+            oddsToReturn2 = odds[uint(_position2)];
+        }
     }
 
     function getBalanceOtherSideOnThreePositions(

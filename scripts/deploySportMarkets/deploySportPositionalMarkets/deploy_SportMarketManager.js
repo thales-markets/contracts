@@ -48,7 +48,7 @@ async function main() {
 	if (networkObj.chainId == 42161) {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
-		PaymentToken = getTargetAddress('ProxysUSD', network);
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
 	}
 
 	const SportMarketManager = await ethers.getContractFactory('SportPositionalMarketManager');

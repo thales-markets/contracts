@@ -229,7 +229,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             uint _available = useAvailable
                 ? available
                 : _availableToBuyFromAMMWithBaseOdds(market, position, baseOdds, 0, false);
-            uint _availableOtherSide = _getAvailableOtherSide(market, position, amount);
+            uint _availableOtherSide = _getAvailableOtherSide(market, position);
             if (amount <= _available) {
                 int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
                 baseOdds = baseOdds + (min_spreadPerAddress[msg.sender] > 0 ? min_spreadPerAddress[msg.sender] : min_spread);
@@ -282,32 +282,55 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
-    function _getAvailableOtherSide(
-        address market,
-        ISportsAMM.Position position,
-        uint amount
-    ) internal view returns (uint _availableOtherSide) {
+    function _getAvailableOtherSide(address market, ISportsAMM.Position position)
+        internal
+        view
+        returns (uint _availableOtherSide)
+    {
         ISportsAMM.Position positionFirst = ISportsAMM.Position((uint(position) + 1) % 3);
         ISportsAMM.Position positionSecond = ISportsAMM.Position((uint(position) + 2) % 3);
 
-        uint baseOddsFirst = sportAmmUtils.obtainOdds(market, positionFirst);
-        baseOddsFirst = baseOddsFirst < minSupportedOdds ? minSupportedOdds : baseOddsFirst;
-
-        uint baseOddsSecond = sportAmmUtils.obtainOdds(market, positionSecond);
-        baseOddsSecond = baseOddsSecond < minSupportedOdds ? minSupportedOdds : baseOddsSecond;
-
-        uint _availableOtherSideFirst = _availableToBuyFromAMMWithBaseOdds(market, positionFirst, baseOddsFirst, 0, false);
-        uint _availableOtherSideSecond = _availableToBuyFromAMMWithBaseOdds(
+        (uint _availableOtherSideFirst, uint _availableOtherSideSecond) = _getAvailableForPositions(
             market,
-            positionSecond,
-            baseOddsSecond,
-            0,
-            false
+            positionFirst,
+            positionSecond
         );
 
         _availableOtherSide = _availableOtherSideFirst > _availableOtherSideSecond
             ? _availableOtherSideFirst
             : _availableOtherSideSecond;
+    }
+
+    function _getAvailableForPositions(
+        address market,
+        ISportsAMM.Position positionFirst,
+        ISportsAMM.Position positionSecond
+    ) internal view returns (uint _availableOtherSideFirst, uint _availableOtherSideSecond) {
+        (uint baseOddsFirst, uint baseOddsSecond) = sportAmmUtils.obtainOddsMulti(market, positionFirst, positionSecond);
+        baseOddsFirst = baseOddsFirst < minSupportedOdds ? minSupportedOdds : baseOddsFirst;
+        baseOddsSecond = baseOddsSecond < minSupportedOdds ? minSupportedOdds : baseOddsSecond;
+
+        (uint balanceFirst, uint balanceSecond) = sportAmmUtils.getBalanceOfPositionsOnMarketByPositions(
+            market,
+            address(this),
+            positionFirst,
+            positionSecond
+        );
+
+        _availableOtherSideFirst = _availableToBuyFromAMMWithBaseOdds(
+            market,
+            positionFirst,
+            baseOddsFirst,
+            balanceFirst,
+            true
+        );
+        _availableOtherSideSecond = _availableToBuyFromAMMWithBaseOdds(
+            market,
+            positionSecond,
+            baseOddsSecond,
+            balanceSecond,
+            true
+        );
     }
 
     /// @notice Calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game
@@ -378,7 +401,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             }
         } else {
             uint _availableToBuyFromAMM = availableToBuyFromAMM(market, position);
-            uint _availableOtherSide = _getAvailableOtherSide(market, position, amount);
+            uint _availableOtherSide = _getAvailableOtherSide(market, position);
             if (amount > 0 && amount <= _availableToBuyFromAMM) {
                 impact = _buyPriceImpact(market, position, amount, _availableToBuyFromAMM, _availableOtherSide);
             }
@@ -891,16 +914,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             if (position == ISportsAMM.Position.Home && (baseOdds > 0 && baseOdds < maxSupportedOdds)) {
                 (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
                     .getParentMarketPositions(market);
-
-                uint baseOddsFirst = sportAmmUtils.obtainOdds(parentMarket, position1);
-                baseOddsFirst = baseOddsFirst < minSupportedOdds ? minSupportedOdds : baseOddsFirst;
-
-                uint baseOddsSecond = sportAmmUtils.obtainOdds(parentMarket, position2);
-                baseOddsSecond = baseOddsSecond < minSupportedOdds ? minSupportedOdds : baseOddsSecond;
-
-                uint availableFirst = _availableToBuyFromAMMWithBaseOdds(parentMarket, position1, baseOddsFirst, 0, false);
-                uint availableSecond = _availableToBuyFromAMMWithBaseOdds(parentMarket, position2, baseOddsSecond, 0, false);
-
+                (uint availableFirst, uint availableSecond) = _getAvailableForPositions(parentMarket, position1, position2);
                 _available = availableFirst > availableSecond ? availableSecond : availableFirst;
             }
         } else {

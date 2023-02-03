@@ -375,6 +375,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
         if (!isDoubleChance) {
             _incrementDeposited(value);
+            value = _manager().transformCollateral(value);
             _manager().transferSusdTo(msg.sender, address(this), value);
         }
     }
@@ -473,6 +474,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             if (!isDoubleChance) {
                 _decrementDeposited(payout);
             }
+            payout = _manager().transformCollateral(payout);
             sUSD.transfer(msg.sender, payout);
         }
     }

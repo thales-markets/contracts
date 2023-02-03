@@ -245,6 +245,30 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "_sportMarket",
+        "type": "address[]"
+      }
+    ],
+    "name": "getAllParlaysForGames",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "parlays",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "numOfParlays",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_parlayMarket",
         "type": "address"

@@ -1,0 +1,236 @@
+[
+	{
+		"name": "Miletus Helmet",
+		"itemIndex": 1,
+		"collectionIndex": 1,
+		"type": 0,
+		"description": "A sturdy helmet made of mithril. Worn by Thales most loyal supporters.",
+		"collection": "Miletus Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_0.png"
+	},
+	{
+		"name": "Miletus Breastplate",
+		"itemIndex": 2,
+		"collectionIndex": 1,
+		"type": 1,
+		"description": "An armor made of mithril. Worn by Thales most loyal supporters.",
+		"collection": "Miletus Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_1.png"
+	},
+	{
+		"name": "Miletus Greaves",
+		"itemIndex": 3,
+		"collectionIndex": 1,
+		"type": 2,
+		"description": "A pair of greaves made of mithril. Worn by Thales most loyal supporters.",
+		"collection": "Miletus Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_2.png"
+	},
+	{
+		"name": "Miletus Sword",
+		"itemIndex": 4,
+		"collectionIndex": 1,
+		"type": 3,
+		"description": "A deadly blade made of mithril. Worn by Thales most loyal supporters.",
+		"collection": "Miletus Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_3.png"
+	},
+	{
+		"name": "Bronze Helmet",
+		"itemIndex": 5,
+		"collectionIndex": 2,
+		"type": 0,
+		"description": "A sturdy helmet made of bronze. An affordable item for starting adventurers.",
+		"collection": "Bronze Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_4.png"
+	},
+	{
+		"name": "Bronze Breastplate",
+		"itemIndex": 6,
+		"collectionIndex": 2,
+		"type": 1,
+		"description": "An armor made of bronze. An affordable item for starting adventurers.",
+		"collection": "Bronze Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_5.png"
+	},
+	{
+		"name": "Bronze Greaves",
+		"itemIndex": 7,
+		"collectionIndex": 2,
+		"type": 2,
+		"description": "A pair of greaves made of bronze. An affordable item for starting adventurers.",
+		"collection": "Bronze Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_6.png"
+	},
+	{
+		"name": "Bronze Sword",
+		"itemIndex": 8,
+		"collectionIndex": 2,
+		"type": 3,
+		"description": "A deadly blade made of bronze. An affordable item for starting adventurers.",
+		"collection": "Bronze Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_7.png"
+	},
+	{
+		"name": "Silver Helmet",
+		"itemIndex": 9,
+		"collectionIndex": 3,
+		"type": 0,
+		"description": "A sturdy helmet made of silver. Worn by experienced adventurers.",
+		"collection": "Silver Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_8.png"
+	},
+	{
+		"name": "Silver Breastplate",
+		"itemIndex": 10,
+		"collectionIndex": 3,
+		"type": 1,
+		"description": "An armor made of silver. Worn by experienced adventurers.",
+		"collection": "Silver Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_9.png"
+	},
+	{
+		"name": "Silver Greaves",
+		"itemIndex": 11,
+		"collectionIndex": 3,
+		"type": 2,
+		"description": "A pair of greaves made of silver. Worn by experienced adventurers.",
+		"collection": "Silver Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_10.png"
+	},
+	{
+		"name": "Silver Sword",
+		"itemIndex": 12,
+		"collectionIndex": 3,
+		"type": 3,
+		"description": "A deadly blade made of silver. Worn by experienced adventurers.",
+		"collection": "Silver Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_11.png"
+	},
+	{
+		"name": "Golden Helmet",
+		"itemIndex": 13,
+		"collectionIndex": 4,
+		"type": 0,
+		"description": "A sturdy helmet made of gold. Worn by the greatest champions.",
+		"collection": "Golden Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_12.png"
+	},
+	{
+		"name": "Golden Breastplate",
+		"itemIndex": 14,
+		"collectionIndex": 4,
+		"type": 1,
+		"description": "An armor made of gold. Worn by the greatest champions.",
+		"collection": "Golden Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_13.png"
+	},
+	{
+		"name": "Golden Greaves",
+		"itemIndex": 15,
+		"collectionIndex": 4,
+		"type": 2,
+		"description": "A pair of greaves made of gold. Worn by the greatest champions.",
+		"collection": "Golden Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_14.png"
+	},
+	{
+		"name": "Golden Sword",
+		"itemIndex": 16,
+		"collectionIndex": 4,
+		"type": 3,
+		"description": "A deadly blade made of gold. Worn by the greatest champions.",
+		"collection": "Golden Soldier Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_15.png"
+	},
+	{
+		"name": "Fishing Rod",
+		"itemIndex": 17,
+		"collectionIndex": 5,
+		"type": 3,
+		"description": "A simple fishing rod. Useful for catching all sort of sea creatures.",
+		"collection": "Fisherman Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_16.png"
+	},
+	{
+		"name": "Fisherman Hat",
+		"itemIndex": 18,
+		"collectionIndex": 5,
+		"type": 0,
+		"description": "A modest fisherman hat. Used by sailors all over the world.",
+		"collection": "Fisherman Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_17.png"
+	},
+	{
+		"name": "Fisherman Robe",
+		"itemIndex": 19,
+		"collectionIndex": 5,
+		"type": 1,
+		"description": "A modest fisherman robe. It's a bit worn out.",
+		"collection": "Fisherman Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_18.png"
+	},
+	{
+		"name": "Fisherman Boots",
+		"itemIndex": 20,
+		"collectionIndex": 5,
+		"type": 2,
+		"description": "A pair of modest fisherman boots. They are water-proof.",
+		"collection": "Fisherman Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_19.png"
+	},
+	{
+		"name": "Camouflage Fisherman Hat",
+		"itemIndex": 21,
+		"collectionIndex": 6,
+		"type": 0,
+		"description": "A camouflage fisherman hat. Perfect for advanced fishing techniques.",
+		"collection": "Camouflage Fisherman Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_20.png"
+	},
+	{
+		"name": "Camouflage Fisherman Robe",
+		"itemIndex": 22,
+		"collectionIndex": 6,
+		"type": 1,
+		"description": "A camouflage fisherman robe. Fishes won't see you coming.",
+		"collection": "Camouflage Fisherman Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_21.png"
+	},
+	{
+		"name": "Camouflage Fisherman Boots",
+		"itemIndex": 23,
+		"collectionIndex": 6,
+		"type": 2,
+		"description": "A pair of camouflage fisherman boots. They are water-proof.",
+		"collection": "Camouflage Fisherman Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_22.png"
+	},
+	{
+		"name": "Luxury Fisherman Hat",
+		"itemIndex": 24,
+		"collectionIndex": 7,
+		"type": 0,
+		"description": "A luxury fisherman hat. For fishing all day long without getting sunburnt.",
+		"collection": "Luxury Fisherman Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_23.png"
+	},
+	{
+		"name": "Luxury Fisherman Robe",
+		"itemIndex": 25,
+		"collectionIndex": 7,
+		"type": 1,
+		"description": "A luxury fisherman robe. Used for fishing in style.",
+		"collection": "Luxury Fisherman Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_24.png"
+	},
+	{
+		"name": "Luxury Fisherman Boots",
+		"itemIndex": 26,
+		"collectionIndex": 7,
+		"type": 2,
+		"description": "A pair of luxury fisherman boots. They are water-proof.",
+		"collection": "Luxury Fisherman Set",
+		"image": "https://thales-protocol.s3.eu-north-1.amazonaws.com/TaleOfThales/NFT_25.png"
+	}
+]

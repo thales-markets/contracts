@@ -39,12 +39,17 @@ async function main() {
 		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
 
 	const SportMarketData = await ethers.getContractFactory('SportPositionalMarketData');
 	const SportMarketDataAddress = getTargetAddress('SportPositionalMarketData', network);
 
 	let implementation;
-	if (networkObj.chainId == 10) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
 		implementation = await upgrades.prepareUpgrade(SportMarketDataAddress, SportMarketData);
 	}
 

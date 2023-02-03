@@ -55,7 +55,10 @@ async function main() {
 	/* ========== PROPERTIES ========== */
 
 	// CHANGE addresses
-	const whitelist = ['0x088cda4c48750442548ab476af5eea7135394063', '0x884E6b3e3C86035e47319A550e69189DFfb7200b'];
+	const whitelist = [
+		'0x088cda4c48750442548ab476af5eea7135394063',
+		'0x884E6b3e3C86035e47319A550e69189DFfb7200b',
+	];
 
 	ToTNFTContract = await ethers.getContractFactory('TaleOfThalesNFTs');
 	totNFTAddress = getTargetAddress('TaleOfThalesNFTs', network);
@@ -67,16 +70,18 @@ async function main() {
 	console.log('-------------------------------------------------------');
 
 	try {
+		const collectionIndex = 1;
+		const flag = true;
 
-        const collectionIndex = 1;
-        const flag = true;
+		const txUpdateWhitelist = await taleOfThales.updateWhitelistForCollection(
+			collectionIndex,
+			whitelist,
+			flag
+		);
 
-        const txUpdateWhitelist = await taleOfThales.updateWhitelistForCollection(collectionIndex, whitelist, flag);
-
-        await txUpdateWhitelist.wait().then((e) => {
+		await txUpdateWhitelist.wait().then((e) => {
 			txLog(txUpdateWhitelist, `Updated whitelist for collection index ${collectionIndex}`);
-        })
-
+		});
 	} catch (e) {
 		console.log('Error ', e);
 	}

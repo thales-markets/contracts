@@ -1631,6 +1631,14 @@ contract('ParlayAMM', (accounts) => {
 					let result = await ParlayAMM.isParlayOwnerTheWinner(parlaySingleMarket.address);
 					assert.equal(result, true);
 				});
+				it('Get parlays that are exercised', async () => {
+					let parlays = await ParlayMarketData.getAllParlaysForGames([
+						parlayMarkets[0].address,
+						parlayMarkets[1].address,
+						parlayMarkets[2].address,
+					]);
+					assert.equal(parlays.numOfParlays.toString(), '0');
+				});
 				it('Exercise single sportMarket through ParlayData', async () => {
 					await ParlayMarketData.exerciseSportMarketInParlays(
 						[parlaySingleMarket.address],
@@ -1966,6 +1974,15 @@ contract('ParlayAMM', (accounts) => {
 						profit: balanceAfter.sub(balanceBefore),
 					});
 				});
+				it('Get parlays that are exercised', async () => {
+					let parlays = await ParlayMarketData.getAllParlaysForGames([
+						parlayMarkets[0].address,
+						parlayMarkets[1].address,
+						parlayMarkets[2].address,
+					]);
+					console.log('Parlays: ', parlays.parlays);
+					assert.equal(parlays.numOfParlays.toString(), '1');
+				});
 			});
 			describe('Exercise whole parlay with 2 wrong result', () => {
 				beforeEach(async () => {
@@ -2022,6 +2039,15 @@ contract('ParlayAMM', (accounts) => {
 					);
 
 					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+				});
+				it('Get parlays that are exercised', async () => {
+					let parlays = await ParlayMarketData.getAllParlaysForGames([
+						parlayMarkets[0].address,
+						parlayMarkets[1].address,
+						parlayMarkets[2].address,
+					]);
+					console.log('Parlays: ', parlays.parlays);
+					assert.equal(parlays.numOfParlays.toString(), '2');
 				});
 			});
 			describe('Exercise whole parlay with 3 wrong result', () => {

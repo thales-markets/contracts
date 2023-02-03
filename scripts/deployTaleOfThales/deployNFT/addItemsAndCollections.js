@@ -55,7 +55,10 @@ async function main() {
 	/* ========== PROPERTIES ========== */
 
 	// CHANGE addresses
-	const whitelist = ['0x088cda4c48750442548ab476af5eea7135394063', '0x169379d950ceffa34f5d92e33e40B7F3787F0f71'];
+	const whitelist = [
+		'0x088cda4c48750442548ab476af5eea7135394063',
+		'0x169379d950ceffa34f5d92e33e40B7F3787F0f71',
+	];
 
 	// ---> Conditions
 
@@ -85,20 +88,22 @@ async function main() {
 	console.log('-------------------------------------------------------');
 
 	try {
-
 		const { min, max } = getHighestAndLowestCollectionIndexFromMetaArray(ITEMS_METADATA);
 
 		const latestCollectionIndexFromContract = await taleOfThales.getLatestCollectionIndex();
 
-		if (latestCollectionIndexFromContract.toNumber() !== 0 && latestCollectionIndexFromContract.toNumber() < min) {
+		if (
+			latestCollectionIndexFromContract.toNumber() !== 0 &&
+			latestCollectionIndexFromContract.toNumber() < min
+		) {
 			console.log('Not valid collection index inside json file');
 			return;
 		}
 
 		if (latestCollectionIndexFromContract.toNumber() == 0 && min !== 1) {
-			console.log("Collection index must start from 1");
+			console.log('Collection index must start from 1');
 			return false;
-		} 
+		}
 
 		for (let collection = min; collection <= max; collection++) {
 			const itemsFromCollectionIndex = ITEMS_METADATA.filter(
@@ -153,16 +158,18 @@ async function main() {
 				if (latestItemIndexFromContract.toNumber() >= itemsFromCollectionIndex[item].itemIndex) {
 					console.log(`Item already exists => ${itemsFromCollectionIndex[item].itemIndex}`);
 					continue;
-				};
+				}
 
-				const addItemTx = await taleOfThales.addItemToCollection(itemsFromCollectionIndex[item].type, itemsFromCollectionIndex[item].collectionIndex);
+				const addItemTx = await taleOfThales.addItemToCollection(
+					itemsFromCollectionIndex[item].type,
+					itemsFromCollectionIndex[item].collectionIndex
+				);
 				await addItemTx.wait().then((e) => {
 					txLog(addItemTx, `Item with index ${itemsFromCollectionIndex[item].itemIndex} is added.`);
 				});
 				await delay(5000);
 			}
 		}
-
 	} catch (e) {
 		console.log('Error ', e);
 	}
@@ -178,7 +185,7 @@ function getHighestAndLowestCollectionIndexFromMetaArray(metaArray) {
 	if (!metaArray.length) return false;
 	const collectionIndexes = [];
 
-	metaArray.forEach(item => {
+	metaArray.forEach((item) => {
 		collectionIndexes.push(item.collectionIndex);
 	});
 
@@ -187,7 +194,7 @@ function getHighestAndLowestCollectionIndexFromMetaArray(metaArray) {
 
 	return {
 		max,
-		min
+		min,
 	};
 }
 

@@ -118,8 +118,85 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         return _getAllParlaysForGamePosition(_sportMarket, _position);
     }
 
+    function getAllParlaysForGames(address[] memory _sportMarket)
+        external
+        view
+        returns (address[] memory parlays, uint numOfParlays)
+    {
+        address[] memory homeParlays;
+        address[] memory awayParlays;
+        address[] memory drawParlays;
+        uint max_length;
+        uint totalNumOfParlays;
+        bool addToExercise;
+        uint8 marketResult;
+        bool alreadyLost;
+        for (uint i = 0; i < _sportMarket.length; i++) {
+            totalNumOfParlays +=
+                numOfParlaysInGamePosition[_sportMarket[i]][0] +
+                numOfParlaysInGamePosition[_sportMarket[i]][1] +
+                numOfParlaysInGamePosition[_sportMarket[i]][2];
+        }
+        parlays = new address[](totalNumOfParlays);
+        for (uint i = 0; i < _sportMarket.length; i++) {
+            (homeParlays, awayParlays, drawParlays) = _getAllParlaysForGame(_sportMarket[i]);
+            max_length = homeParlays.length > awayParlays.length ? homeParlays.length : awayParlays.length;
+            max_length = drawParlays.length > 0 && drawParlays.length > max_length ? drawParlays.length : max_length;
+            if (ISportPositionalMarket(_sportMarket[i]).resolved() && !ISportPositionalMarket(_sportMarket[i]).cancelled()) {
+                marketResult = uint8(ISportPositionalMarket(_sportMarket[i]).result());
+                for (uint j = 0; j < max_length; j++) {
+                    if (homeParlays.length > j) {
+                        alreadyLost = ParlayMarket(homeParlays[j]).parlayAlreadyLost();
+                        addToExercise = ParlayMarket(homeParlays[j]).fundsIssued();
+                        addToExercise =
+                            (!alreadyLost && marketResult != 1) ||
+                            (alreadyLost && marketResult == 1 && !addToExercise);
+                        if (addToExercise) {
+                            parlays[numOfParlays] = homeParlays[j];
+                            numOfParlays++;
+                        }
+                    }
+                    if (awayParlays.length > j) {
+                        alreadyLost = ParlayMarket(awayParlays[j]).parlayAlreadyLost();
+                        addToExercise = ParlayMarket(awayParlays[j]).fundsIssued();
+                        addToExercise =
+                            (!alreadyLost && marketResult != 2) ||
+                            (alreadyLost && marketResult == 2 && !addToExercise);
+                        if (addToExercise) {
+                            parlays[numOfParlays] = awayParlays[j];
+                            numOfParlays++;
+                        }
+                    }
+                    if (drawParlays.length > j) {
+                        alreadyLost = ParlayMarket(drawParlays[j]).parlayAlreadyLost();
+                        addToExercise = ParlayMarket(drawParlays[j]).fundsIssued();
+                        addToExercise =
+                            (!alreadyLost && marketResult != 3) ||
+                            (alreadyLost && marketResult == 3 && !addToExercise);
+                        if (addToExercise) {
+                            parlays[numOfParlays] = drawParlays[j];
+                            numOfParlays++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     function getAllParlaysForGame(address _sportMarket)
         external
+        view
+        returns (
+            address[] memory homeParlays,
+            address[] memory awayParlays,
+            address[] memory drawParlays
+        )
+    {
+        (homeParlays, awayParlays, drawParlays) = _getAllParlaysForGame(_sportMarket);
+    }
+
+    function _getAllParlaysForGame(address _sportMarket)
+        internal
         view
         returns (
             address[] memory homeParlays,

@@ -31,29 +31,41 @@
   {
     "inputs": [
       {
-        "internalType": "address[]",
-        "name": "_sportMarkets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_positions",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_totalSUSDToPay",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_parlaySize",
-        "type": "uint256"
-      },
-      {
-        "internalType": "contract ISportsAMM",
-        "name": "_sportsAMM",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "address[]",
+            "name": "sportMarkets",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "positions",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalSUSDToPay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "parlaySize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "defaultONE",
+            "type": "uint256"
+          },
+          {
+            "internalType": "contract ISportsAMM",
+            "name": "sportsAMM",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ParlayVerifier.InitialQuoteParameters",
+        "name": "params",
+        "type": "tuple"
       }
     ],
     "name": "calculateInitialQuotesForParlay",

@@ -49,6 +49,11 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
 	}
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
 
 	const parlayAMMfee = '5';
 	const maxSupportedAmount = w3utils.toWei('20000');
@@ -59,7 +64,7 @@ async function main() {
 
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 5) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 5 || networkObj.chainId == 42161) {
 		console.log('HERE');
 		const implementation = await upgrades.prepareUpgrade(ParlayAMMAddress, ParlayAMM);
 		await delay(5000);

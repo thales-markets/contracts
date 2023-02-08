@@ -10,7 +10,7 @@ async function main() {
 	let sportsAMMAddress;
 	let PaymentToken;
 
-	let multiplier = toUnit(1);
+	let multiplier = 1e6;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -53,7 +53,7 @@ async function main() {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
 		PaymentToken = getTargetAddress('ProxyUSDC', network);
-		multiplier = toBN(1 * 1e6);
+		multiplier = 1e6;
 	}
 
 	sUSDAddress = PaymentToken;

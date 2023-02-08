@@ -1120,85 +1120,6 @@ contract('ParlayAMM', (accounts) => {
 		// 	).to.be.revertedWith('Slippage too high');
 		// });
 
-		// it('Multi-collateral buy from amm', async () => {
-		// 	await fastForward(game1NBATime - (await currentTime()) - SECOND);
-		// 	// await fastForward((await currentTime()) - SECOND);
-		// 	answer = await SportPositionalMarketManager.numActiveMarkets();
-		// 	assert.equal(answer.toString(), '11');
-		// 	let totalSUSDToPay = 10*1e6;
-		// 	parlayPositions = ['1', '1', '1', '1'];
-		// 	let parlayMarketsAddress = [];
-		// 	for (let i = 0; i < parlayMarkets.length; i++) {
-		// 		parlayMarketsAddress[i] = parlayMarkets[i].address;
-		// 	}
-		// 	let slippage = toUnit('0.01');
-		// 	let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
-		// 		parlayMarketsAddress,
-		// 		parlayPositions,
-		// 		totalSUSDToPay,
-		// 		testUSDC.address
-		// 	);
-		// 	let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
-		// 		parlayMarketsAddress,
-		// 		parlayPositions,
-		// 		totalSUSDToPay,
-		// 		slippage,
-		// 		result[2],
-		// 		testUSDC.address,
-		// 		ZERO_ADDRESS,
-		// 		{ from: first }
-		// 	);
-		// 	// console.log("event: \n", buyParlayTX.logs[0]);
-
-		// 	assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-		// 		account: first,
-		// 		sUSDPaid: totalSUSDToPay,
-		// 		amount: result[2],
-		// 	});
-		// });
-
-		// it('Multi-collateral buy with referrals from amm', async () => {
-		// 	await fastForward(game1NBATime - (await currentTime()) - SECOND);
-		// 	// await fastForward((await currentTime()) - SECOND);
-		// 	answer = await SportPositionalMarketManager.numActiveMarkets();
-		// 	assert.equal(answer.toString(), '11');
-		// 	let totalSUSDToPay = 10*1e6;
-		// 	parlayPositions = ['1', '1', '1', '1'];
-		// 	let parlayMarketsAddress = [];
-		// 	for (let i = 0; i < parlayMarkets.length; i++) {
-		// 		parlayMarketsAddress[i] = parlayMarkets[i].address;
-		// 	}
-		// 	let slippage = toUnit('0.01');
-		// 	let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
-		// 		parlayMarketsAddress,
-		// 		parlayPositions,
-		// 		totalSUSDToPay,
-		// 		testUSDC.address
-		// 	);
-		// 	let balanceOfReferrer = await Thales.balanceOf(second);
-		// 	let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
-		// 		parlayMarketsAddress,
-		// 		parlayPositions,
-		// 		totalSUSDToPay,
-		// 		slippage,
-		// 		result[2],
-		// 		testUSDC.address,
-		// 		second,
-		// 		{ from: first }
-		// 	);
-		// 	// console.log("event: \n", buyParlayTX.logs[0]);
-		// 	answer = await Thales.balanceOf(second);
-
-		// 	assert.bnGt(answer, balanceOfReferrer);
-		// 	console.log('Referrer change: ', fromUnit(balanceOfReferrer), fromUnit(answer));
-
-		// 	assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-		// 		account: first,
-		// 		sUSDPaid: totalSUSDToPay,
-		// 		amount: result[2],
-		// 	});
-		// });
-
 		// it('Read from Parlay after buy', async () => {
 		// 	await fastForward(game1NBATime - (await currentTime()) - SECOND);
 		// 	// await fastForward((await currentTime()) - SECOND);
@@ -1264,7 +1185,7 @@ contract('ParlayAMM', (accounts) => {
 		// 	await fastForward(game1NBATime - (await currentTime()) - SECOND);
 		// 	//for the voucher to be twice used
 		// 	await ParlayAMM.setAmounts(
-		// 		toUnit(minUSDAmount),
+		// 		minUSDAmount*1e6,
 		// 		toUnit(maxSupportedAmount),
 		// 		toUnit(maxSupportedOdd),
 		// 		parlayAMMfee,
@@ -1314,12 +1235,12 @@ contract('ParlayAMM', (accounts) => {
 		// 	console.log('sUSD balance of third = ' + balanceOfMinter);
 		// 	const id = 1;
 
-		// 	const fifteenSUSD = toUnit(15);
+		// 	const fifteenSUSD = 15*1e6;
 		// 	await expect(voucher.mint(first, fifteenSUSD, { from: third })).to.be.revertedWith(
 		// 		'Invalid amount'
 		// 	);
 
-		// 	const twentysUSD = toUnit(20);
+		// 	const twentysUSD = 20*1e6;
 		// 	await voucher.mint(first, twentysUSD, { from: third });
 		// 	balanceOfMinter = await Thales.balanceOf(third);
 		// 	console.log('sUSD balance of third = ' + balanceOfMinter);
@@ -1329,7 +1250,7 @@ contract('ParlayAMM', (accounts) => {
 
 		// 	assert.bnEqual(1, await voucher.balanceOf(first));
 		// 	assert.equal(first, await voucher.ownerOf(id));
-		// 	assert.bnEqual(toUnit(20), await voucher.amountInVoucher(id));
+		// 	assert.bnEqual(twentysUSD, await voucher.amountInVoucher(id));
 
 		// 	await voucher.safeTransferFrom(first, second, id, { from: first });
 		// 	assert.equal(second, await voucher.ownerOf(id));
@@ -1337,14 +1258,14 @@ contract('ParlayAMM', (accounts) => {
 		// 	let result = await ParlayAMM.buyQuoteFromParlay(
 		// 		parlayMarketsAddress,
 		// 		parlayPositions,
-		// 		toUnit(10)
+		// 		10*1e6
 		// 	);
-		// 	console.log('Quote is ' + result[1] / 1e18);
+		// 	console.log('Quote is ' + result[1] / 1e6);
 
 		// 	let buyParlayTX = await voucher.buyFromParlayAMMWithVoucher(
 		// 		parlayMarketsAddress,
 		// 		parlayPositions,
-		// 		toUnit(10),
+		// 		10*1e6,
 		// 		slippage,
 		// 		result[1],
 		// 		id,
@@ -1353,7 +1274,7 @@ contract('ParlayAMM', (accounts) => {
 
 		// 	assert.eventEqual(buyParlayTX.logs[0], 'BoughtFromParlayWithVoucher', {
 		// 		buyer: second,
-		// 		_sUSDPaid: toUnit(10),
+		// 		_sUSDPaid: 10*1e6,
 		// 		_expectedPayout: result[1],
 		// 	});
 
@@ -1361,18 +1282,18 @@ contract('ParlayAMM', (accounts) => {
 		// 	console.log('sUSD balance of voucher = ' + balanceOfVoucher);
 
 		// 	let amountInVoucher = await voucher.amountInVoucher(id);
-		// 	console.log('Amount in voucher is ' + amountInVoucher / 1e18);
+		// 	console.log('Amount in voucher is ' + amountInVoucher / 1e6);
 
 		// 	result = await ParlayAMM.buyQuoteFromParlay(
 		// 		parlayMarketsAddress,
 		// 		parlayPositions,
-		// 		toUnit(100)
+		// 		100*1e6
 		// 	);
 		// 	await expect(
 		// 		voucher.buyFromParlayAMMWithVoucher(
 		// 			parlayMarketsAddress,
 		// 			parlayPositions,
-		// 			toUnit(100),
+		// 			100*1e6,
 		// 			slippage,
 		// 			result[1],
 		// 			id,
@@ -1383,7 +1304,7 @@ contract('ParlayAMM', (accounts) => {
 		// 		voucher.buyFromParlayAMMWithVoucher(
 		// 			parlayMarketsAddress,
 		// 			parlayPositions,
-		// 			toUnit(100),
+		// 			100*1e6,
 		// 			slippage,
 		// 			result[1],
 		// 			id,
@@ -1397,12 +1318,12 @@ contract('ParlayAMM', (accounts) => {
 		// 	result = await ParlayAMM.buyQuoteFromParlay(
 		// 		parlayMarketsAddress,
 		// 		parlayPositions,
-		// 		toUnit(10)
+		// 		10*1e6
 		// 	);
 		// 	buyParlayTX = await voucher.buyFromParlayAMMWithVoucher(
 		// 		parlayMarketsAddress,
 		// 		parlayPositions,
-		// 		toUnit(10),
+		// 		10*1e6,
 		// 		slippage,
 		// 		result[1],
 		// 		id,

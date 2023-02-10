@@ -77,12 +77,13 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice main function for odds obtaining
     /// @param requestId chainlnink request ID
-    /// @param _game game odds struct see @ IGamesOddsObtainer.GameOdds
+    /// @param _nodeOdds game odds struct see @ IGamesOddsObtainer.NodeGameOdds send by CL NODE
     function obtainOdds(
         bytes32 requestId,
-        IGamesOddsObtainer.GameOdds memory _game,
+        IGamesOddsObtainer.NodeGameOdds memory _nodeOdds,
         uint _sportId
     ) external onlyConsumer {
+        IGamesOddsObtainer.GameOdds memory _game = _castOdds(_nodeOdds);
         if (_areOddsValid(_game)) {
             uint[] memory currentNormalizedOdd = getNormalizedOdds(_game.gameId);
             IGamesOddsObtainer.GameOdds memory currentOddsBeforeSave = gameOdds[_game.gameId];
@@ -597,6 +598,27 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             sportsManager.resolveMarket(_child, CANCELLED);
             emit ResolveChildMarket(_child, CANCELLED, childMarketMainMarket[_child], 0, 0);
         }
+    }
+
+    function _castOdds(IGamesOddsObtainer.NodeGameOdds memory _nodeOdds)
+        internal
+        returns (IGamesOddsObtainer.GameOdds memory)
+    {
+        return
+            IGamesOddsObtainer.GameOdds(
+                _nodeOdds.gameId,
+                _nodeOdds.homeOdds * 100,
+                _nodeOdds.awayOdds * 100,
+                _nodeOdds.drawOdds * 100,
+                _nodeOdds.spreadHome,
+                _nodeOdds.spreadHomeOdds * 100,
+                _nodeOdds.spreadHome * -1,
+                _nodeOdds.spreadAwayOdds * 100,
+                _nodeOdds.totalOver * 10,
+                _nodeOdds.totalOverOdds * 100,
+                _nodeOdds.totalOver * 10,
+                _nodeOdds.totalUnderOdds * 100
+            );
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */

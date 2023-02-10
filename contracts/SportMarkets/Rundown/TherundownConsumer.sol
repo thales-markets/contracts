@@ -224,7 +224,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _games array of a games that needed to update the odds
     function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external onlyWrapper {
         for (uint i = 0; i < _games.length; i++) {
-            IGamesOddsObtainer.GameOdds memory game = abi.decode(_games[i], (IGamesOddsObtainer.GameOdds));
+            IGamesOddsObtainer.NodeGameOdds memory game = abi.decode(_games[i], (IGamesOddsObtainer.NodeGameOdds));
             // game needs to be fulfilled and market needed to be created
             if (gameFulfilledCreated[game.gameId] && marketPerGameId[game.gameId] != address(0)) {
                 oddsObtainer.obtainOdds(_requestId, game, sportsIdPerGame[game.gameId]);

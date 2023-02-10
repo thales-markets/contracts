@@ -1312,19 +1312,19 @@
             "type": "bytes32"
           },
           {
-            "internalType": "int24",
+            "internalType": "int16",
             "name": "homeOdds",
-            "type": "int24"
+            "type": "int16"
           },
           {
-            "internalType": "int24",
+            "internalType": "int16",
             "name": "awayOdds",
-            "type": "int24"
+            "type": "int16"
           },
           {
-            "internalType": "int24",
+            "internalType": "int16",
             "name": "drawOdds",
-            "type": "int24"
+            "type": "int16"
           },
           {
             "internalType": "int16",
@@ -1332,43 +1332,33 @@
             "type": "int16"
           },
           {
-            "internalType": "int24",
-            "name": "spreadHomeOdds",
-            "type": "int24"
-          },
-          {
             "internalType": "int16",
-            "name": "spreadAway",
+            "name": "spreadHomeOdds",
             "type": "int16"
           },
           {
-            "internalType": "int24",
+            "internalType": "int16",
             "name": "spreadAwayOdds",
-            "type": "int24"
+            "type": "int16"
           },
           {
-            "internalType": "uint24",
+            "internalType": "uint16",
             "name": "totalOver",
-            "type": "uint24"
+            "type": "uint16"
           },
           {
-            "internalType": "int24",
+            "internalType": "int16",
             "name": "totalOverOdds",
-            "type": "int24"
+            "type": "int16"
           },
           {
-            "internalType": "uint24",
-            "name": "totalUnder",
-            "type": "uint24"
-          },
-          {
-            "internalType": "int24",
+            "internalType": "int16",
             "name": "totalUnderOdds",
-            "type": "int24"
+            "type": "int16"
           }
         ],
-        "internalType": "struct IGamesOddsObtainer.GameOdds",
-        "name": "_game",
+        "internalType": "struct IGamesOddsObtainer.NodeGameOdds",
+        "name": "_nodeOdds",
         "type": "tuple"
       },
       {

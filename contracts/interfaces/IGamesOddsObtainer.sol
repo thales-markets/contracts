@@ -3,6 +3,19 @@
 pragma solidity ^0.8.0;
 
 interface IGamesOddsObtainer {
+    struct NodeGameOdds {
+        bytes32 gameId;
+        int16 homeOdds;
+        int16 awayOdds;
+        int16 drawOdds;
+        int16 spreadHome;
+        int16 spreadHomeOdds;
+        int16 spreadAwayOdds;
+        uint16 totalOver;
+        int16 totalOverOdds;
+        int16 totalUnderOdds;
+    }
+
     struct GameOdds {
         bytes32 gameId;
         int24 homeOdds;
@@ -73,7 +86,7 @@ interface IGamesOddsObtainer {
 
     function obtainOdds(
         bytes32 requestId,
-        GameOdds memory _game,
+        NodeGameOdds memory _game,
         uint _sportId
     ) external;
 

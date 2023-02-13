@@ -84,9 +84,7 @@ contract ParlayVerifier {
     {
         uint numOfMarkets = params.sportMarkets.length;
         uint inverseSum;
-        // if (params.totalSUSDToPay < params.defaultONE) {
-        //     params.totalSUSDToPay = params.defaultONE;
-        // }
+        // require(params.totalSUSDToPay < ONE, "Low amount");
         if (numOfMarkets == params.positions.length && numOfMarkets > 0 && numOfMarkets <= params.parlaySize) {
             finalQuotes = new uint[](numOfMarkets);
             amountsToBuy = new uint[](numOfMarkets);

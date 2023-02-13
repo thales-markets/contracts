@@ -180,7 +180,7 @@ contract('ThalesAMM', (accounts) => {
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(1300),
+				toUnit(1200),
 				now + day * 2,
 				toUnit(10),
 				creatorSigner
@@ -190,9 +190,9 @@ contract('ThalesAMM', (accounts) => {
 			console.log('priceUp is:' + priceUp);
 			console.log('priceUp decimal is:' + priceUp / 1e18);
 
-			// let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-			// console.log('priceDown is:' + priceDown);
-			// console.log('priceDown decimal is:' + priceDown / 1e18);
+			let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
+			console.log('priceDown is:' + priceDown);
+			console.log('priceDown decimal is:' + priceDown / 1e18);
 
 			// let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 			// 	newMarket.address,

@@ -15,33 +15,37 @@ contract ThalesAMMUtils {
     /// @param strike price of the asset
     /// @param timeLeftInDays when does the market mature
     /// @param volatility implied yearly volatility of the asset
-    /// @return odds of market being in the money
+    /// @return result odds of market being in the money
     function calculateOdds(
         uint _price,
         uint strike,
         uint timeLeftInDays,
         uint volatility
-    ) public view returns (uint) {
+    ) public view returns (uint result) {
         uint vt = ((volatility / (100)) * (sqrt(timeLeftInDays / (365)))) / (1e9);
         bool direction = strike >= _price;
         uint lnBase = strike >= _price ? (strike * (ONE)) / (_price) : (_price * (ONE)) / (strike);
         uint d1 = (PRBMathUD60x18.ln(lnBase) * (ONE)) / (vt);
         uint y = (ONE * (ONE)) / (ONE + ((d1 * (2316419)) / (1e7)));
         uint d2 = (d1 * (d1)) / (2) / (ONE);
-        uint z = (_expneg(d2) * (3989423)) / (1e7);
+        if (d2 < 130 * ONE) {
+            uint z = (_expneg(d2) * (3989423)) / (1e7);
 
-        uint y5 = (powerInt(y, 5) * (1330274)) / (1e6);
-        uint y4 = (powerInt(y, 4) * (1821256)) / (1e6);
-        uint y3 = (powerInt(y, 3) * (1781478)) / (1e6);
-        uint y2 = (powerInt(y, 2) * (356538)) / (1e6);
-        uint y1 = (y * (3193815)) / (1e7);
-        uint x1 = y5 + (y3) + (y1) - (y4) - (y2);
-        uint x = ONE - ((z * (x1)) / (ONE));
-        uint result = ONE * (1e2) - (x * (1e2));
-        if (direction) {
-            return result;
+            uint y5 = (powerInt(y, 5) * (1330274)) / (1e6);
+            uint y4 = (powerInt(y, 4) * (1821256)) / (1e6);
+            uint y3 = (powerInt(y, 3) * (1781478)) / (1e6);
+            uint y2 = (powerInt(y, 2) * (356538)) / (1e6);
+            uint y1 = (y * (3193815)) / (1e7);
+            uint x1 = y5 + (y3) + (y1) - (y4) - (y2);
+            uint x = ONE - ((z * (x1)) / (ONE));
+            result = ONE * (1e2) - (x * (1e2));
+            if (direction) {
+                return result;
+            } else {
+                return ONE * (1e2) - result;
+            }
         } else {
-            return ONE * (1e2) - result;
+            result = direction ? 0 : ONE * 1e2;
         }
     }
 

@@ -51,7 +51,7 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const thalesAmmAddress = getTargetAddress('ThalesAMMNew', network);
+	const thalesAmmAddress = getTargetAddress('ThalesAMM', network);
 	console.log('Found ThalesAMM at:', thalesAmmAddress);
 
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
@@ -64,7 +64,7 @@ async function main() {
 
 	console.log('Implementation ThalesAMM: ', ThalesAMMImplementation);
 
-	setTargetAddress('ThalesAMMNewImplementation', network, ThalesAMMImplementation);
+	setTargetAddress('ThalesAMMImplementation', network, ThalesAMMImplementation);
 
 	/*let ThalesAMM_deployed = ThalesAMM.attach(thalesAmmAddress);
 

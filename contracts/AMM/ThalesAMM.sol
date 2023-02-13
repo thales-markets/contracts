@@ -199,7 +199,6 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
         if (basePrice >= minSupportedPrice && basePrice <= maxSupportedPrice) {
             uint basePriceOtherSide = ONE - basePrice;
-            basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
             uint _availableToBuyFromAMM = _availableToBuyFromAMMWithBasePrice(market, position, basePrice, true);
             uint _availableToBuyFromAMMOtherSide = _availableToBuyFromAMMWithBasePrice(
                 market,

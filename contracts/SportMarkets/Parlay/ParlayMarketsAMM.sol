@@ -74,6 +74,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => uint))))))))
         public riskPerGameCombination;
 
+    // @return specific SafeBoxFee per address
+    mapping(address => uint) public safeBoxFeePerAddress;
+
     function initialize(
         address _owner,
         ISportsAMM _sportsAmm,
@@ -366,7 +369,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _positions,
             _sUSDPaid
         );
-        uint safeBoxAmount = ((_sUSDPaid - sUSDAfterFees) * safeBoxImpact) / (safeBoxImpact + parlayAmmFee);
+        uint safeBoxAmount = _getSafeBoxAmount(_sUSDPaid, sUSDAfterFees);
         // apply all checks
         require(_sUSDPaid >= minUSDAmount, "Low sUSD buy");
         require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");
@@ -539,6 +542,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
+    function _getSafeBoxFeePerAddress(address toCheck) internal view returns (uint toReturn) {
+        return safeBoxFeePerAddress[toCheck] > 0 ? safeBoxFeePerAddress[toCheck] : safeBoxImpact;
+    }
+
+    function _getSafeBoxAmount(uint sUSDPaid, uint sUSDAfterFees) internal view returns (uint safeBoxAmount) {
+        uint safeBoxFee = _getSafeBoxFeePerAddress(msg.sender);
+        safeBoxAmount = ((sUSDPaid - sUSDAfterFees) * safeBoxFee) / (safeBoxFee + parlayAmmFee);
+    }
+
     /* ========== SETTERS FUNCTIONS ========== */
 
     function setParlayMarketMastercopies(address _parlayMarketMastercopy) external onlyOwner {
@@ -618,6 +630,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         //sUSD.approve(_curveSUSD, MAX_APPROVAL);
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific safe box fee
+    /// @param newFee the fee
+    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
+        safeBoxFeePerAddress[_address] = newFee;
     }
 
     /* ========== MODIFIERS ========== */

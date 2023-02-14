@@ -54,6 +54,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     mapping(address => bool) public isDoubleChance;
     bool public override isDoubleChanceSupported;
     mapping(address => address[]) public doubleChanceMarketsByParent;
+    mapping(uint => bool) public doesSportSupportDoubleChance;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -487,6 +488,16 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit DoubleChanceSupportChanged(_isDoubleChanceSupported);
     }
 
+    function setSupportedSportForDoubleChance(uint[] memory _sportIds, bool _isSupported) external onlyOwner {
+        for (uint256 index = 0; index < _sportIds.length; index++) {
+            // only if current flag is different, if same skip it
+            if (doesSportSupportDoubleChance[_sportIds[index]] != _isSupported) {
+                doesSportSupportDoubleChance[_sportIds[index]] = _isSupported;
+                emit SupportedSportForDoubleChanceAdded(_sportIds[index], _isSupported);
+            }
+        }
+    }
+
     // support USDC with 6 decimals
     function transformCollateral(uint value) external view override returns (uint) {
         return _transformCollateral(value);
@@ -536,7 +547,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     modifier onlySupportedGameId(bytes32 gameId) {
         uint sportId = ITherundownConsumer(theRundownConsumer).sportsIdPerGame(gameId);
-        if (sportId >= 11 && sportId <= 16 && isDoubleChanceSupported) {
+        if (doesSportSupportDoubleChance[sportId] && isDoubleChanceSupported) {
             _;
         }
     }
@@ -571,4 +582,5 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event DatesUpdatedForMarket(address _market, uint256 _newStartTime, uint256 _expiry);
     event DoubleChanceMarketCreated(address _parentMarket, address _doubleChanceMarket, uint tag, string label);
     event DoubleChanceSupportChanged(bool _isDoubleChanceSupported);
+    event SupportedSportForDoubleChanceAdded(uint _sportId, bool _isSupported);
 }

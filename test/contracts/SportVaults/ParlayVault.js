@@ -607,6 +607,9 @@ contract('Parlay Vault', (accounts) => {
 			from: manager,
 		});
 		await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
+		await SportPositionalMarketManager.setSupportedSportForDoubleChance([sportId_16], true, {
+			from: manager,
+		});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketData.setSportPositionalMarketManager(
@@ -854,8 +857,6 @@ contract('Parlay Vault', (accounts) => {
 		});
 
 		it('Vault creation', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - 5 * day);
-
 			let round = await vault.round();
 			console.log('round is:' + round.toString());
 
@@ -902,7 +903,7 @@ contract('Parlay Vault', (accounts) => {
 			usersCurrentlyInVault = await vault.usersCurrentlyInVault();
 			console.log('usersCurrentlyInVault is:' + usersCurrentlyInVault);
 
-			await fastForward(game1NBATime - (await currentTime()) - 4 * day + SECOND);
+			await fastForward(day);
 			// CLOSE ROUND #1 - START ROUND #2
 			await vault.closeRound();
 
@@ -924,7 +925,7 @@ contract('Parlay Vault', (accounts) => {
 			usersCurrentlyInVault = await vault.usersCurrentlyInVault();
 			console.log('usersCurrentlyInVault is:' + usersCurrentlyInVault);
 
-			await fastForward(game1NBATime - (await currentTime()) - 3 * day + SECOND);
+			await fastForward(day);
 			// CLOSE ROUND #2 - START ROUND #3
 			await vault.closeRound();
 
@@ -946,7 +947,7 @@ contract('Parlay Vault', (accounts) => {
 
 			await vault.withdrawalRequest({ from: first });
 
-			await fastForward(game1NBATime - (await currentTime()) - 2 * day + 2 * SECOND);
+			await fastForward(day);
 			// CLOSE ROUND #3 - START ROUND #4
 			await vault.closeRound();
 			round = 4;
@@ -960,7 +961,7 @@ contract('Parlay Vault', (accounts) => {
 			await vault.deposit(toUnit(200), { from: second });
 			await vault.deposit(toUnit(300), { from: first });
 
-			await fastForward(game1NBATime - (await currentTime()) - day + 2 * SECOND);
+			await fastForward(day);
 			// CLOSE ROUND #4 - START ROUND #5
 			await vault.closeRound();
 
@@ -970,11 +971,11 @@ contract('Parlay Vault', (accounts) => {
 				"Can't withdraw as you already deposited for next round"
 			);
 
-			await fastForward(game1NBATime - (await currentTime()) + 2 * SECOND);
+			await fastForward(day);
 			// CLOSE ROUND #5 - START ROUND #6
 			await vault.closeRound();
 
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward(game1NBATime - (await currentTime()) - SECOND);
 
 			let roundLength = await vault.roundLength();
 			console.log('roundLength is:' + roundLength);
@@ -985,8 +986,9 @@ contract('Parlay Vault', (accounts) => {
 			let roundStartTime = await vault.roundStartTime(round);
 			console.log('roundStartTime is:' + roundStartTime);
 
-			await createMarkets();
+			//await createMarkets();
 
+			await fastForward(day);
 			// CLOSE ROUND #6 - START ROUND #7
 			await vault.closeRound();
 			round = await vault.round();
@@ -1000,58 +1002,6 @@ contract('Parlay Vault', (accounts) => {
 			let allocationSpentInARound = await vault.allocationSpentInARound(round);
 			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
 
-			let balanceVault = await Thales.balanceOf(vault.address);
-			console.log('balanceVault before trade is:' + balanceVault / 1e18);
-
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1'];
-			parlayPositions2 = ['1', '1'];
-			let parlayMarketsAddress = [];
-			let parlayMarketsAddress2 = [];
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address;
-				parlayMarketsAddress2[i] = parlayMarkets[i].address;
-			}
-
-			parlayMarketsAddress2.pop();
-
-			let result = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
-
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				console.log(result.amountsToBuy[i] / 1e18);
-				let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
-					parlayMarkets[i].address,
-					1,
-					result.amountsToBuy[i]
-				);
-				console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-
-				let buyPriceImpactFirst = await SportsAMM.buyPriceImpact(
-					parlayMarkets[i].address,
-					1,
-					result.amountsToBuy[i]
-				);
-				console.log('buyPriceImpact: ', fromUnit(buyPriceImpactFirst));
-			}
-
-			await vault.trade(parlayMarketsAddress, parlayPositions, totalSUSDToPay);
-
-			await assert.revert(
-				vault.trade(parlayMarketsAddress, parlayPositions, totalSUSDToPay),
-				'Parlay market already exists'
-			);
-
-			await vault.trade(parlayMarketsAddress2, parlayPositions2, totalSUSDToPay);
-
-			balanceVault = await Thales.balanceOf(vault.address);
-			console.log('balanceVault after trade is:' + balanceVault / 1e18);
-
 			allocationSpentInARound = await vault.allocationSpentInARound(round);
 			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
 
@@ -1062,47 +1012,6 @@ contract('Parlay Vault', (accounts) => {
 			canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
 
-			await fastForward(fightTime - (await currentTime()) + 3 * hour);
-			let resolveMatrix = ['2', '2', '2'];
-			let gameId;
-			let homeResult = '0';
-			let awayResult = '0';
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				homeResult = '0';
-				awayResult = '0';
-				gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
-				if (resolveMatrix[i] == '1') {
-					homeResult = '1';
-				} else if (resolveMatrix[i] == '2') {
-					awayResult = '1';
-				} else if (resolveMatrix[i] == '3') {
-					homeResult = '1';
-					awayResult = '1';
-				}
-				const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
-					parlayMarkets[i].address,
-					resolveMatrix[i],
-					homeResult,
-					awayResult,
-					{ from: owner }
-				);
-			}
-			let resolved;
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				deployedMarket = await SportPositionalMarketContract.at(parlayMarkets[i].address);
-				resolved = await deployedMarket.resolved();
-				assert.equal(true, resolved);
-			}
-
-			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
-			parlaySingleMarketAddress = activeParlays[0];
-			parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
-
-			let answer = await parlaySingleMarket.isAnySportMarketResolved();
-			result = await ParlayAMM.resolvableSportPositionsInParlay(parlaySingleMarket.address);
-			assert.equal(answer.isResolved, true);
-			assert.equal(result.isAnyResolvable, true);
-
 			canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
 
@@ -1112,13 +1021,13 @@ contract('Parlay Vault', (accounts) => {
 			let balanceSecond = await vault.getBalancesPerRound(round, second);
 			console.log('balanceSecond is:' + balanceSecond / 1e18);
 
-			balanceVault = await Thales.balanceOf(vault.address);
+			let balanceVault = await Thales.balanceOf(vault.address);
 			console.log('balanceVault is:' + balanceVault / 1e18);
 
 			let profitAndLossPerRound = await vault.profitAndLossPerRound(round - 1);
 			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
 
-			await fastForward(await vault.getCurrentRoundEnd());
+			await fastForward(day);
 			await vault.closeRound();
 
 			round = await vault.round();

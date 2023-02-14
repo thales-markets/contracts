@@ -218,6 +218,13 @@ contract('ParlayAMM', (accounts) => {
 
 		await SportPositionalMarketManager.setExpiryDuration(30 * DAY, { from: manager });
 
+		await SportPositionalMarketManager.setSupportedSportForDoubleChance(
+			[10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+			true,
+			{
+				from: manager,
+			}
+		);
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
 			{ from: manager }

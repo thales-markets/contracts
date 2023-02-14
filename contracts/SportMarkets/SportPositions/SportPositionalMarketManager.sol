@@ -488,9 +488,14 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit DoubleChanceSupportChanged(_isDoubleChanceSupported);
     }
 
-    function setSupportedSportForDoubleChance(uint _sportId, bool _isSupported) external onlyOwner {
-        doesSportSupportDoubleChance[_sportId] = _isSupported;
-        emit SupportedSportForDoubleChanceAdded(_sportId, _isSupported);
+    function setSupportedSportForDoubleChance(uint[] memory _sportIds, bool _isSupported) external onlyOwner {
+        for (uint256 index = 0; index < _sportIds.length; index++) {
+            // only if current flag is different, if same skip it
+            if (doesSportSupportDoubleChance[_sportIds[index]] != _isSupported) {
+                doesSportSupportDoubleChance[_sportIds[index]] = _isSupported;
+                emit SupportedSportForDoubleChanceAdded(_sportIds[index], _isSupported);
+            }
+        }
     }
 
     // support USDC with 6 decimals

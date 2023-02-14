@@ -441,6 +441,13 @@ contract('ParlayAMM', (accounts) => {
 		await SportPositionalMarketManager.setOddsObtainer(GamesOddsObtainerDeployed.address, {
 			from: manager,
 		});
+		await SportPositionalMarketManager.setSupportedSportForDoubleChance(
+			[10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+			true,
+			{
+				from: manager,
+			}
+		);
 		await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 

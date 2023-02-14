@@ -257,8 +257,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bool useAvailable
     ) internal view returns (uint returnQuote) {
         uint _available = useAvailable
-        ? available
-        : _availableToBuyFromAMMWithBaseOdds(market, position, baseOdds, 0, false);
+            ? available
+            : _availableToBuyFromAMMWithBaseOdds(market, position, baseOdds, 0, false);
         uint _availableOtherSide = _getAvailableOtherSide(market, position);
         if (amount <= _available) {
             int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
@@ -308,9 +308,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     function _getAvailableOtherSide(address market, ISportsAMM.Position position)
-    internal
-    view
-    returns (uint _availableOtherSide)
+        internal
+        view
+        returns (uint _availableOtherSide)
     {
         ISportsAMM.Position positionFirst = ISportsAMM.Position((uint(position) + 1) % 3);
         ISportsAMM.Position positionSecond = ISportsAMM.Position((uint(position) + 2) % 3);
@@ -322,8 +322,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         );
 
         _availableOtherSide = _availableOtherSideFirst > _availableOtherSideSecond
-        ? _availableOtherSideFirst
-        : _availableOtherSideSecond;
+            ? _availableOtherSideFirst
+            : _availableOtherSideSecond;
     }
 
     function _getAvailableForPositions(
@@ -417,7 +417,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
             if (position == ISportsAMM.Position.Home) {
                 (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
-                .getParentMarketPositions(market);
+                    .getParentMarketPositions(market);
 
                 int firstPriceImpact = buyPriceImpact(parentMarket, position1, amount);
                 int secondPriceImpact = buyPriceImpact(parentMarket, position2, amount);
@@ -815,11 +815,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         );
 
         uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
-        ? collateralQuote * (1e12)
-        : collateralQuote;
+            ? collateralQuote * (1e12)
+            : collateralQuote;
         require(
             maxAllowedPegSlippagePercentage > 0 &&
-            transformedCollateralForPegCheck >= (susdQuote * (ONE - (maxAllowedPegSlippagePercentage))) / ONE,
+                transformedCollateralForPegCheck >= (susdQuote * (ONE - (maxAllowedPegSlippagePercentage))) / ONE,
             "Amount below max allowed peg slippage"
         );
 
@@ -897,8 +897,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(params.market).getOptions();
         IPosition target = params.position == ISportsAMM.Position.Home ? home : params.position == ISportsAMM.Position.Away
-        ? away
-        : draw;
+            ? away
+            : draw;
 
         IERC20Upgradeable(address(target)).safeTransfer(msg.sender, params.amount);
 
@@ -1015,8 +1015,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint toSubtract = ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid - safeBoxShare);
 
         spentOnGame[market] = spentOnGame[market] <= toSubtract
-        ? 0
-        : (spentOnGame[market] = spentOnGame[market] - toSubtract);
+            ? 0
+            : (spentOnGame[market] = spentOnGame[market] - toSubtract);
 
         if (referrerFee > 0 && referrals != address(0)) {
             uint referrerShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + (referrerFee)));
@@ -1039,8 +1039,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bool isTwoPositional = ISportPositionalMarket(market).optionsCount() == 2;
         uint balancePositionAfter = balancePosition > amount ? balancePosition - amount : 0;
         uint balanceOtherSideAfter = balancePosition > amount
-        ? balanceOtherSide
-        : balanceOtherSide + (amount - balancePosition);
+            ? balanceOtherSide
+            : balanceOtherSide + (amount - balancePosition);
         if (amount <= balancePosition) {
             priceImpact = sportAmmUtils.calculateDiscount(
                 SportsAMMUtils.DiscountParams(
@@ -1055,11 +1055,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             if (balancePosition > 0) {
                 uint pricePosition = _obtainOdds(market, position);
                 uint priceOtherPosition = isTwoPositional
-                ? _obtainOdds(
-                    market,
-                    position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home
-                )
-                : ONE - pricePosition;
+                    ? _obtainOdds(
+                        market,
+                        position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home
+                    )
+                    : ONE - pricePosition;
                 priceImpact = sportAmmUtils.calculateDiscountFromNegativeToPositive(
                     SportsAMMUtils.NegativeDiscountsParams(
                         amount,
@@ -1128,7 +1128,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             return DoubleChanceStruct(false, ISportsAMM.Position.Home, ISportsAMM.Position.Away, address(0));
         } else {
             (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
-            .getParentMarketPositions(market);
+                .getParentMarketPositions(market);
             return DoubleChanceStruct(true, position1, position2, parentMarket);
         }
     }

@@ -270,6 +270,7 @@ contract('ParlayAMM', (accounts) => {
 			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
+			toUnit('5000000'),
 			{ from: owner }
 		);
 

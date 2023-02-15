@@ -240,6 +240,7 @@ contract('SportsAMM', (accounts) => {
 			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
+			toUnit('500000'),
 			{ from: owner }
 		);
 
@@ -545,7 +546,7 @@ contract('SportsAMM', (accounts) => {
 					additionalSlippage,
 					{ from: first }
 				)
-			).to.be.revertedWith('Round pool mastercopy not set');
+			).to.be.revertedWith('Pool has not started');
 
 			let aMMLiquidityPoolRoundMastercopy = await AMMLiquidityPoolRoundMastercopy.new();
 
@@ -790,10 +791,6 @@ contract('SportsAMM', (accounts) => {
 			});
 			await mockStakingThales.stake(toUnit(100), { from: secondLiquidityProvider });
 
-			await expect(
-				AMMLiquidityPool.deposit(toUnit(1000), { from: secondLiquidityProvider })
-			).to.be.revertedWith('Deposit amount exceeds AMM LP cap');
-
 			await AMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
 				from: owner,
 			});
@@ -801,6 +798,10 @@ contract('SportsAMM', (accounts) => {
 			await AMMLiquidityPool.setStakingThales(mockStakingThales.address, {
 				from: owner,
 			});
+
+			await expect(
+				AMMLiquidityPool.deposit(toUnit(1000000), { from: secondLiquidityProvider })
+			).to.be.revertedWith('Deposit amount exceeds AMM LP cap');
 
 			await expect(
 				AMMLiquidityPool.deposit(toUnit(101), { from: secondLiquidityProvider })

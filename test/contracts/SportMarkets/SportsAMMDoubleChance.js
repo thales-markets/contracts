@@ -244,6 +244,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
+			toUnit('500000'),
 			{ from: owner }
 		);
 
@@ -810,6 +811,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				toUnit('5000'),
 				toUnit('0.01'),
 				toUnit('0.005'),
+				toUnit('500'),
 				{ from: owner }
 			);
 			answer = await SportsAMM.availableToBuyFromAMM(homeTeamNotLoseMarket.address, 0);
@@ -834,6 +836,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				toUnit('5000'),
 				toUnit('0.01'),
 				toUnit('0.005'),
+				toUnit('500'),
 				{ from: owner }
 			);
 

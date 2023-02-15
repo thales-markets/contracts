@@ -235,6 +235,7 @@ contract('SportsAMM', (accounts) => {
 			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
+			toUnit('500000'),
 			{ from: owner }
 		);
 

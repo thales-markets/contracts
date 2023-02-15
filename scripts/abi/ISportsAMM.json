@@ -144,19 +144,10 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getLiquidityPool",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
+        "internalType": "uint256",
+        "type": "uint256"
     "inputs": [
       {
         "internalType": "address",

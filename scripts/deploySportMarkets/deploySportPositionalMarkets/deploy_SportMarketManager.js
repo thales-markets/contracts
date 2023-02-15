@@ -45,8 +45,14 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
+
 	const SportMarketManager = await ethers.getContractFactory('SportPositionalMarketManager');
-	const TherundownConsumerAddress = getTargetAddress('TherundownConsumer', network);
+	//const TherundownConsumerAddress = getTargetAddress('TherundownConsumer', network);
 
 	const SportMarketManagerDeployed = await upgrades.deployProxy(SportMarketManager, [
 		owner.address,
@@ -70,11 +76,11 @@ async function main() {
 	);
 
 	await delay(5000);
-	await SportMarketManagerDeployed.setTherundownConsumer(TherundownConsumerAddress, {
-		from: owner.address,
-	});
-	console.log('Rundown consumer set in Manager');
-	await delay(5000);
+	// await SportMarketManagerDeployed.setTherundownConsumer(TherundownConsumerAddress, {
+	// 	from: owner.address,
+	// });
+	// console.log('Rundown consumer set in Manager');
+	// await delay(5000);
 
 	try {
 		await hre.run('verify:verify', {

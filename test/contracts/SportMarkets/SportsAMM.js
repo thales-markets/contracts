@@ -692,6 +692,16 @@ contract('SportsAMM', (accounts) => {
 			let activeMarkets = await SportPositionalMarketData.getOddsForAllActiveMarkets();
 			assert.bnEqual(activeMarkets.length, 1);
 			assert.bnEqual(activeMarkets[0].odds.length, 2);
+
+			let priceImpactForAllActiveMarkets =
+				await SportPositionalMarketData.getPriceImpactForAllActiveMarkets();
+			assert.bnEqual(priceImpactForAllActiveMarkets.length, 1);
+			assert.bnEqual(priceImpactForAllActiveMarkets[0].priceImpact.length, 2);
+
+			let baseOddsForAllActiveMarkets =
+				await SportPositionalMarketData.getBaseOddsForAllActiveMarkets();
+			assert.bnEqual(baseOddsForAllActiveMarkets.length, 1);
+			assert.bnEqual(baseOddsForAllActiveMarkets[0].odds.length, 2);
 		});
 
 		it('Setters testing', async () => {

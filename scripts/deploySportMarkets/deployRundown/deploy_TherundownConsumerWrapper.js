@@ -51,6 +51,11 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	const paymentCreate = w3utils.toWei('0.01');
 	const paymentResolve = w3utils.toWei('0.01');
 	const paymentOdds = w3utils.toWei('0.01');
@@ -70,6 +75,7 @@ async function main() {
 
 	console.log('TherundownConsumerVerifier address: ', verifierAddress);
 
+	// ODDS ID in bytes32
 	let oddsSpecId = '0x3230646438613738373265343436303862386438323239636566333666623638';
 	console.log('oddsSpecId: ', oddsSpecId);
 

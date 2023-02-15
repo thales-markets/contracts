@@ -196,26 +196,28 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     ) public view returns (int _priceImpact) {
         Position positionOtherSide = position == Position.Up ? Position.Down : Position.Up;
         uint basePrice = price(market, position);
-        uint basePriceOtherSide = ONE - basePrice;
-        basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
-        uint _availableToBuyFromAMM = _availableToBuyFromAMMWithBasePrice(market, position, basePrice, true);
-        uint _availableToBuyFromAMMOtherSide = _availableToBuyFromAMMWithBasePrice(
-            market,
-            positionOtherSide,
-            basePriceOtherSide,
-            true
-        );
-        if (amount > 0 && amount <= _availableToBuyFromAMM) {
-            _priceImpact = _buyPriceImpact(
-                BuyPriceImpactParams(
-                    market,
-                    position,
-                    amount,
-                    _availableToBuyFromAMM,
-                    _availableToBuyFromAMMOtherSide,
-                    basePrice
-                )
+
+        if (basePrice >= minSupportedPrice && basePrice <= maxSupportedPrice) {
+            uint basePriceOtherSide = ONE - basePrice;
+            uint _availableToBuyFromAMM = _availableToBuyFromAMMWithBasePrice(market, position, basePrice, true);
+            uint _availableToBuyFromAMMOtherSide = _availableToBuyFromAMMWithBasePrice(
+                market,
+                positionOtherSide,
+                basePriceOtherSide,
+                true
             );
+            if (amount > 0 && amount <= _availableToBuyFromAMM) {
+                _priceImpact = _buyPriceImpact(
+                    BuyPriceImpactParams(
+                        market,
+                        position,
+                        amount,
+                        _availableToBuyFromAMM,
+                        _availableToBuyFromAMMOtherSide,
+                        basePrice
+                    )
+                );
+            }
         }
     }
 
@@ -1005,7 +1007,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner can change IV!"
         );
-        require(_impliedVolatility > ONE * (40) && _impliedVolatility < ONE * (300), "IV outside min/max range!");
+        require(_impliedVolatility > ONE * 10 && _impliedVolatility < ONE * 300, "IV outside min/max range!");
         require(priceFeed.rateForCurrency(asset) != 0, "Asset has no price!");
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
         emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);

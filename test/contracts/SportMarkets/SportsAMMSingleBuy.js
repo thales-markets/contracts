@@ -33,26 +33,13 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
-contract('SportsVauchers', (accounts) => {
-	const [
-		manager,
-		first,
-		owner,
-		second,
-		third,
-		fourth,
-		safeBox,
-		wrapper,
-		minter,
-		firstLiquidityProvider,
-		defaultLiquidityProvider,
-	] = accounts;
+contract('SportsAMM', (accounts) => {
+	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
 		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
-	const AMMLiquidityPoolRoundMastercopy = artifacts.require('AMMLiquidityPoolRoundMastercopy');
 	const SportPositionContract = artifacts.require('SportPosition');
 	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
 	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
@@ -71,16 +58,34 @@ contract('SportsVauchers', (accounts) => {
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
-	let sportsAMMUtils;
 	let Thales;
-	let voucher;
+	let answer;
+	let verifier;
+	let sportsAMMUtils;
+	let minimumPositioningDuration = 0;
+	let minimumMarketMaturityDuration = 0;
+
+	let marketQuestion,
+		marketSource,
+		endOfPositioning,
+		fixedTicketPrice,
+		positionAmount1,
+		positionAmount2,
+		positionAmount3,
+		withdrawalAllowed,
+		tag,
+		paymentToken,
+		phrases = [],
+		deployedMarket,
+		outcomePosition,
+		outcomePosition2;
+
 	let consumer;
 	let TherundownConsumer;
 	let TherundownConsumerImplementation;
 	let TherundownConsumerDeployed;
 	let MockTherundownConsumerWrapper;
 	let initializeConsumerData;
-	let verifier;
 	let gamesQueue;
 	let game_1_create;
 	let game_1_resolve;
@@ -109,7 +114,7 @@ contract('SportsVauchers', (accounts) => {
 	let game_1_football_resolve;
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
-	let gamesResolvedFootball, AMMLiquidityPool;
+	let gamesResolvedFootball;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -126,9 +131,8 @@ contract('SportsVauchers', (accounts) => {
 		testUSDT,
 		testDAI,
 		Referrals,
-		SportsAMM,
 		GamesOddsObtainerDeployed,
-		position;
+		SportsAMM;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -136,7 +140,12 @@ contract('SportsVauchers', (accounts) => {
 	const sportId_4 = 4; // NBA
 	const sportId_16 = 16; // CHL
 
+	const tagID_4 = 9000 + sportId_4;
+	const tagID_16 = 9000 + sportId_16;
+
 	let gameMarket;
+
+	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
@@ -164,6 +173,7 @@ contract('SportsVauchers', (accounts) => {
 		await SportPositionalMarketFactory.initialize(manager, { from: manager });
 
 		await SportPositionalMarketManager.setExpiryDuration(5 * DAY, { from: manager });
+		// await SportPositionalMarketManager.setCancelTimeout(2 * HOUR, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
@@ -182,6 +192,13 @@ contract('SportsVauchers', (accounts) => {
 			SportPositionalMarketFactory.address,
 			{ from: manager }
 		);
+		await SportPositionalMarketManager.setWhitelistedAddresses([first, third], true, 1, {
+			from: manager,
+		});
+		await SportPositionalMarketManager.setWhitelistedAddresses([first, second], true, 2, {
+			from: manager,
+		});
+
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
@@ -207,12 +224,12 @@ contract('SportsVauchers', (accounts) => {
 			{ from: owner }
 		);
 
-		sportsAMMUtils = await SportsAMMUtils.new(SportsAMM.address);
-		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
+		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
 			from: owner,
 		});
 
-		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
+		sportsAMMUtils = await SportsAMMUtils.new(SportsAMM.address);
+		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
 			from: owner,
 		});
 
@@ -240,14 +257,14 @@ contract('SportsVauchers', (accounts) => {
 			{ from: owner }
 		);
 
-		await Thales.transfer(first, toUnit('1000'), { from: owner });
-		await Thales.transfer(minter, toUnit('1000'), { from: owner });
-		await Thales.transfer(third, toUnit('1000'), { from: owner });
+		await Thales.transfer(first, toUnit('100000'), { from: owner });
+		await Thales.transfer(second, toUnit('100000'), { from: owner });
+		await Thales.transfer(third, toUnit('100000'), { from: owner });
 		await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
 
-		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: first });
-		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: second });
-		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: third });
+		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: first });
+		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: second });
+		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: third });
 
 		// ids
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';
@@ -266,9 +283,9 @@ contract('SportsVauchers', (accounts) => {
 		// resolve game props
 		reqIdResolve = '0x30250573c4b099aeaf06273ef9fbdfe32ab2d6b8e33420de988be5d6886c92a7';
 		game_1_resolve =
-			'0x6536306366613738303834366166363839373862343935373965356366333936000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000810000000000000000000000000000000000000000000000000000000000000008';
+			'0x653630636661373830383436616636383937386234393537396535636633393600000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000081000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000622a9808';
 		game_2_resolve =
-			'0x3937346533663036386233333764313239656435633133646632376133326662000000000000000000000000000000000000000000000000000000000000006600000000000000000000000000000000000000000000000000000000000000710000000000000000000000000000000000000000000000000000000000000008';
+			'0x393734653366303638623333376431323965643563313364663237613332666200000000000000000000000000000000000000000000000000000000000000660000000000000000000000000000000000000000000000000000000000000071000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000622a9808';
 		gamesResolved = [game_1_resolve, game_2_resolve];
 
 		// football matches
@@ -286,9 +303,9 @@ contract('SportsVauchers', (accounts) => {
 			'0x0000000000000000000000000000000000000000000000000000000000000020653530343932616163653831303566636231653136636437366438396364336100000000000000000000000000000000000000000000000000000000629271300000000000000000000000000000000000000000000000000000000000002a3000000000000000000000000000000000000000000000000000000000000064c800000000000000000000000000000000000000000000000000000000000067e800000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000000134c69766572706f6f6c204c69766572706f6f6c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000175265616c204d6164726964205265616c204d6164726964000000000000000000';
 		gamesFootballCreated = [game_1_football_create, game_2_football_create, game_3_football_create];
 		game_1_football_resolve =
-			'0x316362616262316330313837346536326331366131646233316436316435333300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b';
+			'0x316362616262316330313837346536326331366131646233316436316435333300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b0000000000000000000000000000000000000000000000000000000062571db0';
 		game_2_football_resolve =
-			'0x366264643731373131633739383764333664346533353864393739323735623400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b';
+			'0x366264643731373131633739383764333664346533353864393739323735623400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b0000000000000000000000000000000000000000000000000000000062571db0';
 		reqIdResolveFoodball = '0xff8887a8535b7a8030962e6f6b1eba61c0f1cb82f706e77d834f15c781e47697';
 		gamesResolvedFootball = [game_1_football_resolve, game_2_football_resolve];
 
@@ -319,7 +336,7 @@ contract('SportsVauchers', (accounts) => {
 		await verifier.initialize(
 			owner,
 			TherundownConsumerDeployed.address,
-			['TBD TBD', 'TBA TBA'],
+			['TDB TDB', 'TBA TBA'],
 			['create', 'resolve'],
 			20,
 			{
@@ -351,10 +368,14 @@ contract('SportsVauchers', (accounts) => {
 			}
 		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
+		await TherundownConsumerDeployed.addToWhitelist(SportPositionalMarketManager.address, true, {
+			from: owner,
+		});
 
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
 		});
+
 		//await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
@@ -389,22 +410,6 @@ contract('SportsVauchers', (accounts) => {
 			{ from: owner }
 		);
 
-		let AMMLiquidityPoolContract = artifacts.require('AMMLiquidityPool');
-		AMMLiquidityPool = await AMMLiquidityPoolContract.new();
-
-		await AMMLiquidityPool.initialize(
-			{
-				_owner: owner,
-				_sportsAmm: SportsAMM.address,
-				_sUSD: Thales.address,
-				_roundLength: WEEK,
-				_maxAllowedDeposit: toUnit(1000).toString(),
-				_minDepositAmount: toUnit(100).toString(),
-				_maxAllowedUsers: 100,
-			},
-			{ from: owner }
-		);
-
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -413,195 +418,69 @@ contract('SportsVauchers', (accounts) => {
 			Referrals.address,
 			ZERO_ADDRESS,
 			wrapper,
-			AMMLiquidityPool.address,
 			{ from: owner }
 		);
 
-		let aMMLiquidityPoolRoundMastercopy = await AMMLiquidityPoolRoundMastercopy.new();
-		await AMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
-			from: owner,
-		});
-		await Thales.transfer(firstLiquidityProvider, toUnit('1000000'), { from: owner });
-		await Thales.approve(AMMLiquidityPool.address, toUnit('1000000'), {
-			from: firstLiquidityProvider,
-		});
-		await AMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
-			from: owner,
-		});
-		await AMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
-		await AMMLiquidityPool.start({ from: owner });
-		await AMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, { from: owner });
-		await Thales.transfer(defaultLiquidityProvider, toUnit('1000000'), { from: owner });
-		await Thales.approve(AMMLiquidityPool.address, toUnit('1000000'), {
-			from: defaultLiquidityProvider,
-		});
-
-		await testUSDC.mint(first, toUnit(1000));
-		await testUSDC.mint(curveSUSD.address, toUnit(1000));
-		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
+		await testUSDC.mint(first, toUnit(100000));
+		await testUSDC.mint(curveSUSD.address, toUnit(100000));
+		await testUSDC.approve(SportsAMM.address, toUnit(100000), { from: first });
+		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 	});
 
-	describe('Test Sports Voucher', () => {
+	describe('Test 3 options game', () => {
 		let deployedMarket;
 		let answer;
 		beforeEach(async () => {
+			let _currentTime = await currentTime();
+			// await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward(gameFootballTime - (await currentTime()) - SECOND);
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// console.log("Fast forward: ", (gameFootballTime - _currentTime - SECOND).toString());
+
 			// req. games
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-				reqIdCreate,
-				gamesCreated,
-				sportId_4,
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
 				game1NBATime,
 				{ from: wrapper }
 			);
 
-			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
-			let gameTime = game.startTime;
-			await TherundownConsumerDeployed.createMarketForGame(gameid1);
-			await TherundownConsumerDeployed.marketPerGameId(gameid1);
-			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-			deployedMarket = await SportPositionalMarketContract.at(answer.toString());
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			// console.log("Current time: ", _currentTime.toString());
+			// console.log("Start time: ", game.startTime.toString());
+			// console.log("Difference: ", (_currentTime - game.startTime).toString());
 
-			let OvertimeVoucher = artifacts.require('OvertimeVoucher');
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
 
-			voucher = await OvertimeVoucher.new(
-				Thales.address,
-				'',
-				'',
-				'',
-				'',
-				'',
-				'',
-				'',
-				'',
-				SportsAMM.address,
-				SportsAMM.address
-			);
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
 
-			await voucher.setSportsAMM(SportsAMM.address);
-			await voucher.setPause(false);
-			await voucher.setTokenUris('', '', '', '', '', '', '', '');
-			await voucher.setMultiplier(toUnit(1));
-
-			position = artifacts.require('SportPosition');
+			// check if event is emited
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			// console.log("Active market: ", answer.toString());
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 		});
+
 		let position = 0;
 		let value = 100;
 
-		it('Mint voucher', async () => {
-			Thales.approve(voucher.address, toUnit(20), { from: minter });
-
-			let balanceOfMinter = await Thales.balanceOf(minter);
-			console.log('sUSD balance of minter = ' + balanceOfMinter);
-			const id = 1;
-
-			const fifteenSUSD = toUnit(15);
-			await expect(voucher.mint(first, fifteenSUSD, { from: minter })).to.be.revertedWith(
-				'Invalid amount'
+		it('Buy from SportsAMM, position 1, value: 100', async () => {
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(1));
+			answer = await Thales.balanceOf(first);
+			let before_balance = answer;
+			console.log('acc balance: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				1,
+				toUnit(1),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
 			);
-
-			const twentysUSD = toUnit(20);
-			await voucher.mint(first, twentysUSD, { from: minter });
-			balanceOfMinter = await Thales.balanceOf(minter);
-			console.log('sUSD balance of minter = ' + balanceOfMinter);
-
-			let balanceOfVoucher = await Thales.balanceOf(voucher.address);
-			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
-
-			assert.bnEqual(1, await voucher.balanceOf(first));
-			assert.equal(first, await voucher.ownerOf(id));
-			assert.bnEqual(toUnit(20), await voucher.amountInVoucher(id));
-
-			await voucher.safeTransferFrom(first, second, id, { from: first });
-			assert.equal(second, await voucher.ownerOf(id));
-
-			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(20));
-			console.log('Quote is ' + buyFromAmmQuote / 1e18);
-
-			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(20), id, {
-				from: second,
-			});
-
-			let options = await deployedMarket.options();
-			let home = await position.at(options.home);
-			let away = await position.at(options.away);
-
-			let balanceHome = await home.balanceOf(second);
-			console.log('Balance Home = ' + balanceHome);
-
-			let balanceAway = await away.balanceOf(second);
-			console.log('Balance Away = ' + balanceAway);
-
-			balanceOfVoucher = await Thales.balanceOf(voucher.address);
-			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
-
-			let amountInVoucher = await voucher.amountInVoucher(id);
-			console.log('Amount in voucher is ' + amountInVoucher / 1e18);
-
-			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
-			console.log('100 Quote is ' + buyFromAmmQuote / 1e18);
-
-			await expect(
-				voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(100), id, {
-					from: second,
-				})
-			).to.be.revertedWith('Insufficient amount in voucher');
-
-			await expect(
-				voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(100), id, {
-					from: first,
-				})
-			).to.be.revertedWith('You are not the voucher owner!');
-
-			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(65));
-			console.log('65 Quote is ' + buyFromAmmQuote / 1e18);
-
-			let secondBalanceBeforeBurn = await voucher.balanceOf(second);
-			console.log('Second balance before burn is ' + secondBalanceBeforeBurn);
-
-			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(65), id, {
-				from: second,
-			});
-
-			home = await position.at(options.home);
-			away = await position.at(options.away);
-
-			balanceHome = await home.balanceOf(second);
-			console.log('Balance Home = ' + balanceHome);
-
-			balanceAway = await away.balanceOf(second);
-			console.log('Balance Away = ' + balanceAway);
-
-			balanceOfVoucher = await Thales.balanceOf(voucher.address);
-			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
-
-			let secondBalanceAfterBurn = await voucher.balanceOf(second);
-			console.log('Second balance after burn is ' + secondBalanceAfterBurn);
-
-			assert.bnEqual(0, secondBalanceAfterBurn);
 		});
-
-		// it('Buy from SportsAMM, position 1, value: 100', async () => {
-		// 	let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
-		// 	let additionalSlippage = toUnit(0.01);
-		// 	let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
-		// 	answer = await Thales.balanceOf(first);
-		// 	let before_balance = answer;
-		// 	console.log('acc balance: ', fromUnit(answer));
-		// 	console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-		// 	answer = await SportsAMM.buyFromAMM(
-		// 		deployedMarket.address,
-		// 		1,
-		// 		toUnit(100),
-		// 		buyFromAmmQuote,
-		// 		additionalSlippage,
-		// 		{ from: first }
-		// 	);
-		// 	answer = await Thales.balanceOf(first);
-		// 	console.log('acc after buy balance: ', fromUnit(answer));
-		// 	console.log('cost: ', fromUnit(before_balance.sub(answer)));
-		// 	let options = await deployedMarket.balancesOf(first);
-		// 	console.log('Balances', options[0].toString(), fromUnit(options[1]), options[2].toString());
-		// });
 	});
 });

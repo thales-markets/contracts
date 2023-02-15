@@ -55,7 +55,7 @@ async function main() {
 		console.log('ParlayMarketData upgraded');
 
 		console.log('Implementation ParlayMarketData: ', implementation);
-		setTargetAddress('ParlayMarketData', network, implementation);
+		setTargetAddress('ParlayMarketDataImplementation', network, implementation);
 		try {
 			await hre.run('verify:verify', {
 				address: implementation,

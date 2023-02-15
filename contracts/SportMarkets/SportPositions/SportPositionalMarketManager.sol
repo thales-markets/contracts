@@ -51,7 +51,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     mapping(address => bool) public whitelistedCancelAddresses;
     address public oddsObtainer;
 
-    mapping(address => address) public doubleChanceMarkets; // deprecated
     mapping(address => bool) public isDoubleChance;
     bool public override isDoubleChanceSupported;
     mapping(address => address[]) public doubleChanceMarketsByParent;
@@ -83,6 +82,12 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setOddsObtainer(address _oddsObtainer) external onlyOwner {
         oddsObtainer = _oddsObtainer;
         emit SetObtainerAddress(_oddsObtainer);
+    }
+
+    /// @notice setNeedsTransformingCollateral sets needsTransformingCollateral value
+    /// @param _needsTransformingCollateral boolen value to be set
+    function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
+        needsTransformingCollateral = _needsTransformingCollateral;
     }
 
     /// @notice setWhitelistedAddresses enables whitelist addresses of given array
@@ -280,7 +285,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     function createDoubleChanceMarketsForParent(address market) external notPaused onlyOwner {
         require(marketCreationEnabled, "Market creation is disabled");
+        require(isDoubleChanceSupported, "Double chance not supported");
         ISportPositionalMarket marketContract = ISportPositionalMarket(market);
+
+        require(marketContract.optionsCount() > 2, "Not supported for 2 options market");
 
         (uint maturity, uint expiry) = marketContract.times();
         _createDoubleChanceMarkets(
@@ -381,6 +389,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             "Invalid resolver"
         );
         require(_activeMarkets.contains(market), "Not an active market");
+        require(!isDoubleChance[market], "Not supported for double chance markets");
         // unpause if paused
         if (ISportPositionalMarket(market).paused()) {
             ISportPositionalMarket(market).setPaused(false);
@@ -426,6 +435,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         address _consumer
     ) external {
         require(msg.sender == owner || whitelistedCancelAddresses[msg.sender], "Invalid resolver");
+        require(!isDoubleChance[_market], "Not supported for double chance markets");
+
         if (_consumer == theRundownConsumer) {
             ITherundownConsumer(theRundownConsumer).resolveMarketManually(_market, _outcome, _homeScore, _awayScore);
         }

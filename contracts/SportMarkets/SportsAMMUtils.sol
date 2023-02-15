@@ -9,8 +9,6 @@ import "../interfaces/IPosition.sol";
 import "../interfaces/ITherundownConsumer.sol";
 import "../interfaces/ISportsAMM.sol";
 
-import "./LiquidityPool/AMMLiquidityPool.sol";
-
 /// @title Sports AMM utils
 contract SportsAMMUtils {
     uint private constant ONE = 1e18;
@@ -31,6 +29,7 @@ contract SportsAMMUtils {
         uint balanceOtherSide;
         uint amount;
         uint availableToBuyFromAMM;
+        uint max_spread;
     }
 
     struct NegativeDiscountsParams {
@@ -41,6 +40,7 @@ contract SportsAMMUtils {
         uint _availableToBuyFromAMM;
         uint pricePosition;
         uint priceOtherPosition;
+        uint max_spread;
     }
 
     function buyPriceImpactImbalancedSkew(
@@ -49,19 +49,20 @@ contract SportsAMMUtils {
         uint balancePosition,
         uint balanceOtherSideAfter,
         uint balancePositionAfter,
-        uint availableToBuyFromAMM
+        uint availableToBuyFromAMM,
+        uint max_spread
     ) public view returns (uint) {
         uint maxPossibleSkew = balanceOtherSide + availableToBuyFromAMM - balancePosition;
         uint skew = balanceOtherSideAfter - (balancePositionAfter);
-        uint newImpact = (sportsAMM.max_spread() * ((skew * ONE) / (maxPossibleSkew))) / ONE;
+        uint newImpact = (max_spread * ((skew * ONE) / (maxPossibleSkew))) / ONE;
         if (balancePosition > 0) {
-            uint newPriceForMintedOnes = newImpact / (2);
-            uint tempMultiplier = (amount - balancePosition) * (newPriceForMintedOnes);
+            uint newPriceForMintedOnes = newImpact / 2;
+            uint tempMultiplier = (amount - balancePosition) * newPriceForMintedOnes;
             return (tempMultiplier * ONE) / (amount) / ONE;
         } else {
             uint previousSkew = balanceOtherSide;
-            uint previousImpact = (sportsAMM.max_spread() * ((previousSkew * ONE) / (maxPossibleSkew))) / ONE;
-            return (newImpact + previousImpact) / (2);
+            uint previousImpact = (max_spread * ((previousSkew * ONE) / maxPossibleSkew)) / ONE;
+            return (newImpact + previousImpact) / 2;
         }
     }
 
@@ -74,7 +75,8 @@ contract SportsAMMUtils {
                 ? params.balancePosition
                 : params.balancePosition + (ONE - params.balanceOtherSide),
             params.balanceOtherSide > ONE ? params.balanceOtherSide - ONE : 0,
-            params.availableToBuyFromAMM
+            params.availableToBuyFromAMM,
+            params.max_spread
         );
 
         uint startDiscount = currentBuyImpactOtherSide;
@@ -93,7 +95,7 @@ contract SportsAMMUtils {
         uint sum1 = params.balanceOtherSide + params.balancePosition;
         uint sum2 = params.balanceOtherSide + amountToBeMinted;
         uint red3 = params._availableToBuyFromAMM - params.balancePosition;
-        uint positiveSkew = buyPriceImpactImbalancedSkew(amountToBeMinted, sum1, 0, sum2, 0, red3);
+        uint positiveSkew = buyPriceImpactImbalancedSkew(amountToBeMinted, sum1, 0, sum2, 0, red3, params.max_spread);
 
         uint skew = (params.priceOtherPosition * positiveSkew) / params.pricePosition;
 
@@ -102,7 +104,8 @@ contract SportsAMMUtils {
                 params.balancePosition,
                 params.balanceOtherSide,
                 params.balancePosition,
-                params._availableToBuyFromAMMOtherSide
+                params._availableToBuyFromAMMOtherSide,
+                params.max_spread
             )
         );
 
@@ -139,9 +142,10 @@ contract SportsAMMUtils {
         uint capUsed,
         uint spentOnThisGame,
         uint baseOdds,
-        uint balance
+        uint balance,
+        uint max_spread
     ) public view returns (uint availableAmount) {
-        uint discountedPrice = (baseOdds * (ONE - sportsAMM.max_spread() / 2)) / ONE;
+        uint discountedPrice = (baseOdds * (ONE - max_spread / 2)) / ONE;
         uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
         if ((capUsed + additionalBufferFromSelling) > spentOnThisGame) {
             uint availableUntilCapSUSD = capUsed + additionalBufferFromSelling - spentOnThisGame;
@@ -149,7 +153,7 @@ contract SportsAMMUtils {
                 availableUntilCapSUSD = capUsed;
             }
 
-            uint midImpactPriceIncrease = ((ONE - baseOdds) * (sportsAMM.max_spread() / 2)) / ONE;
+            uint midImpactPriceIncrease = ((ONE - baseOdds) * (max_spread / 2)) / ONE;
             uint divider_price = ONE - (baseOdds + midImpactPriceIncrease);
 
             availableAmount = balance + ((availableUntilCapSUSD * ONE) / divider_price);
@@ -173,29 +177,29 @@ contract SportsAMMUtils {
         }
     }
 
-    function isMarketInAMMTrading(address market) public view returns (bool isTrading) {
-        if (ISportPositionalMarketManager(sportsAMM.manager()).isActiveMarket(market)) {
-            (uint maturity, ) = ISportPositionalMarket(market).times();
-            if (maturity >= block.timestamp) {
-                uint timeLeftToMaturity = maturity - block.timestamp;
-                isTrading = timeLeftToMaturity > sportsAMM.minimalTimeLeftToMaturity();
-            }
+    function obtainOdds(address _market, ISportsAMM.Position _position) public view returns (uint oddsToReturn) {
+        address theRundownConsumer = sportsAMM.theRundownConsumer();
+        if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
+            uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
+            odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
+            oddsToReturn = odds[uint(_position)];
         }
     }
 
-    function obtainOdds(address _market, ISportsAMM.Position _position) public view returns (uint oddsToReturn) {
-        if (ISportPositionalMarketManager(sportsAMM.manager()).isDoubleChanceMarket(_market)) {
-            if (_position == ISportsAMM.Position.Home) {
-                (uint oddsPosition1, uint oddsPosition2) = getBaseOddsForDoubleChance(_market);
-                oddsToReturn = oddsPosition1 + oddsPosition2;
-            }
-        } else {
-            address theRundownConsumer = sportsAMM.theRundownConsumer();
-            if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
-                uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-                odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
-                oddsToReturn = odds[uint(_position)];
-            }
+    function obtainOddsMulti(
+        address _market,
+        ISportsAMM.Position _position1,
+        ISportsAMM.Position _position2
+    ) public view returns (uint oddsToReturn1, uint oddsToReturn2) {
+        address theRundownConsumer = sportsAMM.theRundownConsumer();
+        uint positionsCount = ISportPositionalMarket(_market).optionsCount();
+        uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
+        odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
+        if (positionsCount > uint(_position1)) {
+            oddsToReturn1 = odds[uint(_position1)];
+        }
+        if (positionsCount > uint(_position2)) {
+            oddsToReturn2 = odds[uint(_position2)];
         }
     }
 
@@ -229,6 +233,21 @@ contract SportsAMMUtils {
         if (ISportPositionalMarket(market).optionsCount() == 3) {
             drawBalance = draw.getBalanceOf(address(addressToCheck));
         }
+    }
+
+    function getBalanceOfPositionsOnMarketByPositions(
+        address market,
+        address addressToCheck,
+        ISportsAMM.Position position1,
+        ISportsAMM.Position position2
+    ) public view returns (uint firstBalance, uint secondBalance) {
+        (uint homeBalance, uint awayBalance, uint drawBalance) = getBalanceOfPositionsOnMarket(market, addressToCheck);
+        firstBalance = position1 == ISportsAMM.Position.Home ? homeBalance : position1 == ISportsAMM.Position.Away
+            ? awayBalance
+            : drawBalance;
+        secondBalance = position2 == ISportsAMM.Position.Home ? homeBalance : position2 == ISportsAMM.Position.Away
+            ? awayBalance
+            : drawBalance;
     }
 
     function balanceOfPositionsOnMarket(
@@ -342,109 +361,5 @@ contract SportsAMMUtils {
         );
         oddsPosition1 = obtainOdds(parentMarket, position1);
         oddsPosition2 = obtainOdds(parentMarket, position2);
-    }
-
-    function getTarget(address market, ISportsAMM.Position position) external view returns (address target) {
-        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        IPosition targetP = position == ISportsAMM.Position.Home ? home : away;
-        if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
-            targetP = position == ISportsAMM.Position.Away ? away : draw;
-        }
-        target = address(targetP);
-    }
-
-    function getAvailableOtherSide(
-        address market,
-        ISportsAMM.Position position,
-        uint amount
-    ) external view returns (uint _availableOtherSide) {
-        uint _availableOtherSideFirst = sportsAMM.availableToBuyFromAMM(
-            market,
-            position == ISportsAMM.Position.Home ? ISportsAMM.Position.Draw : position == ISportsAMM.Position.Draw
-                ? ISportsAMM.Position.Away
-                : ISportsAMM.Position.Home
-        );
-        uint _availableOtherSideSecond = sportsAMM.availableToBuyFromAMM(
-            market,
-            position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : position == ISportsAMM.Position.Draw
-                ? ISportsAMM.Position.Home
-                : ISportsAMM.Position.Draw
-        );
-        _availableOtherSide = _availableOtherSideFirst > _availableOtherSideSecond
-            ? _availableOtherSideFirst
-            : _availableOtherSideSecond;
-    }
-
-    function getMarketDefaultOdds(address _market) external view returns (uint[] memory odds) {
-        odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-        if (sportsAMM.isMarketInAMMTrading(_market)) {
-            ISportsAMM.Position position;
-            for (uint i = 0; i < odds.length; i++) {
-                if (i == 0) {
-                    position = ISportsAMM.Position.Home;
-                } else if (i == 1) {
-                    position = ISportsAMM.Position.Away;
-                } else {
-                    position = ISportsAMM.Position.Draw;
-                }
-                odds[i] = sportsAMM.buyFromAmmQuote(_market, position, ONE);
-            }
-        }
-    }
-
-    function buyPriceImpact(
-        address market,
-        ISportsAMM.Position position,
-        uint amount,
-        uint _availableToBuyFromAMM,
-        uint _availableToBuyFromAMMOtherSide
-    ) public view returns (int priceImpact) {
-        (uint balancePosition, , uint balanceOtherSide) = balanceOfPositionsOnMarket(
-            market,
-            position,
-            AMMLiquidityPool(sportsAMM.getLiquidityPool()).getMarketPool(market)
-        );
-        bool isTwoPositional = ISportPositionalMarket(market).optionsCount() == 2;
-        uint balancePositionAfter = balancePosition > amount ? balancePosition - amount : 0;
-        uint balanceOtherSideAfter = balancePosition > amount
-            ? balanceOtherSide
-            : balanceOtherSide + (amount - balancePosition);
-        if (amount <= balancePosition) {
-            priceImpact = calculateDiscount(
-                SportsAMMUtils.DiscountParams(balancePosition, balanceOtherSide, amount, _availableToBuyFromAMMOtherSide)
-            );
-        } else {
-            if (balancePosition > 0) {
-                uint pricePosition = obtainOdds(market, position);
-                uint priceOtherPosition = isTwoPositional
-                    ? obtainOdds(
-                        market,
-                        position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home
-                    )
-                    : ONE - pricePosition;
-                priceImpact = calculateDiscountFromNegativeToPositive(
-                    NegativeDiscountsParams(
-                        amount,
-                        balancePosition,
-                        balanceOtherSide,
-                        _availableToBuyFromAMMOtherSide,
-                        _availableToBuyFromAMM,
-                        pricePosition,
-                        priceOtherPosition
-                    )
-                );
-            } else {
-                priceImpact = int(
-                    buyPriceImpactImbalancedSkew(
-                        amount,
-                        balanceOtherSide,
-                        balancePosition,
-                        balanceOtherSideAfter,
-                        balancePositionAfter,
-                        _availableToBuyFromAMM
-                    )
-                );
-            }
-        }
     }
 }

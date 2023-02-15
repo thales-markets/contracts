@@ -81,45 +81,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_availableToBuyFromAMM",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_availableToBuyFromAMMOtherSide",
-        "type": "uint256"
-      }
-    ],
-    "name": "buyPriceImpact",
-    "outputs": [
-      {
-        "internalType": "int256",
-        "name": "priceImpact",
-        "type": "int256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
@@ -147,6 +108,11 @@
       {
         "internalType": "uint256",
         "name": "availableToBuyFromAMM",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max_spread",
         "type": "uint256"
       }
     ],
@@ -181,6 +147,11 @@
       {
         "internalType": "uint256",
         "name": "balance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max_spread",
         "type": "uint256"
       }
     ],
@@ -217,6 +188,11 @@
           {
             "internalType": "uint256",
             "name": "availableToBuyFromAMM",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max_spread",
             "type": "uint256"
           }
         ],
@@ -273,6 +249,11 @@
           {
             "internalType": "uint256",
             "name": "priceOtherPosition",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max_spread",
             "type": "uint256"
           }
         ],
@@ -334,35 +315,6 @@
         "type": "address"
       },
       {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "getAvailableOtherSide",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "_availableOtherSide",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
         "internalType": "address",
         "name": "addressToCheck",
         "type": "address"
@@ -383,6 +335,45 @@
       {
         "internalType": "uint256",
         "name": "drawBalance",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "addressToCheck",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position1",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position2",
+        "type": "uint8"
+      }
+    ],
+    "name": "getBalanceOfPositionsOnMarketByPositions",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "firstBalance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "secondBalance",
         "type": "uint256"
       }
     ],
@@ -470,25 +461,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
-    "name": "getMarketDefaultOdds",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "odds",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "market",
         "type": "address"
       }
@@ -542,49 +514,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
-      }
-    ],
-    "name": "getTarget",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "target",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "isMarketInAMMTrading",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "isTrading",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_market",
         "type": "address"
       },
@@ -599,6 +528,40 @@
       {
         "internalType": "uint256",
         "name": "oddsToReturn",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "_position1",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "_position2",
+        "type": "uint8"
+      }
+    ],
+    "name": "obtainOddsMulti",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "oddsToReturn1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "oddsToReturn2",
         "type": "uint256"
       }
     ],

@@ -48,11 +48,10 @@ async function main() {
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
 	}
 
-	if (networkObj.chainId == 420) {
-		networkObj.name = 'optimisticGoerli';
-		network = 'optimisticGoerli';
-		PaymentToken = getTargetAddress('ExoticUSD', network);
-		SportsAMMContract = getTargetAddress('SportsAMM', network);
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
 
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
@@ -80,7 +79,7 @@ async function main() {
 		}
 	}
 
-	if (networkObj.chainId == 10) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
 		const implementation = await upgrades.prepareUpgrade(SportsAMMAddress, SportsAMM);
 		await delay(5000);
 

@@ -44,12 +44,21 @@ async function main() {
 		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 
 	const ParlayMarketDataAddress = getTargetAddress('ParlayMarketData', network);
 	const ParlayMarketData = await ethers.getContractFactory('ParlayMarketData');
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 5) {
-		const implementation = await upgrades.prepareUpgrade(ParlayMarketDataAddress, ParlayMarketData);
+	if (networkObj.chainId == 10 || networkObj.chainId == 5 || networkObj.chainId == 42161) {
+		const implementation = await upgrades.prepareUpgrade(
+			ParlayMarketDataAddress,
+			ParlayMarketData,
+			{ gasLimit: 15000000 }
+		);
 		await delay(5000);
 
 		console.log('ParlayMarketData upgraded');

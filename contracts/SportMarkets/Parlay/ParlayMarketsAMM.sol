@@ -440,7 +440,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (parlayVerifier.verifyMarkets(_sportMarkets, _positions, _sUSDPaid, sportsAmm, address(this))) {
             sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee))) * _sUSDPaid) / ONE;
             (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = parlayVerifier
-                .calculateInitialQuotesForParlay(_sportMarkets, _positions, sUSDAfterFees, parlaySize, sportsAmm);
+                .calculateInitialQuotesForParlay(
+                    ParlayVerifier.InitialQuoteParameters(
+                        _sportMarkets,
+                        _positions,
+                        sportManager.reverseTransformCollateral(sUSDAfterFees),
+                        parlaySize,
+                        sportManager.reverseTransformCollateral(1),
+                        sportsAmm
+                    )
+                );
         }
     }
 

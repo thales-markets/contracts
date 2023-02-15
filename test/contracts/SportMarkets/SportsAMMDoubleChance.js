@@ -1525,11 +1525,11 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'Spent on game homeTeamNotLose',
-				(await SportsAMM.getSpentOnGame(homeTeamNotLoseMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(homeTeamNotLoseMarket.address)) / 1e18
 			);
 			console.log(
 				'Spent on game deployedMarket',
-				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(deployedMarket.address)) / 1e18
 			);
 
 			// individual buy
@@ -1555,7 +1555,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'Spent on game deployedMarket',
-				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(deployedMarket.address)) / 1e18
 			);
 
 			availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
@@ -1580,7 +1580,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'Spent on game deployedMarket',
-				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(deployedMarket.address)) / 1e18
 			);
 		});
 
@@ -1608,7 +1608,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'Spent on game deployedMarket',
-				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(deployedMarket.address)) / 1e18
 			);
 
 			availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
@@ -1633,7 +1633,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'Spent on game deployedMarket',
-				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(deployedMarket.address)) / 1e18
 			);
 		});
 	});

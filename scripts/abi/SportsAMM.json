@@ -185,6 +185,12 @@
         "internalType": "uint256",
         "name": "_referrerFee",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "threshold",
+        "type": "uint256"
       }
     ],
     "name": "ParametersUpdated",
@@ -308,19 +314,6 @@
       }
     ],
     "name": "SetSportsPositionalMarketManager",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_threshold",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetThresholdForOddsUpdate",
     "type": "event"
   },
   {
@@ -662,25 +655,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "canExerciseMaturedMarket",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "canExercize",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -792,37 +766,11 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "exerciseMaturedMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "getAmmUtils",
     "outputs": [
       {
         "internalType": "contract SportsAMMUtils",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getLiquidityPool",
-    "outputs": [
-      {
-        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -849,25 +797,6 @@
         "internalType": "uint256[]",
         "name": "odds",
         "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "getSpentOnGame",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1176,24 +1105,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "retrieveSUSDAmount",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "sUSD",
     "outputs": [
@@ -1481,6 +1392,11 @@
         "internalType": "uint256",
         "name": "_referrerFee",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
       }
     ],
     "name": "setParameters",
@@ -1528,19 +1444,6 @@
       }
     ],
     "name": "setSportsPositionalMarketManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_threshold",
-        "type": "uint256"
-      }
-    ],
-    "name": "setThresholdForOddsUpdate",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1607,16 +1510,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "destination",
+        "name": "proxyAddress",
         "type": "address"
       }
     ],
-    "name": "transferOptions",
+    "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1625,11 +1523,21 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "proxyAddress",
+        "name": "token",
         "type": "address"
+      },
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "transferOwnershipAtInit",
+    "name": "transferTokens",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

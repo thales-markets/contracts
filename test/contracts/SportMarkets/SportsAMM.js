@@ -236,6 +236,7 @@ contract('SportsAMM', (accounts) => {
 			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
+			toUnit('500'),
 			{ from: owner }
 		);
 
@@ -721,6 +722,7 @@ contract('SportsAMM', (accounts) => {
 				toUnit('5000'),
 				toUnit('0.01'),
 				toUnit('0.005'),
+				toUnit('500'),
 				{ from: owner }
 			);
 		});
@@ -1561,9 +1563,6 @@ contract('SportsAMM', (accounts) => {
 			console.log('market phase: ', phase.toString());
 			let known = await SportPositionalMarketManager.isKnownMarket(deployedMarket.address);
 			console.log('known market: ', known.toString());
-			let canExcercise = await SportsAMM.canExerciseMaturedMarket(deployedMarket.address);
-			console.log('Market can be excercised: ', canExcercise.toString());
-			await SportsAMM.exerciseMaturedMarket(deployedMarket.address, { from: first });
 		});
 	});
 
@@ -2173,9 +2172,6 @@ contract('SportsAMM', (accounts) => {
 				}
 			);
 
-			answer = await SportsAMM.canExerciseMaturedMarket(deployedMarket.address);
-			console.log('Can exercise options: ', answer);
-
 			let balances = await deployedMarket.balancesOf(first);
 			let payoutOnCancelation = await deployedMarket.calculatePayoutOnCancellation(
 				balances[0],
@@ -2197,9 +2193,6 @@ contract('SportsAMM', (accounts) => {
 
 			answer = await Thales.balanceOf(SportsAMM.address);
 			console.log('Balance before exercise of SportsAMM: ', fromUnit(answer));
-			answer = await SportsAMM.exerciseMaturedMarket(deployedMarket.address);
-			answer = await Thales.balanceOf(SportsAMM.address);
-			console.log('Balance after exercise of SportsAMM: ', fromUnit(answer));
 
 			answer = await Thales.balanceOf(first);
 			console.log('Balance before exercise of first: ', fromUnit(answer));

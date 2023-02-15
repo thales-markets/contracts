@@ -21,9 +21,7 @@ import "../interfaces/ICurveSUSD.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ISportsAMM.sol";
 import "../interfaces/ITherundownConsumerWrapper.sol";
-
 import "./SportsAMMUtils.sol";
-import "./LiquidityPool/AMMLiquidityPool.sol";
 
 /// @title Sports AMM contract
 /// @author kirilaa
@@ -152,9 +150,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position2;
         address parentMarket;
     }
-
-    /// @return the adddress of the AMMLP contract
-    AMMLiquidityPool public liquidityPool;
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
@@ -342,7 +337,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         (uint balanceFirst, uint balanceSecond) = sportAmmUtils.getBalanceOfPositionsOnMarketByPositions(
             market,
-            liquidityPool.getMarketPool(market),
+            address(this),
             positionFirst,
             positionSecond
         );
@@ -442,12 +437,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return address return address
     function getAmmUtils() external view returns (SportsAMMUtils) {
         return sportAmmUtils;
-    }
-
-    /// @notice Read amm LP pool address
-    /// @return amm LP pool address
-    function getLiquidityPool() external view returns (address) {
-        return address(liquidityPool);
     }
 
     /// @notice Obtains the oracle odds for `_position` of a given `_market` game. Odds do not contain price impact
@@ -584,34 +573,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         _buyFromAMM(BuyFromAMMParams(market, position, amount, expectedPayout, additionalSlippage, true, 0));
     }
 
-    /// @notice This is deprecated as now the options will reside in the AMMLiquidityPoolRoundContract
+    /// @notice Exercise given market to retrieve sUSD
     /// @param market to exercise
-    // TODO: on release of AMMLiquidityPool, all options should be moved out of this contract, or at least the PnL should be ignored for round1 in cumulative PnL
     function exerciseMaturedMarket(address market) external {
-        if (canExerciseMaturedMarket(market)) {
-            ISportPositionalMarket(market).exerciseOptions();
-        }
-    }
-
-    /// @notice Used for migration of options once the first round of LP starts
-    /// @param market to migrate
-    /// @param destination to migrate to
-    function transferOptions(address market, address destination) external onlyOwner {
-        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        IERC20Upgradeable(address(home)).safeTransfer(
-            destination,
-            IERC20Upgradeable(address(home)).balanceOf(address(this))
-        );
-        IERC20Upgradeable(address(away)).safeTransfer(
-            destination,
-            IERC20Upgradeable(address(away)).balanceOf(address(this))
-        );
-        if (ISportPositionalMarket(market).optionsCount() > 2) {
-            IERC20Upgradeable(address(draw)).safeTransfer(
-                destination,
-                IERC20Upgradeable(address(draw)).balanceOf(address(this))
-            );
-        }
+        require(canExerciseMaturedMarket(market), "No options to exercise");
+        ISportPositionalMarket(market).exerciseOptions();
     }
 
     // setters
@@ -662,7 +628,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _stakingThales Address of Staking contract
     /// @param _referrals contract for referrals storage
     /// @param _wrapper contract for calling wrapper contract
-    /// @param _lp contract for managing liquidity pools
     function setAddresses(
         address _safeBox,
         IERC20Upgradeable _sUSD,
@@ -670,8 +635,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         IStakingThales _stakingThales,
         address _referrals,
         address _parlayAMM,
-        address _wrapper,
-        address _lp
+        address _wrapper
     ) external onlyOwner {
         safeBox = _safeBox;
         sUSD = _sUSD;
@@ -680,9 +644,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         referrals = _referrals;
         parlayAMM = _parlayAMM;
         wrapper = ITherundownConsumerWrapper(_wrapper);
-        liquidityPool = AMMLiquidityPool(_lp);
 
-        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper, _lp);
+        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper);
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -882,11 +845,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         require(baseOdds > 0, "No base odds");
         baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
 
-        uint availableInContract = sportAmmUtils.balanceOfPositionOnMarket(
-            params.market,
-            params.position,
-            liquidityPool.getMarketPool(params.market)
-        );
+        uint availableInContract = sportAmmUtils.balanceOfPositionOnMarket(params.market, params.position, address(this));
         uint availableToBuyFromAMMatm = _availableToBuyFromAMMInternal(
             params.market,
             params.position,
@@ -919,7 +878,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
 
         if (dcs.isDoubleChance) {
-            liquidityPool.commitTrade(params.market, params.amount, params.position);
             ISportPositionalMarket(params.market).mint(params.amount);
             _mintParentPositions(params.market, params.amount, dcs);
 
@@ -927,37 +885,21 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 params.market
             );
 
-            if (params.amount > IERC20Upgradeable(parentMarketPosition1).balanceOf(address(this))) {
-                liquidityPool.getOptionsForBuyByAddress(
-                    address(ISportPositionalMarket(params.market).parentMarket()),
-                    params.amount - IERC20Upgradeable(parentMarketPosition1).balanceOf(address(this)),
-                    parentMarketPosition1
-                );
-            }
-            if (params.amount > IERC20Upgradeable(parentMarketPosition2).balanceOf(address(this))) {
-                liquidityPool.getOptionsForBuyByAddress(
-                    address(ISportPositionalMarket(params.market).parentMarket()),
-                    params.amount - IERC20Upgradeable(parentMarketPosition2).balanceOf(address(this)),
-                    parentMarketPosition2
-                );
-            }
-
             IERC20Upgradeable(parentMarketPosition1).safeTransfer(params.market, params.amount);
             IERC20Upgradeable(parentMarketPosition2).safeTransfer(params.market, params.amount);
         } else {
             uint toMint = availableInContract < params.amount ? params.amount - availableInContract : 0;
             if (toMint > 0) {
-                liquidityPool.commitTrade(params.market, toMint, params.position);
                 ISportPositionalMarket(params.market).mint(toMint);
                 spentOnGame[params.market] = spentOnGame[params.market] + toMint;
             }
-            liquidityPool.getOptionsForBuy(params.market, params.amount - toMint, params.position);
         }
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(params.market).getOptions();
         IPosition target = params.position == ISportsAMM.Position.Home ? home : params.position == ISportsAMM.Position.Away
             ? away
             : draw;
+
         IERC20Upgradeable(address(target)).safeTransfer(msg.sender, params.amount);
 
         if (address(stakingThales) != address(0)) {
@@ -974,10 +916,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market,
             params.sUSDPaid,
             msg.sender
-        );
-
-        _sendMintedPositionsToLiquidityPool(
-            dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market
         );
 
         emit BoughtFromAmm(
@@ -1023,9 +961,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal view returns (uint availableAmount) {
         if (baseOdds > 0 && baseOdds < maxSupportedOdds) {
             baseOdds = baseOdds + min_spread;
-            balance = useBalance
-                ? balance
-                : sportAmmUtils.balanceOfPositionOnMarket(market, position, liquidityPool.getMarketPool(market));
+            balance = useBalance ? balance : sportAmmUtils.balanceOfPositionOnMarket(market, position, address(this));
 
             availableAmount = sportAmmUtils.calculateAvailableToBuy(
                 _calculateCapToBeUsed(market),
@@ -1065,30 +1001,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
-    function _sendMintedPositionsToLiquidityPool(address market) internal {
-        address _liquidityPool = liquidityPool.getOrCreateMarketPool(market);
-        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        IERC20Upgradeable(address(home)).safeTransfer(
-            _liquidityPool,
-            IERC20Upgradeable(address(home)).balanceOf(address(this))
-        );
-        IERC20Upgradeable(address(away)).safeTransfer(
-            _liquidityPool,
-            IERC20Upgradeable(address(away)).balanceOf(address(this))
-        );
-        if (ISportPositionalMarket(market).optionsCount() > 2) {
-            IERC20Upgradeable(address(draw)).safeTransfer(
-                _liquidityPool,
-                IERC20Upgradeable(address(draw)).balanceOf(address(this))
-            );
-        }
-    }
-
-    function _sendSUSDPaidToLiquidityPool(address market, uint sUSDAmount) internal {
-        address _liquidityPool = liquidityPool.getOrCreateMarketPool(market);
-        sUSD.safeTransfer(_liquidityPool, sUSDAmount);
-    }
-
     function _updateSpentOnMarketOnBuy(
         address market,
         uint sUSDPaid,
@@ -1122,7 +1034,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         (uint balancePosition, , uint balanceOtherSide) = sportAmmUtils.balanceOfPositionsOnMarket(
             market,
             position,
-            liquidityPool.getMarketPool(market)
+            address(this)
         );
         bool isTwoPositional = ISportPositionalMarket(market).optionsCount() == 2;
         uint balancePositionAfter = balancePosition > amount ? balancePosition - amount : 0;
@@ -1195,7 +1107,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal {
         (uint availableInContract1, uint availableInContract2) = sportAmmUtils.getBalanceOfPositionsOnMarketByPositions(
             dcs.parentMarket,
-            liquidityPool.getMarketPool(market),
+            address(this),
             dcs.position1,
             dcs.position2
         );
@@ -1262,8 +1174,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         IStakingThales _stakingThales,
         address _referrals,
         address _parlayAMM,
-        address _wrapper,
-        address _lp
+        address _wrapper
     );
 
     event SetSportsPositionalMarketManager(address _manager);

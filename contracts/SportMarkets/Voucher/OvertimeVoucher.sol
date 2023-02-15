@@ -88,6 +88,22 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
 
     /* ========== TRV ========== */
 
+    function mintBatch(address[] calldata recipients, uint amount) external returns (uint[] memory newItemId) {
+        require(!paused, "Cant mint while paused");
+
+        require(_checkAmount(amount), "Invalid amount");
+
+        sUSD.safeTransferFrom(msg.sender, address(this), (recipients.length * amount));
+        newItemId = new uint[](recipients.length);
+        for (uint i = 0; i < recipients.length; i++) {
+            _tokenIds.increment();
+            newItemId[i] = _tokenIds.current();
+            _mint(recipients[i], newItemId[i]);
+            _setTokenURI(newItemId[i], _retrieveTokenURI(amount));
+            amountInVoucher[newItemId[i]] = amount;
+        }
+    }
+
     function mint(address recipient, uint amount) external returns (uint newItemId) {
         require(!paused, "Cant mint while paused");
 

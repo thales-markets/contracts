@@ -275,7 +275,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         // The debt can't be incremented in the new market's constructor because until construction is complete,
         // the manager doesn't know its address in order to grant it permission.
         totalDeposited = totalDeposited.add(initialMint);
-        sUSD.transferFrom(msg.sender, address(market), initialMint);
+        sUSD.transferFrom(msg.sender, address(market), _transformCollateral(initialMint));
 
         if (positionCount > 2 && isDoubleChanceSupported) {
             _createDoubleChanceMarkets(msg.sender, gameId, maturity, expiry, initialMint, address(market), tags[0]);
@@ -375,6 +375,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     ) external override {
         //only to be called by markets themselves
         require(isKnownMarket(address(msg.sender)), "Market unknown.");
+        amount = _transformCollateral(amount);
         bool success = sUSD.transferFrom(sender, receiver, amount);
         if (!success) {
             revert("TransferFrom function failed");

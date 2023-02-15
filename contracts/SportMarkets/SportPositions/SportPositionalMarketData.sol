@@ -42,6 +42,23 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         return marketOdds;
     }
 
+    function getOddsForAllActiveMarketsInBatches(uint batchNumber, uint batchSize)
+        external
+        view
+        returns (ActiveMarketsOdds[] memory)
+    {
+        address[] memory activeMarkets = ISportPositionalMarketManager(manager).activeMarkets(
+            batchNumber * batchSize,
+            batchSize
+        );
+        ActiveMarketsOdds[] memory marketOdds = new ActiveMarketsOdds[](activeMarkets.length);
+        for (uint i = 0; i < activeMarkets.length; i++) {
+            marketOdds[i].market = activeMarkets[i];
+            marketOdds[i].odds = ISportsAMM(sportsAMM).getMarketDefaultOdds(activeMarkets[i], false);
+        }
+        return marketOdds;
+    }
+
     function getBaseOddsForAllActiveMarkets() external view returns (ActiveMarketsOdds[] memory) {
         address[] memory activeMarkets = ISportPositionalMarketManager(manager).activeMarkets(
             0,
@@ -67,6 +84,41 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             }
         }
         return marketOdds;
+    }
+
+    function getPriceImpactForAllActiveMarketsInBatches(uint batchNumber, uint batchSize)
+        external
+        view
+        returns (ActiveMarketsPriceImpact[] memory)
+    {
+        address[] memory activeMarkets = ISportPositionalMarketManager(manager).activeMarkets(
+            batchNumber * batchSize,
+            batchSize
+        );
+        ActiveMarketsPriceImpact[] memory marketPriceImpact = new ActiveMarketsPriceImpact[](activeMarkets.length);
+        for (uint i = 0; i < activeMarkets.length; i++) {
+            marketPriceImpact[i].market = activeMarkets[i];
+            marketPriceImpact[i].priceImpact = new int[](ISportPositionalMarket(activeMarkets[i]).optionsCount());
+
+            for (uint j = 0; j < marketPriceImpact[i].priceImpact.length; j++) {
+                if (ISportsAMM(sportsAMM).isMarketInAMMTrading(activeMarkets[i])) {
+                    ISportsAMM.Position position;
+                    if (j == 0) {
+                        position = ISportsAMM.Position.Home;
+                    } else if (j == 1) {
+                        position = ISportsAMM.Position.Away;
+                    } else {
+                        position = ISportsAMM.Position.Draw;
+                    }
+                    marketPriceImpact[i].priceImpact[j] = ISportsAMM(sportsAMM).buyPriceImpact(
+                        activeMarkets[i],
+                        position,
+                        ONE
+                    );
+                }
+            }
+        }
+        return marketPriceImpact;
     }
 
     function getPriceImpactForAllActiveMarkets() external view returns (ActiveMarketsPriceImpact[] memory) {

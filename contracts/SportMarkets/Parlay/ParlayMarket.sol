@@ -10,8 +10,6 @@ import "../SportPositions/SportPosition.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 
-// import "hardhat/console.sol";
-
 contract ParlayMarket is OwnedWithInit {
     using SafeERC20 for IERC20;
 

@@ -73,8 +73,7 @@ async function main() {
 		networkObj.chainId == 69 ||
 		networkObj.chainId == 42 ||
 		networkObj.chainId == 420 ||
-		networkObj.chainId == 5 ||
-		networkObj.chainId == 42161
+		networkObj.chainId == 5
 	) {
 		await SportMarketFactoryDeployed.setSportPositionMastercopy(SportPositionDeployed.address, {
 			from: owner.address,

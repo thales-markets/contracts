@@ -32,17 +32,31 @@ const {
 	encodeCall,
 	assertRevert,
 } = require('../../utils/helpers');
+
 const { toWei } = require('web3-utils');
 
 const toUnitSix = (amount) => toBN(toWei(amount.toString(), 'ether') / 1e12);
 
 contract('SportsVauchers', (accounts) => {
-	const [manager, first, owner, second, third, fourth, safeBox, wrapper, minter] = accounts;
+	const [
+		manager,
+		first,
+		owner,
+		second,
+		third,
+		fourth,
+		safeBox,
+		wrapper,
+		minter,
+		firstLiquidityProvider,
+		defaultLiquidityProvider,
+	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
 		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
+	const AMMLiquidityPoolRoundMastercopy = artifacts.require('AMMLiquidityPoolRoundMastercopy');
 	const SportPositionContract = artifacts.require('SportPosition');
 	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
 	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
@@ -54,7 +68,7 @@ contract('SportsVauchers', (accounts) => {
 	const SportPositionMasterCopyContract = artifacts.require('SportPositionMastercopy');
 	const StakingThalesContract = artifacts.require('StakingThales');
 	const SportsAMMContract = artifacts.require('SportsAMM');
-	const ThalesContract = artifacts.require('TestUSDC');
+	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 	const SNXRewardsContract = artifacts.require('SNXRewards');
 	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	const TestOddsContract = artifacts.require('TestOdds');
@@ -99,7 +113,7 @@ contract('SportsVauchers', (accounts) => {
 	let game_1_football_resolve;
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
-	let gamesResolvedFootball;
+	let gamesResolvedFootball, AMMLiquidityPool;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -145,7 +159,7 @@ contract('SportsVauchers', (accounts) => {
 		// TestOdds = await TestOddsContract.new();
 		await AddressResolver.setSNXRewardsAddress(SNXRewards.address);
 
-		Thales = await ThalesContract.new();
+		Thales = await ThalesContract.new({ from: owner });
 		let GamesQueue = artifacts.require('GamesQueue');
 		gamesQueue = await GamesQueue.new({ from: owner });
 		await gamesQueue.initialize(owner, { from: owner });
@@ -232,10 +246,10 @@ contract('SportsVauchers', (accounts) => {
 			{ from: owner }
 		);
 
-		await Thales.mint(first, toUnitSix('1000'));
-		await Thales.mint(minter, toUnitSix('1000'));
-		await Thales.mint(third, toUnitSix('1000'));
-		await Thales.mint(SportsAMM.address, toUnit('100000'), { from: owner });
+		await Thales.transfer(first, toUnitSix('1000'), { from: owner });
+		await Thales.transfer(minter, toUnitSix('1000'), { from: owner });
+		await Thales.transfer(third, toUnitSix('1000'), { from: owner });
+		await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
 
 		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: first });
 		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: second });
@@ -331,7 +345,7 @@ contract('SportsVauchers', (accounts) => {
 			{ from: owner }
 		);
 
-		await Thales.mint(TherundownConsumerDeployed.address, toUnit('1000'));
+		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
 			gamesQueue.address,
@@ -381,6 +395,22 @@ contract('SportsVauchers', (accounts) => {
 			{ from: owner }
 		);
 
+		let AMMLiquidityPoolContract = artifacts.require('AMMLiquidityPool');
+		AMMLiquidityPool = await AMMLiquidityPoolContract.new();
+
+		await AMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_sportsAmm: SportsAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(1000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -389,8 +419,28 @@ contract('SportsVauchers', (accounts) => {
 			Referrals.address,
 			ZERO_ADDRESS,
 			wrapper,
+			AMMLiquidityPool.address,
 			{ from: owner }
 		);
+
+		let aMMLiquidityPoolRoundMastercopy = await AMMLiquidityPoolRoundMastercopy.new();
+		await AMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+		await Thales.transfer(firstLiquidityProvider, toUnit('1000000'), { from: owner });
+		await Thales.approve(AMMLiquidityPool.address, toUnit('1000000'), {
+			from: firstLiquidityProvider,
+		});
+		await AMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await AMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+		await AMMLiquidityPool.start({ from: owner });
+		await AMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, { from: owner });
+		await Thales.transfer(defaultLiquidityProvider, toUnit('1000000'), { from: owner });
+		await Thales.approve(AMMLiquidityPool.address, toUnit('1000000'), {
+			from: defaultLiquidityProvider,
+		});
 
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));

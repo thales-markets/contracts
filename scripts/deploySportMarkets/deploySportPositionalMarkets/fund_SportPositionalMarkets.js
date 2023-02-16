@@ -120,30 +120,34 @@ async function main() {
 				batches = [];
 			}
 		}
+		let balanceOfMaturedMarket;
 		for (let i = 0; i < maturedMarkets.length; i++) {
-			batches.push(maturedMarkets[i]);
-			if (batches.length == 20) {
-				console.log(i);
-				await MultiSendDeployed.sendToMultipleAddresses(
-					batches,
-					fundingAmount,
-					PaymentTokenDeployed.address
-				);
-				await delay(2000);
-				console.log('Sent to markets:');
-				console.log(batches);
-				batches = [];
-			}
-			if (i == maturedMarkets.length - 1) {
-				await MultiSendDeployed.sendToMultipleAddresses(
-					batches,
-					fundingAmount,
-					PaymentTokenDeployed.address
-				);
-				await delay(2000);
-				console.log('Sent to markets:');
-				console.log(batches);
-				batches = [];
+			balanceOfMaturedMarket = await PaymentTokenDeployed.balanceOf(maturedMarkets[i]);
+			if (parseInt(balanceOfMaturedMarket.toString()) > 0) {
+				batches.push(maturedMarkets[i]);
+				if (batches.length == 20) {
+					console.log(i);
+					await MultiSendDeployed.sendToMultipleAddresses(
+						batches,
+						fundingAmount,
+						PaymentTokenDeployed.address
+					);
+					await delay(2000);
+					console.log('Sent to markets:');
+					console.log(batches);
+					batches = [];
+				}
+				if (i == maturedMarkets.length - 1) {
+					await MultiSendDeployed.sendToMultipleAddresses(
+						batches,
+						fundingAmount,
+						PaymentTokenDeployed.address
+					);
+					await delay(2000);
+					console.log('Sent to markets:');
+					console.log(batches);
+					batches = [];
+				}
 			}
 		}
 	}

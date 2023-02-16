@@ -217,7 +217,8 @@
 		"ParlayMarketDataImplementation": "0x87e81Bb60c3394A3c2425747545916781B49786b",
 		"GamesOddsObtainer": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
 		"GamesOddsObtainerImplementation": "0x707075f0B619acF5A614Efb54FA8aC9B2FB55188",
-		"OvertimeVoucher": "0x9Ee26dcb9A3F1104B37A5dCc8573c8b144c7ce42"
+		"OvertimeVoucher": "0x9Ee26dcb9A3F1104B37A5dCc8573c8b144c7ce42",
+		"MultiSend": "0x0bbdD7131348e5C8063096B6ca0Ccc447be3FA7a"
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",

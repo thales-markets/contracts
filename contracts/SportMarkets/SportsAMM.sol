@@ -231,11 +231,18 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint useSafeBoxSkewImpact,
         uint available,
         bool useAvailable,
-        bool useMinSpread,
+        bool useDefaultMinSpread,
         DoubleChanceStruct memory dcs
     ) internal view returns (uint returnQuote) {
         if (dcs.isDoubleChance) {
-            returnQuote = _buyFromAMMQuoteDoubleChance(market, position, amount, useSafeBoxSkewImpact, useMinSpread, dcs);
+            returnQuote = _buyFromAMMQuoteDoubleChance(
+                market,
+                position,
+                amount,
+                useSafeBoxSkewImpact,
+                useDefaultMinSpread,
+                dcs
+            );
         } else {
             returnQuote = _buyFromAmmQuoteWithBaseOddsInternal(
                 market,
@@ -245,7 +252,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 useSafeBoxSkewImpact,
                 available,
                 useAvailable,
-                useMinSpread
+                useDefaultMinSpread
             );
         }
     }
@@ -258,7 +265,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint useSafeBoxSkewImpact,
         uint available,
         bool useAvailable,
-        bool useMinSpread
+        bool useDefaultMinSpread
     ) internal view returns (uint returnQuote) {
         uint _available = useAvailable
             ? available
@@ -266,7 +273,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint _availableOtherSide = _getAvailableOtherSide(market, position);
         if (amount <= _available) {
             int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
-            baseOdds = useMinSpread
+            baseOdds = useDefaultMinSpread
                 ? baseOdds + min_spread
                 : baseOdds + (min_spreadPerAddress[msg.sender] > 0 ? min_spreadPerAddress[msg.sender] : min_spread);
             int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
@@ -279,7 +286,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount,
         uint useSafeBoxSkewImpact,
-        bool useMinSpread,
+        bool useDefaultMinSpread,
         DoubleChanceStruct memory dcs
     ) internal view returns (uint returnQuote) {
         if (position == ISportsAMM.Position.Home) {
@@ -296,7 +303,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     useSafeBoxSkewImpact,
                     0,
                     false,
-                    useMinSpread
+                    useDefaultMinSpread
                 );
                 uint secondQuote = _buyFromAmmQuoteWithBaseOddsInternal(
                     dcs.parentMarket,
@@ -306,7 +313,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     useSafeBoxSkewImpact,
                     0,
                     false,
-                    useMinSpread
+                    useDefaultMinSpread
                 );
 
                 if (firstQuote > 0 && secondQuote > 0) {

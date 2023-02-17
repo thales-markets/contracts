@@ -16,13 +16,13 @@ import "./SportPosition.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ITherundownConsumer.sol";
+
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
 
 contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, ISportPositionalMarketManager {
     /* ========== LIBRARIES ========== */
-
     using SafeMath for uint;
     using AddressSetLib for AddressSetLib.AddressSet;
 
@@ -376,6 +376,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         //only to be called by markets themselves
         require(isKnownMarket(address(msg.sender)), "Market unknown.");
         amount = _transformCollateral(amount);
+        amount = needsTransformingCollateral ? amount + 1 : amount;
         bool success = sUSD.transferFrom(sender, receiver, amount);
         if (!success) {
             revert("TransferFrom function failed");

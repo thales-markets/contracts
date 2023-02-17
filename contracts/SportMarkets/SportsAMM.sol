@@ -653,16 +653,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @notice Updates contract parametars
     /// @param _address which has a specific safe box fee
-    /// @param newFee the fee
-    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
-        safeBoxFeePerAddress[_address] = newFee;
-    }
-
-    /// @notice Updates contract parametars
-    /// @param _address which has a specific min_spread fee
-    /// @param newFee the fee
-    function setMinSpreadPerAddress(address _address, uint newFee) external onlyOwner {
-        min_spreadPerAddress[_address] = newFee;
+    /// @param newSBFee the SafeBox fee for address
+    /// @param newMSFee the min_spread fee for address
+    function setSafeBoxFeeAndMinSpreadPerAddress(
+        address _address,
+        uint newSBFee,
+        uint newMSFee
+    ) external onlyOwner {
+        safeBoxFeePerAddress[_address] = newSBFee;
+        min_spreadPerAddress[_address] = newMSFee;
     }
 
     /// @notice Setting the Curve collateral addresses for all collaterals

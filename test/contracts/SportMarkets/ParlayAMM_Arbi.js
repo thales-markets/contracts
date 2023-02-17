@@ -567,47 +567,58 @@ contract('ParlayAMM', (accounts) => {
 		await testUSDC.approve(ParlayAMM.address, toUnit(1000), { from: first });
 	});
 
-	// describe('Parlay AMM setters', () => {
-	// 	it('SetAmounts', async () => {
-	// 		await ParlayAMM.setAmounts(
-	// 			toUnit(0.1),
-	// 			toUnit(0.1),
-	// 			toUnit(0.1),
-	// 			toUnit(0.1),
-	// 			toUnit(0.1),
-	// 			toUnit(0.1),
-	// 			toUnit(0.1),
-	// 			{
-	// 				from: owner,
-	// 			}
-	// 		);
-	// 	});
-	// 	it('SetAmounts', async () => {
-	// 		await ParlayAMM.setParameters(8, { from: owner });
-	// 	});
-	// 	it('set Addresses', async () => {
-	// 		await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, {
-	// 			from: owner,
-	// 		});
-	// 	});
-	// 	it('retrieve SUSDAmount', async () => {
-	// 		await ParlayAMM.retrieveSUSDAmount(first, toUnit('20000'), {
-	// 			from: owner,
-	// 		});
-	// 	});
-	// 	it('ParlayMarketData', async () => {
-	// 		await ParlayMarketData.setParlayMarketsAMM(third, { from: owner });
-	// 		await ParlayMarketData.addParlayForGamePosition(first, '1', second, second, { from: third });
-	// 		let hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
-	// 		assert.equal(hasData, true);
-	// 		hasData = await ParlayMarketData.isGameInParlay(first, second);
-	// 		assert.equal(hasData[0], true);
-	// 		assert.equal(hasData[1].toString(), '1');
-	// 		await ParlayMarketData.removeParlayForGamePosition(first, '1', second, { from: third });
-	// 		hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
-	// 		assert.equal(hasData, false);
-	// 	});
-	// });
+	describe('MultiSend coverage', () => {
+		it('MultiSend', async () => {
+			const MultiSendContract = artifacts.require('MultiSend');
+			const MultiSend = await MultiSendContract.new();
+			await Thales.approve(MultiSend.address, toUnit(10), { from: first });
+			await MultiSend.sendToMultipleAddresses([second, third], 100, Thales.address, {
+				from: first,
+			});
+		});
+	});
+
+	describe('Parlay AMM setters', () => {
+		it('SetAmounts', async () => {
+			await ParlayAMM.setAmounts(
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				{
+					from: owner,
+				}
+			);
+		});
+		it('SetAmounts', async () => {
+			await ParlayAMM.setParameters(8, { from: owner });
+		});
+		it('set Addresses', async () => {
+			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, {
+				from: owner,
+			});
+		});
+		it('retrieve SUSDAmount', async () => {
+			await ParlayAMM.retrieveSUSDAmount(first, toUnit('20000'), {
+				from: owner,
+			});
+		});
+		it('ParlayMarketData', async () => {
+			await ParlayMarketData.setParlayMarketsAMM(third, { from: owner });
+			await ParlayMarketData.addParlayForGamePosition(first, '1', second, second, { from: third });
+			let hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
+			assert.equal(hasData, true);
+			hasData = await ParlayMarketData.isGameInParlay(first, second);
+			assert.equal(hasData[0], true);
+			assert.equal(hasData[1].toString(), '1');
+			await ParlayMarketData.removeParlayForGamePosition(first, '1', second, { from: third });
+			hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
+			assert.equal(hasData, false);
+		});
+	});
 
 	describe('Check ParlayAMM data', () => {
 		beforeEach(async () => {

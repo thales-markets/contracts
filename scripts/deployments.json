@@ -191,7 +191,7 @@
 		"VaultImplementation": "",
 		"ThalesAMMUtils": "0x52619E5c0317971BaCfc57D931246f28C133E804",
 		"SportPositionalMarketManager": "0x72ca0765d4bE0529377d656c9645600606214610",
-		"SportPositionalMarketManagerImplementation": "0x6819aeC137F33EC777294a2EfBb85376251cB925",
+		"SportPositionalMarketManagerImplementation": "0x78Df5d57d9b7A43cDD83105237392d3067479A46",
 		"SportPositionalMarketFactory": "0x85b827d133FEDC36B844b20f4a198dA583B25BAA",
 		"SportPositionalMarketFactoryImplementation": "0x1Ac7eBfa70AB18bf0a8C36e51ecD6C969E88B1d1",
 		"SportPositionalMarketMastercopy": "0x012F03882DB1a27a3697fe7729dAFCDA9B5cC1d0",
@@ -217,7 +217,8 @@
 		"ParlayMarketDataImplementation": "0x87e81Bb60c3394A3c2425747545916781B49786b",
 		"GamesOddsObtainer": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
 		"GamesOddsObtainerImplementation": "0x707075f0B619acF5A614Efb54FA8aC9B2FB55188",
-		"OvertimeVoucher": "0x9Ee26dcb9A3F1104B37A5dCc8573c8b144c7ce42"
+		"OvertimeVoucher": "0x9Ee26dcb9A3F1104B37A5dCc8573c8b144c7ce42",
+		"MultiSend": "0x0bbdD7131348e5C8063096B6ca0Ccc447be3FA7a"
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",

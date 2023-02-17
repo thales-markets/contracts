@@ -482,5 +482,16 @@ contract('SportsAMM', (accounts) => {
 				{ from: first }
 			);
 		});
+
+		it('Sport Data coverage', async () => {
+			let availableToBuy = await SportPositionalMarketData.getOddsForAllActiveMarkets();
+			availableToBuy = await SportPositionalMarketData.getOddsForAllActiveMarketsInBatches(0, 10);
+			availableToBuy = await SportPositionalMarketData.getBaseOddsForAllActiveMarkets();
+			availableToBuy = await SportPositionalMarketData.getPriceImpactForAllActiveMarketsInBatches(
+				0,
+				10
+			);
+			availableToBuy = await SportPositionalMarketData.getPriceImpactForAllActiveMarkets();
+		});
 	});
 });

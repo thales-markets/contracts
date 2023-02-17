@@ -16,6 +16,14 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+		durationPeriod = WEEK;
+		unstakeDurationPeriod = WEEK;
+		thalesAddress = getTargetAddress('ThalesToken', network);
+		ProxyERC20sUSD_address = getTargetAddress('ProxyUSDC', network);
+	}
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 	}
@@ -54,9 +62,11 @@ async function main() {
 		network = 'optimisticKovan';
 		thalesAddress = getTargetAddress('OpThales_L2', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
-	} else {
+	} else if (networkObj.chainId == 420) {
 		thalesAddress = getTargetAddress('OpThales_L2', network);
 		ProxyERC20sUSD_address = getTargetAddress('ExoticUSD', network);
+	} else {
+		//do nothing
 	}
 	console.log('Thales address: ', thalesAddress);
 	console.log('ProxyERC20sUSD address: ', ProxyERC20sUSD_address);
@@ -78,14 +88,14 @@ async function main() {
 		ProxyERC20sUSD_address,
 		durationPeriod,
 		unstakeDurationPeriod,
-		SNXIssuerAddress,
+		ZERO_ADDRESS,
 	]);
 	let tx = await ProxyStaking_deployed.deployed();
 
 	console.log('Escrow proxy:', ProxyEscrow_deployed.address);
 	console.log('Staking proxy:', ProxyStaking_deployed.address);
 
-	await delay(15000);
+	await delay(10000);
 
 	const EscrowImplementation = await getImplementationAddress(
 		ethers.provider,
@@ -106,7 +116,35 @@ async function main() {
 
 	await delay(15000);
 
+	console.log('Deploying ThalesStakingPool');
+
+	const ThalesStakingRewardsPool = await ethers.getContractFactory('ThalesStakingRewardsPool');
+	let ThalesStakingRewardsPoolDeployed = await upgrades.deployProxy(ThalesStakingRewardsPool, [
+		owner.address,
+		ProxyStaking_deployed.address,
+		thalesAddress,
+		ProxyEscrow_deployed.address,
+	]);
+	await ThalesStakingRewardsPoolDeployed.deployed();
+
+	console.log('ThalesStakingRewardsPool proxy:', ThalesStakingRewardsPoolDeployed.address);
+
+	const ThalesStakingRewardsPoolImplementation = await getImplementationAddress(
+		ethers.provider,
+		ThalesStakingRewardsPoolDeployed.address
+	);
+
+	console.log('Implementation ThalesStakingRewardsPool: ', ThalesStakingRewardsPoolImplementation);
+
+	setTargetAddress('ThalesStakingRewardsPool', network, ThalesStakingRewardsPoolDeployed.address);
+	setTargetAddress(
+		'ThalesStakingRewardsPoolImplementation',
+		network,
+		ThalesStakingRewardsPoolImplementation
+	);
+
 	let ThalesAMMAddress = getTargetAddress('ThalesAMM', network);
+	let RangedAMMAddress = getTargetAddress('RangedAMM', network);
 	let PriceFeedAddress = getTargetAddress('PriceFeed', network);
 	let SportsAMMAddress = getTargetAddress('SportsAMM', network);
 	let ThalesBondsAddress = getTargetAddress('ThalesBonds', network);
@@ -123,21 +161,47 @@ async function main() {
 	// });
 
 	tx = await ProxyStaking_deployed.setAddresses(
-		SNXIssuerAddress,
-		owner.address,
-		owner.address,
-		owner.address,
-		ThalesBondsAddress,
+		ZERO_ADDRESS,
+		ZERO_ADDRESS,
+		ThalesAMMAddress,
+		RangedAMMAddress,
+		ZERO_ADDRESS,
 		SportsAMMAddress,
-		PriceFeedAddress,
-		ThalesStakingRewardsPoolAddress,
-		AddressResolverAddress,
-		{ from: owner.address, gasLimit: 5000000 }
+		ZERO_ADDRESS,
+		ThalesStakingRewardsPoolDeployed.address,
+		ZERO_ADDRESS,
+		{ from: owner.address }
 	);
 
 	await tx.wait().then((e) => {
 		console.log('Staking Thales: setAddresses ');
 	});
+
+	delay(1000);
+
+	tx = await StakingThales.setStakingRewardsParameters(
+		fixedReward,
+		extraReward,
+		true,
+		maxSNXPercentage,
+		maxAMMPercentage,
+		maxRoyalePercentage,
+		SNXMultiplier,
+		AMMMultiplier,
+		{ from: owner.address }
+	);
+	await tx.wait().then((e) => {
+		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
+	});
+	delay(1000);
+
+	tx = await StakingThales.setStakingParameters(true, false, MINUTE, MINUTE, false, {
+		from: owner.address,
+	});
+	await tx.wait().then((e) => {
+		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
+	});
+	delay(1000);
 
 	try {
 		await hre.run('verify:verify', {
@@ -149,6 +213,14 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: StakingImplementation,
+		});
+	} catch (e) {
+		console.log(e);
+	}
+
+	try {
+		await hre.run('verify:verify', {
+			address: ThalesStakingRewardsPoolImplementation,
 		});
 	} catch (e) {
 		console.log(e);

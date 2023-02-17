@@ -896,14 +896,16 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function _getSNXStakedForAccount(address account) internal view returns (uint snxStaked) {
-        uint cRatio = getCRatio(account);
-        uint targetRatio = getSNXTargetRatio();
-        uint snxPrice = priceFeed.rateForCurrency("SNX");
-        uint debt = ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
-        if (cRatio < targetRatio) {
-            snxStaked = (cRatio.mul(cRatio).mul(debt).mul(1e14)).div(targetRatio.mul(snxPrice));
-        } else {
-            snxStaked = (targetRatio.mul(debt).mul(1e14)).div(snxPrice);
+        if (address(addressResolver) != address(0)) {
+            uint cRatio = getCRatio(account);
+            uint targetRatio = getSNXTargetRatio();
+            uint snxPrice = priceFeed.rateForCurrency("SNX");
+            uint debt = ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
+            if (cRatio < targetRatio) {
+                snxStaked = (cRatio.mul(cRatio).mul(debt).mul(1e14)).div(targetRatio.mul(snxPrice));
+            } else {
+                snxStaked = (targetRatio.mul(debt).mul(1e14)).div(snxPrice);
+            }
         }
     }
 

@@ -371,6 +371,9 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 consumer.pauseOrUnpauseMarket(mainMarketSpreadChildMarket[_main][_game.spreadHome], false);
                 consumer.pauseOrUnpauseMarket(currentActiveSpreadChildMarket[_main], true);
                 _setCurrentChildMarkets(_main, mainMarketSpreadChildMarket[_main][_game.spreadHome], true);
+                // same spread arived, same market exist -> unpause
+            } else if (mainMarketSpreadChildMarket[_main][_game.spreadHome] == currentActiveSpreadChildMarket[_main]) {
+                consumer.pauseOrUnpauseMarket(mainMarketSpreadChildMarket[_main][_game.spreadHome], false);
             }
         } else {
             // no child market
@@ -387,6 +390,9 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 consumer.pauseOrUnpauseMarket(mainMarketTotalChildMarket[_main][_game.totalOver], false);
                 consumer.pauseOrUnpauseMarket(currentActiveTotalChildMarket[_main], true);
                 _setCurrentChildMarkets(_main, mainMarketTotalChildMarket[_main][_game.totalOver], false);
+                // same total arived, same market exist -> unpause
+            } else if (mainMarketTotalChildMarket[_main][_game.totalOver] == currentActiveTotalChildMarket[_main]) {
+                consumer.pauseOrUnpauseMarket(mainMarketTotalChildMarket[_main][_game.totalOver], false);
             }
         }
     }

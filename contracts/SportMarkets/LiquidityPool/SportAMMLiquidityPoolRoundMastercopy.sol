@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 // Internal references
-import "./AMMLiquidityPoolRound.sol";
+import "./SportAMMLiquidityPoolRound.sol";
 
-contract AMMLiquidityPoolRoundMastercopy is AMMLiquidityPoolRound {
+contract SportAMMLiquidityPoolRoundMastercopy is SportAMMLiquidityPoolRound {
     constructor() {
         // Freeze mastercopy on deployment so it can never be initialized with real arguments
         initialized = true;

@@ -523,14 +523,9 @@ contract('SportsAMM', (accounts) => {
 		await StakingThales.startStakingPeriod({ from: owner });
 		await vault.setStakingThales(StakingThales.address, { from: owner });
 
-		await SportsAMM.setSafeBoxFeeAndMinSpreadPerAddress(
-			vault.address,
-			toUnit('0.005'),
-			toUnit('0.005'),
-			{
-				from: owner,
-			}
-		);
+		await SportsAMM.SportAMMLiquidityPool(vault.address, toUnit('0.005'), toUnit('0.005'), {
+			from: owner,
+		});
 	});
 
 	describe('Test sport vault', () => {

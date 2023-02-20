@@ -23,7 +23,7 @@ import "../interfaces/ISportsAMM.sol";
 import "../interfaces/ITherundownConsumerWrapper.sol";
 
 import "./SportsAMMUtils.sol";
-import "./LiquidityPool/AMMLiquidityPool.sol";
+import "./LiquidityPool/SportAMMLiquidityPool.sol";
 
 /// @title Sports AMM contract
 /// @author kirilaa
@@ -154,7 +154,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     /// @return the adddress of the AMMLP contract
-    AMMLiquidityPool public liquidityPool;
+    SportAMMLiquidityPool public liquidityPool;
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
@@ -635,7 +635,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         referrals = _referrals;
         parlayAMM = _parlayAMM;
         wrapper = ITherundownConsumerWrapper(_wrapper);
-        liquidityPool = AMMLiquidityPool(_lp);
+        liquidityPool = SportAMMLiquidityPool(_lp);
 
         emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper, _lp);
     }

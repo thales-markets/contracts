@@ -14,9 +14,9 @@ import "../../interfaces/ISportsAMM.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/IStakingThales.sol";
 
-import "./AMMLiquidityPoolRound.sol";
+import "./SportAMMLiquidityPoolRound.sol";
 
-contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
+contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     /* ========== LIBRARIES ========== */
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -202,7 +202,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
                 target = position == ISportsAMM.Position.Away ? away : draw;
             }
 
-            AMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
+            SportAMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
                 IERC20Upgradeable(address(target)),
                 optionsAmount,
                 address(sportsAMM)
@@ -221,7 +221,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
             uint marketRound = getMarketRound(market);
             liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
-            AMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
+            SportAMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
                 IERC20Upgradeable(position),
                 optionsAmount,
                 address(sportsAMM)
@@ -331,7 +331,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
 
     /// @notice Iterate all markets in the current round and exercise those ready to be exercised
     function exerciseMarketsReadyToExercised() public {
-        AMMLiquidityPoolRound poolRound = AMMLiquidityPoolRound(roundPools[round]);
+        SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
         ISportPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
             market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
@@ -401,7 +401,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         roundPool = roundPools[_round];
         if (roundPool == address(0)) {
             require(poolRoundMastercopy != address(0), "Round pool mastercopy not set");
-            AMMLiquidityPoolRound newRoundPool = AMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
+            SportAMMLiquidityPoolRound newRoundPool = SportAMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
             newRoundPool.initialize(address(this), sUSD, round, getRoundEndTime(round), getRoundEndTime(round + 1));
             roundPool = address(newRoundPool);
             roundPools[_round] = roundPool;

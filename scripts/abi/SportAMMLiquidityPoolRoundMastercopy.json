@@ -68,7 +68,7 @@
     "name": "liquidityPool",
     "outputs": [
       {
-        "internalType": "contract AMMLiquidityPool",
+        "internalType": "contract SportAMMLiquidityPool",
         "name": "",
         "type": "address"
       }

@@ -5,15 +5,15 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 
 import "../../interfaces/ISportPositionalMarket.sol";
 
-import "./AMMLiquidityPool.sol";
+import "./SportAMMLiquidityPool.sol";
 
-contract AMMLiquidityPoolRound {
+contract SportAMMLiquidityPoolRound {
     /* ========== LIBRARIES ========== */
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /* ========== STATE VARIABLES ========== */
 
-    AMMLiquidityPool public liquidityPool;
+    SportAMMLiquidityPool public liquidityPool;
     IERC20Upgradeable public sUSD;
 
     uint public round;
@@ -33,7 +33,7 @@ contract AMMLiquidityPoolRound {
     ) external {
         require(!initialized, "Ranged Market already initialized");
         initialized = true;
-        liquidityPool = AMMLiquidityPool(_liquidityPool);
+        liquidityPool = SportAMMLiquidityPool(_liquidityPool);
         sUSD = _sUSD;
         round = _round;
         roundStartTime = _roundStartTime;
@@ -41,7 +41,7 @@ contract AMMLiquidityPoolRound {
         sUSD.approve(_liquidityPool, type(uint256).max);
     }
 
-    function exerciseMarketReadyToExercised(ISportPositionalMarket market) external onlyManager {
+    function exerciseMarketReadyToExercised(ISportPositionalMarket market) external onlyLiquidityPool {
         if (market.resolved()) {
             (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(this));
             if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
@@ -54,11 +54,11 @@ contract AMMLiquidityPoolRound {
         IERC20Upgradeable option,
         uint optionsAmount,
         address destination
-    ) external onlyManager {
+    ) external onlyLiquidityPool {
         option.safeTransfer(destination, optionsAmount);
     }
 
-    modifier onlyManager() {
+    modifier onlyLiquidityPool() {
         require(msg.sender == address(liquidityPool), "only the Pool manager may perform these methods");
         _;
     }

@@ -456,9 +456,9 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
-		let SportAMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
+		let sportAMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(
-			SportAMMLiquidityPoolRoundMastercopy.address,
+			sportAMMLiquidityPoolRoundMastercopy.address,
 			{
 				from: owner,
 			}

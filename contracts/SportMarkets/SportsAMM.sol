@@ -221,6 +221,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     safeBoxImpact,
                     0,
                     false,
+                    true,
                     _getDoubleChanceStruct(market)
                 );
             }
@@ -235,10 +236,18 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint useSafeBoxSkewImpact,
         uint available,
         bool useAvailable,
+        bool useDefaultMinSpread,
         DoubleChanceStruct memory dcs
     ) internal view returns (uint returnQuote) {
         if (dcs.isDoubleChance) {
-            returnQuote = _buyFromAMMQuoteDoubleChance(market, position, amount, useSafeBoxSkewImpact, dcs);
+            returnQuote = _buyFromAMMQuoteDoubleChance(
+                market,
+                position,
+                amount,
+                useSafeBoxSkewImpact,
+                useDefaultMinSpread,
+                dcs
+            );
         } else {
             returnQuote = _buyFromAmmQuoteWithBaseOddsInternal(
                 market,
@@ -247,7 +256,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 baseOdds,
                 useSafeBoxSkewImpact,
                 available,
-                useAvailable
+                useAvailable,
+                useDefaultMinSpread
             );
         }
     }
@@ -259,7 +269,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint baseOdds,
         uint useSafeBoxSkewImpact,
         uint available,
-        bool useAvailable
+        bool useAvailable,
+        bool useDefaultMinSpread
     ) internal view returns (uint returnQuote) {
         uint _available = useAvailable
             ? available
@@ -267,7 +278,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint _availableOtherSide = _getAvailableOtherSide(market, position);
         if (amount <= _available) {
             int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
-            baseOdds = baseOdds + (min_spreadPerAddress[msg.sender] > 0 ? min_spreadPerAddress[msg.sender] : min_spread);
+            baseOdds = useDefaultMinSpread
+                ? baseOdds + min_spread
+                : baseOdds + (min_spreadPerAddress[msg.sender] > 0 ? min_spreadPerAddress[msg.sender] : min_spread);
             int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
             returnQuote = ISportPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
         }
@@ -278,6 +291,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount,
         uint useSafeBoxSkewImpact,
+        bool useDefaultMinSpread,
         DoubleChanceStruct memory dcs
     ) internal view returns (uint returnQuote) {
         if (position == ISportsAMM.Position.Home) {
@@ -293,7 +307,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     baseOdds1,
                     useSafeBoxSkewImpact,
                     0,
-                    false
+                    false,
+                    useDefaultMinSpread
                 );
                 uint secondQuote = _buyFromAmmQuoteWithBaseOddsInternal(
                     dcs.parentMarket,
@@ -302,7 +317,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     baseOdds2,
                     useSafeBoxSkewImpact,
                     0,
-                    false
+                    false,
+                    useDefaultMinSpread
                 );
 
                 if (firstQuote > 0 && secondQuote > 0) {
@@ -383,6 +399,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             0,
             0,
             false,
+            true,
             _getDoubleChanceStruct(market)
         );
     }
@@ -841,6 +858,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 _getSafeBoxFeePerAddress(msg.sender),
                 availableToBuyFromAMMatm,
                 true,
+                false,
                 dcs
             );
             require((params.sUSDPaid * ONE) / params.expectedPayout <= (ONE + params.additionalSlippage), "High slippage");

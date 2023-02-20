@@ -1,5 +1,6 @@
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
+const w3utils = require('web3-utils');
 
 const MINUTE = 60;
 const WEEK = 604800;
@@ -10,6 +11,8 @@ const { ZERO_ADDRESS } = require('@openzeppelin/test-helpers/src/constants');
 const user_key1 = process.env.PRIVATE_KEY;
 
 async function main() {
+	let thalesAddress, ProxyERC20sUSD_address;
+	let durationPeriod, unstakeDurationPeriod;
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	if (networkObj.chainId == 10) {
@@ -17,8 +20,8 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 	if (networkObj.chainId == 42161) {
-		networkObj.name = 'optimisticEthereum';
-		network = 'optimisticEthereum';
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
 		durationPeriod = WEEK;
 		unstakeDurationPeriod = WEEK;
 		thalesAddress = getTargetAddress('ThalesToken', network);
@@ -34,16 +37,15 @@ async function main() {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
 	}
-	let durationPeriod, unstakeDurationPeriod;
 	if (network == 'homestead') {
 		console.log('Setting duration to WEEK');
 		network = 'mainnet';
 		durationPeriod = WEEK;
 		unstakeDurationPeriod = WEEK;
 	} else {
-		console.log('Setting duration to MINUTE');
-		durationPeriod = MINUTE;
-		unstakeDurationPeriod = MINUTE;
+		// console.log('Setting duration to MINUTE');
+		// durationPeriod = MINUTE;
+		// unstakeDurationPeriod = MINUTE;
 	}
 
 	SNXIssuerAddress = getTargetAddress('SNXIssuer', network);
@@ -52,8 +54,6 @@ async function main() {
 	console.log('Owner is:' + owner.address);
 	console.log('Network name:' + network);
 	console.log('SNXIssuer address: ' + SNXIssuerAddress);
-
-	let thalesAddress, ProxyERC20sUSD_address;
 
 	if (networkObj.chainId == 10) {
 		thalesAddress = getTargetAddress('OpThales_L2', network);
@@ -143,6 +143,8 @@ async function main() {
 		ThalesStakingRewardsPoolImplementation
 	);
 
+	let StakingAddress = getTargetAddress('StakingThales', network);
+	let EscrowAddress = getTargetAddress('EscrowThales', network);
 	let ThalesAMMAddress = getTargetAddress('ThalesAMM', network);
 	let RangedAMMAddress = getTargetAddress('RangedAMM', network);
 	let PriceFeedAddress = getTargetAddress('PriceFeed', network);
@@ -152,13 +154,14 @@ async function main() {
 	let ThalesStakingRewardsPoolAddress = getTargetAddress('ThalesStakingRewardsPool', network);
 	let EscrowContractAddress = getTargetAddress('EscrowThales', network);
 
-	// let ProxyStaking_deployed = ProxyStaking.attach(StakingContractAddress);
+	// let ProxyStaking_deployed = await ProxyStaking.attach(StakingAddress);
 	// await delay(5000);
 
-	// tx = await ProxyStaking_deployed.setThalesAMM(ThalesAMMAddress, { from: owner.address });
-	// await tx.wait().then(e => {
-	// 	console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
-	// });
+	tx = await ProxyStaking_deployed.setThalesAMM(ThalesAMMAddress, { from: owner.address });
+	await tx.wait().then((e) => {
+		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
+	});
+	console.log('Setting addresses... ');
 
 	tx = await ProxyStaking_deployed.setAddresses(
 		ZERO_ADDRESS,
@@ -168,9 +171,9 @@ async function main() {
 		ZERO_ADDRESS,
 		SportsAMMAddress,
 		ZERO_ADDRESS,
-		ThalesStakingRewardsPoolDeployed.address,
+		ThalesStakingRewardsPoolAddress,
 		ZERO_ADDRESS,
-		{ from: owner.address }
+		{ from: owner.address, gasLimit: 5000000 }
 	);
 
 	await tx.wait().then((e) => {
@@ -179,29 +182,48 @@ async function main() {
 
 	delay(1000);
 
-	tx = await StakingThales.setStakingRewardsParameters(
+	console.log('Setting parameters... ');
+	const fixedReward = w3utils.toWei('20000', 'ether');
+	const extraReward = w3utils.toWei('10000', 'ether');
+	const maxAMMPercentage = '50';
+	const AMMMultiplier = '2';
+
+	tx = await ProxyStaking_deployed.setStakingRewardsParameters(
 		fixedReward,
 		extraReward,
 		true,
-		maxSNXPercentage,
+		0,
 		maxAMMPercentage,
-		maxRoyalePercentage,
-		SNXMultiplier,
+		0,
+		0,
 		AMMMultiplier,
-		{ from: owner.address }
+		{ from: owner.address, gasLimit: 5000000 }
 	);
 	await tx.wait().then((e) => {
-		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
+		console.log('Staking Thales: setStakingRewardsParameters ');
 	});
 	delay(1000);
 
-	tx = await StakingThales.setStakingParameters(true, false, MINUTE, MINUTE, false, {
+	tx = await StakingThales.setStakingParameters(true, false, WEEK, WEEK, false, {
 		from: owner.address,
 	});
 	await tx.wait().then((e) => {
 		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
 	});
 	delay(1000);
+
+	// const EscrowImplementation = await getImplementationAddress(
+	// 	ethers.provider,
+	// 	EscrowAddress
+	// );
+	// const StakingImplementation = await getImplementationAddress(
+	// 	ethers.provider,
+	// 	StakingAddress
+	// );
+	// const ThalesStakingRewardsPoolImplementation = await getImplementationAddress(
+	// 	ethers.provider,
+	// 	ThalesStakingRewardsPoolAddress
+	// );
 
 	try {
 		await hre.run('verify:verify', {

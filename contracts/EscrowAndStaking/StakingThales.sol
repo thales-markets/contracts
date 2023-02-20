@@ -284,19 +284,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address _thalesStakingRewardsPool,
         address _addressResolver
     ) external onlyOwner {
-        require(
-            _snxRewards != address(0) &&
-                _royale != address(0) &&
-                _thalesAMM != address(0) &&
-                _thalesRangedAMM != address(0) &&
-                _exoticBonds != address(0) &&
-                _sportsAMM != address(0) &&
-                _priceFeed != address(0) &&
-                _thalesStakingRewardsPool != address(0) &&
-                _addressResolver != address(0),
-            "Invalid address"
-        );
-
         SNXRewards = ISNXRewards(_snxRewards);
         thalesRoyale = IThalesRoyale(_royale);
         thalesAMM = _thalesAMM;

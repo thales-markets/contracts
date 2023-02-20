@@ -106,7 +106,7 @@
 		"AmmVaultDegen": "0x43318DE9E8f65b591598F17aDD87ae7247649C83",
 		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"GamesOddsObtainer": "0x3ff20410003767edE94c06c5Df56968d90ABAe6c",
-		"GamesOddsObtainerImplementation": "0x519579c64cA400C5c38750c21e6573DF16D01dDe",
+		"GamesOddsObtainerImplementation": "0x4846C5513932923484Cf249a88E2149e8171b84d",
 		"ThalesAMMNewImplementation": "0x9043CF6B9319b07f52D9C8d8964A8B457A64e0Ca",
 		"TaleOfThalesNFTs": "0x890b559E10aD1aAE73713f2f1924aab4e60cf505"
 	},
@@ -216,7 +216,7 @@
 		"ParlayMarketData": "0xff9d1B34f369CAf91c6b69761e2A06f78ed3cd9d",
 		"ParlayMarketDataImplementation": "0x87e81Bb60c3394A3c2425747545916781B49786b",
 		"GamesOddsObtainer": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
-		"GamesOddsObtainerImplementation": "0x707075f0B619acF5A614Efb54FA8aC9B2FB55188",
+		"GamesOddsObtainerImplementation": "0xE10A2743A1CE709693D3ad5f06EA47Df3E0b3ec9",
 		"OvertimeVoucher": "0x9Ee26dcb9A3F1104B37A5dCc8573c8b144c7ce42",
 		"MultiSend": "0x0bbdD7131348e5C8063096B6ca0Ccc447be3FA7a"
 	},

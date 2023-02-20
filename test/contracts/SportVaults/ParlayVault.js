@@ -740,6 +740,7 @@ contract('Parlay Vault', (accounts) => {
 			_skewImpactLimit: toUnit(0.1).toString(), // 10%
 			_maxAllowedDeposit: toUnit(1000).toString(), // 20%
 			_utilizationRate: toUnit(0.5).toString(),
+			_maxTradeRate: toUnit(0.02).toString(),
 			_minDepositAmount: toUnit(100).toString(),
 			_maxAllowedUsers: 100,
 			_minTradeAmount: toUnit(10).toString(),
@@ -1134,6 +1135,15 @@ contract('Parlay Vault', (accounts) => {
 				);
 				console.log('buyPriceImpact: ', fromUnit(buyPriceImpactFirst));
 			}
+
+			console.log('trading allocation', await vault.tradingAllocation());
+
+			await assert.revert(
+				vault.trade(parlayMarketsAddress, parlayPositions, totalSUSDToPay),
+				'Amount exceeds max value per trade'
+			);
+
+			await vault.setMaxTradeRate(toUnit(0.04).toString(), { from: owner });
 
 			await vault.trade(parlayMarketsAddress, parlayPositions, totalSUSDToPay);
 

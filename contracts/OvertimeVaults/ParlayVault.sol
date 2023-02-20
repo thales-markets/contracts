@@ -35,6 +35,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         int _skewImpactLimit;
         uint _maxAllowedDeposit;
         uint _utilizationRate;
+        uint _maxTradeRate;
         uint _minDepositAmount;
         uint _maxAllowedUsers;
         uint _minTradeAmount;
@@ -72,6 +73,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
 
     uint public maxAllowedDeposit;
     uint public utilizationRate;
+    uint public maxTradeRate;
 
     mapping(uint => uint) public capPerRound;
 
@@ -100,6 +102,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         uint _roundLength,
         uint _maxAllowedDeposit,
         uint _utilizationRate,
+        uint _maxTradeRate,
         uint _minDepositAmount,
         uint _maxAllowedUsers
     ) internal onlyInitializing {
@@ -111,6 +114,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         roundLength = _roundLength;
         maxAllowedDeposit = _maxAllowedDeposit;
         utilizationRate = _utilizationRate;
+        maxTradeRate = _maxTradeRate;
         minDepositAmount = _minDepositAmount;
         maxAllowedUsers = _maxAllowedUsers;
 
@@ -125,6 +129,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
             params._roundLength,
             params._maxAllowedDeposit,
             params._utilizationRate,
+            params._maxTradeRate,
             params._minDepositAmount,
             params._maxAllowedUsers
         );
@@ -262,6 +267,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     ) external nonReentrant whenNotPaused {
         require(vaultStarted, "Vault has not started");
         require(sUSDPaid >= minTradeAmount, "Amount less than minimum");
+        require(sUSDPaid < (tradingAllocation() * maxTradeRate) / ONE, "Amount exceeds max value per trade");
         require(sUSDPaid < (tradingAllocation() - allocationSpentInARound[round]), "Amount exceeds available allocation");
 
         require(!parlayExistsInARound(round, sportMarkets), "Parlay market already exists in a round");
@@ -309,6 +315,13 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     function setUtilizationRate(uint _utilizationRate) external onlyOwner {
         utilizationRate = _utilizationRate;
         emit UtilizationRateChanged(_utilizationRate);
+    }
+
+    /// @notice Set max trade rate parameter
+    /// @param _maxTradeRate Value in percents
+    function setMaxTradeRate(uint _maxTradeRate) external onlyOwner {
+        maxTradeRate = _maxTradeRate;
+        emit MaxTradeRateChanged(_maxTradeRate);
     }
 
     /// @notice Set max allowed deposit
@@ -510,6 +523,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     event Claimed(address user, uint amount);
     event WithdrawalRequested(address user);
     event UtilizationRateChanged(uint utilizationRate);
+    event MaxTradeRateChanged(uint maxTradeRate);
     event MaxAllowedDepositChanged(uint maxAllowedDeposit);
     event MinAllowedDepositChanged(uint minAllowedDeposit);
     event MaxAllowedUsersChanged(uint MaxAllowedUsersChanged);

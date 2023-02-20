@@ -65,6 +65,7 @@ async function main() {
 			_skewImpactLimit: w3utils.toWei('0.5'), // -3% skew impact
 			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
 			_utilizationRate: w3utils.toWei('0.50'), // 50% utilization rate
+			_maxTradeRate: w3utils.toWei('0.02'), // 2% max trade rate
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
 			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
 			_minTradeAmount: w3utils.toWei('5'), // minimum trade amount

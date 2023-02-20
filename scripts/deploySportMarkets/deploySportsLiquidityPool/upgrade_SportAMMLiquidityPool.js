@@ -57,7 +57,7 @@ async function main() {
 
 	if (networkObj.chainId == 420) {
 		await upgrades.upgradeProxy(sportAMMLiquidityPoolAddress, SportAMMLiquidityPool);
-		console.log('Vault upgraded');
+		console.log('SportAMMLiquidityPool upgraded');
 	}
 
 	console.log('SportAMMLiquidityPoolImplementation: ', implementation);

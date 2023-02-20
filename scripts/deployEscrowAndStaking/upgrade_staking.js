@@ -27,11 +27,17 @@ async function main() {
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		proxySUSD = getTargetAddress('ExoticUSD', network);
+	}
+
 	const StakingAddress = getTargetAddress('StakingThales', network);
 	const StakingContract = await ethers.getContractFactory('StakingThales');
 	console.log('Address of staking: ', StakingAddress);
 
-	if (networkObj.chainId == 69) {
+	if (networkObj.chainId == 69 || networkObj.chainId == 420) {
 		await upgrades.upgradeProxy(StakingAddress, StakingContract);
 		await delay(5000);
 
@@ -59,13 +65,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

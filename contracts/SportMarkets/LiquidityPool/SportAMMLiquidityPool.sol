@@ -102,6 +102,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         round = 1;
         firstRoundStartTime = block.timestamp;
         started = true;
+        emit PoolStarted();
     }
 
     /// @notice Deposit funds from user into pool for the next round
@@ -494,6 +495,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     }
 
     /* ========== EVENTS ========== */
+    event PoolStarted();
     event Deposited(address user, uint amount, uint round);
     event WithdrawalRequested(address user);
     event RoundClosed(uint round, uint roundPnL);

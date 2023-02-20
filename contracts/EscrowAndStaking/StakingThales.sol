@@ -844,7 +844,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     ) internal {
         require(startTimeStamp > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
-        require(!unstaking[staker], "Cannot stake, the staker is paused from staking due to unstaking");
+        require(!unstaking[staker], "The staker is paused from staking due to unstaking");
         // Check if there are not claimable rewards from last period.
         // Claim them, and add new stake
         if (_calculateAvailableRewardsToClaim(staker) > 0) {

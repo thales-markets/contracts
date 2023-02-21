@@ -88,6 +88,15 @@ contract('MarchMadness', (accounts) => {
 			await expect(marchMadness.mint(bracketsArray, { from: first })).to.be.revertedWith(
 				'Can not mint after settled date'
 			);
+
+			const newDateFrom = new Date('02-18-2023').getTime() / 1000;
+			const newDateTo = new Date('03-18-2023').getTime() / 1000;
+
+			await marchMadness.setDateRange(newDateFrom, newDateTo, { from: owner });
+
+			await expect(marchMadness.mint(bracketsArray, { from: first })).to.be.revertedWith(
+				'Can not mint before settled date'
+			);
 		});
 
 		it('Should mint', async () => {
@@ -100,5 +109,91 @@ contract('MarchMadness', (accounts) => {
 
 			assert.bnGt(await marchMadness.balanceOf(first), 0);
 		});
+
+		it('Should revert, already minted from address', async () => {
+			const dateFrom = new Date('01-01-2023').getTime() / 1000;
+			const dateTo = new Date('02-25-2023').getTime() / 1000;
+
+			await marchMadness.setDateRange(dateFrom, dateTo, { from: owner });
+
+			await marchMadness.mint(bracketsArray, { from: first });
+
+			assert.bnGt(await marchMadness.balanceOf(first), 0);
+
+			await expect(marchMadness.mint(bracketsArray, { from: first })).to.be.revertedWith(
+				'Address already minted'
+			);
+		});
+	});
+
+	describe('Updating minted positions/Getting corrent positions', () => {
+		it('Should update already minted position, before that testing reverting on update brackets', async () => {
+			const dateFrom = new Date('01-01-2023').getTime() / 1000;
+			const dateTo = new Date('02-25-2023').getTime() / 1000;
+
+			await marchMadness.setDateRange(dateFrom, dateTo, { from: owner });
+
+			await marchMadness.mint(bracketsArray, { from: first });
+
+			assert.bnGt(await marchMadness.balanceOf(first), 0);
+
+			const newBrackets = Array.from({ length: 61 }, () =>
+				Math.floor(Math.random() == 0 ? 1 : Math.random() * 68)
+			);
+
+            const newFirstPosition = 3;
+            const newSecondPosition = 4;
+
+            newBrackets[0] = newFirstPosition;
+            newBrackets[1] = newSecondPosition;
+
+            await expect(marchMadness.updateBracketsForAlreadyMintedItem(1, newBrackets, { from: second })).to.be.revertedWith(
+                'Caller is not owner of entered tokenId'
+            );
+
+            await expect(marchMadness.updateBracketsForAlreadyMintedItem(2, newBrackets, { from: second })).to.be.revertedWith(
+                'Item does not exists'
+            );
+
+            await marchMadness.updateBracketsForAlreadyMintedItem(1, newBrackets, { from: first });
+
+            assert.bnEqual(await marchMadness.itemToBrackets(1, 0), newFirstPosition);
+            assert.bnEqual(await marchMadness.itemToBrackets(1, 1), newSecondPosition);
+		});
+
+        it('Should display count of correct positions', async() => {
+            const dateFrom = new Date('01-01-2023').getTime() / 1000;
+			const dateTo = new Date('02-25-2023').getTime() / 1000;
+
+			await marchMadness.setDateRange(dateFrom, dateTo, { from: owner });
+
+            const newBrackets = Array.from({ length: 61 }, () =>
+				Math.floor((Math.random() + 0.1) * 68)
+			);
+
+            const newFirstPosition = 3;
+            const newSecondPosition = 4;
+
+            const newLastPosition = 50;
+
+            newBrackets[0] = newFirstPosition;
+            newBrackets[1] = newSecondPosition;
+
+            newBrackets[60] = newLastPosition;
+
+			await marchMadness.mint(newBrackets, { from: first });
+
+			assert.bnGt(await marchMadness.balanceOf(first), 0);
+
+            await marchMadness.setResultForGame(0, newFirstPosition, { from: owner });
+            await marchMadness.setResultForGame(1, newSecondPosition, { from: owner });
+            await marchMadness.setResultForGame(60, newLastPosition, { from: owner });
+
+            assert.bnEqual(await marchMadness.getCorrectPositionsByTokenId(1), 3);
+            assert.bnEqual(await marchMadness.getCorrectPositionsByTokenId(1), 3);
+            
+            assert.bnEqual(await marchMadness.getCorrectPositionsByMinterAddress(first), 3);
+            assert.bnEqual(await marchMadness.getCorrectPositionsByMinterAddress(first), 3);
+        })
 	});
 });

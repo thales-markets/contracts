@@ -827,7 +827,7 @@ contract('SportsAMM', (accounts) => {
 			let getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(
 				secondLiquidityProvider
 			);
-			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser / 1e18);
+			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
 
 			let getNeededStakedThalesToWithdrawForUser =
 				await SportAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(secondLiquidityProvider);
@@ -840,7 +840,7 @@ contract('SportsAMM', (accounts) => {
 			getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(
 				secondLiquidityProvider
 			);
-			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser / 1e18);
+			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
 
 			getNeededStakedThalesToWithdrawForUser =
 				await SportAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(secondLiquidityProvider);

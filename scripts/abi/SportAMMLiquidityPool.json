@@ -519,7 +519,17 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "maxAvailableDepositForUser",
+        "name": "maxDepositForUser",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "availableToDepositForUser",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "stakedThalesForUser",
         "type": "uint256"
       }
     ],

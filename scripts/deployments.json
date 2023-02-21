@@ -510,7 +510,7 @@
 		"EscrowThalesImplementation": "0xc6a7a3f049B07CCb260edd1460CA5a6ac9f966a9",
 		"ThalesStakingRewardsPool": "0xA2Ee3a52D06dBAa21eADC395c046aC3707e156EE",
 		"ThalesStakingRewardsPoolImplementation": "0x952E5dA84B230c0E2498268A3CE481E8D2852B50",
-		"SportsAMMUtils": "0xe7f4088A2F4CfdbFD6c2814e7dB8f88A4eEeF8aC",
+		"SportsAMMUtils": "0x25beE0BD82043B6C01846B57E54D5335d1e9a87a",
 		"SportVault": "0x3051d3a7e619C161B64dCe0B287688012655bA56",
 		"SportVaultImplementation": "0x582FB96EE4ea5b5Eb6f8BFb3ba3fDeAe15d08744",
 		"VaultImplementation": "0x4D3C3D40A6d9f1A0896db3F24DE539858e74543f",
@@ -519,7 +519,7 @@
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
 		"GamesOddsObtainerImplementation": "0xeDe874f55B79Fc55Ac8860B6E4C14B04C30AD0bA",
 		"SportAMMLiquidityPool": "0x5A17bB0394dD25f21fd11aC6202561B04f126065",
-		"SportAMMLiquidityPoolImplementation": "0xAFa5D48Aa8a72B89fB72570477d9B3a8B61757Cf",
+		"SportAMMLiquidityPoolImplementation": "0x14968c4445aC9400ea1A4C990a227c7bC766c608",
 		"SportAMMLiquidityPoolRoundMastercopy": "0xdDB09712Bf2Bf62ee03eaA2a4F8700fea04cEbaA",
 		"StakingThalesImplementation": "0x31D2b97B4bC747294ff744Eb29B32298DC6d4ea0"
 	},

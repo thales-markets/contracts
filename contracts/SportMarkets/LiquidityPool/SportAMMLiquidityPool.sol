@@ -344,12 +344,23 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     /// @notice Return the maximum amount the user can deposit now
     /// @param user address to check
-    /// @return maxAvailableDepositForUser the maximum amount the user can deposit now
-    function getMaxAvailableDepositForUser(address user) external view returns (uint maxAvailableDepositForUser) {
+    /// @return maxDepositForUser the maximum amount the user can deposit in total including already deposited
+    /// @return availableToDepositForUser the maximum amount the user can deposit now
+    /// @return stakedThalesForUser how much THALES the user has staked
+    function getMaxAvailableDepositForUser(address user)
+        external
+        view
+        returns (
+            uint maxDepositForUser,
+            uint availableToDepositForUser,
+            uint stakedThalesForUser
+        )
+    {
         uint nextRound = round + 1;
-        uint maxDeposit = (stakingThales.stakedBalanceOf(user) * stakedThalesMultiplier) / ONE;
-        maxAvailableDepositForUser = maxDeposit > (balancesPerRound[round][user] + balancesPerRound[nextRound][user])
-            ? (maxDeposit - balancesPerRound[round][user] - balancesPerRound[nextRound][user])
+        stakedThalesForUser = stakingThales.stakedBalanceOf(user);
+        maxDepositForUser = (stakedThalesForUser * stakedThalesMultiplier) / ONE;
+        availableToDepositForUser = maxDepositForUser > (balancesPerRound[round][user] + balancesPerRound[nextRound][user])
+            ? (maxDepositForUser - balancesPerRound[round][user] - balancesPerRound[nextRound][user])
             : 0;
     }
 

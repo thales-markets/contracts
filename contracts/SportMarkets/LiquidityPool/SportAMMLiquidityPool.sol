@@ -114,7 +114,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
         if (!whitelistedDeposits[msg.sender]) {
             require(
-                (balancesPerRound[round][msg.sender] + amount) <=
+                (balancesPerRound[round][msg.sender] + amount + balancesPerRound[nextRound][msg.sender]) <=
                     ((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
                 "Not enough staked THALES"
             );
@@ -341,6 +341,25 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     }
 
     /* ========== VIEWS ========== */
+
+    /// @notice Return the maximum amount the user can deposit now
+    /// @param user address to check
+    /// @return maxAvailableDepositForUser the maximum amount the user can deposit now
+    function getMaxAvailableDepositForUser(address user) external view returns (uint maxAvailableDepositForUser) {
+        uint nextRound = round + 1;
+        uint maxDeposit = (stakingThales.stakedBalanceOf(user) * stakedThalesMultiplier) / ONE;
+        maxAvailableDepositForUser = maxDeposit > (balancesPerRound[round][user] + balancesPerRound[nextRound][user])
+            ? (maxDeposit - balancesPerRound[round][user] - balancesPerRound[nextRound][user])
+            : 0;
+    }
+
+    /// @notice Return how much the user needs to have staked to withdraw
+    /// @param user address to check
+    /// @return neededStaked how much the user needs to have staked to withdraw
+    function getNeededStakedThalesToWithdrawForUser(address user) external view returns (uint neededStaked) {
+        uint nextRound = round + 1;
+        neededStaked = ((balancesPerRound[round][user] + balancesPerRound[nextRound][user]) * ONE) / stakedThalesMultiplier;
+    }
 
     function getMarketPool(address market) external view returns (address roundPool) {
         roundPool = roundPools[getMarketRound(market)];

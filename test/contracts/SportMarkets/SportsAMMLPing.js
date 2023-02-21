@@ -824,19 +824,29 @@ contract('SportsAMM', (accounts) => {
 				SportAMMLiquidityPool.deposit(toUnit(1), { from: secondLiquidityProvider })
 			).to.be.revertedWith('Amount less than minDepositAmount');
 
+			let getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(
+				secondLiquidityProvider
+			);
+			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser / 1e18);
+
+			let getNeededStakedThalesToWithdrawForUser =
+				await SportAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(secondLiquidityProvider);
+			console.log(
+				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
+			);
+
 			await SportAMMLiquidityPool.deposit(toUnit(100), { from: secondLiquidityProvider });
 
-			//	function setStakedThalesMultiplier(uint _stakedThalesMultiplier) external onlyOwner {
-			//         stakedThalesMultiplier = _stakedThalesMultiplier;
-			//         emit StakedThalesMultiplierChanged(_stakedThalesMultiplier);
-			//     }
-			//
-			//     /// @notice Set IStakingThales contract
-			//     /// @param _stakingThales IStakingThales address
-			//     function setStakingThales(IStakingThales _stakingThales) external onlyOwner {
-			//         stakingThales = _stakingThales;
-			//         emit StakingThalesChanged(address(_stakingThales));
-			//     }
+			getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(
+				secondLiquidityProvider
+			);
+			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser / 1e18);
+
+			getNeededStakedThalesToWithdrawForUser =
+				await SportAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(secondLiquidityProvider);
+			console.log(
+				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
+			);
 		});
 	});
 });

@@ -54,7 +54,7 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         emit Mint(msg.sender, newItemId, _brackets);
     }
 
-    function updateBracketsForAlreadyMintedItem(uint _tokenId, uint[61] memory  _brackets) external whenNotPaused {
+    function updateBracketsForAlreadyMintedItem(uint _tokenId, uint[61] memory _brackets) external whenNotPaused {
         require(_exists(_tokenId), "Item does not exists");
         require(ownerOf(_tokenId) == msg.sender, "Caller is not owner of entered tokenId");
         itemToBrackets[_tokenId] = _brackets;
@@ -69,7 +69,7 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
 
         uint correctPredictions = 0;
 
-        for(uint i = 0; i < _brackets.length; i++) {
+        for (uint i = 0; i < _brackets.length; i++) {
             if (_brackets[i] == results[i]) {
                 correctPredictions++;
             }
@@ -95,7 +95,7 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    function pause() public onlyOwner { 
+    function pause() public onlyOwner {
         _pause();
     }
 
@@ -119,7 +119,7 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
     /* ========== EVENTS ========== */
 
     event Mint(address _recipient, uint _id, uint[61] _brackets);
-    event UpdateBracketsForAlreadyMintedItem(address _minter, uint itemIndex ,uint[61] _newBrackets);
+    event UpdateBracketsForAlreadyMintedItem(address _minter, uint itemIndex, uint[61] _newBrackets);
     event ResultForGameAdded(uint _gameIndex, uint _teamWinnerIndex);
     event DateRangeUpdated(uint _fromDate, uint _toDate);
 }

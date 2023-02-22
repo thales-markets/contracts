@@ -433,7 +433,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         if (roundPool == address(0)) {
             require(poolRoundMastercopy != address(0), "Round pool mastercopy not set");
             SportAMMLiquidityPoolRound newRoundPool = SportAMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
-            newRoundPool.initialize(address(this), sUSD, round, getRoundEndTime(round), getRoundEndTime(round + 1));
+            newRoundPool.initialize(address(this), sUSD, _round, getRoundEndTime(_round), getRoundEndTime(_round + 1));
             roundPool = address(newRoundPool);
             roundPools[_round] = roundPool;
             emit RoundPoolCreated(_round, roundPool);
@@ -499,6 +499,14 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         emit DefaultLiquidityProviderChanged(_defaultLiquidityProvider);
     }
 
+    /// @notice Set length of rounds
+    /// @param _roundLength Length of a round in miliseconds
+    function setRoundLength(uint _roundLength) external onlyOwner {
+        require(!started, "Can't change round length after start");
+        roundLength = _roundLength;
+        emit RoundLengthChanged(_roundLength);
+    }
+
     function setWhitelistedAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
         require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
         for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
@@ -540,4 +548,5 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     event SportAMMChanged(address sportAMM);
     event DefaultLiquidityProviderChanged(address newProvider);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
+    event RoundLengthChanged(uint roundLength);
 }

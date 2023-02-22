@@ -518,9 +518,9 @@
 		"OvertimeWorldCupZebro": "0xD66eE2D0F8810304402F6bE0E57E7C0a261b54A3",
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
 		"GamesOddsObtainerImplementation": "0xeDe874f55B79Fc55Ac8860B6E4C14B04C30AD0bA",
-		"SportAMMLiquidityPool": "0x5A17bB0394dD25f21fd11aC6202561B04f126065",
-		"SportAMMLiquidityPoolImplementation": "0x14968c4445aC9400ea1A4C990a227c7bC766c608",
-		"SportAMMLiquidityPoolRoundMastercopy": "0xdDB09712Bf2Bf62ee03eaA2a4F8700fea04cEbaA",
+		"SportAMMLiquidityPool": "0x1dBc8eF4c551feb01C693e2c064aA66900D0f103",
+		"SportAMMLiquidityPoolImplementation": "0x4bd60Cefd000b5F0bAbde876027771A5e0724B29",
+		"SportAMMLiquidityPoolRoundMastercopy": "0x7FEdfaF6BF9820e280fd5c0DCd0b50AE15a2a7Ee",
 		"StakingThalesImplementation": "0x31D2b97B4bC747294ff744Eb29B32298DC6d4ea0"
 	},
 	"localhost": {

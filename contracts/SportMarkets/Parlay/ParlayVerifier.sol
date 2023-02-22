@@ -43,12 +43,26 @@ contract ParlayVerifier {
         address _parlayAMM
     ) external view returns (bool eligible) {
         eligible = true;
+        ITherundownConsumer consumer = ITherundownConsumer(_sportsAMM.theRundownConsumer());
+        bytes32[] memory cachedTeams = new bytes32[](_sportMarkets.length * 2);
+        uint lastCachedIdx = 0;
+        bytes32 gameIdHome;
+        bytes32 gameIdAway;
         uint motoCounter = 0;
         for (uint i = 0; i < _sportMarkets.length; i++) {
-            if (!_verifyMarket(_sportMarkets, i, _sportsAMM)) {
-                eligible = false;
-                break;
+            address sportMarket = _sportMarkets[i];
+            (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
+
+            // check if game IDs already exist
+            for (uint j = 0; j < lastCachedIdx; j++) {
+                if (cachedTeams[j] == gameIdHome || cachedTeams[j] == gameIdAway) {
+                    revert("SameTeamOnParlay");
+                }
             }
+
+            cachedTeams[lastCachedIdx++] = gameIdHome;
+            cachedTeams[lastCachedIdx++] = gameIdAway;
+
             uint marketTag = ISportPositionalMarket(_sportMarkets[i]).tags(0);
             if (marketTag == 9100 || marketTag == 9101) {
                 if (motoCounter > 0) {
@@ -195,11 +209,9 @@ contract ParlayVerifier {
         uint _skewImpact,
         bool _addition
     ) internal pure returns (uint[] memory newValues) {
-        uint totalAmount;
         newValues = new uint[](_values.length);
         for (uint i = 0; i < _values.length; i++) {
             newValues[i] = applySkewImpact(_values[i], _skewImpact, _addition);
-            totalAmount += newValues[i];
         }
     }
 
@@ -239,44 +251,6 @@ contract ParlayVerifier {
         }
     }
 
-    function _verifyMarket(
-        address[] memory _sportMarkets,
-        uint _index,
-        ISportsAMM _sportsAMM
-    ) internal view returns (bool) {
-        ITherundownConsumer consumer = ITherundownConsumer(_sportsAMM.theRundownConsumer());
-        bytes32 game1IdHome;
-        bytes32 game1IdAway;
-        bytes32 game2IdHome;
-        bytes32 game2IdAway;
-        for (uint j = 0; j < _index; j++) {
-            if (_sportMarkets[_index] == _sportMarkets[j]) {
-                return false;
-            }
-            game1IdHome = keccak256(
-                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[_index])).homeTeam)
-            );
-            game1IdAway = keccak256(
-                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[_index])).awayTeam)
-            );
-            game2IdHome = keccak256(
-                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[j])).homeTeam)
-            );
-            game2IdAway = keccak256(
-                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[j])).awayTeam)
-            );
-            if (
-                game1IdHome == game2IdHome ||
-                game1IdHome == game2IdAway ||
-                game1IdAway == game2IdHome ||
-                game1IdAway == game2IdAway
-            ) {
-                revert("SameTeamOnParlay");
-            }
-        }
-        return true;
-    }
-
     function sort(address[] memory data) external pure returns (address[] memory) {
         _quickSort(data, int(0), int(data.length - 1));
         return data;
@@ -307,5 +281,16 @@ contract ParlayVerifier {
         }
         if (left < j) _quickSort(arr, left, j);
         if (i < right) _quickSort(arr, i, right);
+    }
+
+    function _getGameIds(ITherundownConsumer consumer, address sportMarket)
+        internal
+        view
+        returns (bytes32 home, bytes32 away)
+    {
+        ITherundownConsumer.GameCreate memory game = consumer.getGameCreatedById(consumer.gameIdPerMarket(sportMarket));
+
+        home = keccak256(abi.encodePacked(game.homeTeam));
+        away = keccak256(abi.encodePacked(game.awayTeam));
     }
 }

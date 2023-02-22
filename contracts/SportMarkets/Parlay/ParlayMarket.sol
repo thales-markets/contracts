@@ -10,8 +10,6 @@ import "../SportPositions/SportPosition.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 
-// import "hardhat/console.sol";
-
 contract ParlayMarket is OwnedWithInit {
     using SafeERC20 for IERC20;
 
@@ -79,7 +77,7 @@ contract ParlayMarket is OwnedWithInit {
             _sportMarketIndex[_sportMarkets[i]] = i + 1;
         }
         amount = _amount;
-        expiry = block.timestamp + _expiryDuration;
+        expiry = _expiryDuration;
         sUSDPaid = _sUSDPaid;
         parlayOwner = _parlayOwner;
     }
@@ -368,7 +366,7 @@ contract ParlayMarket is OwnedWithInit {
         }
 
         // Destroy the option tokens before destroying the market itself.
-        selfdestruct(beneficiary);
+        // selfdestruct(beneficiary);
     }
 
     modifier onlyAMM() {

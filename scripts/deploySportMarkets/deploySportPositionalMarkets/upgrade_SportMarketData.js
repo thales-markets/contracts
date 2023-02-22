@@ -39,18 +39,27 @@ async function main() {
 		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
 
 	const SportMarketData = await ethers.getContractFactory('SportPositionalMarketData');
 	const SportMarketDataAddress = getTargetAddress('SportPositionalMarketData', network);
+	console.log('SportMarketData address: ', SportMarketDataAddress);
 
 	let implementation;
-	if (networkObj.chainId == 10) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
 		implementation = await upgrades.prepareUpgrade(SportMarketDataAddress, SportMarketData);
 	}
 
 	// upgrade if test networks
 	if (networkObj.chainId == 69 || networkObj.chainId == 42 || networkObj.chainId == 420) {
-		await upgrades.upgradeProxy(SportMarketDataAddress, SportMarketData);
+		await upgrades.upgradeProxy(SportMarketDataAddress, SportMarketData, {
+			from: owner.address,
+			gasLimit: 15000000,
+		});
 
 		implementation = await getImplementationAddress(ethers.provider, SportMarketDataAddress);
 	}

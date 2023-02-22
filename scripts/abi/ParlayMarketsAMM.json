@@ -408,7 +408,7 @@
       },
       {
         "internalType": "address",
-        "name": "_differentRecepient",
+        "name": "_differentRecipient",
         "type": "address"
       }
     ],
@@ -489,7 +489,7 @@
       },
       {
         "internalType": "address",
-        "name": "_differentRecepient",
+        "name": "_differentRecipient",
         "type": "address"
       },
       {

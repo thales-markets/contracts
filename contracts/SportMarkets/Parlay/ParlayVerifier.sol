@@ -15,6 +15,24 @@ import "../../interfaces/ICurveSUSD.sol";
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
 
+    struct InitialQuoteParameters {
+        address[] sportMarkets;
+        uint[] positions;
+        uint totalSUSDToPay;
+        uint parlaySize;
+        uint defaultONE;
+        ISportsAMM sportsAMM;
+    }
+
+    struct FinalQuoteParameters {
+        address[] sportMarkets;
+        uint[] positions;
+        uint[] buyQuoteAmounts;
+        ISportsAMM sportsAmm;
+        uint sUSDAfterFees;
+        uint defaultONE;
+    }
+
     // ISportsAMM sportsAmm;
 
     function verifyMarkets(
@@ -25,12 +43,26 @@ contract ParlayVerifier {
         address _parlayAMM
     ) external view returns (bool eligible) {
         eligible = true;
+        ITherundownConsumer consumer = ITherundownConsumer(_sportsAMM.theRundownConsumer());
+        bytes32[] memory cachedTeams = new bytes32[](_sportMarkets.length * 2);
+        uint lastCachedIdx = 0;
+        bytes32 gameIdHome;
+        bytes32 gameIdAway;
         uint motoCounter = 0;
         for (uint i = 0; i < _sportMarkets.length; i++) {
-            if (!_verifyMarket(_sportMarkets, i, _sportsAMM)) {
-                eligible = false;
-                break;
+            address sportMarket = _sportMarkets[i];
+            (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
+
+            // check if game IDs already exist
+            for (uint j = 0; j < lastCachedIdx; j++) {
+                if (cachedTeams[j] == gameIdHome || cachedTeams[j] == gameIdAway) {
+                    revert("SameTeamOnParlay");
+                }
             }
+
+            cachedTeams[lastCachedIdx++] = gameIdHome;
+            cachedTeams[lastCachedIdx++] = gameIdAway;
+
             uint marketTag = ISportPositionalMarket(_sportMarkets[i]).tags(0);
             if (marketTag == 9100 || marketTag == 9101) {
                 if (motoCounter > 0) {
@@ -53,13 +85,7 @@ contract ParlayVerifier {
         riskFree = true;
     }
 
-    function calculateInitialQuotesForParlay(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _totalSUSDToPay,
-        uint _parlaySize,
-        ISportsAMM _sportsAMM
-    )
+    function calculateInitialQuotesForParlay(InitialQuoteParameters memory params)
         external
         view
         returns (
@@ -70,26 +96,24 @@ contract ParlayVerifier {
             uint[] memory amountsToBuy
         )
     {
-        uint numOfMarkets = _sportMarkets.length;
+        uint numOfMarkets = params.sportMarkets.length;
         uint inverseSum;
-        if (_totalSUSDToPay < ONE) {
-            _totalSUSDToPay = ONE;
-        }
-        if (numOfMarkets == _positions.length && numOfMarkets > 0 && numOfMarkets <= _parlaySize) {
+        // require(params.totalSUSDToPay < ONE, "Low amount");
+        if (numOfMarkets == params.positions.length && numOfMarkets > 0 && numOfMarkets <= params.parlaySize) {
             finalQuotes = new uint[](numOfMarkets);
             amountsToBuy = new uint[](numOfMarkets);
             uint[] memory marketOdds;
             for (uint i = 0; i < numOfMarkets; i++) {
-                if (_positions[i] > 2) {
+                if (params.positions[i] > 2) {
                     totalQuote = 0;
                     break;
                 }
-                marketOdds = _sportsAMM.getMarketDefaultOdds(_sportMarkets[i], false);
+                marketOdds = params.sportsAMM.getMarketDefaultOdds(params.sportMarkets[i], false);
                 if (marketOdds.length == 0) {
                     totalQuote = 0;
                     break;
                 }
-                finalQuotes[i] = marketOdds[_positions[i]];
+                finalQuotes[i] = (params.defaultONE * marketOdds[params.positions[i]]);
                 totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
                 skewImpact = skewImpact + finalQuotes[i];
                 // use as inverseQuotes
@@ -107,27 +131,24 @@ contract ParlayVerifier {
                     // skewImpact is sumOfQuotes
                     // inverseSum is sum of InverseQuotes
                     amountsToBuy[i] =
-                        ((ONE * finalQuotes[i] * _totalSUSDToPay * skewImpact)) /
+                        ((ONE * finalQuotes[i] * params.totalSUSDToPay * skewImpact)) /
                         (totalQuote * inverseSum * skewImpact);
                 }
                 (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = calculateFinalQuotes(
-                    _sportMarkets,
-                    _positions,
-                    amountsToBuy,
-                    _sportsAMM,
-                    _totalSUSDToPay
+                    FinalQuoteParameters(
+                        params.sportMarkets,
+                        params.positions,
+                        amountsToBuy,
+                        params.sportsAMM,
+                        params.totalSUSDToPay,
+                        params.defaultONE
+                    )
                 );
             }
         }
     }
 
-    function calculateFinalQuotes(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint[] memory _buyQuoteAmounts,
-        ISportsAMM sportsAmm,
-        uint sUSDAfterFees
-    )
+    function calculateFinalQuotes(FinalQuoteParameters memory params)
         internal
         view
         returns (
@@ -138,37 +159,38 @@ contract ParlayVerifier {
             uint[] memory buyAmountPerMarket
         )
     {
-        uint[] memory buyQuoteAmountPerMarket = new uint[](_sportMarkets.length);
-        buyAmountPerMarket = _buyQuoteAmounts;
-        finalQuotes = new uint[](_sportMarkets.length);
-        for (uint i = 0; i < _sportMarkets.length; i++) {
-            totalBuyAmount += _buyQuoteAmounts[i];
+        uint[] memory buyQuoteAmountPerMarket = new uint[](params.sportMarkets.length);
+        buyAmountPerMarket = params.buyQuoteAmounts;
+        finalQuotes = new uint[](params.sportMarkets.length);
+        for (uint i = 0; i < params.sportMarkets.length; i++) {
+            totalBuyAmount += params.buyQuoteAmounts[i];
             // buyQuote always calculated with added SportsAMM fees
-            buyQuoteAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
-                _sportMarkets[i],
-                obtainSportsAMMPosition(_positions[i]),
-                _buyQuoteAmounts[i]
-            );
+            buyQuoteAmountPerMarket[i] = (params.defaultONE *
+                params.sportsAmm.buyFromAmmQuote(
+                    params.sportMarkets[i],
+                    obtainSportsAMMPosition(params.positions[i]),
+                    params.buyQuoteAmounts[i]
+                ));
             if (buyQuoteAmountPerMarket[i] == 0) {
                 totalQuote = 0;
                 totalBuyAmount = 0;
             }
         }
-        for (uint i = 0; i < _sportMarkets.length; i++) {
-            finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / _buyQuoteAmounts[i]) / ONE;
+        for (uint i = 0; i < params.sportMarkets.length; i++) {
+            finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / params.buyQuoteAmounts[i]) / ONE;
             totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
         if (totalQuote > 0) {
-            if (totalQuote < IParlayMarketsAMM(sportsAmm.parlayAMM()).maxSupportedOdds()) {
-                totalQuote = IParlayMarketsAMM(sportsAmm.parlayAMM()).maxSupportedOdds();
+            if (totalQuote < IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds()) {
+                totalQuote = IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds();
             }
-            uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
+            uint expectedPayout = ((params.sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
             skewImpact = expectedPayout > totalBuyAmount
                 ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
                 : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
             buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
             totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
-            _calculateRisk(_sportMarkets, (totalBuyAmount - sUSDAfterFees), sportsAmm.parlayAMM());
+            _calculateRisk(params.sportMarkets, (totalBuyAmount - params.sUSDAfterFees), params.sportsAmm.parlayAMM());
         } else {
             totalBuyAmount = 0;
         }
@@ -187,11 +209,9 @@ contract ParlayVerifier {
         uint _skewImpact,
         bool _addition
     ) internal pure returns (uint[] memory newValues) {
-        uint totalAmount;
         newValues = new uint[](_values.length);
         for (uint i = 0; i < _values.length; i++) {
             newValues[i] = applySkewImpact(_values[i], _skewImpact, _addition);
-            totalAmount += newValues[i];
         }
     }
 
@@ -231,44 +251,6 @@ contract ParlayVerifier {
         }
     }
 
-    function _verifyMarket(
-        address[] memory _sportMarkets,
-        uint _index,
-        ISportsAMM _sportsAMM
-    ) internal view returns (bool) {
-        ITherundownConsumer consumer = ITherundownConsumer(_sportsAMM.theRundownConsumer());
-        bytes32 game1IdHome;
-        bytes32 game1IdAway;
-        bytes32 game2IdHome;
-        bytes32 game2IdAway;
-        for (uint j = 0; j < _index; j++) {
-            if (_sportMarkets[_index] == _sportMarkets[j]) {
-                return false;
-            }
-            game1IdHome = keccak256(
-                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[_index])).homeTeam)
-            );
-            game1IdAway = keccak256(
-                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[_index])).awayTeam)
-            );
-            game2IdHome = keccak256(
-                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[j])).homeTeam)
-            );
-            game2IdAway = keccak256(
-                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[j])).awayTeam)
-            );
-            if (
-                game1IdHome == game2IdHome ||
-                game1IdHome == game2IdAway ||
-                game1IdAway == game2IdHome ||
-                game1IdAway == game2IdAway
-            ) {
-                revert("SameTeamOnParlay");
-            }
-        }
-        return true;
-    }
-
     function sort(address[] memory data) external pure returns (address[] memory) {
         _quickSort(data, int(0), int(data.length - 1));
         return data;
@@ -299,5 +281,16 @@ contract ParlayVerifier {
         }
         if (left < j) _quickSort(arr, left, j);
         if (i < right) _quickSort(arr, i, right);
+    }
+
+    function _getGameIds(ITherundownConsumer consumer, address sportMarket)
+        internal
+        view
+        returns (bytes32 home, bytes32 away)
+    {
+        ITherundownConsumer.GameCreate memory game = consumer.getGameCreatedById(consumer.gameIdPerMarket(sportMarket));
+
+        home = keccak256(abi.encodePacked(game.homeTeam));
+        away = keccak256(abi.encodePacked(game.awayTeam));
     }
 }

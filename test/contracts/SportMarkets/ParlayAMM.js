@@ -231,7 +231,7 @@ contract('ParlayAMM', (accounts) => {
 		await SportPositionalMarketManager.initialize(manager, Thales.address, { from: manager });
 		await SportPositionalMarketFactory.initialize(manager, { from: manager });
 
-		await SportPositionalMarketManager.setExpiryDuration(30 * DAY, { from: manager });
+		await SportPositionalMarketManager.setExpiryDuration(290 * DAY, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
@@ -1941,12 +1941,22 @@ contract('ParlayAMM', (accounts) => {
 					}
 				});
 				it('Parlay expired', async () => {
-					await fastForward(fightTime - (await currentTime()) + 3 * HOUR + 31 * DAY);
+					await fastForward(fightTime - (await currentTime()) + 3 * HOUR + 531 * DAY);
 					let userBalanceBefore = toUnit('1000');
-					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+					let balanceBefore = await Thales.balanceOf(await ParlayAMM.safeBox());
+					await ParlayMarketData.exerciseParlays([parlaySingleMarket.address]);
+
+					let currentTimestamp = await currentTime();
+					let ParlayMarketExpiryTime = await parlaySingleMarket.expiry();
+					let parlayPhase = await parlaySingleMarket.phase();
+					console.log('currentTimestamp: ', currentTimestamp);
+					console.log('parlayExpiry: ', ParlayMarketExpiryTime.toString());
+					console.log('phase: ', parlayPhase.toString());
+
 					await ParlayAMM.expireMarkets([parlaySingleMarket.address], { from: owner });
-					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
+					let balanceAfter = await Thales.balanceOf(await ParlayAMM.safeBox());
 					let userBalanceAfter = await Thales.balanceOf(first);
+
 					console.log(
 						'\n\nAMM Balance before: ',
 						fromUnit(balanceBefore),
@@ -1964,7 +1974,7 @@ contract('ParlayAMM', (accounts) => {
 						fromUnit(userBalanceAfter.sub(userBalanceBefore))
 					);
 
-					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+					assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
 				});
 			});
 			describe('Exercise whole parlay with 1 wrong result', () => {

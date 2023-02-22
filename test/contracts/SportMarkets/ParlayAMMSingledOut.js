@@ -231,7 +231,7 @@ contract('ParlayAMM', (accounts) => {
 		await SportPositionalMarketManager.initialize(manager, Thales.address, { from: manager });
 		await SportPositionalMarketFactory.initialize(manager, { from: manager });
 
-		await SportPositionalMarketManager.setExpiryDuration(30 * DAY, { from: manager });
+		await SportPositionalMarketManager.setExpiryDuration(290 * DAY, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,

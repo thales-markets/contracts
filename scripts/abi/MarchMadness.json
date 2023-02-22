@@ -60,17 +60,11 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_fromDate",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "_toDate",
         "type": "uint256"
       }
     ],
-    "name": "DateRangeUpdated",
+    "name": "FinalPositioningDateUpdated",
     "type": "event"
   },
   {
@@ -316,19 +310,6 @@
   {
     "inputs": [],
     "name": "canNotMintOrUpdateAfter",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "canNotMintOrUpdateBefore",
     "outputs": [
       {
         "internalType": "uint256",
@@ -627,16 +608,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_fromDate",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_toDate",
         "type": "uint256"
       }
     ],
-    "name": "setDateRange",
+    "name": "setFinalDateForPositioning",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

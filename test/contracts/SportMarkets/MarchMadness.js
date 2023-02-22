@@ -49,7 +49,6 @@ contract('MarchMadness', (accounts) => {
 
 		it('Should set date range and emit event', async () => {
 			// Initial value not provided
-			assert.bnEqual(await marchMadness.canNotMintOrUpdateBefore(), 0);
 			assert.bnEqual(await marchMadness.canNotMintOrUpdateAfter(), 0);
 
 			const dateTo = new Date('01-12-2023').getTime();
@@ -58,8 +57,7 @@ contract('MarchMadness', (accounts) => {
 
 			assert.bnEqual(dateTo, await marchMadness.canNotMintOrUpdateAfter());
 
-			assert.eventEqual(tx.logs[0], 'DateRangeUpdated', {
-				_fromDate: dateFrom,
+			assert.eventEqual(tx.logs[0], 'FinalPositioningDateUpdated', {
 				_toDate: dateTo,
 			});
 		});
@@ -72,7 +70,7 @@ contract('MarchMadness', (accounts) => {
 	});
 
 	describe('Minting', () => {
-		it('Should revert revert minting, not in date range', async () => {
+		it('Should revert minting, not in date range', async () => {
 			const currentBlockTime = new Date('02-17-2023').getTime() / 1000;
 			await network.provider.send('evm_setNextBlockTimestamp', [currentBlockTime]);
 
@@ -82,14 +80,6 @@ contract('MarchMadness', (accounts) => {
 
 			await expect(marchMadness.mint(bracketsArray, { from: first })).to.be.revertedWith(
 				'Can not mint after settled date'
-			);
-
-			const newDateTo = new Date('03-18-2023').getTime() / 1000;
-
-			await marchMadness.setFinalDateForPositioning(newDateTo, { from: owner });
-
-			await expect(marchMadness.mint(bracketsArray, { from: first })).to.be.revertedWith(
-				'Can not mint before settled date'
 			);
 		});
 
@@ -120,7 +110,6 @@ contract('MarchMadness', (accounts) => {
 
 	describe('Updating minted positions/Getting corrent positions', () => {
 		it('Should update already minted position, before that testing reverting on update brackets', async () => {
-			const dateFrom = new Date('01-01-2023').getTime() / 1000;
 			const dateTo = new Date('02-25-2023').getTime() / 1000;
 
 			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
@@ -154,7 +143,6 @@ contract('MarchMadness', (accounts) => {
 		});
 
 		it('Should display count of correct positions', async () => {
-			const dateFrom = new Date('01-01-2023').getTime() / 1000;
 			const dateTo = new Date('02-25-2023').getTime() / 1000;
 
 			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });

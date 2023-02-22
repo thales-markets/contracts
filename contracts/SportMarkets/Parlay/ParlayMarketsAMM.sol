@@ -371,7 +371,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _positions,
             _sUSDPaid
         );
-        uint safeBoxAmount = _getSafeBoxAmount(_sUSDPaid, sUSDAfterFees, msg.sender);
+        uint safeBoxAmount = _getSafeBoxAmount(_sUSDPaid, sUSDAfterFees, _differentRecipient);
         // apply all checks
         require(_sUSDPaid >= minUSDAmount, "Low sUSD buy");
         require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");

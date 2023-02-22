@@ -60,10 +60,10 @@ async function main() {
 			_parlayAMM: parlayAMM,
 			_sUSD: proxySUSD,
 			_roundLength: week,
-			_priceLowerLimit: w3utils.toWei('0.8'),
+			_priceLowerLimit: w3utils.toWei('0.3'),
 			_priceUpperLimit: w3utils.toWei('0.95'),
-			_skewImpactLimit: w3utils.toWei('0.5'), // -3% skew impact
-			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
+			_skewImpactLimit: w3utils.toWei('-0.2'), // -2% skew impact
+			_maxAllowedDeposit: w3utils.toWei('10000'), // 10k% max deposit per round
 			_utilizationRate: w3utils.toWei('0.50'), // 50% utilization rate
 			_maxTradeRate: w3utils.toWei('0.02'), // 2% max trade rate
 			_minDepositAmount: w3utils.toWei('20'), // min deposit

@@ -19,7 +19,6 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
     string public _name = "Overtime March Madness";
     string public _symbol = "OMM";
 
-    uint public canNotMintOrUpdateBefore;
     uint public canNotMintOrUpdateAfter;
 
     uint[61] public results;
@@ -37,7 +36,6 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
 
     function mint(uint[61] memory _brackets) external whenNotPaused returns (uint newItemId) {
         require(addressAlreadyMinted[msg.sender] == false, "Address already minted");
-        require(block.timestamp > canNotMintOrUpdateBefore, "Can not mint before settled date");
         require(block.timestamp < canNotMintOrUpdateAfter, "Can not mint after settled date");
 
         _tokenIds.increment();
@@ -110,10 +108,9 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         emit ResultForGameAdded(_game, _teamIndex);
     }
 
-    function setDateRange(uint _fromDate, uint _toDate) external onlyOwner {
-        canNotMintOrUpdateBefore = _fromDate;
+    function setFinalDateForPositioning(uint _toDate) external onlyOwner {
         canNotMintOrUpdateAfter = _toDate;
-        emit DateRangeUpdated(_fromDate, _toDate);
+        emit FinalPositioningDateUpdated(_toDate);
     }
 
     /* ========== EVENTS ========== */
@@ -121,5 +118,5 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
     event Mint(address _recipient, uint _id, uint[61] _brackets);
     event UpdateBracketsForAlreadyMintedItem(address _minter, uint itemIndex, uint[61] _newBrackets);
     event ResultForGameAdded(uint _gameIndex, uint _teamWinnerIndex);
-    event DateRangeUpdated(uint _fromDate, uint _toDate);
+    event FinalPositioningDateUpdated(uint _toDate);
 }

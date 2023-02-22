@@ -38,13 +38,11 @@ contract('MarchMadness', (accounts) => {
 
 		it('Should revert, trying to set up date range, not owner', async () => {
 			// Initial value not provided
-			assert.bnEqual(await marchMadness.canNotMintOrUpdateBefore(), 0);
 			assert.bnEqual(await marchMadness.canNotMintOrUpdateAfter(), 0);
 
-			const dateFrom = new Date('01-01-2023').getTime();
 			const dateTo = new Date('01-12-2023').getTime();
 
-			await expect(marchMadness.setDateRange(dateFrom, dateTo, { from: first })).to.be.revertedWith(
+			await expect(marchMadness.setFinalDateForPositioning(dateTo, { from: first })).to.be.revertedWith(
 				'Ownable: caller is not the owner'
 			);
 		});
@@ -54,12 +52,10 @@ contract('MarchMadness', (accounts) => {
 			assert.bnEqual(await marchMadness.canNotMintOrUpdateBefore(), 0);
 			assert.bnEqual(await marchMadness.canNotMintOrUpdateAfter(), 0);
 
-			const dateFrom = new Date('01-01-2023').getTime();
 			const dateTo = new Date('01-12-2023').getTime();
 
-			const tx = await marchMadness.setDateRange(dateFrom, dateTo, { from: owner });
+			const tx = await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
-			assert.bnEqual(dateFrom, await marchMadness.canNotMintOrUpdateBefore());
 			assert.bnEqual(dateTo, await marchMadness.canNotMintOrUpdateAfter());
 
 			assert.eventEqual(tx.logs[0], 'DateRangeUpdated', {
@@ -80,19 +76,17 @@ contract('MarchMadness', (accounts) => {
 			const currentBlockTime = new Date('02-17-2023').getTime() / 1000;
 			await network.provider.send('evm_setNextBlockTimestamp', [currentBlockTime]);
 
-			const dateFrom = new Date('01-01-2023').getTime() / 1000;
 			const dateTo = new Date('02-15-2023').getTime() / 1000;
 
-			await marchMadness.setDateRange(dateFrom, dateTo, { from: owner });
+			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
 			await expect(marchMadness.mint(bracketsArray, { from: first })).to.be.revertedWith(
 				'Can not mint after settled date'
 			);
 
-			const newDateFrom = new Date('02-18-2023').getTime() / 1000;
 			const newDateTo = new Date('03-18-2023').getTime() / 1000;
 
-			await marchMadness.setDateRange(newDateFrom, newDateTo, { from: owner });
+			await marchMadness.setFinalDateForPositioning(newDateTo, { from: owner });
 
 			await expect(marchMadness.mint(bracketsArray, { from: first })).to.be.revertedWith(
 				'Can not mint before settled date'
@@ -100,10 +94,9 @@ contract('MarchMadness', (accounts) => {
 		});
 
 		it('Should mint', async () => {
-			const dateFrom = new Date('01-01-2023').getTime() / 1000;
 			const dateTo = new Date('02-25-2023').getTime() / 1000;
 
-			await marchMadness.setDateRange(dateFrom, dateTo, { from: owner });
+			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
 			await marchMadness.mint(bracketsArray, { from: first });
 
@@ -111,10 +104,9 @@ contract('MarchMadness', (accounts) => {
 		});
 
 		it('Should revert, already minted from address', async () => {
-			const dateFrom = new Date('01-01-2023').getTime() / 1000;
 			const dateTo = new Date('02-25-2023').getTime() / 1000;
 
-			await marchMadness.setDateRange(dateFrom, dateTo, { from: owner });
+			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
 			await marchMadness.mint(bracketsArray, { from: first });
 
@@ -131,7 +123,7 @@ contract('MarchMadness', (accounts) => {
 			const dateFrom = new Date('01-01-2023').getTime() / 1000;
 			const dateTo = new Date('02-25-2023').getTime() / 1000;
 
-			await marchMadness.setDateRange(dateFrom, dateTo, { from: owner });
+			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
 			await marchMadness.mint(bracketsArray, { from: first });
 
@@ -165,7 +157,7 @@ contract('MarchMadness', (accounts) => {
 			const dateFrom = new Date('01-01-2023').getTime() / 1000;
 			const dateTo = new Date('02-25-2023').getTime() / 1000;
 
-			await marchMadness.setDateRange(dateFrom, dateTo, { from: owner });
+			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
 			const newBrackets = Array.from({ length: 61 }, () => Math.floor((Math.random() + 0.1) * 68));
 

@@ -391,6 +391,22 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         return true;
     }
 
+    /// @notice Iterate all markets in the current round and return true if at least one can be exercised
+    function hasMarketsReadyToBeExercised() public view returns (bool) {
+        SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
+        ISportPositionalMarket market;
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
+            if (market.resolved()) {
+                (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(poolRound));
+                if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /// @notice Return multiplied PnLs between rounds
     /// @param roundA Round number from
     /// @param roundB Round number to

@@ -30,15 +30,22 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
     mapping(address => uint) public addressToTokenId;
     mapping(uint => uint[]) public roundToGameIds;
 
+    /* ========== MODIFIER ========== */
+
+    modifier notAfterFinalDate {
+        require(canNotMintOrUpdateAfter != 0, "canNotMintOrUpdateAfter is not set");
+        require(block.timestamp < canNotMintOrUpdateAfter, "Can not mint after settled date");
+        _;
+    }
+
     /* ========== CONSTRUCTOR ========== */
 
     constructor() ERC721(_name, _symbol) {}
 
     /* ========== OWC ========== */
 
-    function mint(uint[63] memory _brackets) external whenNotPaused returns (uint newItemId) {
+    function mint(uint[63] memory _brackets) external whenNotPaused notAfterFinalDate returns (uint newItemId) {
         require(!addressAlreadyMinted[msg.sender], "Address already minted");
-        require(block.timestamp < canNotMintOrUpdateAfter, "Can not mint after settled date");
 
         _tokenIds.increment();
 
@@ -54,10 +61,9 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         emit Mint(msg.sender, newItemId, _brackets);
     }
 
-    function updateBracketsForAlreadyMintedItem(uint _tokenId, uint[63] memory _brackets) external whenNotPaused {
+    function updateBracketsForAlreadyMintedItem(uint _tokenId, uint[63] memory _brackets) external whenNotPaused notAfterFinalDate {
         require(_exists(_tokenId), "Item does not exists");
         require(ownerOf(_tokenId) == msg.sender, "Caller is not owner of entered tokenId");
-        require(block.timestamp < canNotMintOrUpdateAfter, "Can not update after settled date");
 
         itemToBrackets[_tokenId] = _brackets;
 

@@ -17,6 +17,8 @@ import "../interfaces/IThalesRoyale.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IThalesStakingRewardsPool.sol";
 import "../interfaces/IAddressResolver.sol";
+import "../interfaces/IThalesAMM.sol";
+import "../interfaces/IPositionalMarketManager.sol";
 
 /// @title A Staking contract that provides logic for staking and claiming rewards
 contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
@@ -653,7 +655,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param amount to add to the existing protocol volume
     function updateVolume(address account, uint amount) external {
         require(account != address(0) && amount > 0, "Invalid params");
-
         if (delegatedVolume[account] != address(0)) {
             account = delegatedVolume[account];
         }
@@ -667,7 +668,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 supportedAMMVault[msg.sender],
             "Invalid address"
         );
-
+        amount = IPositionalMarketManager(IThalesAMM(sportsAMM).manager()).reverseTransformCollateral(amount);
         if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;

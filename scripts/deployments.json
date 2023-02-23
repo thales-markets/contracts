@@ -222,7 +222,7 @@
 		"ThalesToken": "0xe85b662fe97e8562f4099d8a1d5a92d4b453bf30",
 		"StakingThales": "0x160Ca569999601bca06109D42d561D85D6Bb4b57",
 		"EscrowThales": "0x391a45F31c1837E3d837c23e05F42A098329D50d",
-		"StakingThalesImplementation": "0x5c936675212cB832aa82bA4b8a1F237Cf8db97aD",
+		"StakingThalesImplementation": "0xE90e99726548Aa888564D169B2c9686785a04c01",
 		"EscrowThalesImplementation": "0x4c848a4A53954B9A925Cf857248Abf95Ab2A893C",
 		"ThalesStakingRewardsPool": "0x739d25922010A727B1fc842C483494d4D7a4C90e",
 		"ThalesStakingRewardsPoolImplementation": "0x94B417458AF11c991B413C03e79f76bda330AF77"

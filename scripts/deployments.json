@@ -522,7 +522,7 @@
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
 		"GamesOddsObtainerImplementation": "0xeDe874f55B79Fc55Ac8860B6E4C14B04C30AD0bA",
 		"ParlayVault": "0x7e415D74eb5B01531B2059D1901aCe751c6B26B3",
-		"ParlayVaultImplementation": "0xd387BEAF6714312eb46896ED4415cA601DEACB05"
+		"ParlayVaultImplementation": "0x7cea40A6569E538D1AC812C0D4Ff37b505466dC0"
 	},
 	"localhost": {
 		"Airdrop": "",

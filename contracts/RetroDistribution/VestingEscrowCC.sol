@@ -133,6 +133,22 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
         emit Claim(msg.sender, claimable);
     }
 
+    function partialClaim(uint amount) external nonReentrant notPaused {
+        require(disabled[msg.sender] == false, "Account disabled");
+
+        uint timestamp = pausedAt[msg.sender];
+        if (timestamp == 0) {
+            timestamp = block.timestamp;
+        }
+        uint claimable = _totalVestedOf(msg.sender, timestamp) - totalClaimed[msg.sender];
+        require(claimable >= amount, "Amount exceeds claimable value");
+
+        IERC20Upgradeable(token).safeTransfer(msg.sender, amount);
+
+        totalClaimed[msg.sender] = totalClaimed[msg.sender] + amount;
+        emit PartialClaim(msg.sender, amount);
+    }
+
     function pauseClaim(address _recipient) external onlyOwner {
         pausedAt[_recipient] = block.timestamp;
         emit ClaimPaused(_recipient);
@@ -199,6 +215,7 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
     event AllocationIncreased(address _recipient, uint _amount);
     event AllocationDecreased(address _recipient, uint _amount);
     event Claim(address _address, uint _amount);
+    event PartialClaim(address _address, uint _amount);
     event StartTimeChanged(address _recipient, uint _startTime);
     event EndTimeChanged(address _recipient, uint _endTime);
     event TokenChanged(address _token);

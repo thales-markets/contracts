@@ -468,6 +468,20 @@ contract('VestingEscrow', accounts => {
 			assert.equal(balanceOfAccount, SINGLE_AMOUNT);
 		});
 
+		it('should be able to partial claim', async () => {
+			const partial_amount = web3.utils.toWei('10000');
+			await fastForward(WEEK);
+			let balanceOfAccount = await ThalesDeployed.balanceOf(beneficiary.address);
+			console.log("balance", balanceOfAccount / 1e18);
+
+			await fastForward(54 * WEEK);
+			
+			await VestingEscrow.partialClaim(partial_amount, { from: beneficiary.address });
+
+			balanceOfAccount = await ThalesDeployed.balanceOf(beneficiary.address);
+			console.log(balanceOfAccount / 1e18);
+		});
+
 		describe('Change wallet', () => {
 			it('should revert if caller is not the owner', async () => {
 				const REVERT = 'Only the contract owner may perform this action';

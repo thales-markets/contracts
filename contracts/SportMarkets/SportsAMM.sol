@@ -569,12 +569,18 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @notice Send tokens from this contract to the destination address
     /// @param account Address where to send the tokens
     /// @param amount Amount of tokens to be sent
+    /// @param all ignore amount and send whole balance
     function transferTokens(
         address token,
         address payable account,
-        uint amount
+        uint amount,
+        bool all
     ) external onlyOwner {
-        IERC20Upgradeable(address(token)).safeTransfer(account, amount);
+        if (all) {
+            IERC20Upgradeable(token).safeTransfer(account, IERC20Upgradeable(token).balanceOf(address(this)));
+        } else {
+            IERC20Upgradeable(token).safeTransfer(account, amount);
+        }
     }
 
     // setters
@@ -653,7 +659,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @notice Setting the Sport Positional Manager contract address
     /// @param _manager Address of Staking contract
-    function setSportsPositionalMarketManager(address _manager) public onlyOwner {
+    function setSportsPositionalMarketManager(address _manager) external onlyOwner {
         if (address(_manager) != address(0)) {
             sUSD.approve(address(_manager), 0);
         }
@@ -924,10 +930,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address position,
         address market
     ) internal {
-        if (amount > IERC20Upgradeable(position).balanceOf(address(this))) {
+        uint balanceHeld = IERC20Upgradeable(position).balanceOf(address(this));
+        if (amount > balanceHeld) {
             liquidityPool.getOptionsForBuyByAddress(
                 address(ISportPositionalMarket(market).parentMarket()),
-                amount - IERC20Upgradeable(position).balanceOf(address(this)),
+                amount - balanceHeld,
                 position
             );
         }
@@ -1051,7 +1058,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             : (spentOnGame[market] = spentOnGame[market] - toSubtract);
 
         if (referrerFee > 0 && referrals != address(0)) {
-            uint referrerShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + (referrerFee)));
+            uint referrerShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + referrerFee));
             _handleReferrer(buyer, referrerShare, sUSDPaid);
         }
     }

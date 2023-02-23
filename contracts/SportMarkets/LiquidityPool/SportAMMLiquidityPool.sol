@@ -165,6 +165,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         returns (address liquidityPoolRound)
     {
         require(started, "Pool has not started");
+        require(sUSDAmount > 0, "Can't commit a zero trade");
 
         uint marketRound = getMarketRound(market);
         liquidityPoolRound = _getOrCreateRoundPool(marketRound);

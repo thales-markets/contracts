@@ -1010,22 +1010,26 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function _sendMintedPositionsAndUSDToLiquidityPool(address market) internal {
         address _liquidityPool = liquidityPool.getOrCreateMarketPool(market);
 
-        sUSD.safeTransfer(_liquidityPool, sUSD.balanceOf(address(this)));
+        if (sUSD.balanceOf(address(this)) > 0) {
+            sUSD.safeTransfer(_liquidityPool, sUSD.balanceOf(address(this)));
+        }
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        IERC20Upgradeable(address(home)).safeTransfer(
-            _liquidityPool,
-            IERC20Upgradeable(address(home)).balanceOf(address(this))
+
+        (uint homeBalance, uint awayBalance, uint drawBalance) = sportAmmUtils.getBalanceOfPositionsOnMarket(
+            market,
+            address(this)
         );
-        IERC20Upgradeable(address(away)).safeTransfer(
-            _liquidityPool,
-            IERC20Upgradeable(address(away)).balanceOf(address(this))
-        );
-        if (ISportPositionalMarket(market).optionsCount() > 2) {
-            IERC20Upgradeable(address(draw)).safeTransfer(
-                _liquidityPool,
-                IERC20Upgradeable(address(draw)).balanceOf(address(this))
-            );
+
+        if (homeBalance > 0) {
+            IERC20Upgradeable(address(home)).safeTransfer(_liquidityPool, homeBalance);
+        }
+
+        if (awayBalance > 0) {
+            IERC20Upgradeable(address(away)).safeTransfer(_liquidityPool, awayBalance);
+        }
+        if (drawBalance > 0) {
+            IERC20Upgradeable(address(draw)).safeTransfer(_liquidityPool, drawBalance);
         }
     }
 

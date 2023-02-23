@@ -375,11 +375,6 @@
         "internalType": "uint256",
         "name": "sUSDAmount",
         "type": "uint256"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
       }
     ],
     "name": "commitTrade",

@@ -72,6 +72,25 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_roundId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_gameIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "GameIdsAssignedToRound",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_recipient",
         "type": "address"
@@ -84,9 +103,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256[61]",
+        "internalType": "uint256[63]",
         "name": "_brackets",
-        "type": "uint256[61]"
+        "type": "uint256[63]"
       }
     ],
     "name": "Mint",
@@ -130,13 +149,32 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "_roundId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_points",
+        "type": "uint256"
+      }
+    ],
+    "name": "PointsSettledForRound",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "_gameIndex",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_teamWinnerIndex",
+        "name": "_teamId",
         "type": "uint256"
       }
     ],
@@ -198,9 +236,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256[61]",
+        "internalType": "uint256[63]",
         "name": "_newBrackets",
-        "type": "uint256[61]"
+        "type": "uint256[63]"
       }
     ],
     "name": "UpdateBracketsForAlreadyMintedItem",
@@ -291,6 +329,24 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_roundId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_gameIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "assignGameIdsToRound",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "owner",
         "type": "address"
@@ -370,7 +426,93 @@
     "outputs": [
       {
         "internalType": "uint256",
+        "name": "correctPredictions",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roundId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_minter",
+        "type": "address"
+      }
+    ],
+    "name": "getCorrectPositionsPerRoundByMinterAddress",
+    "outputs": [
+      {
+        "internalType": "uint256",
         "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roundId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCorrectPositionsPerRoundByTokenId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "correctPredictions",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_minter",
+        "type": "address"
+      }
+    ],
+    "name": "getTotalPointsByMinterAddress",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTotalPointsByTokenId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalPoints",
         "type": "uint256"
       }
     ],
@@ -405,6 +547,30 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_teamId",
+        "type": "uint256"
+      }
+    ],
+    "name": "isTeamWinnerOfGameId",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "",
         "type": "uint256"
       },
@@ -428,9 +594,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256[61]",
+        "internalType": "uint256[63]",
         "name": "_brackets",
-        "type": "uint256[61]"
+        "type": "uint256[63]"
       }
     ],
     "name": "mint",
@@ -491,13 +657,6 @@
   },
   {
     "inputs": [],
-    "name": "pause",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -525,6 +684,49 @@
       }
     ],
     "name": "results",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roundToGameIds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roundToPoints",
     "outputs": [
       {
         "internalType": "uint256",
@@ -620,13 +822,44 @@
   {
     "inputs": [
       {
+        "internalType": "bool",
+        "name": "paused",
+        "type": "bool"
+      }
+    ],
+    "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
-        "name": "_game",
+        "name": "_roundId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_teamIndex",
+        "name": "_points",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPointsToRound",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_teamId",
         "type": "uint256"
       }
     ],
@@ -723,13 +956,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "unpause",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -737,9 +963,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256[61]",
+        "internalType": "uint256[63]",
         "name": "_brackets",
-        "type": "uint256[61]"
+        "type": "uint256[63]"
       }
     ],
     "name": "updateBracketsForAlreadyMintedItem",

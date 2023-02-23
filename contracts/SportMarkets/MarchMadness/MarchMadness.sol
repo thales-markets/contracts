@@ -21,12 +21,14 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
 
     uint public canNotMintOrUpdateAfter;
 
-    uint[61] public results;
+    uint[63] public results;
+    uint[6] public roundToPoints;
 
     mapping(address => bool) public addressAlreadyMinted;
 
-    mapping(uint => uint[61]) public itemToBrackets;
+    mapping(uint => uint[63]) public itemToBrackets;
     mapping(address => uint) public addressToTokenId;
+    mapping(uint => uint[]) public roundToGameIds;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -34,8 +36,8 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
 
     /* ========== OWC ========== */
 
-    function mint(uint[61] memory _brackets) external whenNotPaused returns (uint newItemId) {
-        require(addressAlreadyMinted[msg.sender] == false, "Address already minted");
+    function mint(uint[63] memory _brackets) external whenNotPaused returns (uint newItemId) {
+        require(!addressAlreadyMinted[msg.sender], "Address already minted");
         require(block.timestamp < canNotMintOrUpdateAfter, "Can not mint after settled date");
 
         _tokenIds.increment();
@@ -52,20 +54,28 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         emit Mint(msg.sender, newItemId, _brackets);
     }
 
-    function updateBracketsForAlreadyMintedItem(uint _tokenId, uint[61] memory _brackets) external whenNotPaused {
+    function updateBracketsForAlreadyMintedItem(uint _tokenId, uint[63] memory _brackets) external whenNotPaused {
         require(_exists(_tokenId), "Item does not exists");
         require(ownerOf(_tokenId) == msg.sender, "Caller is not owner of entered tokenId");
+        require(block.timestamp < canNotMintOrUpdateAfter, "Can not update after settled date");
+
         itemToBrackets[_tokenId] = _brackets;
+
         emit UpdateBracketsForAlreadyMintedItem(msg.sender, _tokenId, _brackets);
     }
 
     /* ========== VIEW ========== */
 
-    function getCorrectPositionsByTokenId(uint _tokenId) public view returns (uint) {
-        uint[61] memory _brackets = itemToBrackets[_tokenId];
-        if (_brackets[1] == 0) return 0;
+    function isTeamWinnerOfGameId(uint _gameId, uint _teamId) public view returns (bool _flag) {
+        if (isValidGameId(_gameId)) {
+            if (results[_gameId] == _teamId) _flag = true;
+        }
+        return _flag;
+    }
 
-        uint correctPredictions = 0;
+    function getCorrectPositionsByTokenId(uint _tokenId) public view returns (uint correctPredictions) {
+        uint[63] memory _brackets = itemToBrackets[_tokenId];
+        if (_brackets[1] == 0) return 0;
 
         for (uint i = 0; i < _brackets.length; i++) {
             if (_brackets[i] == results[i]) {
@@ -81,6 +91,45 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         return getCorrectPositionsByTokenId(addressToTokenId[_minter]);
     }
 
+    function getCorrectPositionsPerRoundByTokenId(uint _roundId, uint _tokenId)
+        public
+        view
+        returns (uint correctPredictions)
+    {
+        if (!isValidRoundId(_roundId)) return 0;
+        if (!_exists(_tokenId)) return 0;
+
+        uint[] memory gameIdsForRound = roundToGameIds[_roundId];
+        uint[63] memory brackets = itemToBrackets[_tokenId];
+
+        for (uint i = 0; i < gameIdsForRound.length; i++) {
+            if (isTeamWinnerOfGameId(gameIdsForRound[i], brackets[gameIdsForRound[i]])) correctPredictions++;
+        }
+
+        return correctPredictions;
+    }
+
+    function getCorrectPositionsPerRoundByMinterAddress(uint _roundId, address _minter) public view returns (uint) {
+        if (addressToTokenId[_minter] == 0) return 0;
+        return getCorrectPositionsPerRoundByTokenId(_roundId, addressToTokenId[_minter]);
+    }
+
+    function getTotalPointsByTokenId(uint _tokenId) public view returns (uint totalPoints) {
+        if (!_exists(_tokenId)) return totalPoints;
+
+        for (uint i = 0; i < roundToPoints.length; i++) {
+            uint correctPositionPerRound = getCorrectPositionsPerRoundByTokenId(i, _tokenId);
+            totalPoints += (correctPositionPerRound * roundToPoints[i]);
+        }
+
+        return totalPoints;
+    }
+
+    function getTotalPointsByMinterAddress(address _minter) public view returns (uint) {
+        if (addressToTokenId[_minter] == 0) return 0;
+        return getTotalPointsByTokenId(addressToTokenId[_minter]);
+    }
+
     /* ========== INTERNALS ========== */
 
     function _beforeTokenTransfer(
@@ -91,32 +140,66 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         require(from == address(0) || to == address(0), "NonTransferrableERC721Token: non transferrable");
     }
 
+    function isValidGameId(uint _gameId) internal pure returns (bool _flag) {
+        if (_gameId >= 0 && _gameId < 63) _flag = true;
+        return _flag;
+    }
+
+    function isValidRoundId(uint _roundId) internal pure returns (bool _flag) {
+        if (_roundId >= 0 && _roundId < 6) _flag = true;
+        return _flag;
+    }
+
+    function isValidTeamIndex(uint _teamId) internal pure returns (bool _flag) {
+        if (_teamId > 0 && _teamId <= 64) _flag = true;
+        return _flag;
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    function pause() public onlyOwner {
-        _pause();
+    function setPaused(bool paused) external onlyOwner {
+        return paused ? _pause() : _unpause();
     }
 
-    function unpause() public onlyOwner {
-        _unpause();
-    }
+    function setResultForGame(uint _gameId, uint _teamId) external onlyOwner {
+        require(isValidTeamIndex(_teamId), "Not valid team index");
+        require(isValidGameId(_gameId), "Not valid game index");
+        results[_gameId] = _teamId;
 
-    function setResultForGame(uint _game, uint _teamIndex) external onlyOwner {
-        require(_teamIndex < 69, "Not valid team index");
-        require(_game < 61, "Not valid game index");
-        results[_game] = _teamIndex;
-        emit ResultForGameAdded(_game, _teamIndex);
+        emit ResultForGameAdded(_gameId, _teamId);
     }
 
     function setFinalDateForPositioning(uint _toDate) external onlyOwner {
         canNotMintOrUpdateAfter = _toDate;
+
         emit FinalPositioningDateUpdated(_toDate);
+    }
+
+    function setPointsToRound(uint _roundId, uint _points) external onlyOwner {
+        require(isValidGameId(_roundId), "Not valid roundId");
+        roundToPoints[_roundId] = _points;
+
+        emit PointsSettledForRound(_roundId, _points);
+    }
+
+    function assignGameIdsToRound(uint _roundId, uint[] memory _gameIds) external onlyOwner {
+        // Validation of game ids
+        for (uint i = 0; i < _gameIds.length; i++) {
+            require(isValidGameId(_gameIds[i]), "Not valid gameId");
+        }
+        require(isValidRoundId(_roundId), "Not valid round id");
+        roundToGameIds[_roundId] = _gameIds;
+
+        emit GameIdsAssignedToRound(_roundId, _gameIds);
     }
 
     /* ========== EVENTS ========== */
 
-    event Mint(address _recipient, uint _id, uint[61] _brackets);
-    event UpdateBracketsForAlreadyMintedItem(address _minter, uint itemIndex, uint[61] _newBrackets);
-    event ResultForGameAdded(uint _gameIndex, uint _teamWinnerIndex);
+    event Mint(address _recipient, uint _id, uint[63] _brackets);
+    event UpdateBracketsForAlreadyMintedItem(address _minter, uint itemIndex, uint[63] _newBrackets);
+
+    event ResultForGameAdded(uint _gameIndex, uint _teamId);
     event FinalPositioningDateUpdated(uint _toDate);
+    event GameIdsAssignedToRound(uint _roundId, uint[] _gameIds);
+    event PointsSettledForRound(uint _roundId, uint _points);
 }

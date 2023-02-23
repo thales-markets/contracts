@@ -157,11 +157,13 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         emit Deposited(defaultLiquidityProvider, amount, _round);
     }
 
-    function commitTrade(
-        address market,
-        uint sUSDAmount,
-        ISportsAMM.Position position
-    ) external nonReentrant whenNotPaused onlyAMM returns (address liquidityPoolRound) {
+    function commitTrade(address market, uint sUSDAmount)
+        external
+        nonReentrant
+        whenNotPaused
+        onlyAMM
+        returns (address liquidityPoolRound)
+    {
         require(started, "Pool has not started");
 
         uint marketRound = getMarketRound(market);

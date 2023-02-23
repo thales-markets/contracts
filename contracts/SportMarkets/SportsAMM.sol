@@ -860,7 +860,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
 
         if (dcs.isDoubleChance) {
-            liquidityPool.commitTrade(params.market, params.amount, params.position);
             ISportPositionalMarket(params.market).mint(params.amount);
             _mintParentPositions(params.market, params.amount, dcs);
 
@@ -876,7 +875,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         } else {
             uint toMint = availableInContract < params.amount ? params.amount - availableInContract : 0;
             if (toMint > 0) {
-                liquidityPool.commitTrade(params.market, toMint, params.position);
+                liquidityPool.commitTrade(params.market, toMint);
                 ISportPositionalMarket(params.market).mint(toMint);
                 spentOnGame[params.market] = spentOnGame[params.market] + toMint;
             }
@@ -1147,6 +1146,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint toMint = toMintPosition1 < toMintPosition2 ? toMintPosition2 : toMintPosition1;
 
         if (toMint > 0) {
+            liquidityPool.commitTrade(dcs.parentMarket, toMint);
             ISportPositionalMarket(dcs.parentMarket).mint(toMint);
             spentOnGame[dcs.parentMarket] = spentOnGame[dcs.parentMarket] + toMint;
         }

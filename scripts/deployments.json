@@ -459,7 +459,7 @@
 		"SportPositionalMarketData": "0x202209397e2A26dc3243bD4bF46480C1f6661032",
 		"SportPositionalMarketDataImplementation": "0x947cDF2A9dD730376E65e7648C373dbC581D8c19",
 		"SportsAMM": "0x7465c5d60d3d095443CF9991Da03304A30D42Eae",
-		"SportsAMMImplementation": "0x6beA034b352570D1504AF7c0E7F9c25c9877e645",
+		"SportsAMMImplementation": "0xaC22715FD89BBDD191e5d024528e59f00f77403C",
 		"Referrals": "0xB2947FC03d8Ee002726F4e28C42D513f7B6D6788",
 		"ReferralsImplementation": "0xF9e07A53765aC94d3d0aFfAA58F61551dDcC6bF5",
 		"OvertimeVoucher": "0x9483eFf448042c366a4297dB465FaE108d2e6ea6",
@@ -518,10 +518,12 @@
 		"OvertimeWorldCupZebro": "0xD66eE2D0F8810304402F6bE0E57E7C0a261b54A3",
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
 		"GamesOddsObtainerImplementation": "0xeDe874f55B79Fc55Ac8860B6E4C14B04C30AD0bA",
-		"SportAMMLiquidityPool": "0x1dBc8eF4c551feb01C693e2c064aA66900D0f103",
+		"SportAMMLiquidityPool": "0xdd0879AB819287637f33A29d1ee91d5a76c890Af",
 		"SportAMMLiquidityPoolImplementation": "0x4Dee2bF5df8779ca0531e9B4daC3fBfC786B754d",
 		"SportAMMLiquidityPoolRoundMastercopy": "0x7FEdfaF6BF9820e280fd5c0DCd0b50AE15a2a7Ee",
-		"StakingThalesImplementation": "0x31D2b97B4bC747294ff744Eb29B32298DC6d4ea0"
+		"StakingThalesImplementation": "0x31D2b97B4bC747294ff744Eb29B32298DC6d4ea0",
+		"DefaultLiquidityProvider": "0x05C191f8Df6bFb72EFfc865550cF23982cafD753",
+		"DefaultLiquidityProviderImplementation": "0x97D6d6bdb457de9EaE2f17f01c4753BC6021b376"
 	},
 	"localhost": {
 		"Airdrop": "",

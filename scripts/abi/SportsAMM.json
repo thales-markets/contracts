@@ -766,19 +766,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getAmmUtils",
-    "outputs": [
-      {
-        "internalType": "contract SportsAMMUtils",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -1449,6 +1436,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sportAmmUtils",
+    "outputs": [
+      {
+        "internalType": "contract SportsAMMUtils",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

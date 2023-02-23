@@ -282,7 +282,6 @@ contract('SportsAMM', (accounts) => {
 		await Thales.transfer(first, toUnit('100000'), { from: owner });
 		await Thales.transfer(second, toUnit('100000'), { from: owner });
 		await Thales.transfer(third, toUnit('100000'), { from: owner });
-		await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
 
 		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: first });
 		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: second });
@@ -531,6 +530,9 @@ contract('SportsAMM', (accounts) => {
 		});
 
 		it('Buy from SportsAMM, position 1, value: 100', async () => {
+			let ammBalance = await Thales.balanceOf(SportsAMM.address);
+			console.log('ammBalance: ' + ammBalance / 1e18);
+
 			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
 			let additionalSlippage = toUnit(0.01);
 			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
@@ -847,6 +849,9 @@ contract('SportsAMM', (accounts) => {
 			console.log(
 				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
 			);
+
+			ammBalance = await Thales.balanceOf(SportsAMM.address);
+			console.log('ammBalance: ' + ammBalance / 1e18);
 		});
 	});
 });

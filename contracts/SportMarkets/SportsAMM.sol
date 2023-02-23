@@ -115,7 +115,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return the cap per sportID. based on the tagID
     mapping(uint => uint) public capPerSport;
 
-    SportsAMMUtils sportAmmUtils;
+    SportsAMMUtils public sportAmmUtils;
 
     /// @return the cap per market. based on the marketId
     mapping(address => uint) public capPerMarket;
@@ -485,12 +485,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 odds[i] = buyFromAmmQuote(_market, ISportsAMM.Position(i), ONE);
             }
         }
-    }
-
-    /// @notice Read amm utils address
-    /// @return address return address
-    function getAmmUtils() external view returns (SportsAMMUtils) {
-        return sportAmmUtils;
     }
 
     // write methods
@@ -907,7 +901,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             msg.sender
         );
 
-        _sendMintedPositionsToLiquidityPool(
+        _sendMintedPositionsAndUSDToLiquidityPool(
             dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market
         );
 
@@ -1014,8 +1008,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
-    function _sendMintedPositionsToLiquidityPool(address market) internal {
+    function _sendMintedPositionsAndUSDToLiquidityPool(address market) internal {
         address _liquidityPool = liquidityPool.getOrCreateMarketPool(market);
+
+        sUSD.safeTransfer(_liquidityPool, sUSD.balanceOf(address(this)));
+
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         IERC20Upgradeable(address(home)).safeTransfer(
             _liquidityPool,
@@ -1031,11 +1028,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 IERC20Upgradeable(address(draw)).balanceOf(address(this))
             );
         }
-    }
-
-    function _sendSUSDPaidToLiquidityPool(address market, uint sUSDAmount) internal {
-        address _liquidityPool = liquidityPool.getOrCreateMarketPool(market);
-        sUSD.safeTransfer(_liquidityPool, sUSDAmount);
     }
 
     function _updateSpentOnMarketOnBuy(

@@ -518,7 +518,8 @@
 		"ThalesAMMUtils": "0x5aA87dbA0F1486DB34Cd806eDa32f4d66ca4Ae30",
 		"OvertimeWorldCupZebro": "0xD66eE2D0F8810304402F6bE0E57E7C0a261b54A3",
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
-		"GamesOddsObtainerImplementation": "0xeDe874f55B79Fc55Ac8860B6E4C14B04C30AD0bA"
+		"GamesOddsObtainerImplementation": "0xeDe874f55B79Fc55Ac8860B6E4C14B04C30AD0bA",
+		"MarchMadness": "0x4612DB71DED2c756e9eEd3db5729a5f37DF286Bd"
 	},
 	"localhost": {
 		"Airdrop": "",

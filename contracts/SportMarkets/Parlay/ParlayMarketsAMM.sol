@@ -308,7 +308,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         parlayMarket.exerciseWiningSportMarkets();
     }
 
-    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {
+    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket)
+        external
+        nonReentrant
+        notPaused
+        onlyKnownMarkets(_parlayMarket)
+    {
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseSpecificSportMarket(_sportMarket);
     }
@@ -619,7 +624,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     /* ========== MODIFIERS ========== */
 
-     modifier onlyKnownMarkets(address _parlayMarket) {
+    modifier onlyKnownMarkets(address _parlayMarket) {
         require(_knownMarkets.contains(_parlayMarket), "Unknown parlay market");
         _;
     }

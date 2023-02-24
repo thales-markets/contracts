@@ -42,6 +42,49 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "curveSUSD",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "dai",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "usdc",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "usdt",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "curveOnrampEnabled",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxAllowedPegSlippagePercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "CurveParametersUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "receiver",
         "type": "address"
       },
@@ -53,6 +96,19 @@
       }
     ],
     "name": "ExtraAmountTransferredDueToCancellation",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "parlaySize",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewParametersSet",
     "type": "event"
   },
   {
@@ -90,6 +146,19 @@
       }
     ],
     "name": "NewParlayMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "parlayMarketMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "NewParlayMastercopy",
     "type": "event"
   },
   {
@@ -295,6 +364,19 @@
       }
     ],
     "name": "SetAmounts",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sUSDToken",
+        "type": "address"
+      }
+    ],
+    "name": "SetSUSD",
     "type": "event"
   },
   {

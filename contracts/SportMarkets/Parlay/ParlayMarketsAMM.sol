@@ -303,20 +303,17 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function exerciseParlay(address _parlayMarket) external nonReentrant notPaused {
-        require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
+    function exerciseParlay(address _parlayMarket) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseWiningSportMarkets();
     }
 
-    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket) external nonReentrant notPaused {
-        require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
+    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseSpecificSportMarket(_sportMarket);
     }
 
-    function resolveParlay() external notPaused {
-        require(_knownMarkets.contains(msg.sender), "Unknown/Expired parlay");
+    function resolveParlay() external notPaused onlyKnownMarkets(msg.sender) {
         _resolveParlay(msg.sender);
     }
 
@@ -621,6 +618,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     /* ========== MODIFIERS ========== */
+
+     modifier onlyKnownMarkets(address _parlayMarket) {
+        require(_knownMarkets.contains(_parlayMarket), "Unknown parlay market");
+        _;
+    }
 
     /* ========== EVENTS ========== */
     event SetSUSD(address sUSDToken);

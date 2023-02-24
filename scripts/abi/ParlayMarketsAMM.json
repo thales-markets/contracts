@@ -298,19 +298,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "sUSD",
-        "type": "address"
-      }
-    ],
-    "name": "SetSUSD",
-    "type": "event"
-  },
-  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -370,7 +357,7 @@
       },
       {
         "internalType": "address",
-        "name": "_differentRecipient",
+        "name": "_differentRecepient",
         "type": "address"
       }
     ],
@@ -451,7 +438,7 @@
       },
       {
         "internalType": "address",
-        "name": "_differentRecipient",
+        "name": "_differentRecepient",
         "type": "address"
       },
       {
@@ -815,6 +802,19 @@
   {
     "inputs": [],
     "name": "lastPauseTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxAllowedPegSlippagePercentage",
     "outputs": [
       {
         "internalType": "uint256",

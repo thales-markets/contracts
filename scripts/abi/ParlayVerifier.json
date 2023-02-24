@@ -111,7 +111,7 @@
     "outputs": [
       {
         "internalType": "enum ISportsAMM.Position",
-        "name": "position",
+        "name": "",
         "type": "uint8"
       }
     ],

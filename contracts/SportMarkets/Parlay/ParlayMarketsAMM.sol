@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 // external
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 
 // interfaces
@@ -26,7 +25,6 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
-    using SafeMathUpgradeable for uint;
     using AddressSetLib for AddressSetLib.AddressSet;
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -63,7 +61,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     AddressSetLib.AddressSet internal _knownMarkets;
     mapping(address => bool) public resolvedParlay;
-    uint maxAllowedPegSlippagePercentage;
+    uint public maxAllowedPegSlippagePercentage;
     ParlayVerifier public parlayVerifier;
     uint public minUSDAmount;
 
@@ -169,7 +167,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
         //cant get a quote on how much collateral is needed from curve for sUSD,
         //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
+        collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid) * (ONE + (ONE_PERCENT / 5))) / ONE;
     }
 
     function canCreateParlayMarket(
@@ -215,10 +213,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _sUSDPaid,
         uint _additionalSlippage,
         uint _expectedPayout,
-        address _differentRecipient
+        address _differentRecepient
     ) external nonReentrant notPaused {
-        if (_differentRecipient == address(0)) {
-            _differentRecipient = msg.sender;
+        if (_differentRecepient == address(0)) {
+            _differentRecepient = msg.sender;
         }
         _buyFromParlay(
             _sportMarkets,
@@ -227,10 +225,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _additionalSlippage,
             _expectedPayout,
             true,
-            _differentRecipient
+            _differentRecepient
         );
         if (referrerFee > 0 && referrals != address(0)) {
-            _handleReferrer(_differentRecipient, _sUSDPaid);
+            _handleReferrer(_differentRecepient, _sUSDPaid);
         }
     }
 
@@ -240,11 +238,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _sUSDPaid,
         uint _additionalSlippage,
         uint _expectedPayout,
-        address _differentRecipient,
+        address _differentRecepient,
         address _referrer
     ) external nonReentrant notPaused {
-        if (_differentRecipient == address(0)) {
-            _differentRecipient = msg.sender;
+        if (_differentRecepient == address(0)) {
+            _differentRecepient = msg.sender;
         }
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
@@ -256,10 +254,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _additionalSlippage,
             _expectedPayout,
             true,
-            _differentRecipient
+            _differentRecepient
         );
         if (referrerFee > 0 && referrals != address(0)) {
-            _handleReferrer(_differentRecipient, _sUSDPaid);
+            _handleReferrer(_differentRecepient, _sUSDPaid);
         }
     }
 
@@ -280,20 +278,18 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         //cant get a quote on how much collateral is needed from curve for sUSD,
         //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        uint collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid).mul(ONE.add(ONE_PERCENT.div(5))).div(
-            ONE
-        );
+        uint collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid) * (ONE + (ONE_PERCENT / (5)))) / ONE;
 
         uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
-            ? collateralQuote.mul(1e12)
+            ? collateralQuote * 1e12
             : collateralQuote;
         require(
             maxAllowedPegSlippagePercentage > 0 &&
-                transformedCollateralForPegCheck >= _sUSDPaid.mul(ONE.sub(maxAllowedPegSlippagePercentage)).div(ONE),
+                transformedCollateralForPegCheck >= (_sUSDPaid * (ONE - maxAllowedPegSlippagePercentage)) / ONE,
             "Amount below max allowed peg slippage"
         );
 
-        require(collateralQuote.mul(ONE).div(_sUSDPaid) <= ONE.add(_additionalSlippage), "Slippage too high!");
+        require((collateralQuote * ONE) / (_sUSDPaid) <= (ONE + _additionalSlippage), "Slippage too high!");
 
         IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
         collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
@@ -354,7 +350,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _additionalSlippage,
         uint _expectedPayout,
         bool _sendSUSD,
-        address _differentRecipient
+        address _differentRecepient
     ) internal {
         uint totalAmount;
         uint totalQuote;
@@ -388,14 +384,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             sUSDAfterFees,
             (block.timestamp + sportManager.expiryDuration()),
             address(this),
-            _differentRecipient
+            _differentRecepient
         );
 
         emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
 
         _knownMarkets.add(address(parlayMarket));
         parlayMarket.updateQuotes(marketQuotes, totalQuote);
-        sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
+        sportsAmm.updateParlayVolume(_differentRecepient, _sUSDPaid);
         // buy the positions
         _buyPositionsFromSportAMM(
             _sportMarkets,
@@ -403,14 +399,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             amountsToBuy,
             _additionalSlippage,
             address(parlayMarket),
-            _differentRecipient
+            _differentRecepient
         );
         _sportMarkets = parlayVerifier.sort(_sportMarkets);
         _storeRisk(_sportMarkets, (totalAmount - sUSDAfterFees));
 
         emit ParlayMarketCreated(
             address(parlayMarket),
-            _differentRecipient,
+            _differentRecepient,
             totalAmount,
             _sUSDPaid,
             sUSDAfterFees,
@@ -462,7 +458,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address _parlayOwner
     ) internal {
         uint numOfMarkets = _sportMarkets.length;
-        uint buyAMMQuote;
         ISportsAMM.Position sportPosition;
         for (uint i = 0; i < numOfMarkets; i++) {
             sportPosition = parlayVerifier.obtainSportsAMMPosition(_positions[i]);
@@ -470,7 +465,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 _sportMarkets[i],
                 sportPosition,
                 _proportionalAmounts[i],
-                type(uint256).max,
+                MAX_APPROVAL,
                 _additionalSlippage
             );
             _sendPositionsToMarket(_sportMarkets[i], _positions[i], _parlayMarket, _proportionalAmounts[i]);
@@ -541,7 +536,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function _handleReferrer(address buyer, uint volume) internal {
         address referrer = IReferrals(referrals).sportReferrals(buyer);
-        uint referrerShare = volume.mul(ONE).div(ONE.sub(referrerFee)).sub(volume);
+        uint referrerShare = (volume * ONE) / (ONE - referrerFee) - volume;
         if (referrer != address(0) && referrerFee > 0) {
             sUSD.safeTransfer(referrer, referrerShare);
             emit ReferrerPaid(referrer, buyer, referrerShare, volume);
@@ -555,7 +550,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function setParameters(uint _parlaySize) external onlyOwner {
-        require(_parlaySize < 9, "parlaySize invalid");
         parlaySize = _parlaySize;
     }
 
@@ -634,7 +628,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     /* ========== EVENTS ========== */
 
-    event SetSUSD(address sUSD);
     event NewParlayMarket(address market, address[] markets, uint[] positions, uint amount, uint sUSDpaid);
     event ParlayMarketCreated(
         address market,

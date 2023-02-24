@@ -215,12 +215,13 @@ contract ParlayVerifier {
         }
     }
 
-    function obtainSportsAMMPosition(uint _position) public pure returns (ISportsAMM.Position position) {
+    function obtainSportsAMMPosition(uint _position) public pure returns (ISportsAMM.Position) {
         if (_position == 0) {
-            position = ISportsAMM.Position.Home;
-        } else {
-            position = _position == 1 ? ISportsAMM.Position.Away : ISportsAMM.Position.Draw;
+            return ISportsAMM.Position.Home;
+        } else if (_position == 1) {
+            return ISportsAMM.Position.Away;
         }
+        return ISportsAMM.Position.Draw;
     }
 
     function _checkRisk(

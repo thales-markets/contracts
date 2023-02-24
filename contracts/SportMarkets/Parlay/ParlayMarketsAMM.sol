@@ -72,6 +72,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => uint))))))))
         public riskPerGameCombination;
 
+    mapping(bytes32 => uint) public riskPerPackedGamesCombination;
+
     function initialize(
         address _owner,
         ISportsAMM _sportsAmm,
@@ -401,8 +403,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             address(parlayMarket),
             _differentRecepient
         );
-        _sportMarkets = parlayVerifier.sort(_sportMarkets);
-        _storeRisk(_sportMarkets, (totalAmount - sUSDAfterFees));
+        _storeRisk(_sportMarkets, (totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)));
 
         emit ParlayMarketCreated(
             address(parlayMarket),
@@ -501,16 +502,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function _storeRisk(address[] memory _sportMarkets, uint _sUSDPaid) internal {
-        if (_sportMarkets.length > 1 && _sportMarkets.length < 9) {
-            address first = _sportMarkets[0];
-            address second = _sportMarkets[1];
-            address third = _sportMarkets.length > 2 ? _sportMarkets[2] : address(0);
-            address fourth = _sportMarkets.length > 3 ? _sportMarkets[3] : address(0);
-            address fifth = _sportMarkets.length > 4 ? _sportMarkets[4] : address(0);
-            address sixth = _sportMarkets.length > 5 ? _sportMarkets[5] : address(0);
-            address seventh = _sportMarkets.length > 6 ? _sportMarkets[6] : address(0);
-            address eight = _sportMarkets.length > 7 ? _sportMarkets[7] : address(0);
-            riskPerGameCombination[first][second][third][fourth][fifth][sixth][seventh][eight] += _sUSDPaid;
+        if (_sportMarkets.length > 1 && _sportMarkets.length <= parlaySize) {
+            riskPerPackedGamesCombination[parlayVerifier.calculateCombinationKey(_sportMarkets)] += _sUSDPaid;
         }
     }
 
@@ -547,10 +540,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function setParlayMarketMastercopies(address _parlayMarketMastercopy) external onlyOwner {
         parlayMarketMastercopy = _parlayMarketMastercopy;
+        emit NewParlayMastercopy(_parlayMarketMastercopy);
     }
 
     function setParameters(uint _parlaySize) external onlyOwner {
         parlaySize = _parlaySize;
+        emit NewParametersSet(_parlaySize);
     }
 
     function setAmounts(
@@ -622,12 +617,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         //sUSD.approve(_curveSUSD, MAX_APPROVAL);
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
+        emit CurveParametersUpdated(_curveSUSD, _dai, _usdc, _usdt, _curveOnrampEnabled, _maxAllowedPegSlippagePercentage);
     }
 
     /* ========== MODIFIERS ========== */
 
     /* ========== EVENTS ========== */
-
+    event SetSUSD(address sUSDToken);
     event NewParlayMarket(address market, address[] markets, uint[] positions, uint amount, uint sUSDpaid);
     event ParlayMarketCreated(
         address market,
@@ -658,4 +654,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event ExtraAmountTransferredDueToCancellation(address receiver, uint amount);
     event ParlayResolved(address _parlayMarket, address _parlayOwner, bool _userWon);
+    event NewParlayMastercopy(address parlayMarketMastercopy);
+    event NewParametersSet(uint parlaySize);
+    event CurveParametersUpdated(
+        address curveSUSD,
+        address dai,
+        address usdc,
+        address usdt,
+        bool curveOnrampEnabled,
+        uint maxAllowedPegSlippagePercentage
+    );
 }

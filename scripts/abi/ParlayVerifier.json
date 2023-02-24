@@ -31,6 +31,25 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "calculateCombinationKey",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "components": [
           {
             "internalType": "address[]",

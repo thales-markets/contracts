@@ -167,6 +167,10 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         return paused ? _pause() : _unpause();
     }
 
+    function setTokenURI(uint256 tokenId, string memory _tokenURI) external onlyOwner {
+        _setTokenURI(tokenId, _tokenURI);
+    }
+
     function setResultForGame(uint _gameId, uint _teamId) external onlyOwner {
         require(isValidTeamIndex(_teamId), "Not valid team index");
         require(isValidGameId(_gameId), "Not valid game index");

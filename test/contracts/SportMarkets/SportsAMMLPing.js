@@ -583,7 +583,13 @@ contract('SportsAMM', (accounts) => {
 				from: owner,
 			});
 
+			let isUserLPing = await SportAMMLiquidityPool.isUserLPing(firstLiquidityProvider);
+			console.log('isUserLPing firstLiquidityProvider: ' + isUserLPing);
+
 			await SportAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+
+			isUserLPing = await SportAMMLiquidityPool.isUserLPing(firstLiquidityProvider);
+			console.log('isUserLPing firstLiquidityProvider after deposit: ' + isUserLPing);
 
 			await SportAMMLiquidityPool.start({ from: owner });
 

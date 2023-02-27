@@ -346,8 +346,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @return isUserInLP whether the user is currently LPing
     function isUserLPing(address user) external view returns (bool isUserInLP) {
         isUserInLP =
-            (balancesPerRound[round][msg.sender] > 0 || balancesPerRound[round + 1][msg.sender] > 0) &&
-            !withdrawalRequested[msg.sender];
+            (balancesPerRound[round][user] > 0 || balancesPerRound[round + 1][user] > 0) &&
+            !withdrawalRequested[user];
     }
 
     /// @notice Return the maximum amount the user can deposit now

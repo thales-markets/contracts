@@ -567,19 +567,26 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     /// @notice Send tokens from this contract to the destination address
+    /// @param tokens to iterate and transfer
     /// @param account Address where to send the tokens
     /// @param amount Amount of tokens to be sent
     /// @param all ignore amount and send whole balance
     function transferTokens(
-        address token,
+        address[] calldata tokens,
         address payable account,
         uint amount,
         bool all
     ) external onlyOwner {
-        if (all) {
-            IERC20Upgradeable(token).safeTransfer(account, IERC20Upgradeable(token).balanceOf(address(this)));
-        } else {
-            IERC20Upgradeable(token).safeTransfer(account, amount);
+        require(tokens.length > 0, "Whitelisted addresses cannot be empty");
+        for (uint256 index = 0; index < tokens.length; index++) {
+            if (all) {
+                IERC20Upgradeable(tokens[index]).safeTransfer(
+                    account,
+                    IERC20Upgradeable(tokens[index]).balanceOf(address(this))
+                );
+            } else {
+                IERC20Upgradeable(tokens[index]).safeTransfer(account, amount);
+            }
         }
     }
 

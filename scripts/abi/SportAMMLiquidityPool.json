@@ -378,13 +378,7 @@
       }
     ],
     "name": "commitTrade",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "liquidityPoolRound",
-        "type": "address"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -582,13 +576,7 @@
       }
     ],
     "name": "getOptionsForBuy",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "liquidityPoolRound",
-        "type": "address"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -611,13 +599,7 @@
       }
     ],
     "name": "getOptionsForBuyByAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "liquidityPoolRound",
-        "type": "address"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -766,6 +748,25 @@
       {
         "internalType": "bool",
         "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "isUserLPing",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isUserInLP",
         "type": "bool"
       }
     ],
@@ -1014,6 +1015,19 @@
       }
     ],
     "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_setPausing",
+        "type": "bool"
+      }
+    ],
+    "name": "setPaused",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

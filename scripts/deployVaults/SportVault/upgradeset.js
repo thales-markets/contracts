@@ -47,7 +47,7 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vaultAddress = getTargetAddress('AmmVaultSafu', network);
+	const vaultAddress = getTargetAddress('SportVaultSafu', network);
 	console.log('Found Vault at:', vaultAddress);
 
 	const Vault = await ethers.getContractFactory('SportVault');

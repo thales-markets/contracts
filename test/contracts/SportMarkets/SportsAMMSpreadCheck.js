@@ -16,11 +16,6 @@ const DAY = 86400;
 const WEEK = 604800;
 const YEAR = 31556926;
 
-const hour = 60 * 60;
-const day = 24 * 60 * 60;
-const week = 7 * day;
-const month = 30 * day;
-
 const {
 	fastForward,
 	toUnit,
@@ -48,15 +43,17 @@ contract('SportsAMM', (accounts) => {
 		fourth,
 		safeBox,
 		wrapper,
-		defaultLiquidityProvider,
 		firstLiquidityProvider,
-		secondLiquidityProvider,
+		defaultLiquidityProvider,
 	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
 		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
+	const SportAMMLiquidityPoolRoundMastercopy = artifacts.require(
+		'SportAMMLiquidityPoolRoundMastercopy'
+	);
 	const SportPositionContract = artifacts.require('SportPosition');
 	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
 	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
@@ -64,9 +61,6 @@ contract('SportsAMM', (accounts) => {
 	const SportPositionalMarketFactoryContract = artifacts.require('SportPositionalMarketFactory');
 	const SportPositionalMarketMasterCopyContract = artifacts.require(
 		'SportPositionalMarketMastercopy'
-	);
-	const SportAMMLiquidityPoolRoundMastercopy = artifacts.require(
-		'SportAMMLiquidityPoolRoundMastercopy'
 	);
 	const SportPositionMasterCopyContract = artifacts.require('SportPositionMastercopy');
 	const StakingThalesContract = artifacts.require('StakingThales');
@@ -195,6 +189,7 @@ contract('SportsAMM', (accounts) => {
 
 		await SportPositionalMarketManager.setExpiryDuration(5 * DAY, { from: manager });
 		// await SportPositionalMarketManager.setCancelTimeout(2 * HOUR, { from: manager });
+		// await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
@@ -235,14 +230,14 @@ contract('SportsAMM', (accounts) => {
 
 		await SportsAMM.setParameters(
 			DAY,
-			toUnit('0.02'),
-			toUnit('0.2'),
-			toUnit('0.001'),
-			toUnit('0.9'),
-			toUnit('5000'),
-			toUnit('0.01'),
-			toUnit('0.005'),
-			toUnit('500000'),
+			toUnit('0.01'), //_minSpread
+			toUnit('0.1'), //_maxSpread
+			toUnit('0.001'), //_minSupportedOdds
+			toUnit('0.9'), //_maxSupportedOdds
+			toUnit('1000'), //_defaultCapPerGame
+			toUnit('0.02'), //_safeBoxImpact
+			toUnit('0.005'), //_referrerFee
+			toUnit('500000'), //_threshold
 			{ from: owner }
 		);
 
@@ -396,6 +391,7 @@ contract('SportsAMM', (accounts) => {
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
 		});
+		// await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketData.setSportPositionalMarketManager(
@@ -437,7 +433,7 @@ contract('SportsAMM', (accounts) => {
 				_owner: owner,
 				_sportsAmm: SportsAMM.address,
 				_sUSD: Thales.address,
-				_roundLength: month,
+				_roundLength: WEEK,
 				_maxAllowedDeposit: toUnit(1000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
@@ -457,33 +453,68 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
+		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+		await Thales.transfer(firstLiquidityProvider, toUnit('1000000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000000'), {
+			from: firstLiquidityProvider,
+		});
+		await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await SportAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+		await SportAMMLiquidityPool.start({ from: owner });
+		await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+			from: owner,
+		});
+		await Thales.transfer(defaultLiquidityProvider, toUnit('1000000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000000'), {
+			from: defaultLiquidityProvider,
+		});
+
 		await testUSDC.mint(first, toUnit(100000));
 		await testUSDC.mint(curveSUSD.address, toUnit(100000));
 		await testUSDC.approve(SportsAMM.address, toUnit(100000), { from: first });
 		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 	});
 
-	describe('Test SportsAMM LPing', () => {
+	describe('Test 3 options game', () => {
 		let deployedMarket;
 		let answer;
 		beforeEach(async () => {
+			let _currentTime = await currentTime();
+			// await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward(gameFootballTime - (await currentTime()) - SECOND);
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// console.log("Fast forward: ", (gameFootballTime - _currentTime - SECOND).toString());
+
 			// req. games
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-				reqIdCreate,
-				gamesCreated,
-				sportId_4,
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
 				game1NBATime,
 				{ from: wrapper }
 			);
 
-			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
-			let gameTime = game.startTime;
-			await TherundownConsumerDeployed.createMarketForGame(gameid1);
-			await TherundownConsumerDeployed.marketPerGameId(gameid1);
-			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-			deployedMarket = await SportPositionalMarketContract.at(answer.toString());
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			// console.log("Current time: ", _currentTime.toString());
+			// console.log("Start time: ", game.startTime.toString());
+			// console.log("Difference: ", (_currentTime - game.startTime).toString());
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+
+			// check if event is emited
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			// console.log("Active market: ", answer.toString());
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 		});
+
 		let position = 0;
 		let value = 100;
 
@@ -500,28 +531,13 @@ contract('SportsAMM', (accounts) => {
 			console.log('Total odds: ', fromUnit(sumOfOdds));
 		});
 
-		it('Get american odds', async () => {
-			answer = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
-			let sumOfOdds = answer[0];
-			sumOfOdds = sumOfOdds.add(answer[1]);
-			sumOfOdds = sumOfOdds.add(answer[2]);
-		});
-
-		it('Get price', async () => {
-			answer = await SportsAMM.obtainOdds(deployedMarket.address, 0);
-			let sumOfPrices = answer;
-			console.log('Price for pos 0: ', fromUnit(answer));
-			sumOfPrices = sumOfPrices.add(answer);
-			answer = await SportsAMM.obtainOdds(deployedMarket.address, 1);
-			console.log('Price for pos 1: ', fromUnit(answer));
-			sumOfPrices = sumOfPrices.add(answer);
-			answer = await SportsAMM.obtainOdds(deployedMarket.address, 2);
-			console.log('Price for pos 2: ', fromUnit(answer));
-			console.log('Total price: ', fromUnit(sumOfPrices));
-		});
-		it('Get Available to buy from SportsAMM, position 1', async () => {
+		it('Get Available to buy from SportsAMM, positions', async () => {
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
-			console.log('Available to buy: ', fromUnit(answer));
+			console.log('Available to buy 1: ', fromUnit(answer));
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 0);
+			console.log('Available to buy 0: ', fromUnit(answer));
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
+			console.log('Available to buy 2: ', fromUnit(answer));
 		});
 
 		it('Get BuyQuote from SportsAMM, position 1, value: 100', async () => {
@@ -530,323 +546,46 @@ contract('SportsAMM', (accounts) => {
 		});
 
 		it('Buy from SportsAMM, position 1, value: 100', async () => {
-			let ammBalance = await Thales.balanceOf(SportsAMM.address);
-			console.log('ammBalance: ' + ammBalance / 1e18);
-
 			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
 			let additionalSlippage = toUnit(0.01);
-			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
-			answer = await Thales.balanceOf(first);
-			let before_balance = answer;
-			console.log('acc balance: ', fromUnit(answer));
-			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
 
-			await expect(
-				SportsAMM.buyFromAMM(
-					deployedMarket.address,
-					1,
-					toUnit(100),
-					buyFromAmmQuote,
-					additionalSlippage,
-					{ from: first }
-				)
-			).to.be.revertedWith('Pool has not started');
-
-			let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
-
-			await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
-				from: owner,
-			});
-
-			await expect(
-				SportsAMM.buyFromAMM(
-					deployedMarket.address,
-					1,
-					toUnit(100),
-					buyFromAmmQuote,
-					additionalSlippage,
-					{ from: first }
-				)
-			).to.be.revertedWith('Pool has not started');
-
-			await expect(SportAMMLiquidityPool.start({ from: owner })).to.be.revertedWith(
-				'can not start with 0 deposits'
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				1,
+				toUnit(1000)
 			);
-
-			await Thales.transfer(firstLiquidityProvider, toUnit('100'), { from: owner });
-			await Thales.approve(SportAMMLiquidityPool.address, toUnit('100'), {
-				from: firstLiquidityProvider,
-			});
-
-			await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
-				from: owner,
-			});
-
-			await SportAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
-
-			await SportAMMLiquidityPool.start({ from: owner });
-
-			await expect(
-				SportsAMM.buyFromAMM(
-					deployedMarket.address,
-					1,
-					toUnit(100),
-					buyFromAmmQuote,
-					additionalSlippage,
-					{ from: first }
-				)
-			).to.be.revertedWith('default liquidity provider not set');
-
-			await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
-				from: owner,
-			});
-
-			await Thales.transfer(defaultLiquidityProvider, toUnit('100000'), { from: owner });
-			await Thales.approve(SportAMMLiquidityPool.address, toUnit('100000'), {
-				from: defaultLiquidityProvider,
-			});
-
-			let maturity = await deployedMarket.times();
-			var maturityAfter = maturity[0];
-			var expiryAfter = maturity[1];
-			console.log('Maturity after' + parseInt(maturityAfter));
-
-			let now = await currentTime();
-			console.log('now' + parseInt(now));
-
-			let marketRound = await SportAMMLiquidityPool.getMarketRound(deployedMarket.address);
-			let round = await SportAMMLiquidityPool.round();
-			console.log('Market round is ' + marketRound);
-			console.log('round ' + round);
-
-			let roundPool = await SportAMMLiquidityPool.roundPools(2);
-			console.log('round pool is ' + roundPool);
-
-			let balanceDefaultLiquidityProviderBefore = await Thales.balanceOf(defaultLiquidityProvider);
-			console.log(
-				'balanceDefaultLiquidityProviderBefore: ' + balanceDefaultLiquidityProviderBefore / 1e18
-			);
-
-			let roundPoolBalanceBefore = await Thales.balanceOf(roundPool);
-			console.log('roundPoolBalanceBefore: ' + roundPoolBalanceBefore / 1e18);
-
 			answer = await SportsAMM.buyFromAMM(
 				deployedMarket.address,
 				1,
-				toUnit(100),
+				toUnit(1000),
 				buyFromAmmQuote,
 				additionalSlippage,
 				{ from: first }
 			);
 
-			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(1));
-			console.log('Buy quote for positions 0 is ' + buyFromAmmQuote / 1e18 + ' !!!!!');
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 2, toUnit(1000));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				2,
+				toUnit(1000),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(1000));
 			answer = await SportsAMM.buyFromAMM(
 				deployedMarket.address,
 				0,
-				toUnit(1),
+				toUnit(1000),
 				buyFromAmmQuote,
 				additionalSlippage,
 				{ from: first }
 			);
 
-			let balanceDefaultLiquidityProviderAfter = await Thales.balanceOf(defaultLiquidityProvider);
-			console.log(
-				'balanceDefaultLiquidityProviderAfter: ' + balanceDefaultLiquidityProviderAfter / 1e18
-			);
-
-			let balancesPerRoundLP = await SportAMMLiquidityPool.balancesPerRound(
-				1,
-				defaultLiquidityProvider
-			);
-			console.log('balancesPerRoundLP 1 ' + balancesPerRoundLP / 1e18);
-
-			balancesPerRoundLP = await SportAMMLiquidityPool.balancesPerRound(
-				2,
-				defaultLiquidityProvider
-			);
-			console.log('balancesPerRoundLP 2 ' + balancesPerRoundLP / 1e18);
-
+			let roundPool = await SportAMMLiquidityPool.getMarketPool(deployedMarket.address);
 			let roundPoolBalanceAfter = await Thales.balanceOf(roundPool);
 			console.log('roundPoolBalanceAfter: ' + roundPoolBalanceAfter / 1e18);
-
-			let options = await deployedMarket.options();
-			position = artifacts.require('SportPosition');
-			let home = await position.at(options.home);
-			let away = await position.at(options.away);
-
-			let balanceHome = await home.balanceOf(first);
-			console.log('Balance Home first= ' + balanceHome / 1e18);
-
-			let balanceAway = await away.balanceOf(first);
-			console.log('Balance Away first= ' + balanceAway / 1e18);
-
-			let balanceHomePool = await home.balanceOf(roundPool);
-			console.log('Balance Home roundPool= ' + balanceHomePool / 1e18);
-
-			let balanceAwayPool = await away.balanceOf(roundPool);
-			console.log('Balance Away roundPool= ' + balanceAwayPool / 1e18);
-
-			let canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
-			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
-
-			await fastForward(month * 2);
-
-			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
-			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
-
-			await SportAMMLiquidityPool.closeRound();
-
-			round = await SportAMMLiquidityPool.round();
-			console.log('round ' + round);
-
-			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
-			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
-
-			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-				reqIdResolve,
-				gamesResolved,
-				sportId_4,
-				{ from: wrapper }
-			);
-
-			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
-			assert.equal(100, gameR.homeScore);
-			assert.equal(129, gameR.awayScore);
-
-			// resolve markets
-			const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
-
-			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
-			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
-
-			await SportAMMLiquidityPool.closeRound();
-
-			balancesPerRoundLP = await SportAMMLiquidityPool.balancesPerRound(
-				3,
-				defaultLiquidityProvider
-			);
-			console.log('balancesPerRound 3 defaultLiquidityProvider ' + balancesPerRoundLP / 1e18);
-
-			balancesPerRoundLP = await SportAMMLiquidityPool.balancesPerRound(3, firstLiquidityProvider);
-			console.log('balancesPerRound 3 firstLiquidityProvider ' + balancesPerRoundLP / 1e18);
-
-			balanceDefaultLiquidityProviderBefore = await Thales.balanceOf(defaultLiquidityProvider);
-			console.log(
-				'balanceDefaultLiquidityProviderAfter: ' + balanceDefaultLiquidityProviderBefore / 1e18
-			);
-
-			let profitAndLossPerRound = await SportAMMLiquidityPool.profitAndLossPerRound(2);
-			console.log('profitAndLossPerRound: ' + profitAndLossPerRound / 1e16 + '%');
-
-			let cumulativeProfitAndLoss = await SportAMMLiquidityPool.cumulativeProfitAndLoss(2);
-			console.log('cumulativeProfitAndLoss: ' + cumulativeProfitAndLoss / 1e16 + '%');
-
-			let allocationPerRound = await SportAMMLiquidityPool.allocationPerRound(2);
-			console.log('allocationPerRound: ' + allocationPerRound / 1e18);
-
-			allocationPerRound = await SportAMMLiquidityPool.allocationPerRound(3);
-			console.log('allocationPerRound3: ' + allocationPerRound / 1e18);
-
-			round = await SportAMMLiquidityPool.round();
-			console.log('round ' + round);
-
-			let totalDeposited = await SportAMMLiquidityPool.totalDeposited();
-			console.log('totalDeposited 3 ' + totalDeposited / 1e18);
-
-			await SportAMMLiquidityPool.withdrawalRequest({ from: firstLiquidityProvider });
-
-			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
-			console.log('canCloseCurrentRound 3 ' + canCloseCurrentRound);
-
-			await fastForward(month * 2);
-
-			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
-			console.log('canCloseCurrentRound 3 ' + canCloseCurrentRound);
-
-			await SportAMMLiquidityPool.closeRound();
-
-			round = await SportAMMLiquidityPool.round();
-			console.log('round ' + round);
-
-			allocationPerRound = await SportAMMLiquidityPool.allocationPerRound(4);
-			console.log('allocationPerRound3: ' + allocationPerRound / 1e18);
-
-			balancesPerRoundLP = await SportAMMLiquidityPool.balancesPerRound(4, firstLiquidityProvider);
-			console.log('balancesPerRound 3 firstLiquidityProvider ' + balancesPerRoundLP / 1e18);
-
-			balanceDefaultLiquidityProviderBefore = await Thales.balanceOf(defaultLiquidityProvider);
-			console.log(
-				'balanceDefaultLiquidityProviderAfter: ' + balanceDefaultLiquidityProviderBefore / 1e18
-			);
-
-			profitAndLossPerRound = await SportAMMLiquidityPool.profitAndLossPerRound(3);
-			console.log('profitAndLossPerRound 3: ' + profitAndLossPerRound / 1e16 + '%');
-
-			cumulativeProfitAndLoss = await SportAMMLiquidityPool.cumulativeProfitAndLoss(3);
-			console.log('cumulativeProfitAndLoss: ' + cumulativeProfitAndLoss / 1e16 + '%');
-
-			totalDeposited = await SportAMMLiquidityPool.totalDeposited();
-			console.log('totalDeposited 4 ' + totalDeposited / 1e18);
-
-			await Thales.transfer(secondLiquidityProvider, toUnit('1000'), { from: owner });
-			await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000'), {
-				from: secondLiquidityProvider,
-			});
-
-			const MockStakingThales = artifacts.require('MockStakingThales');
-			let mockStakingThales = await MockStakingThales.new({ from: owner });
-			await Thales.approve(mockStakingThales.address, toUnit(1000), {
-				from: secondLiquidityProvider,
-			});
-			await mockStakingThales.stake(toUnit(100), { from: secondLiquidityProvider });
-
-			await SportAMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
-				from: owner,
-			});
-
-			await SportAMMLiquidityPool.setStakingThales(mockStakingThales.address, {
-				from: owner,
-			});
-
-			await expect(
-				SportAMMLiquidityPool.deposit(toUnit(1000000), { from: secondLiquidityProvider })
-			).to.be.revertedWith('Deposit amount exceeds AMM LP cap');
-
-			await expect(
-				SportAMMLiquidityPool.deposit(toUnit(101), { from: secondLiquidityProvider })
-			).to.be.revertedWith('Not enough staked THALES');
-
-			await expect(
-				SportAMMLiquidityPool.deposit(toUnit(1), { from: secondLiquidityProvider })
-			).to.be.revertedWith('Amount less than minDepositAmount');
-
-			let getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(
-				secondLiquidityProvider
-			);
-			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
-
-			let getNeededStakedThalesToWithdrawForUser =
-				await SportAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(secondLiquidityProvider);
-			console.log(
-				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
-			);
-
-			await SportAMMLiquidityPool.deposit(toUnit(100), { from: secondLiquidityProvider });
-
-			getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(
-				secondLiquidityProvider
-			);
-			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
-
-			getNeededStakedThalesToWithdrawForUser =
-				await SportAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(secondLiquidityProvider);
-			console.log(
-				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
-			);
-
-			ammBalance = await Thales.balanceOf(SportsAMM.address);
-			console.log('ammBalance: ' + ammBalance / 1e18);
 		});
 	});
 });

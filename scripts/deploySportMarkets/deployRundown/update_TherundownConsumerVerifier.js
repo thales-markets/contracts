@@ -29,6 +29,11 @@ async function main() {
 		network = 'optimisticGoerli';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
@@ -37,7 +42,7 @@ async function main() {
 
 	const TherundownConsumerVerifier = await ethers.getContractFactory('TherundownConsumerVerifier');
 	let implementation;
-	if (networkObj.chainId == 10) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
 		implementation = await upgrades.prepareUpgrade(
 			therundownConsumerVerifierAddress,
 			TherundownConsumerVerifier

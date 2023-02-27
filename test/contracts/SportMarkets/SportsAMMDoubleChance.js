@@ -280,6 +280,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			second,
 			second,
 			second,
+			second,
 			{ from: owner }
 		);
 

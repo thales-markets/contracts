@@ -5438,7 +5438,7 @@
           {
             "contract": "TherundownConsumerVerifier",
             "label": "consumer",
-            "type": "t_contract(ITherundownConsumer)54716",
+            "type": "t_contract(ITherundownConsumer)59439",
             "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:26"
           },
           {
@@ -5480,13 +5480,13 @@
           {
             "contract": "TherundownConsumerVerifier",
             "label": "obtainer",
-            "type": "t_contract(IGamesOddsObtainer)53078",
+            "type": "t_contract(IGamesOddsObtainer)57806",
             "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:34"
           },
           {
             "contract": "TherundownConsumerVerifier",
             "label": "sportsManager",
-            "type": "t_contract(ISportPositionalMarketManager)54005",
+            "type": "t_contract(ISportPositionalMarketManager)58733",
             "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:35"
           },
           {
@@ -5497,7 +5497,7 @@
           }
         ],
         "types": {
-          "t_contract(ITherundownConsumer)54716": {
+          "t_contract(ITherundownConsumer)59439": {
             "label": "contract ITherundownConsumer"
           },
           "t_mapping(t_bytes32,t_bool)": {
@@ -5521,10 +5521,10 @@
           "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)": {
             "label": "mapping(uint256 => uint256[])"
           },
-          "t_contract(IGamesOddsObtainer)53078": {
+          "t_contract(IGamesOddsObtainer)57806": {
             "label": "contract IGamesOddsObtainer"
           },
-          "t_contract(ISportPositionalMarketManager)54005": {
+          "t_contract(ISportPositionalMarketManager)58733": {
             "label": "contract ISportPositionalMarketManager"
           },
           "t_mapping(t_address,t_bool)": {
@@ -9492,6 +9492,160 @@
           },
           "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
             "label": "mapping(address => mapping(address => uint256))"
+          }
+        }
+      }
+    },
+    "9bea07eafdf5df46fa5fed3d879b9899a736adeb2eee3dc047f4365d1295eba3": {
+      "address": "0x3dD87b5B198798b944853A1f0df4909D065a73d8",
+      "txHash": "0x2dc7c1cb511ffccdc7088a9133fe8fac5203b9b06de26184dfd334ce55a970a9",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "consumer",
+            "type": "t_contract(ITherundownConsumer)3358",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:26"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "invalidName",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:27"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "supportedMarketType",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:28"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "defaultOddsThreshold",
+            "type": "t_uint256",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:29"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "oddsThresholdForSport",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:30"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "defaultBookmakerIds",
+            "type": "t_array(t_uint256)dyn_storage",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:32"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "sportIdToBookmakerIds",
+            "type": "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:33"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "obtainer",
+            "type": "t_contract(IGamesOddsObtainer)2426",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:34"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "sportsManager",
+            "type": "t_contract(ISportPositionalMarketManager)3112",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:35"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "whitelistedAddresses",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:36"
+          }
+        ],
+        "types": {
+          "t_contract(ITherundownConsumer)3358": {
+            "label": "contract ITherundownConsumer"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(uint256 => uint256[])"
+          },
+          "t_contract(IGamesOddsObtainer)2426": {
+            "label": "contract IGamesOddsObtainer"
+          },
+          "t_contract(ISportPositionalMarketManager)3112": {
+            "label": "contract ISportPositionalMarketManager"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
           }
         }
       }

@@ -199,7 +199,7 @@ contract('SportsVauchers', (accounts) => {
 
 		await SportsAMM.setParameters(
 			DAY,
-			toUnit('0.02'),
+			toUnit('0.01'),
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),

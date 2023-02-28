@@ -230,12 +230,12 @@ contract('SportsAMM', (accounts) => {
 
 		await SportsAMM.setParameters(
 			DAY,
-			toUnit('0.01'), //_minSpread
+			toUnit('0.013'), //_minSpread
 			toUnit('0.1'), //_maxSpread
 			toUnit('0.001'), //_minSupportedOdds
 			toUnit('0.9'), //_maxSupportedOdds
 			toUnit('1000'), //_defaultCapPerGame
-			toUnit('0.02'), //_safeBoxImpact
+			toUnit('0.01'), //_safeBoxImpact
 			toUnit('0.005'), //_referrerFee
 			toUnit('500000'), //_threshold
 			{ from: owner }

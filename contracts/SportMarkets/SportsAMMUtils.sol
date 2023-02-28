@@ -9,6 +9,8 @@ import "../interfaces/IPosition.sol";
 import "../interfaces/ITherundownConsumer.sol";
 import "../interfaces/ISportsAMM.sol";
 
+import "./LiquidityPool/SportAMMLiquidityPool.sol";
+
 /// @title Sports AMM utils
 contract SportsAMMUtils {
     uint private constant ONE = 1e18;
@@ -41,6 +43,17 @@ contract SportsAMMUtils {
         uint pricePosition;
         uint priceOtherPosition;
         uint max_spread;
+    }
+
+    struct PriceImpactParams {
+        address market;
+        ISportsAMM.Position position;
+        uint amount;
+        uint _availableToBuyFromAMM;
+        uint _availableToBuyFromAMMOtherSide;
+        SportAMMLiquidityPool liquidityPool;
+        uint max_spread;
+        uint minSupportedOdds;
     }
 
     function buyPriceImpactImbalancedSkew(
@@ -355,11 +368,98 @@ contract SportsAMMUtils {
         parentMarketPosition2 = address(position2);
     }
 
-    function getBaseOddsForDoubleChance(address market) public view returns (uint oddsPosition1, uint oddsPosition2) {
+    function getBaseOddsForDoubleChance(address market, uint minSupportedOdds)
+        public
+        view
+        returns (uint oddsPosition1, uint oddsPosition2)
+    {
         (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = getParentMarketPositions(
             market
         );
         oddsPosition1 = obtainOdds(parentMarket, position1);
         oddsPosition2 = obtainOdds(parentMarket, position2);
+
+        if (oddsPosition1 > 0 && oddsPosition2 > 0) {
+            oddsPosition1 = oddsPosition1 < minSupportedOdds ? minSupportedOdds : oddsPosition1;
+            oddsPosition2 = oddsPosition2 < minSupportedOdds ? minSupportedOdds : oddsPosition2;
+        }
+    }
+
+    function getBaseOddsForDoubleChanceSum(address market, uint minSupportedOdds) public view returns (uint sum) {
+        (uint oddsPosition1, uint oddsPosition2) = getBaseOddsForDoubleChance(market, minSupportedOdds);
+
+        sum = oddsPosition1 + oddsPosition2;
+    }
+
+    function getBuyPriceImpact(PriceImpactParams memory params) public view returns (int priceImpact) {
+        (uint balancePosition, , uint balanceOtherSide) = balanceOfPositionsOnMarket(
+            params.market,
+            params.position,
+            params.liquidityPool.getMarketPool(params.market)
+        );
+        bool isTwoPositional = ISportPositionalMarket(params.market).optionsCount() == 2;
+        uint balancePositionAfter = balancePosition > params.amount ? balancePosition - params.amount : 0;
+        uint balanceOtherSideAfter = balancePosition > params.amount
+            ? balanceOtherSide
+            : balanceOtherSide + (params.amount - balancePosition);
+        if (params.amount <= balancePosition) {
+            priceImpact = calculateDiscount(
+                DiscountParams(
+                    balancePosition,
+                    balanceOtherSide,
+                    params.amount,
+                    params._availableToBuyFromAMMOtherSide,
+                    params.max_spread
+                )
+            );
+        } else {
+            if (balancePosition > 0) {
+                uint pricePosition = _obtainOdds(params.market, params.position, params.minSupportedOdds);
+                uint priceOtherPosition = isTwoPositional
+                    ? _obtainOdds(
+                        params.market,
+                        params.position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home,
+                        params.minSupportedOdds
+                    )
+                    : ONE - pricePosition;
+                priceImpact = calculateDiscountFromNegativeToPositive(
+                    NegativeDiscountsParams(
+                        params.amount,
+                        balancePosition,
+                        balanceOtherSide,
+                        params._availableToBuyFromAMMOtherSide,
+                        params._availableToBuyFromAMM,
+                        pricePosition,
+                        priceOtherPosition,
+                        params.max_spread
+                    )
+                );
+            } else {
+                priceImpact = int(
+                    buyPriceImpactImbalancedSkew(
+                        params.amount,
+                        balanceOtherSide,
+                        balancePosition,
+                        balanceOtherSideAfter,
+                        balancePositionAfter,
+                        params._availableToBuyFromAMM,
+                        params.max_spread
+                    )
+                );
+            }
+        }
+    }
+
+    function _obtainOdds(
+        address _market,
+        ISportsAMM.Position _position,
+        uint minSupportedOdds
+    ) internal view returns (uint) {
+        if (ISportPositionalMarket(_market).isDoubleChance()) {
+            if (_position == ISportsAMM.Position.Home) {
+                return getBaseOddsForDoubleChanceSum(_market, minSupportedOdds);
+            }
+        }
+        return obtainOdds(_market, _position);
     }
 }

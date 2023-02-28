@@ -127,23 +127,22 @@ contract('MarchMadness', (accounts) => {
 			);
 		});
 
-        it('Should set token uri on minted token', async() => {
-            const dateTo = new Date('02-25-2023').getTime() / 1000;
+		it('Should set token uri on minted token', async () => {
+			const dateTo = new Date('02-25-2023').getTime() / 1000;
 
 			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 			await marchMadness.mint(bracketsArray, { from: first });
-			
-            assert.bnEqual(await marchMadness.balanceOf(first), 1);
 
-            await expect(marchMadness.setTokenURI(1, "https://test.com/1.png", { from: first })).to.be.revertedWith(
-                'Ownable: caller is not the owner'
-            );
+			assert.bnEqual(await marchMadness.balanceOf(first), 1);
 
-            await marchMadness.setTokenURI(1, "https://test.com/1.png", { from: owner });
+			await expect(
+				marchMadness.setTokenURI(1, 'https://test.com/1.png', { from: first })
+			).to.be.revertedWith('Ownable: caller is not the owner');
 
-            expect(await marchMadness.tokenURI(1)).to.be.equal("https://test.com/1.png");
+			await marchMadness.setTokenURI(1, 'https://test.com/1.png', { from: owner });
 
-        });
+			expect(await marchMadness.tokenURI(1)).to.be.equal('https://test.com/1.png');
+		});
 	});
 
 	describe('Updating minted positions/Getting correct positions', () => {

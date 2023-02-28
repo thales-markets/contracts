@@ -32,7 +32,7 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
 
     /* ========== MODIFIER ========== */
 
-    modifier notAfterFinalDate {
+    modifier notAfterFinalDate() {
         require(canNotMintOrUpdateAfter != 0, "canNotMintOrUpdateAfter is not set");
         require(block.timestamp < canNotMintOrUpdateAfter, "Can not mint after settled date");
         _;
@@ -61,7 +61,11 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         emit Mint(msg.sender, newItemId, _brackets);
     }
 
-    function updateBracketsForAlreadyMintedItem(uint _tokenId, uint[63] memory _brackets) external whenNotPaused notAfterFinalDate {
+    function updateBracketsForAlreadyMintedItem(uint _tokenId, uint[63] memory _brackets)
+        external
+        whenNotPaused
+        notAfterFinalDate
+    {
         require(_exists(_tokenId), "Item does not exists");
         require(ownerOf(_tokenId) == msg.sender, "Caller is not owner of entered tokenId");
 
@@ -78,7 +82,7 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         return brackets;
     }
 
-    function getResults() external view returns(uint[63] memory) {
+    function getResults() external view returns (uint[63] memory) {
         return results;
     }
 

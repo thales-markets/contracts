@@ -205,8 +205,6 @@
 		"TherundownConsumer": "0x0aBdaF0c4cFF91F96F817809d4735929fCA75B80",
 		"TherundownConsumerImplementation": "0x9e7769409E3e5A6821eeDcF33371FCA929fE6A48",
 		"TherundownConsumerWrapper": "0xaC47c388d52C443Fd854848Ef1fA57171679e7B1",
-		"TherundownConsumerVerifier": "0xAf3335f531B4Dd876EABF611A7E371AD7e84aa7d",
-		"TherundownConsumerVerifierImplementation": "0x3dD87b5B198798b944853A1f0df4909D065a73d8",
 		"SportsAMMUtils": "0x50B532AdAF5378F59dBD619dFD03E4d4ab3586bC",
 		"OvertimeWorldCupZebro": "",
 		"ParlayAMM": "0x2Bb7D689780e7a34dD365359bD7333ab24903268",
@@ -225,7 +223,9 @@
 		"StakingThalesImplementation": "0xE90e99726548Aa888564D169B2c9686785a04c01",
 		"EscrowThalesImplementation": "0x4c848a4A53954B9A925Cf857248Abf95Ab2A893C",
 		"ThalesStakingRewardsPool": "0x739d25922010A727B1fc842C483494d4D7a4C90e",
-		"ThalesStakingRewardsPoolImplementation": "0x94B417458AF11c991B413C03e79f76bda330AF77"
+		"ThalesStakingRewardsPoolImplementation": "0x94B417458AF11c991B413C03e79f76bda330AF77",
+		"TherundownConsumerVerifier": "0x0B13071b5f3f860f4D52c836D898A79fE104C9B4",
+		"TherundownConsumerVerifierImplementation": "0x3dD87b5B198798b944853A1f0df4909D065a73d8"
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",

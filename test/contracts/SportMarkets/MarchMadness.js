@@ -108,6 +108,8 @@ contract('MarchMadness', (accounts) => {
 
 			await marchMadness.mint(bracketsArray, { from: first });
 
+			assert.bnEqual(await marchMadness.getBracketsByMinter(first), bracketsArray);
+
 			assert.bnGt(await marchMadness.balanceOf(first), 0);
 		});
 

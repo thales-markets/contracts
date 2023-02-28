@@ -403,6 +403,25 @@
         "type": "address"
       }
     ],
+    "name": "getBracketsByMinter",
+    "outputs": [
+      {
+        "internalType": "uint256[63]",
+        "name": "brackets",
+        "type": "uint256[63]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_minter",
+        "type": "address"
+      }
+    ],
     "name": "getCorrectPositionsByMinterAddress",
     "outputs": [
       {
@@ -476,6 +495,19 @@
         "internalType": "uint256",
         "name": "correctPredictions",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getResults",
+    "outputs": [
+      {
+        "internalType": "uint256[63]",
+        "name": "",
+        "type": "uint256[63]"
       }
     ],
     "stateMutability": "view",

@@ -71,6 +71,16 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
     }
 
     /* ========== VIEW ========== */
+    function getBracketsByMinter(address _minter) public view returns (uint[63] memory brackets) {
+        uint _tokenId = addressToTokenId[_minter];
+        if (_tokenId == 0 || itemToBrackets[_tokenId][0] == 0) return brackets;
+        brackets = itemToBrackets[_tokenId];
+        return brackets;
+    }
+
+    function getResults() external view returns(uint[63] memory) {
+        return results;
+    }
 
     function isTeamWinnerOfGameId(uint _gameId, uint _teamId) public view returns (bool _flag) {
         if (isValidGameId(_gameId)) {

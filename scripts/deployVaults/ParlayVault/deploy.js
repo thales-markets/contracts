@@ -69,6 +69,7 @@ async function main() {
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
 			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
 			_minTradeAmount: w3utils.toWei('5'), // minimum trade amount
+			_maxMarketNumberPerRound: 5, // max market tickets per round
 		},
 	]);
 

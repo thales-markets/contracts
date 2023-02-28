@@ -744,7 +744,7 @@ contract('Parlay Vault', (accounts) => {
 			_minDepositAmount: toUnit(100).toString(),
 			_maxAllowedUsers: 100,
 			_minTradeAmount: toUnit(10).toString(),
-			_maxMarketNumberPerRound: 2,
+			_maxMarketUsedInRoundCount: 2,
 		});
 
 		await vault.setMaxAllowedUsers(100, { from: owner });
@@ -1160,7 +1160,7 @@ contract('Parlay Vault', (accounts) => {
 				totalSUSDToPay
 			);
 
-			await vault.setMaxMarketNumberPerRound(1, { from: owner });
+			await vault.setMaxMarketUsedInRoundCount(1, { from: owner });
 
 			await assert.revert(
 				vault.trade(

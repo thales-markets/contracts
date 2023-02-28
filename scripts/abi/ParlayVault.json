@@ -69,11 +69,11 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "maxMarketNumberPerRound",
+        "name": "maxMarketUsedInRoundCount",
         "type": "uint256"
       }
     ],
-    "name": "MaxMarketNumberPerRoundChanged",
+    "name": "MaxMarketUsedInRoundCountChanged",
     "type": "event"
   },
   {
@@ -643,7 +643,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "_maxMarketNumberPerRound",
+            "name": "_maxMarketUsedInRoundCount",
             "type": "uint256"
           }
         ],
@@ -694,7 +694,7 @@
         "type": "address"
       }
     ],
-    "name": "marketNumberPerRound",
+    "name": "marketUsedInRoundCount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -733,7 +733,7 @@
   },
   {
     "inputs": [],
-    "name": "maxMarketNumberPerRound",
+    "name": "maxMarketUsedInRoundCount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1005,11 +1005,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_maxMarketNumberPerRound",
+        "name": "_maxMarketUsedInRoundCount",
         "type": "uint256"
       }
     ],
-    "name": "setMaxMarketNumberPerRound",
+    "name": "setMaxMarketUsedInRoundCount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

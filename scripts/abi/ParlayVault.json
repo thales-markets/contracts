@@ -56,11 +56,24 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "MaxAllowedUsersChanged",
+        "name": "maxAllowedUsersChanged",
         "type": "uint256"
       }
     ],
     "name": "MaxAllowedUsersChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxMarketNumberPerRound",
+        "type": "uint256"
+      }
+    ],
+    "name": "MaxMarketNumberPerRoundChanged",
     "type": "event"
   },
   {
@@ -627,6 +640,11 @@
             "internalType": "uint256",
             "name": "_minTradeAmount",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_maxMarketNumberPerRound",
+            "type": "uint256"
           }
         ],
         "internalType": "struct ParlayVault.InitParams",
@@ -664,6 +682,30 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "marketNumberPerRound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "maxAllowedDeposit",
     "outputs": [
@@ -679,6 +721,19 @@
   {
     "inputs": [],
     "name": "maxAllowedUsers",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxMarketNumberPerRound",
     "outputs": [
       {
         "internalType": "uint256",
@@ -942,6 +997,19 @@
       }
     ],
     "name": "setMaxAllowedUsers",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxMarketNumberPerRound",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxMarketNumberPerRound",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

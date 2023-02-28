@@ -744,6 +744,7 @@ contract('Parlay Vault', (accounts) => {
 			_minDepositAmount: toUnit(100).toString(),
 			_maxAllowedUsers: 100,
 			_minTradeAmount: toUnit(10).toString(),
+			_maxMarketNumberPerRound: 2,
 		});
 
 		await vault.setMaxAllowedUsers(100, { from: owner });
@@ -1153,6 +1154,22 @@ contract('Parlay Vault', (accounts) => {
 			);
 
 			await vault.trade(parlayMarketsAddress2, parlayPositions2, totalSUSDToPay);
+			await vault.trade(
+				[parlayMarketsAddress[1], parlayMarketsAddress[2]],
+				parlayPositions2,
+				totalSUSDToPay
+			);
+
+			await vault.setMaxMarketNumberPerRound(1, { from: owner });
+
+			await assert.revert(
+				vault.trade(
+					[parlayMarketsAddress[0], parlayMarketsAddress[2]],
+					parlayPositions2,
+					totalSUSDToPay
+				),
+				'Market is at the maximum number of tickets'
+			);
 
 			balanceVault = await Thales.balanceOf(vault.address);
 			console.log('balanceVault after trade is:' + balanceVault / 1e18);

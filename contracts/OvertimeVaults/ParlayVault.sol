@@ -39,6 +39,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         uint _minDepositAmount;
         uint _maxAllowedUsers;
         uint _minTradeAmount;
+        uint _maxMarketNumberPerRound;
     }
 
     /* ========== CONSTANTS ========== */
@@ -93,6 +94,9 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
 
     mapping(uint => uint) public allocationSpentInARound;
 
+    mapping(uint => mapping(address => uint)) public marketNumberPerRound;
+    uint public maxMarketNumberPerRound;
+
     /* ========== CONSTRUCTOR ========== */
 
     function __BaseSportVault_init(
@@ -104,7 +108,8 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         uint _utilizationRate,
         uint _maxTradeRate,
         uint _minDepositAmount,
-        uint _maxAllowedUsers
+        uint _maxAllowedUsers,
+        uint _maxMarketNumberPerRound
     ) internal onlyInitializing {
         setOwner(_owner);
         initNonReentrant();
@@ -117,6 +122,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         maxTradeRate = _maxTradeRate;
         minDepositAmount = _minDepositAmount;
         maxAllowedUsers = _maxAllowedUsers;
+        maxMarketNumberPerRound = _maxMarketNumberPerRound;
 
         sUSD.approve(address(parlayAMM), type(uint256).max);
     }
@@ -131,7 +137,8 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
             params._utilizationRate,
             params._maxTradeRate,
             params._minDepositAmount,
-            params._maxAllowedUsers
+            params._maxAllowedUsers,
+            params._maxMarketNumberPerRound
         );
         priceLowerLimit = params._priceLowerLimit;
         priceUpperLimit = params._priceUpperLimit;
@@ -345,6 +352,13 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         emit MaxAllowedUsersChanged(_maxAllowedUsers);
     }
 
+    /// @notice Set maxMarketNumberPerRound
+    /// @param _maxMarketNumberPerRound Deposit value
+    function setMaxMarketNumberPerRound(uint _maxMarketNumberPerRound) external onlyOwner {
+        maxMarketNumberPerRound = _maxMarketNumberPerRound;
+        emit MaxMarketNumberPerRoundChanged(_maxMarketNumberPerRound);
+    }
+
     /// @notice Set price limit for options to be bought from AMM
     /// @param _priceLowerLimit lower limit
     /// @param _priceUpperLimit upper limit
@@ -402,6 +416,10 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         tradingParlayMarketsPerRound[round].push(parlayMarket[0]);
         isTradingParlayMarketInARound[round][_calculateCombinationKey(sportMarkets)] = true;
 
+        for (uint i = 0; i < sportMarkets.length; i++) {
+            marketNumberPerRound[round][sportMarkets[i]] += 1;
+        }
+
         emit TradeExecuted(parlayMarket[0], sUSDPaid);
     }
 
@@ -427,6 +445,11 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         require(finalQuote >= priceLowerLimit && finalQuote <= priceUpperLimit, "Market price not valid");
         int pricePositionImpact = ISportsAMM(parlayAMM.sportsAmm()).buyPriceImpact(market, ammPosition, amount);
         require(pricePositionImpact < skewImpactLimit, "Skew impact too high");
+
+        require(
+            marketNumberPerRound[round][market] <= maxMarketNumberPerRound,
+            "Market is at the maximum number of tickets"
+        );
     }
 
     /// @notice Calculates parlay combination keys
@@ -526,7 +549,8 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     event MaxTradeRateChanged(uint maxTradeRate);
     event MaxAllowedDepositChanged(uint maxAllowedDeposit);
     event MinAllowedDepositChanged(uint minAllowedDeposit);
-    event MaxAllowedUsersChanged(uint MaxAllowedUsersChanged);
+    event MaxAllowedUsersChanged(uint maxAllowedUsersChanged);
+    event MaxMarketNumberPerRoundChanged(uint maxMarketNumberPerRound);
     event SetPriceLimits(uint priceLowerLimit, uint priceUpperLimit);
     event SetSkewImpactLimit(int skewImpact);
     event SetMinTradeAmount(uint SetMinTradeAmount);

@@ -78,6 +78,10 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     uint public totalDeposited;
 
+    bool public onlyWhitelistedStakersAllowed;
+
+    mapping(address => bool) public whitelistedStakers;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
@@ -112,6 +116,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         sUSD.safeTransferFrom(msg.sender, roundPool, amount);
 
         if (!whitelistedDeposits[msg.sender]) {
+            require(!onlyWhitelistedStakersAllowed || whitelistedStakers[msg.sender], "Only whitelisted stakers allowed");
             require(
                 (balancesPerRound[round][msg.sender] + amount + balancesPerRound[nextRound][msg.sender]) <=
                     ((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
@@ -488,6 +493,12 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         _setPausing ? _pause() : _unpause();
     }
 
+    /// @notice Set onlyWhitelistedStakersAllowed variable
+    /// @param flagToSet self explanatory
+    function setOnlyWhitelistedStakersAllowed(bool flagToSet) external onlyOwner {
+        onlyWhitelistedStakersAllowed = flagToSet;
+    }
+
     /// @notice Set _poolRoundMastercopy
     /// @param _poolRoundMastercopy to clone round pools from
     function setPoolRoundMastercopy(address _poolRoundMastercopy) external onlyOwner {
@@ -553,6 +564,57 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         emit RoundLengthChanged(_roundLength);
     }
 
+    /// @notice This method only serves as a failsafe to extract tokens from a pool round
+    /// @param tokens to iterate and transfer
+    /// @param account Address where to send the tokens
+    /// @param amount Amount of tokens to be sent
+    /// @param pool where to transfer from
+    /// @param all ignore amount and send whole balance
+    function transferTokensFromLiquidityPool(
+        address[] calldata tokens,
+        address payable account,
+        uint amount,
+        bool all,
+        address pool
+    ) external onlyOwner {
+        require(tokens.length > 0, "Whitelisted addresses cannot be empty");
+        for (uint256 index = 0; index < tokens.length; index++) {
+            if (all) {
+                IERC20Upgradeable(tokens[index]).safeTransferFrom(
+                    pool,
+                    account,
+                    IERC20Upgradeable(tokens[index]).balanceOf(pool)
+                );
+            } else {
+                IERC20Upgradeable(tokens[index]).safeTransferFrom(pool, account, amount);
+            }
+        }
+    }
+
+    /// @notice This method only serves as a failsafe to extract tokens from this contract
+    /// @param tokens to iterate and transfer
+    /// @param account Address where to send the tokens
+    /// @param amount Amount of tokens to be sent
+    /// @param all ignore amount and send whole balance
+    function transferTokens(
+        address[] calldata tokens,
+        address payable account,
+        uint amount,
+        bool all
+    ) external onlyOwner {
+        require(tokens.length > 0, "Whitelisted addresses cannot be empty");
+        for (uint256 index = 0; index < tokens.length; index++) {
+            if (all) {
+                IERC20Upgradeable(tokens[index]).safeTransfer(
+                    account,
+                    IERC20Upgradeable(tokens[index]).balanceOf(address(this))
+                );
+            } else {
+                IERC20Upgradeable(tokens[index]).safeTransfer(account, amount);
+            }
+        }
+    }
+
     /// @notice set addresses which can deposit into the AMM bypassing the staking checks
     /// @param _whitelistedAddresses Addresses to set the whitelist flag for
     /// @param _flag to set
@@ -563,6 +625,20 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             if (whitelistedDeposits[_whitelistedAddresses[index]] != _flag) {
                 whitelistedDeposits[_whitelistedAddresses[index]] = _flag;
                 emit AddedIntoWhitelist(_whitelistedAddresses[index], _flag);
+            }
+        }
+    }
+
+    /// @notice set addresses which can deposit into the AMM when only whitelisted stakers are allowed
+    /// @param _whitelistedAddresses Addresses to set the whitelist flag for
+    /// @param _flag to set
+    function setWhitelistedStakerAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
+        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
+        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
+            // only if current flag is different, if same skip it
+            if (whitelistedStakers[_whitelistedAddresses[index]] != _flag) {
+                whitelistedStakers[_whitelistedAddresses[index]] = _flag;
+                emit AddedIntoWhitelistStaker(_whitelistedAddresses[index], _flag);
             }
         }
     }
@@ -597,5 +673,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     event SportAMMChanged(address sportAMM);
     event DefaultLiquidityProviderChanged(address newProvider);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
+    event AddedIntoWhitelistStaker(address _whitelistAddress, bool _flag);
     event RoundLengthChanged(uint roundLength);
 }

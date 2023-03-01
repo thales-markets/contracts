@@ -564,7 +564,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         emit RoundLengthChanged(_roundLength);
     }
 
-    /// @notice This method only serves as a failsafe to extract tokens from a pool round
+    /// @notice This method only serves as a failsafe to extract tokens from a pool round contract
     /// @param tokens to iterate and transfer
     /// @param account Address where to send the tokens
     /// @param amount Amount of tokens to be sent
@@ -577,7 +577,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         bool all,
         address pool
     ) external onlyOwner {
-        require(tokens.length > 0, "Whitelisted addresses cannot be empty");
+        require(tokens.length > 0, "tokens array cant be empty");
         for (uint256 index = 0; index < tokens.length; index++) {
             if (all) {
                 IERC20Upgradeable(tokens[index]).safeTransferFrom(

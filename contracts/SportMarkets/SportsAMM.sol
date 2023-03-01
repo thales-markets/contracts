@@ -585,7 +585,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount,
         bool all
     ) external onlyOwner {
-        require(tokens.length > 0, "Whitelisted addresses cannot be empty");
+        require(tokens.length > 0, "tokens array cant be empty");
         for (uint256 index = 0; index < tokens.length; index++) {
             if (all) {
                 IERC20Upgradeable(tokens[index]).safeTransfer(

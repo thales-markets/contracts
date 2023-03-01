@@ -17,7 +17,7 @@ const { numberExponentToLarge } = require('../../../scripts/helpers');
 
 const { encodeCall } = require('../../utils/helpers');
 
-contract('VestingEscrow', accounts => {
+contract('VestingEscrow', (accounts) => {
 	const WEEK = 604800;
 	const YEAR = 31556926;
 	let owner, beneficiary, revoker, newAddress;
@@ -207,7 +207,7 @@ contract('VestingEscrow', accounts => {
 			for (let i = 0; i < recipients.length; i++) {
 				await VestingEscrow.fund(recipients[i], amounts[i], startTimes[i], { from: owner.address });
 			}
-			const data = amounts.reduce(function(data, field, index) {
+			const data = amounts.reduce(function (data, field, index) {
 				data[recipients[index]] = field;
 				return data;
 			}, {});
@@ -466,6 +466,20 @@ contract('VestingEscrow', accounts => {
 
 			const balanceOfAccount = await ThalesDeployed.balanceOf(beneficiary.address);
 			assert.equal(balanceOfAccount, SINGLE_AMOUNT);
+		});
+
+		it('should be able to partial claim', async () => {
+			const partial_amount = web3.utils.toWei('10000');
+			await fastForward(WEEK);
+			let balanceOfAccount = await ThalesDeployed.balanceOf(beneficiary.address);
+			console.log('balance', balanceOfAccount / 1e18);
+
+			await fastForward(54 * WEEK);
+
+			await VestingEscrow.partialClaim(partial_amount, { from: beneficiary.address });
+
+			balanceOfAccount = await ThalesDeployed.balanceOf(beneficiary.address);
+			console.log(balanceOfAccount / 1e18);
 		});
 
 		describe('Change wallet', () => {

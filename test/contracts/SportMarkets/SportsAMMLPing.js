@@ -828,6 +828,13 @@ contract('SportsAMM', (accounts) => {
 				SportAMMLiquidityPool.deposit(toUnit(1), { from: secondLiquidityProvider })
 			).to.be.revertedWith('Amount less than minDepositAmount');
 
+			await SportAMMLiquidityPool.setOnlyWhitelistedStakersAllowed(true, {
+				from: owner,
+			});
+			await expect(
+				SportAMMLiquidityPool.deposit(toUnit(101), { from: secondLiquidityProvider })
+			).to.be.revertedWith('Only whitelisted stakers allowed');
+
 			let getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(
 				secondLiquidityProvider
 			);
@@ -839,6 +846,9 @@ contract('SportsAMM', (accounts) => {
 				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
 			);
 
+			await SportAMMLiquidityPool.setWhitelistedStakerAddresses([secondLiquidityProvider], true, {
+				from: owner,
+			});
 			await SportAMMLiquidityPool.deposit(toUnit(100), { from: secondLiquidityProvider });
 
 			getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(

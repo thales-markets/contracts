@@ -109,7 +109,7 @@
 		"GamesOddsObtainerImplementation": "0x4846C5513932923484Cf249a88E2149e8171b84d",
 		"ThalesAMMNewImplementation": "0x9043CF6B9319b07f52D9C8d8964A8B457A64e0Ca",
 		"ParlayVault": "0x8285047F33c26c1Bf5B387f2b07F21A2aF29Ace2",
-		"ParlayVaultImplementation": "0xFfC72be6dAF9072664D4bF9b8dD90562CE20ACA5",
+		"ParlayVaultImplementation": "0x8Fe6Fdc03eBa902A2C259FaF53ECe2aD7A5C4d78",
 		"TaleOfThalesNFTs": "0x890b559E10aD1aAE73713f2f1924aab4e60cf505"
 	},
 	"polygon": {
@@ -529,7 +529,7 @@
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
 		"GamesOddsObtainerImplementation": "0xeDe874f55B79Fc55Ac8860B6E4C14B04C30AD0bA",
 		"ParlayVault": "0x7e415D74eb5B01531B2059D1901aCe751c6B26B3",
-		"ParlayVaultImplementation": "0x7cea40A6569E538D1AC812C0D4Ff37b505466dC0"
+		"ParlayVaultImplementation": "0xb904a75f4F2Be048623009BC9Af542a674E81476"
 	},
 	"localhost": {
 		"Airdrop": "",

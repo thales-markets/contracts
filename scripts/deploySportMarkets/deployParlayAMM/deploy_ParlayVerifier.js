@@ -84,7 +84,8 @@ async function main() {
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
 	const ParlayAMMDeployed = ParlayAMM.attach(ParlayAMMAddress);
 
-	if (networkObj.chainId != 10 || networkObj.chainId != 42161) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
+	} else {
 		await ParlayAMMDeployed.setAddresses(
 			SportsAMMContract,
 			SafeBox,

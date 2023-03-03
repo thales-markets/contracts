@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
+import "../SportMarkets/Parlay/ParlayVerifier.sol";
+
 interface IParlayMarketsAMM {
     /* ========== VIEWS / VARIABLES ========== */
 
@@ -12,11 +14,17 @@ interface IParlayMarketsAMM {
 
     function sportsAmm() external view returns (address);
 
+    function parlayVerifier() external view returns (ParlayVerifier);
+
     function parlayAmmFee() external view returns (uint);
 
     function maxAllowedRiskPerCombination() external view returns (uint);
 
     function maxSupportedOdds() external view returns (uint);
+
+    function numActiveParlayMarkets() external view returns (uint);
+
+    function activeParlayMarkets(uint index, uint pageSize) external view returns (address[] memory);
 
     function riskPerCombination(
         address _sportMarkets1,
@@ -40,6 +48,12 @@ interface IParlayMarketsAMM {
         address _sportMarkets8
     ) external view returns (uint);
 
+    function canCreateParlayMarket(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDToPay
+    ) external view returns (bool canBeCreated);
+
     function isActiveParlay(address _parlayMarket) external view returns (bool isActiveParlayMarket);
 
     function exerciseParlay(address _parlayMarket) external;
@@ -49,6 +63,23 @@ interface IParlayMarketsAMM {
     function triggerResolvedEvent(address _account, bool _userWon) external;
 
     function resolveParlay() external;
+
+    function buyQuoteFromParlay(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDPaid
+    )
+        external
+        view
+        returns (
+            uint sUSDAfterFees,
+            uint totalBuyAmount,
+            uint totalQuote,
+            uint initialQuote,
+            uint skewImpact,
+            uint[] memory finalQuotes,
+            uint[] memory amountsToBuy
+        );
 
     function buyFromParlay(
         address[] calldata _sportMarkets,

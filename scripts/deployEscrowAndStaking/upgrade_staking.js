@@ -16,6 +16,10 @@ async function main() {
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
 
 	const owner = new ethers.Wallet(user_key1, ethers.provider);
 
@@ -39,7 +43,7 @@ async function main() {
 		StakingImplementation = await getImplementationAddress(ethers.provider, StakingAddress);
 	}
 
-	if (networkObj.chainId == 10) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
 		StakingImplementation = await upgrades.prepareUpgrade(StakingAddress, StakingContract);
 		await delay(5000);
 		console.log('Staking upgraded');
@@ -59,13 +63,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

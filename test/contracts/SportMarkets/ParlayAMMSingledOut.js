@@ -216,7 +216,7 @@ contract('ParlayAMM', (accounts) => {
 		await SportPositionalMarketManager.initialize(manager, Thales.address, { from: manager });
 		await SportPositionalMarketFactory.initialize(manager, { from: manager });
 
-		await SportPositionalMarketManager.setExpiryDuration(30 * DAY, { from: manager });
+		await SportPositionalMarketManager.setExpiryDuration(290 * DAY, { from: manager });
 
 		await SportPositionalMarketManager.setSupportedSportForDoubleChance(
 			[10, 11, 12, 13, 14, 15, 16, 17, 18, 19],

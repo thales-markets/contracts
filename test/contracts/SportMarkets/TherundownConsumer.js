@@ -4039,6 +4039,290 @@ contract('TheRundownConsumer', (accounts) => {
 				}
 			);
 		});
+
+		it('Get odds per game, check results, create first total, remove total, total is same', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+
+			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
+
+			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-20700, result[0]);
+			assert.bnEqual(17700, result[1]);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			assert.equal('Atlanta Hawks', game.homeTeam);
+			assert.equal('Charlotte Hornets', game.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdCreate,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			// invalid odds zero as draw
+			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
+				reqIdOdds_2,
+				oddsResultArray_2,
+				{
+					from: wrapper,
+				}
+			);
+
+			let result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(10300, result_final[0]);
+			assert.bnEqual(-11300, result_final[1]);
+			assert.bnEqual(0, result_final[2]);
+
+			// adding total markets via odds
+
+			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+
+			const tx_odds_total = await TherundownConsumerDeployed.fulfillGamesOdds(
+				reqIdOdds_total,
+				oddsResultArray_total,
+				{
+					from: wrapper,
+				}
+			);
+			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+			let mainMarketTotalChildMarket = await GamesOddsObtainerDeployed.mainMarketTotalChildMarket(
+				marketAdd,
+				200
+			);
+			assert.bnEqual(
+				mainMarketTotalChildMarket,
+				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
+			);
+
+			let childMarket = await SportPositionalMarketContract.at(mainMarketTotalChildMarket);
+
+			assert.equal(false, await childMarket.canResolve());
+			assert.equal(9004, await childMarket.tags(0));
+			assert.bnEqual(10002, await childMarket.tags(1));
+
+			const tx_odds_total_update = await TherundownConsumerDeployed.fulfillGamesOdds(
+				reqIdOdds_total_update,
+				oddsResultArray_total_update,
+				{
+					from: wrapper,
+				}
+			);
+
+			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+			assert.bnEqual(
+				mainMarketTotalChildMarket,
+				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
+			);
+
+			assert.equal(false, await childMarket.paused());
+
+			// invalid odds zero as draw
+			const tx_odds_removeline = await TherundownConsumerDeployed.fulfillGamesOdds(
+				reqIdOdds_2,
+				oddsResultArray_2,
+				{
+					from: wrapper,
+				}
+			);
+
+			assert.equal(true, await childMarket.paused());
+
+			const tx_odds_total_update_back = await TherundownConsumerDeployed.fulfillGamesOdds(
+				reqIdOdds_total_update,
+				oddsResultArray_total_update,
+				{
+					from: wrapper,
+				}
+			);
+
+			assert.equal(false, await childMarket.paused());
+		});
+	});
+
+	it('Get odds per game, check results, create first spread, remove spread, spread is same unpause', async () => {
+		await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+		assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+		assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+		// req. games
+		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+			reqIdCreate,
+			gamesCreated,
+			sportId_4,
+			game1NBATime,
+			{ from: wrapper }
+		);
+
+		assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+		assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+
+		assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
+		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+		assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
+		assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
+		assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
+		assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+		assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+		assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+		assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+		assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+		assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
+
+		let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+		assert.bnEqual(-20700, result[0]);
+		assert.bnEqual(17700, result[1]);
+
+		let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+		let gameTime = game.startTime;
+		assert.equal('Atlanta Hawks', game.homeTeam);
+		assert.equal('Charlotte Hornets', game.awayTeam);
+
+		// check if event is emited
+		assert.eventEqual(tx.logs[0], 'GameCreated', {
+			_requestId: reqIdCreate,
+			_sportId: sportId_4,
+			_id: gameid1,
+			_game: game,
+		});
+
+		// create markets
+		const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+		// check if event is emited
+		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+			_marketAddress: marketAdd,
+			_id: gameid1,
+			_game: game,
+		});
+
+		let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+		deployedMarket = await SportPositionalMarketContract.at(answer);
+
+		assert.equal(false, await deployedMarket.canResolve());
+		assert.equal(9004, await deployedMarket.tags(0));
+
+		// invalid odds zero as draw
+		const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
+			reqIdOdds_2,
+			oddsResultArray_2,
+			{
+				from: wrapper,
+			}
+		);
+
+		let result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+		assert.bnEqual(10300, result_final[0]);
+		assert.bnEqual(-11300, result_final[1]);
+		assert.bnEqual(0, result_final[2]);
+
+		// adding total markets via odds
+
+		assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+
+		const tx_odds_spread = await TherundownConsumerDeployed.fulfillGamesOdds(
+			reqIdOdds_spread,
+			oddsResultArray_spread,
+			{
+				from: wrapper,
+			}
+		);
+		assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+		let mainMarketSpreadChildMarket = await GamesOddsObtainerDeployed.mainMarketSpreadChildMarket(
+			marketAdd,
+			450
+		);
+		assert.bnEqual(
+			mainMarketSpreadChildMarket,
+			await GamesOddsObtainerDeployed.currentActiveSpreadChildMarket(marketAdd)
+		);
+
+		let childMarket = await SportPositionalMarketContract.at(mainMarketSpreadChildMarket);
+
+		const tx_odds_spread_update = await TherundownConsumerDeployed.fulfillGamesOdds(
+			reqIdOdds_spread_update,
+			oddsResultArray_spread_update,
+			{
+				from: wrapper,
+			}
+		);
+
+		assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+		assert.bnEqual(
+			mainMarketSpreadChildMarket,
+			await GamesOddsObtainerDeployed.currentActiveSpreadChildMarket(marketAdd)
+		);
+
+		assert.equal(false, await childMarket.paused());
+
+		// invalid odds zero as draw
+		const tx_odds_update_spread_remove = await TherundownConsumerDeployed.fulfillGamesOdds(
+			reqIdOdds_2,
+			oddsResultArray_2,
+			{
+				from: wrapper,
+			}
+		);
+		assert.equal(true, await childMarket.paused());
+
+		await TherundownConsumerDeployed.fulfillGamesOdds(
+			reqIdOdds_spread_update,
+			oddsResultArray_spread_update,
+			{
+				from: wrapper,
+			}
+		);
+		assert.equal(false, await childMarket.paused());
 	});
 
 	describe('Changing data on market', () => {

@@ -31,7 +31,7 @@ contract SportAMMLiquidityPoolRound {
         uint _roundStartTime,
         uint _roundEndTime
     ) external {
-        require(!initialized, "Ranged Market already initialized");
+        require(!initialized, "Already initialized");
         initialized = true;
         liquidityPool = SportAMMLiquidityPool(_liquidityPool);
         sUSD = _sUSD;

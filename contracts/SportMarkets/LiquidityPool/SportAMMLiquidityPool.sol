@@ -82,6 +82,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     mapping(address => bool) public whitelistedStakers;
 
+    bool public needsTransformingCollateral;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
@@ -119,7 +121,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             require(!onlyWhitelistedStakersAllowed || whitelistedStakers[msg.sender], "Only whitelisted stakers allowed");
             require(
                 (balancesPerRound[round][msg.sender] + amount + balancesPerRound[nextRound][msg.sender]) <=
-                    ((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
+                    _transformCollateral((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
                 "Not enough staked THALES"
             );
         }
@@ -148,24 +150,26 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     /// @notice get sUSD to mint for buy and store market as trading in the round
     /// @param market to trade
-    /// @param sUSDAmount amount to get for mint
-    function commitTrade(address market, uint sUSDAmount) external nonReentrant whenNotPaused onlyAMM {
+    /// @param amountToMint amount to get for mint
+    function commitTrade(address market, uint amountToMint) external nonReentrant whenNotPaused onlyAMM {
         require(started, "Pool has not started");
-        require(sUSDAmount > 0, "Can't commit a zero trade");
+        require(amountToMint > 0, "Can't commit a zero trade");
+
+        amountToMint = _transformCollateral(amountToMint);
 
         uint marketRound = getMarketRound(market);
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
         if (marketRound == round) {
-            sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), sUSDAmount);
+            sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
         } else {
             uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
-            if (poolBalance > sUSDAmount) {
-                sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), sUSDAmount);
+            if (poolBalance > amountToMint) {
+                sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
             } else {
-                uint differenceToLPAsDefault = sUSDAmount - poolBalance;
+                uint differenceToLPAsDefault = amountToMint - poolBalance;
                 _depositAsDefault(differenceToLPAsDefault, liquidityPoolRound, marketRound);
-                sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), sUSDAmount);
+                sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
             }
         }
 
@@ -245,12 +249,11 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         if (!whitelistedDeposits[msg.sender]) {
             require(
                 balancesPerRound[round][msg.sender] <
-                    ((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
+                    _transformCollateral(((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE)),
                 "Not enough staked THALES"
             );
         }
 
-        uint nextRound = round + 1;
         if (totalDeposited > balancesPerRound[round][msg.sender]) {
             totalDeposited -= balancesPerRound[round][msg.sender];
         } else {
@@ -432,17 +435,17 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     }
 
     /// @notice Return the start time of the passed round
-    /// @param round number
+    /// @param _round number
     /// @return uint the start time of the given round
-    function getRoundStartTime(uint round) public view returns (uint) {
-        return firstRoundStartTime + (round - 1) * roundLength;
+    function getRoundStartTime(uint _round) public view returns (uint) {
+        return firstRoundStartTime + (_round - 1) * roundLength;
     }
 
     /// @notice Return the end time of the passed round
-    /// @param round number
+    /// @param _round number
     /// @return uint the end time of the given round
-    function getRoundEndTime(uint round) public view returns (uint) {
-        return firstRoundStartTime + round * roundLength;
+    function getRoundEndTime(uint _round) public view returns (uint) {
+        return firstRoundStartTime + _round * roundLength;
     }
 
     /// @notice Return the round to which a market belongs to
@@ -459,6 +462,14 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
+
+    function _transformCollateral(uint value) internal view returns (uint) {
+        if (needsTransformingCollateral) {
+            return value / 1e12;
+        } else {
+            return value;
+        }
+    }
 
     function _depositAsDefault(
         uint amount,
@@ -497,6 +508,12 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @param flagToSet self explanatory
     function setOnlyWhitelistedStakersAllowed(bool flagToSet) external onlyOwner {
         onlyWhitelistedStakersAllowed = flagToSet;
+    }
+
+    /// @notice setNeedsTransformingCollateral sets needsTransformingCollateral value
+    /// @param _needsTransformingCollateral boolen value to be set
+    function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
+        needsTransformingCollateral = _needsTransformingCollateral;
     }
 
     /// @notice Set _poolRoundMastercopy

@@ -436,6 +436,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_minter",
+        "type": "address"
+      }
+    ],
+    "name": "getCorrectPositionsByRound",
+    "outputs": [
+      {
+        "internalType": "uint256[6]",
+        "name": "correctPositionsByRound",
+        "type": "uint256[6]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_tokenId",
         "type": "uint256"
@@ -495,6 +514,25 @@
         "internalType": "uint256",
         "name": "correctPredictions",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_minter",
+        "type": "address"
+      }
+    ],
+    "name": "getPointsPerRound",
+    "outputs": [
+      {
+        "internalType": "uint256[6]",
+        "name": "pointsPerRound",
+        "type": "uint256[6]"
       }
     ],
     "stateMutability": "view",

@@ -362,6 +362,8 @@ contract('MarchMadness', (accounts) => {
 			await marchMadness.setPointsToRound(4, 10, { from: owner });
 			await marchMadness.setPointsToRound(5, 20, { from: owner });
 
+			assert.bnEqual([6, 5, 4, 3, 1, 1], await marchMadness.getCorrectPositionsByRound(first));
+
 			assert.bnEqual(
 				await marchMadness.getTotalPointsByMinterAddress(first),
 				6 * 1 + 5 * 2 + 4 * 4 + 3 * 7 + 1 * 10 + 20 * 1

@@ -21,6 +21,8 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
 
     uint public canNotMintOrUpdateAfter;
 
+    uint NUMBER_OF_ROUNDS = 6;
+
     uint[63] public results;
     uint[6] public roundToPoints;
 
@@ -134,6 +136,17 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         return getCorrectPositionsPerRoundByTokenId(_roundId, addressToTokenId[_minter]);
     }
 
+    function getCorrectPositionsByRound(address _minter) public view returns (uint[6] memory correctPositionsByRound) {
+        if (!_exists(addressToTokenId[_minter])) return correctPositionsByRound;
+
+        for (uint i = 0; i < NUMBER_OF_ROUNDS; i++) {
+            uint correctPositionPerRound = getCorrectPositionsPerRoundByTokenId(i, addressToTokenId[_minter]);
+            correctPositionsByRound[i] = correctPositionPerRound;
+        }
+
+        return correctPositionsByRound;
+    }
+
     function getTotalPointsByTokenId(uint _tokenId) public view returns (uint totalPoints) {
         if (!_exists(_tokenId)) return totalPoints;
 
@@ -143,6 +156,18 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         }
 
         return totalPoints;
+    }
+
+    function getPointsPerRound(address _minter) public view returns (uint[6] memory pointsPerRound) {
+        if (addressToTokenId[_minter] == 0) return pointsPerRound;
+        if (!_exists(addressToTokenId[_minter])) return pointsPerRound;
+
+        for (uint i = 0; i < NUMBER_OF_ROUNDS; i++) {
+            uint correctPositionPerRound = getCorrectPositionsPerRoundByTokenId(i, addressToTokenId[_minter]);
+            pointsPerRound[i] += (correctPositionPerRound * roundToPoints[i]);
+        }
+
+        return pointsPerRound;
     }
 
     function getTotalPointsByMinterAddress(address _minter) public view returns (uint) {

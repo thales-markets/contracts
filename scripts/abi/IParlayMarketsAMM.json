@@ -407,6 +407,19 @@
   },
   {
     "inputs": [],
+    "name": "sportManager",
+    "outputs": [
+      {
+        "internalType": "contract ISportPositionalMarketManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "sportsAmm",
     "outputs": [
       {

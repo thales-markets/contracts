@@ -14,8 +14,6 @@ interface IParlayMarketsAMM {
 
     function sportsAmm() external view returns (address);
 
-    function sportManager() external view returns (ISportPositionalMarketManager);
-
     function parlayVerifier() external view returns (ParlayVerifier);
 
     function parlayAmmFee() external view returns (uint);

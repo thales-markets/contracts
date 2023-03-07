@@ -903,17 +903,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
         "internalType": "string",
-        "name": "_tokenURI",
+        "name": "_urlToUse",
         "type": "string"
       }
     ],
-    "name": "setTokenURI",
+    "name": "setURLToUse",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1021,6 +1016,19 @@
     "name": "updateBracketsForAlreadyMintedItem",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "urlToUse",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

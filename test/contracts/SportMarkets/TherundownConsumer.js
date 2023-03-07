@@ -2536,6 +2536,11 @@ contract('TheRundownConsumer', (accounts) => {
 
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
 
+			let normalizedFulfiled = await GamesOddsObtainerDeployed.normalizedOddsForMarketFulfilled(
+				marketAdd
+			);
+			assert.equal(true, normalizedFulfiled);
+
 			// check if event is emited
 			assert.eventEqual(tx_create.logs[tx_create.logs.length - 1], 'CreateSportsMarket', {
 				_marketAddress: marketAdd,
@@ -2557,6 +2562,18 @@ contract('TheRundownConsumer', (accounts) => {
 					from: wrapper,
 				}
 			);
+
+			normalizedFulfiled = await GamesOddsObtainerDeployed.normalizedOddsForMarketFulfilled(
+				marketAdd
+			);
+			assert.equal(true, normalizedFulfiled);
+
+			let normalizedFirst = await GamesOddsObtainerDeployed.normalizedOddsForMarket(marketAdd, 0);
+			assert.bnNotEqual(0, normalizedFirst);
+			let normalizedSecond = await GamesOddsObtainerDeployed.normalizedOddsForMarket(marketAdd, 1);
+			assert.bnNotEqual(0, normalizedSecond);
+			let normalizedThird = await GamesOddsObtainerDeployed.normalizedOddsForMarket(marketAdd, 2);
+			assert.bnNotEqual(0, normalizedThird);
 
 			let result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameFootballid1);
 			assert.bnEqual(40000, result_final[0]);
@@ -3462,6 +3479,22 @@ contract('TheRundownConsumer', (accounts) => {
 				mainMarketSpreadChildMarket,
 				await GamesOddsObtainerDeployed.currentActiveSpreadChildMarket(marketAdd)
 			);
+
+			let normalizedFulfiled = await GamesOddsObtainerDeployed.normalizedOddsForMarketFulfilled(
+				mainMarketSpreadChildMarket
+			);
+			assert.equal(true, normalizedFulfiled);
+
+			let normalizedFirst = await GamesOddsObtainerDeployed.normalizedOddsForMarket(
+				mainMarketSpreadChildMarket,
+				0
+			);
+			assert.bnNotEqual(0, normalizedFirst);
+			let normalizedSecond = await GamesOddsObtainerDeployed.normalizedOddsForMarket(
+				mainMarketSpreadChildMarket,
+				1
+			);
+			assert.bnNotEqual(0, normalizedSecond);
 
 			let childMarket = await SportPositionalMarketContract.at(mainMarketSpreadChildMarket);
 

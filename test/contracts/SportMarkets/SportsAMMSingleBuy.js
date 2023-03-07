@@ -31,15 +31,30 @@ const {
 	convertToDecimals,
 	encodeCall,
 	assertRevert,
+	getEventByName,
 } = require('../../utils/helpers');
 
 contract('SportsAMM', (accounts) => {
-	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
+	const [
+		manager,
+		first,
+		owner,
+		second,
+		third,
+		fourth,
+		safeBox,
+		wrapper,
+		firstLiquidityProvider,
+		defaultLiquidityProvider,
+	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
 		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
+	const SportAMMLiquidityPoolRoundMastercopy = artifacts.require(
+		'SportAMMLiquidityPoolRoundMastercopy'
+	);
 	const SportPositionContract = artifacts.require('SportPosition');
 	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
 	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
@@ -58,17 +73,17 @@ contract('SportsAMM', (accounts) => {
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
+	let ThalesOracleCouncil;
 	let Thales;
 	let answer;
 	let verifier;
-	let sportsAMMUtils;
 	let minimumPositioningDuration = 0;
 	let minimumMarketMaturityDuration = 0;
+	let sportsAMMUtils;
 
 	let marketQuestion,
 		marketSource,
 		endOfPositioning,
-		fixedTicketPrice,
 		positionAmount1,
 		positionAmount2,
 		positionAmount3,
@@ -115,6 +130,7 @@ contract('SportsAMM', (accounts) => {
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
+	let GamesOddsObtainerDeployed;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -131,8 +147,8 @@ contract('SportsAMM', (accounts) => {
 		testUSDT,
 		testDAI,
 		Referrals,
-		GamesOddsObtainerDeployed,
-		SportsAMM;
+		SportsAMM,
+		SportAMMLiquidityPool;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -174,6 +190,7 @@ contract('SportsAMM', (accounts) => {
 
 		await SportPositionalMarketManager.setExpiryDuration(5 * DAY, { from: manager });
 		// await SportPositionalMarketManager.setCancelTimeout(2 * HOUR, { from: manager });
+		await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
@@ -221,6 +238,7 @@ contract('SportsAMM', (accounts) => {
 			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
+			toUnit('500'),
 			{ from: owner }
 		);
 
@@ -254,17 +272,18 @@ contract('SportsAMM', (accounts) => {
 			second,
 			second,
 			second,
+			second,
 			{ from: owner }
 		);
 
-		await Thales.transfer(first, toUnit('100000'), { from: owner });
-		await Thales.transfer(second, toUnit('100000'), { from: owner });
-		await Thales.transfer(third, toUnit('100000'), { from: owner });
+		await Thales.transfer(first, toUnit('1000'), { from: owner });
+		await Thales.transfer(second, toUnit('1000'), { from: owner });
+		await Thales.transfer(third, toUnit('1000'), { from: owner });
 		await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
 
-		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: first });
-		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: second });
-		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: third });
+		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: first });
+		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: second });
+		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: third });
 
 		// ids
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';
@@ -375,8 +394,16 @@ contract('SportsAMM', (accounts) => {
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
 		});
-
-		//await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
+		await SportPositionalMarketManager.setOddsObtainer(GamesOddsObtainerDeployed.address, {
+			from: manager,
+		});
+		await SportPositionalMarketManager.setSupportedSportForDoubleChance(
+			[10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+			true,
+			{
+				from: manager,
+			}
+		);
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketData.setSportPositionalMarketManager(
@@ -410,6 +437,22 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		let SportAMMLiquidityPoolContract = artifacts.require('SportAMMLiquidityPool');
+		SportAMMLiquidityPool = await SportAMMLiquidityPoolContract.new();
+
+		await SportAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_sportsAmm: SportsAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(1000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -418,12 +461,34 @@ contract('SportsAMM', (accounts) => {
 			Referrals.address,
 			ZERO_ADDRESS,
 			wrapper,
+			SportAMMLiquidityPool.address,
 			{ from: owner }
 		);
 
-		await testUSDC.mint(first, toUnit(100000));
-		await testUSDC.mint(curveSUSD.address, toUnit(100000));
-		await testUSDC.approve(SportsAMM.address, toUnit(100000), { from: first });
+		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
+		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+		await Thales.transfer(firstLiquidityProvider, toUnit('100000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('100000'), {
+			from: firstLiquidityProvider,
+		});
+		await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await SportAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+		await SportAMMLiquidityPool.start({ from: owner });
+		await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+			from: owner,
+		});
+		await Thales.transfer(defaultLiquidityProvider, toUnit('100000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('100000'), {
+			from: defaultLiquidityProvider,
+		});
+
+		await testUSDC.mint(first, toUnit(1000));
+		await testUSDC.mint(curveSUSD.address, toUnit(1000));
+		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
 		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 	});
 

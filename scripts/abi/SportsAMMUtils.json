@@ -415,6 +415,11 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minSupportedOdds",
+        "type": "uint256"
       }
     ],
     "name": "getBaseOddsForDoubleChance",
@@ -428,6 +433,91 @@
         "internalType": "uint256",
         "name": "oddsPosition2",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minSupportedOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "getBaseOddsForDoubleChanceSum",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "sum",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "enum ISportsAMM.Position",
+            "name": "position",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_availableToBuyFromAMM",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_availableToBuyFromAMMOtherSide",
+            "type": "uint256"
+          },
+          {
+            "internalType": "contract SportAMMLiquidityPool",
+            "name": "liquidityPool",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max_spread",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minSupportedOdds",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SportsAMMUtils.PriceImpactParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "getBuyPriceImpact",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "priceImpact",
+        "type": "int256"
       }
     ],
     "stateMutability": "view",

@@ -5,6 +5,44 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_whitelistAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      }
+    ],
+    "name": "AddedIntoWhitelist",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_whitelistAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      }
+    ],
+    "name": "AddedIntoWhitelistStaker",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "user",
         "type": "address"
       },
@@ -24,6 +62,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "newProvider",
+        "type": "address"
+      }
+    ],
+    "name": "DefaultLiquidityProviderChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "user",
         "type": "address"
       },
@@ -31,6 +82,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "round",
         "type": "uint256"
       }
     ],
@@ -56,37 +113,11 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "maxAllowedUsersChanged",
+        "name": "MaxAllowedUsersChanged",
         "type": "uint256"
       }
     ],
     "name": "MaxAllowedUsersChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "maxMarketUsedInRoundCount",
-        "type": "uint256"
-      }
-    ],
-    "name": "MaxMarketUsedInRoundCountChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "maxTradeRate",
-        "type": "uint256"
-      }
-    ],
-    "name": "MaxTradeRateChanged",
     "type": "event"
   },
   {
@@ -140,11 +171,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "parlayAMM",
+        "name": "account",
         "type": "address"
       }
     ],
-    "name": "ParlayAMMChanged",
+    "name": "Paused",
     "type": "event"
   },
   {
@@ -153,11 +184,17 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "account",
+        "name": "newMastercopy",
         "type": "address"
       }
     ],
-    "name": "Paused",
+    "name": "PoolRoundMastercopyChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "PoolStarted",
     "type": "event"
   },
   {
@@ -198,30 +235,17 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "SetMinTradeAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMinTradeAmount",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "priceLowerLimit",
+        "name": "_round",
         "type": "uint256"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "priceUpperLimit",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "roundPool",
+        "type": "address"
       }
     ],
-    "name": "SetPriceLimits",
+    "name": "RoundPoolCreated",
     "type": "event"
   },
   {
@@ -230,11 +254,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "sUSD",
+        "name": "sportAMM",
         "type": "address"
       }
     ],
-    "name": "SetSUSD",
+    "name": "SportAMMChanged",
     "type": "event"
   },
   {
@@ -242,12 +266,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "int256",
-        "name": "skewImpact",
-        "type": "int256"
+        "internalType": "uint256",
+        "name": "_stakedThalesMultiplier",
+        "type": "uint256"
       }
     ],
-    "name": "SetSkewImpactLimit",
+    "name": "StakedThalesMultiplierChanged",
     "type": "event"
   },
   {
@@ -269,49 +293,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "parlayMarket",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "sUSDPaid",
-        "type": "uint256"
-      }
-    ],
-    "name": "TradeExecuted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "account",
         "type": "address"
       }
     ],
     "name": "Unpaused",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "utilizationRate",
-        "type": "uint256"
-      }
-    ],
-    "name": "UtilizationRateChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [],
-    "name": "VaultStarted",
     "type": "event"
   },
   {
@@ -343,25 +329,6 @@
       }
     ],
     "name": "allocationPerRound",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "allocationSpentInARound",
     "outputs": [
       {
         "internalType": "uint256",
@@ -410,27 +377,26 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "capPerRound",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
+    "inputs": [],
+    "name": "closeRound",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "closeRound",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountToMint",
+        "type": "uint256"
+      }
+    ],
+    "name": "commitTrade",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -479,6 +445,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "defaultLiquidityProvider",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -492,23 +471,19 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "depositReceipts",
+    "inputs": [],
+    "name": "exerciseMarketsReadyToExercised",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "firstRoundStartTime",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "round",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -516,12 +491,169 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getAvailableToDeposit",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "getMarketPool",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "roundPool",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "getMarketRound",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "returned",
+        "name": "_round",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getMaxAvailableDepositForUser",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "maxDepositForUser",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "availableToDepositForUser",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "stakedThalesForUser",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getNeededStakedThalesToWithdrawForUser",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "neededStaked",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "optionsAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      }
+    ],
+    "name": "getOptionsForBuy",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "optionsAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "position",
+        "type": "address"
+      }
+    ],
+    "name": "getOptionsForBuyByAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "getOrCreateMarketPool",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "roundPool",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_round",
+        "type": "uint256"
+      }
+    ],
+    "name": "getRoundEndTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -534,14 +666,9 @@
         "internalType": "uint256",
         "name": "_round",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
       }
     ],
-    "name": "getBalancesPerRound",
+    "name": "getRoundStartTime",
     "outputs": [
       {
         "internalType": "uint256",
@@ -554,12 +681,12 @@
   },
   {
     "inputs": [],
-    "name": "getCurrentRoundEnd",
+    "name": "hasMarketsReadyToBeExercised",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -582,8 +709,8 @@
             "type": "address"
           },
           {
-            "internalType": "contract IParlayMarketsAMM",
-            "name": "_parlayAMM",
+            "internalType": "contract ISportsAMM",
+            "name": "_sportsAmm",
             "type": "address"
           },
           {
@@ -598,32 +725,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "_priceLowerLimit",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "_priceUpperLimit",
-            "type": "uint256"
-          },
-          {
-            "internalType": "int256",
-            "name": "_skewImpactLimit",
-            "type": "int256"
-          },
-          {
-            "internalType": "uint256",
             "name": "_maxAllowedDeposit",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "_utilizationRate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "_maxTradeRate",
             "type": "uint256"
           },
           {
@@ -635,19 +737,9 @@
             "internalType": "uint256",
             "name": "_maxAllowedUsers",
             "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "_minTradeAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "_maxMarketUsedInRoundCount",
-            "type": "uint256"
           }
         ],
-        "internalType": "struct ParlayVault.InitParams",
+        "internalType": "struct SportAMMLiquidityPool.InitParams",
         "name": "params",
         "type": "tuple"
       }
@@ -665,12 +757,12 @@
         "type": "uint256"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "address",
         "name": "",
-        "type": "bytes32"
+        "type": "address"
       }
     ],
-    "name": "isTradingParlayMarketInARound",
+    "name": "isTradingMarketInARound",
     "outputs": [
       {
         "internalType": "bool",
@@ -684,22 +776,17 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
-        "name": "",
+        "name": "user",
         "type": "address"
       }
     ],
-    "name": "marketUsedInRoundCount",
+    "name": "isUserLPing",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "isUserInLP",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -733,32 +820,6 @@
   },
   {
     "inputs": [],
-    "name": "maxMarketUsedInRoundCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "maxTradeRate",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "minDepositAmount",
     "outputs": [
       {
@@ -772,12 +833,12 @@
   },
   {
     "inputs": [],
-    "name": "minTradeAmount",
+    "name": "needsTransformingCollateral",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -811,12 +872,12 @@
   },
   {
     "inputs": [],
-    "name": "owner",
+    "name": "onlyWhitelistedStakersAllowed",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "bool",
         "name": "",
-        "type": "address"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -824,36 +885,12 @@
   },
   {
     "inputs": [],
-    "name": "parlayAMM",
+    "name": "owner",
     "outputs": [
       {
-        "internalType": "contract IParlayMarketsAMM",
+        "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_round",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address[]",
-        "name": "_sportMarkets",
-        "type": "address[]"
-      }
-    ],
-    "name": "parlayExistsInARound",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -874,25 +911,12 @@
   },
   {
     "inputs": [],
-    "name": "priceLowerLimit",
+    "name": "poolRoundMastercopy",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "address",
         "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "priceUpperLimit",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -951,12 +975,12 @@
         "type": "uint256"
       }
     ],
-    "name": "roundStartTime",
+    "name": "roundPools",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "address",
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -973,6 +997,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_defaultLiquidityProvider",
+        "type": "address"
+      }
+    ],
+    "name": "setDefaultLiquidityProvider",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1005,32 +1042,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_maxMarketUsedInRoundCount",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMaxMarketUsedInRoundCount",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_maxTradeRate",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMaxTradeRate",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "_minDepositAmount",
         "type": "uint256"
       }
@@ -1043,12 +1054,25 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_minTradeAmount",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "_needsTransformingCollateral",
+        "type": "bool"
       }
     ],
-    "name": "setMinTradeAmount",
+    "name": "setNeedsTransformingCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "flagToSet",
+        "type": "bool"
+      }
+    ],
+    "name": "setOnlyWhitelistedStakersAllowed",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1069,12 +1093,12 @@
   {
     "inputs": [
       {
-        "internalType": "contract IParlayMarketsAMM",
-        "name": "_parlayAMM",
-        "type": "address"
+        "internalType": "bool",
+        "name": "_setPausing",
+        "type": "bool"
       }
     ],
-    "name": "setParlayAMM",
+    "name": "setPaused",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1082,17 +1106,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_priceLowerLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_priceUpperLimit",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_poolRoundMastercopy",
+        "type": "address"
       }
     ],
-    "name": "setPriceLimits",
+    "name": "setPoolRoundMastercopy",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1113,12 +1132,25 @@
   {
     "inputs": [
       {
-        "internalType": "int256",
-        "name": "_skewImpactLimit",
-        "type": "int256"
+        "internalType": "contract ISportsAMM",
+        "name": "_sportAMM",
+        "type": "address"
       }
     ],
-    "name": "setSkewImpactLimit",
+    "name": "setSportAmm",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_stakedThalesMultiplier",
+        "type": "uint256"
+      }
+    ],
+    "name": "setStakedThalesMultiplier",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1139,24 +1171,60 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_utilizationRate",
-        "type": "uint256"
+        "internalType": "address[]",
+        "name": "_whitelistedAddresses",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
       }
     ],
-    "name": "setUtilizationRate",
+    "name": "setWhitelistedAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_whitelistedAddresses",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      }
+    ],
+    "name": "setWhitelistedStakerAddresses",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "skewImpactLimit",
+    "name": "sportsAMM",
     "outputs": [
       {
-        "internalType": "int256",
+        "internalType": "contract ISportsAMM",
         "name": "",
-        "type": "int256"
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stakedThalesMultiplier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1177,37 +1245,27 @@
   },
   {
     "inputs": [],
-    "name": "startVault",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "sportMarkets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "positions",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "sUSDPaid",
-        "type": "uint256"
-      }
-    ],
-    "name": "trade",
+    "name": "start",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "tradingAllocation",
+    "name": "started",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalDeposited",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1231,7 +1289,7 @@
         "type": "uint256"
       }
     ],
-    "name": "tradingParlayMarketsPerRound",
+    "name": "tradingMarketsPerRound",
     "outputs": [
       {
         "internalType": "address",
@@ -1251,6 +1309,67 @@
       }
     ],
     "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "all",
+        "type": "bool"
+      }
+    ],
+    "name": "transferTokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "all",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "pool",
+        "type": "address"
+      }
+    ],
+    "name": "transferTokensFromLiquidityPool",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1281,7 +1400,7 @@
   },
   {
     "inputs": [],
-    "name": "usersCurrentlyInVault",
+    "name": "usersCurrentlyInPool",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1317,21 +1436,33 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "utilizationRate",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "whitelistedDeposits",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "vaultStarted",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "whitelistedStakers",
     "outputs": [
       {
         "internalType": "bool",

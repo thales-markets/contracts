@@ -15,9 +15,24 @@ const day = 24 * 60 * 60;
 const { fastForward, toUnit, fromUnit, currentTime } = require('../../utils')();
 
 contract('Parlay Vault', (accounts) => {
-	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
+	const [
+		manager,
+		first,
+		owner,
+		second,
+		third,
+		fourth,
+		safeBox,
+		wrapper,
+		firstLiquidityProvider,
+		defaultLiquidityProvider,
+	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+
+	const SportAMMLiquidityPoolRoundMastercopy = artifacts.require(
+		'SportAMMLiquidityPoolRoundMastercopy'
+	);
 
 	const SportPositionContract = artifacts.require('SportPosition');
 	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
@@ -139,7 +154,8 @@ contract('Parlay Vault', (accounts) => {
 		testDAI,
 		Referrals,
 		ParlayVerifier,
-		SportsAMM;
+		SportsAMM,
+		SportAMMLiquidityPool;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -357,6 +373,8 @@ contract('Parlay Vault', (accounts) => {
 			[parlayMarkets[1].address, parlayMarkets[2].address],
 			[parlayMarkets[0].address, parlayMarkets[1].address, parlayMarkets[2].address],
 		];
+
+		console.log(marketCombinations);
 	}
 
 	beforeEach(async () => {
@@ -386,7 +404,7 @@ contract('Parlay Vault', (accounts) => {
 		await SportPositionalMarketManager.initialize(manager, Thales.address, { from: manager });
 		await SportPositionalMarketFactory.initialize(manager, { from: manager });
 
-		await SportPositionalMarketManager.setExpiryDuration(30 * DAY, { from: manager });
+		await SportPositionalMarketManager.setExpiryDuration(290 * DAY, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
@@ -427,6 +445,7 @@ contract('Parlay Vault', (accounts) => {
 			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
+			toUnit('5000000'),
 			{ from: owner }
 		);
 
@@ -459,7 +478,7 @@ contract('Parlay Vault', (accounts) => {
 			second,
 			second,
 			second,
-
+			second,
 			{ from: owner }
 		);
 
@@ -611,10 +630,14 @@ contract('Parlay Vault', (accounts) => {
 		await SportPositionalMarketManager.setOddsObtainer(GamesOddsObtainerDeployed.address, {
 			from: manager,
 		});
+		await SportPositionalMarketManager.setSupportedSportForDoubleChance(
+			[10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+			true,
+			{
+				from: manager,
+			}
+		);
 		await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
-		await SportPositionalMarketManager.setSupportedSportForDoubleChance([sportId_16], true, {
-			from: manager,
-		});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketData.setSportPositionalMarketManager(
@@ -703,6 +726,22 @@ contract('Parlay Vault', (accounts) => {
 
 		await ParlayAMM.setParameters(5, { from: owner });
 
+		let SportAMMLiquidityPoolContract = artifacts.require('SportAMMLiquidityPool');
+		SportAMMLiquidityPool = await SportAMMLiquidityPoolContract.new();
+
+		await SportAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_sportsAmm: SportsAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(100000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -711,8 +750,30 @@ contract('Parlay Vault', (accounts) => {
 			Referrals.address,
 			ParlayAMM.address,
 			wrapper,
+			SportAMMLiquidityPool.address,
 			{ from: owner }
 		);
+
+		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
+		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+		await Thales.transfer(firstLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('10000000'), {
+			from: firstLiquidityProvider,
+		});
+		await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await SportAMMLiquidityPool.deposit(toUnit(100000), { from: firstLiquidityProvider });
+		await SportAMMLiquidityPool.start({ from: owner });
+		await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+			from: owner,
+		});
+		await Thales.transfer(defaultLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('10000000'), {
+			from: defaultLiquidityProvider,
+		});
 
 		await ParlayAMM.setCurveSUSD(
 			curveSUSD.address,
@@ -729,8 +790,6 @@ contract('Parlay Vault', (accounts) => {
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(ParlayAMM.address, toUnit(1000), { from: first });
-
-		rewardTokenAddress = owner;
 
 		Vault = artifacts.require('ParlayVault');
 		vault = await Vault.new();
@@ -765,18 +824,6 @@ contract('Parlay Vault', (accounts) => {
 		await Thales.approve(vault.address, toUnit('100000'), { from: first });
 		await Thales.approve(vault.address, toUnit('100000'), { from: second });
 		await Thales.approve(vault.address, toUnit('100000'), { from: third });
-
-		await StakingThales.setSupportedSportVault(vault.address, true, { from: owner });
-		await StakingThales.startStakingPeriod({ from: owner });
-		await vault.setStakingThales(StakingThales.address, { from: owner });
-
-		await ParlayAMM.setSafeBoxFeePerAddress(vault.address, toUnit('0.005'), {
-			from: owner,
-		});
-
-		await SportsAMM.setMinSpreadPerAddress(vault.address, toUnit('0.005'), {
-			from: owner,
-		});
 	});
 
 	describe('Test parlays vault', () => {

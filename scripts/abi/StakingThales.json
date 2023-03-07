@@ -99,6 +99,12 @@
         "internalType": "address",
         "name": "addressResolver",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sportsAMMLiquidityPool",
+        "type": "address"
       }
     ],
     "name": "AddressesChanged",
@@ -1684,6 +1690,11 @@
         "internalType": "address",
         "name": "_addressResolver",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportsAMMLiquidityPool",
+        "type": "address"
       }
     ],
     "name": "setAddresses",
@@ -1889,6 +1900,21 @@
     "outputs": [
       {
         "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "sportsAMMLiquidityPool",
+    "outputs": [
+      {
+        "internalType": "contract ISportsAMMLiquidityPool",
         "name": "",
         "type": "address"
       }

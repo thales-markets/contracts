@@ -247,6 +247,7 @@ contract('StakingThales', (accounts) => {
 			PriceFeedInstance.address,
 			ThalesStakingRewardsPoolDeployed.address,
 			AddressResolverDeployed.address,
+			ZERO_ADDRESS,
 			{ from: owner }
 		);
 	});

@@ -20,6 +20,10 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
@@ -46,45 +50,66 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	let parlayAMM = getTargetAddress('ParlayAMM', network);
+	let sportsAMM = getTargetAddress('SportsAMM', network);
 
 	console.log('Found ProxyERC20sUSD at:' + proxySUSD);
 
-	//const week = 7 * 24 * 60 * 60;
-	const week = 60 * 10;
+	const week = 7 * 24 * 60 * 60;
 
-	const Vault = await ethers.getContractFactory('ParlayVault');
-	const vault = await upgrades.deployProxy(Vault, [
+	const SportAMMLiquidityPool = await ethers.getContractFactory('SportAMMLiquidityPool');
+	const sportAMMLiquidityPool = await upgrades.deployProxy(SportAMMLiquidityPool, [
 		{
 			_owner: owner.address,
-			_parlayAMM: parlayAMM,
+			_sportsAmm: sportsAMM,
 			_sUSD: proxySUSD,
 			_roundLength: week,
-			_priceLowerLimit: w3utils.toWei('0.3'),
-			_priceUpperLimit: w3utils.toWei('0.95'),
-			_skewImpactLimit: w3utils.toWei('-0.2'), // -2% skew impact
-			_maxAllowedDeposit: w3utils.toWei('10000'), // 10k% max deposit per round
-			_utilizationRate: w3utils.toWei('0.50'), // 50% utilization rate
-			_maxTradeRate: w3utils.toWei('0.02'), // 2% max trade rate
+			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
 			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
-			_minTradeAmount: w3utils.toWei('5'), // minimum trade amount
-			_maxMarketNumberPerRound: 5, // max market tickets per round
 		},
 	]);
 
-	await vault.deployed();
+	await sportAMMLiquidityPool.deployed();
 
-	console.log('ParlayVault deployed to:', vault.address);
-	setTargetAddress('ParlayVault', network, vault.address);
+	console.log('SportAMMLiquidityPool deployed to:', sportAMMLiquidityPool.address);
+	setTargetAddress('SportAMMLiquidityPool', network, sportAMMLiquidityPool.address);
 
-	const implementation = await getImplementationAddress(ethers.provider, vault.address);
-	console.log('ParlayVaultImplementation: ', implementation);
-	setTargetAddress('ParlayVaultImplementation', network, implementation);
+	const implementation = await getImplementationAddress(
+		ethers.provider,
+		sportAMMLiquidityPool.address
+	);
+	console.log('SportAMMLiquidityPoolImplementation: ', implementation);
+	setTargetAddress('SportAMMLiquidityPoolImplementation', network, implementation);
+
+	const SportAMMLiquidityPoolRoundMastercopy = await ethers.getContractFactory(
+		'SportAMMLiquidityPoolRoundMastercopy'
+	);
+	const SportAMMLiquidityPoolRoundMastercopyDeployed =
+		await SportAMMLiquidityPoolRoundMastercopy.deploy();
+	await SportAMMLiquidityPoolRoundMastercopyDeployed.deployed();
+
+	console.log(
+		'SportAMMLiquidityPoolRoundMastercopy deployed to:',
+		SportAMMLiquidityPoolRoundMastercopyDeployed.address
+	);
+
+	setTargetAddress(
+		'SportAMMLiquidityPoolRoundMastercopy',
+		network,
+		SportAMMLiquidityPoolRoundMastercopyDeployed.address
+	);
 
 	try {
 		await hre.run('verify:verify', {
 			address: implementation,
+		});
+	} catch (e) {
+		console.log(e);
+	}
+
+	try {
+		await hre.run('verify:verify', {
+			address: SportAMMLiquidityPoolRoundMastercopyDeployed.address,
 		});
 	} catch (e) {
 		console.log(e);

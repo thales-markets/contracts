@@ -35,12 +35,26 @@ const {
 } = require('../../utils/helpers');
 
 contract('SportsAMM', (accounts) => {
-	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
+	const [
+		manager,
+		first,
+		owner,
+		second,
+		third,
+		fourth,
+		safeBox,
+		wrapper,
+		firstLiquidityProvider,
+		defaultLiquidityProvider,
+	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
 		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
+	const SportAMMLiquidityPoolRoundMastercopy = artifacts.require(
+		'SportAMMLiquidityPoolRoundMastercopy'
+	);
 	const SportPositionContract = artifacts.require('SportPosition');
 	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
 	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
@@ -133,7 +147,8 @@ contract('SportsAMM', (accounts) => {
 		testUSDT,
 		testDAI,
 		Referrals,
-		SportsAMM;
+		SportsAMM,
+		SportAMMLiquidityPool;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -223,6 +238,7 @@ contract('SportsAMM', (accounts) => {
 			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
+			toUnit('500'),
 			{ from: owner }
 		);
 
@@ -253,6 +269,7 @@ contract('SportsAMM', (accounts) => {
 			second,
 			second,
 			SportsAMM.address,
+			second,
 			second,
 			second,
 			second,
@@ -420,6 +437,22 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		let SportAMMLiquidityPoolContract = artifacts.require('SportAMMLiquidityPool');
+		SportAMMLiquidityPool = await SportAMMLiquidityPoolContract.new();
+
+		await SportAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_sportsAmm: SportsAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(1000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -428,8 +461,30 @@ contract('SportsAMM', (accounts) => {
 			Referrals.address,
 			ZERO_ADDRESS,
 			wrapper,
+			SportAMMLiquidityPool.address,
 			{ from: owner }
 		);
+
+		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
+		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+		await Thales.transfer(firstLiquidityProvider, toUnit('100000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('100000'), {
+			from: firstLiquidityProvider,
+		});
+		await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await SportAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+		await SportAMMLiquidityPool.start({ from: owner });
+		await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+			from: owner,
+		});
+		await Thales.transfer(defaultLiquidityProvider, toUnit('100000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('100000'), {
+			from: defaultLiquidityProvider,
+		});
 
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
@@ -672,6 +727,7 @@ contract('SportsAMM', (accounts) => {
 				toUnit('5000'),
 				toUnit('0.01'),
 				toUnit('0.005'),
+				toUnit('500'),
 				{ from: owner }
 			);
 		});
@@ -959,6 +1015,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('Balance of USDC for sportsAMM: ', fromUnit(sportsAMMBalanceUSDC));
 			console.log('Balance of sUSD for sportsAMM: ', fromUnit(sportsAMMBalance));
 
+			await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
 			await SportsAMM.buyFromAMMWithDifferentCollateral(
 				deployedMarket.address,
 				position,
@@ -1512,9 +1569,6 @@ contract('SportsAMM', (accounts) => {
 			console.log('market phase: ', phase.toString());
 			let known = await SportPositionalMarketManager.isKnownMarket(deployedMarket.address);
 			console.log('known market: ', known.toString());
-			let canExcercise = await SportsAMM.canExerciseMaturedMarket(deployedMarket.address);
-			console.log('Market can be excercised: ', canExcercise.toString());
-			await SportsAMM.exerciseMaturedMarket(deployedMarket.address, { from: first });
 		});
 	});
 
@@ -2124,9 +2178,6 @@ contract('SportsAMM', (accounts) => {
 				}
 			);
 
-			answer = await SportsAMM.canExerciseMaturedMarket(deployedMarket.address);
-			console.log('Can exercise options: ', answer);
-
 			let balances = await deployedMarket.balancesOf(first);
 			let payoutOnCancelation = await deployedMarket.calculatePayoutOnCancellation(
 				balances[0],
@@ -2148,9 +2199,6 @@ contract('SportsAMM', (accounts) => {
 
 			answer = await Thales.balanceOf(SportsAMM.address);
 			console.log('Balance before exercise of SportsAMM: ', fromUnit(answer));
-			answer = await SportsAMM.exerciseMaturedMarket(deployedMarket.address);
-			answer = await Thales.balanceOf(SportsAMM.address);
-			console.log('Balance after exercise of SportsAMM: ', fromUnit(answer));
 
 			answer = await Thales.balanceOf(first);
 			console.log('Balance before exercise of first: ', fromUnit(answer));
@@ -2298,6 +2346,7 @@ contract('SportsAMM', (accounts) => {
 			let balanceOfReferrer = await Thales.balanceOf(second);
 			await Referrals.setSportsAMM(SportsAMM.address, ZERO_ADDRESS, { from: owner });
 
+			await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
 			await SportsAMM.buyFromAMMWithDifferentCollateralAndReferrer(
 				deployedMarket.address,
 				position,

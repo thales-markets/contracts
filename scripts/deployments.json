@@ -5,6 +5,8 @@
 		"SportsAMM": "0x170a5714112daEfF20E798B6e92e25B86Ea603C1",
 		"ParlayAMM": "0x82B3634C0518507D5d817bE6dAb6233ebE4D68D9",
 		"RangedAMM": "0x2d356b114cbCA8DEFf2d8783EAc2a5A5324fE1dF",
+		"SportAMMLiquidityPool": "0x842e89b7a7eF8Ce099540b3613264C933cE0eBa5",
+		"DefaultLiquidityProvider": "0x0565B1aB5CEe7075B32C2D6a5B9dA44b708fB898",
 		"SafeBox": "0xe853207c30f3c32eda9aeffddc67357d5332978c",
 		"SafeBoxBuyback": "0x679C0174f6c288C4bcd5C95C9Ec99D50357C59E7",
 		"AddressResolver": "0x95A6a3f44a70172E7d50a9e28c85Dfd712756B8C",
@@ -109,10 +111,8 @@
 		"GamesOddsObtainerImplementation": "0xc647AB2caB7D6da6081703382ECf2814D8b7C03c",
 		"ThalesAMMNewImplementation": "0x9043CF6B9319b07f52D9C8d8964A8B457A64e0Ca",
 		"TaleOfThalesNFTs": "0x890b559E10aD1aAE73713f2f1924aab4e60cf505",
-		"SportAMMLiquidityPool": "0x842e89b7a7eF8Ce099540b3613264C933cE0eBa5",
 		"SportAMMLiquidityPoolImplementation": "0x6C2e0015b431f8c5F6b40138aF803504E601D91c",
 		"SportAMMLiquidityPoolRoundMastercopy": "0xAEa1bE15Adb75A49aceeF392A6d37625d993952a",
-		"DefaultLiquidityProvider": "0x0565B1aB5CEe7075B32C2D6a5B9dA44b708fB898",
 		"DefaultLiquidityProviderImplementation": "0x0bAc9eC4126cE5b62BEE2e99823c2b2e96c396b5"
 	},
 	"polygon": {

@@ -54,7 +54,7 @@ async function main() {
 	const Vaultdeployed = await Vault.attach(vaultAddress);
 
 	const week = 7 * 24 * 60 * 60;
-	await Vaultdeployed.setSkewImpactLimit(w3utils.toWei('-0.01'), { from: owner.address });
+	await Vaultdeployed.setSkewImpactLimit(w3utils.toWei('0'), { from: owner.address });
 }
 main()
 	.then(() => process.exit(0))

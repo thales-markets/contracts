@@ -31,11 +31,17 @@ async function main() {
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		proxySUSD = getTargetAddress('ExoticUSD', network);
+	}
+
 	const StakingAddress = getTargetAddress('StakingThales', network);
 	const StakingContract = await ethers.getContractFactory('StakingThales');
 	console.log('Address of staking: ', StakingAddress);
 
-	if (networkObj.chainId == 69) {
+	if (networkObj.chainId == 69 || networkObj.chainId == 420) {
 		await upgrades.upgradeProxy(StakingAddress, StakingContract);
 		await delay(5000);
 

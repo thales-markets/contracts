@@ -417,7 +417,9 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         isTradingParlayMarketInARound[round][_calculateCombinationKey(sportMarkets)] = true;
 
         for (uint i = 0; i < sportMarkets.length; i++) {
-            marketUsedInRoundCount[round][sportMarkets[i]] += 1;
+            address marketAddress = _getMarketForMaxCountCheck(sportMarkets[i]);
+
+            marketUsedInRoundCount[round][marketAddress] += 1;
         }
 
         emit TradeExecuted(parlayMarket[0], sUSDPaid);
@@ -446,10 +448,21 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         int pricePositionImpact = ISportsAMM(parlayAMM.sportsAmm()).buyPriceImpact(market, ammPosition, amount);
         require(pricePositionImpact < skewImpactLimit, "Skew impact too high");
 
+        address marketToCheck = _getMarketForMaxCountCheck(market);
+
         require(
-            marketUsedInRoundCount[round][market] <= maxMarketUsedInRoundCount,
+            marketUsedInRoundCount[round][marketToCheck] <= maxMarketUsedInRoundCount,
             "Market is at the maximum number of tickets"
         );
+    }
+
+    /// @notice Get parent market address if market is double chance
+    /// @param _market market address
+    function _getMarketForMaxCountCheck(address _market) internal view returns (address) {
+        return
+            ISportPositionalMarket(_market).isDoubleChance()
+                ? address(ISportPositionalMarket(_market).parentMarket())
+                : _market;
     }
 
     /// @notice Calculates parlay combination keys

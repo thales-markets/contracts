@@ -43,6 +43,12 @@
         "internalType": "address",
         "name": "_wrapper",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_lp",
+        "type": "address"
       }
     ],
     "name": "AddressesUpdated",
@@ -179,6 +185,12 @@
         "internalType": "uint256",
         "name": "_referrerFee",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "threshold",
+        "type": "uint256"
       }
     ],
     "name": "ParametersUpdated",
@@ -302,19 +314,6 @@
       }
     ],
     "name": "SetSportsPositionalMarketManager",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_threshold",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetThresholdForOddsUpdate",
     "type": "event"
   },
   {
@@ -656,25 +655,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "canExerciseMaturedMarket",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "canExercize",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -789,32 +769,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "exerciseMaturedMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getAmmUtils",
-    "outputs": [
-      {
-        "internalType": "contract SportsAMMUtils",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_market",
         "type": "address"
       },
@@ -830,25 +784,6 @@
         "internalType": "uint256[]",
         "name": "odds",
         "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "getSpentOnGame",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -913,6 +848,19 @@
         "internalType": "bool",
         "name": "isTrading",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "liquidityPool",
+    "outputs": [
+      {
+        "internalType": "contract SportAMMLiquidityPool",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1144,24 +1092,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "retrieveSUSDAmount",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "sUSD",
     "outputs": [
@@ -1254,6 +1184,11 @@
       {
         "internalType": "address",
         "name": "_wrapper",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_lp",
         "type": "address"
       }
     ],
@@ -1376,24 +1311,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "newFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMinSpreadPerAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_owner",
         "type": "address"
       }
@@ -1444,6 +1361,11 @@
         "internalType": "uint256",
         "name": "_referrerFee",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
       }
     ],
     "name": "setParameters",
@@ -1473,11 +1395,16 @@
       },
       {
         "internalType": "uint256",
-        "name": "newFee",
+        "name": "newSBFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newMSFee",
         "type": "uint256"
       }
     ],
-    "name": "setSafeBoxFeePerAddress",
+    "name": "setSafeBoxFeeAndMinSpreadPerAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1498,19 +1425,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_threshold",
-        "type": "uint256"
-      }
-    ],
-    "name": "setThresholdForOddsUpdate",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -1522,6 +1436,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sportAmmUtils",
+    "outputs": [
+      {
+        "internalType": "contract SportsAMMUtils",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1575,6 +1502,34 @@
       }
     ],
     "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "all",
+        "type": "bool"
+      }
+    ],
+    "name": "transferTokens",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -46,19 +46,22 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vaultAddress = getTargetAddress('ParlayVault', network);
-	console.log('Found ParlayVault at:', vaultAddress);
+	const sportAMMLiquidityPoolAddress = getTargetAddress('SportAMMLiquidityPool', network);
+	console.log('Found SportAMMLiquidityPool at:', sportAMMLiquidityPoolAddress);
 
-	const Vault = await ethers.getContractFactory('ParlayVault');
-	const implementation = await upgrades.prepareUpgrade(vaultAddress, Vault);
+	const SportAMMLiquidityPool = await ethers.getContractFactory('SportAMMLiquidityPool');
+	const implementation = await upgrades.prepareUpgrade(
+		sportAMMLiquidityPoolAddress,
+		SportAMMLiquidityPool
+	);
 
 	if (networkObj.chainId == 420) {
-		await upgrades.upgradeProxy(vaultAddress, Vault);
-		console.log('Vault upgraded');
+		await upgrades.upgradeProxy(sportAMMLiquidityPoolAddress, SportAMMLiquidityPool);
+		console.log('SportAMMLiquidityPool upgraded');
 	}
 
-	console.log('ParlayVaultImplementation: ', implementation);
-	setTargetAddress('ParlayVaultImplementation', network, implementation);
+	console.log('SportAMMLiquidityPoolImplementation: ', implementation);
+	setTargetAddress('SportAMMLiquidityPoolImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
 		address: implementation,

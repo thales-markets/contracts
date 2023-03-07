@@ -32,6 +32,8 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
     mapping(address => uint) public addressToTokenId;
     mapping(uint => uint[]) public roundToGameIds;
 
+    string public urlToUse;
+
     /* ========== MODIFIER ========== */
 
     modifier notAfterFinalDate() {
@@ -59,6 +61,8 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
 
         itemToBrackets[newItemId] = _brackets;
         addressToTokenId[msg.sender] = newItemId;
+
+        _setTokenURI(newItemId, urlToUse);
 
         emit Mint(msg.sender, newItemId, _brackets);
     }
@@ -206,8 +210,8 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         return paused ? _pause() : _unpause();
     }
 
-    function setTokenURI(uint256 tokenId, string memory _tokenURI) external onlyOwner {
-        _setTokenURI(tokenId, _tokenURI);
+    function setURLToUse(string memory _urlToUse) external onlyOwner {
+        urlToUse = _urlToUse;
     }
 
     function setResultForGame(uint _gameId, uint _teamId) external onlyOwner {

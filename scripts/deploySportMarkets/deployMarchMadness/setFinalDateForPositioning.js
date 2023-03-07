@@ -44,6 +44,11 @@ async function main() {
 		network = 'goerli';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
@@ -52,17 +57,16 @@ async function main() {
 		const MarchMadness = await ethers.getContractFactory('MarchMadness');
 		const marchMadnessAddress = getTargetAddress('MarchMadness', network);
 		console.log('Found MarchMadness at:', marchMadnessAddress);
-	
+
 		const marchMadness = MarchMadness.attach(marchMadnessAddress);
 
-		const dateTo = new Date('03-14-2023').getTime() / 1000;
+		const dateTo = new Date('03-16-2023').getTime() / 1000;
 
 		await marchMadness.setFinalDateForPositioning(dateTo);
 
 		console.log('Final date successfully set.');
-
-	} catch(e) {
-		console.log("E ", e);
+	} catch (e) {
+		console.log('E ', e);
 	}
 }
 

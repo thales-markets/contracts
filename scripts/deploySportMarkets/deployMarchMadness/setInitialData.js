@@ -44,6 +44,16 @@ async function main() {
 		network = 'goerli';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
@@ -52,11 +62,11 @@ async function main() {
 		const MarchMadness = await ethers.getContractFactory('MarchMadness');
 		const marchMadnessAddress = getTargetAddress('MarchMadness', network);
 		console.log('Found MarchMadness at:', marchMadnessAddress);
-	
+
 		const marchMadness = MarchMadness.attach(marchMadnessAddress);
-	
+
 		const roundPoints = [1, 2, 4, 7, 10, 20];
-	
+
 		for (let i = 0; i < roundPoints.length; i++) {
 			console.log(`Adding points to round ${i}`);
 			const tx = await marchMadness.setPointsToRound(i, roundPoints[i], { from: owner.address });
@@ -65,7 +75,7 @@ async function main() {
 			});
 			await delay(1500);
 		}
-	
+
 		const gameIdsPerRound = [
 			Array.from({ length: 32 }, (_, k) => k),
 			Array.from({ length: 16 }, (_, k) => k + 31),
@@ -74,21 +84,23 @@ async function main() {
 			[60, 61],
 			[62],
 		];
-	
+
 		for (let i = 0; i < gameIdsPerRound.length; i++) {
 			console.log('Adding gameIds to round');
 			console.log('Round -> ', i);
-			console.log('GameIds -> ', gameIdsPerRound[i])
-			const tx = await marchMadness.assignGameIdsToRound(i, gameIdsPerRound[i], { from: owner.address });
+			console.log('GameIds -> ', gameIdsPerRound[i]);
+			const tx = await marchMadness.assignGameIdsToRound(i, gameIdsPerRound[i], {
+				from: owner.address,
+			});
 			await tx.wait().then((e) => {
 				txLog(tx, 'Tx log');
 			});
 			await delay(1500);
 		}
-	
+
 		console.log('Script has finished.');
-	} catch(e) {
-		console.log("e ", e);
+	} catch (e) {
+		console.log('e ', e);
 	}
 }
 

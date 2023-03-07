@@ -65527,6 +65527,341 @@
           }
         }
       }
+    },
+    "44611feaadb384e1dd18e67f73fd67c5f810884d1633e819b7e49afd7bd20579": {
+      "address": "0x8Fe6Fdc03eBa902A2C259FaF53ECe2aD7A5C4d78",
+      "txHash": "0x59ef9cd48ce96cc97f7d3fbe0198055406f6419eb23bce3319b78673d5410b0c",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "parlayAMM",
+            "type": "t_contract(IParlayMarketsAMM)60088",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:51"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)8234",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:52"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "vaultStarted",
+            "type": "t_bool",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:54"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "round",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:56"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "roundLength",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:57"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "roundStartTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:58"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "usersPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:60"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "userInRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:61"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "balancesPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:63"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "withdrawalRequested",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:64"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "depositReceipts",
+            "type": "t_mapping(t_address,t_struct(DepositReceipt)15429_storage)",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:65"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "allocationPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:67"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "tradingParlayMarketsPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:69"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "isTradingParlayMarketInARound",
+            "type": "t_mapping(t_uint256,t_mapping(t_bytes32,t_bool))",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:70"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "profitAndLossPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:72"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "cumulativeProfitAndLoss",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:73"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "maxAllowedDeposit",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:75"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "utilizationRate",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:76"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "maxTradeRate",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:77"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "capPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:79"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "minDepositAmount",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:81"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "maxAllowedUsers",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:83"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "usersCurrentlyInVault",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:84"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "priceLowerLimit",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:86"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "priceUpperLimit",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:87"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "skewImpactLimit",
+            "type": "t_int256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:88"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "minTradeAmount",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:90"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "stakingThales",
+            "type": "t_contract(IStakingThales)61088",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:93"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "allocationSpentInARound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:95"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "marketUsedInRoundCount",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:97"
+          },
+          {
+            "contract": "ParlayVault",
+            "label": "maxMarketUsedInRoundCount",
+            "type": "t_uint256",
+            "src": "contracts/OvertimeVaults/ParlayVault.sol:98"
+          }
+        ],
+        "types": {
+          "t_contract(IParlayMarketsAMM)60088": {
+            "label": "contract IParlayMarketsAMM"
+          },
+          "t_contract(IERC20Upgradeable)8234": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_struct(DepositReceipt)15429_storage)": {
+            "label": "mapping(address => struct ParlayVault.DepositReceipt)"
+          },
+          "t_struct(DepositReceipt)15429_storage": {
+            "label": "struct ParlayVault.DepositReceipt",
+            "members": [
+              {
+                "label": "round",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_mapping(t_bytes32,t_bool))": {
+            "label": "mapping(uint256 => mapping(bytes32 => bool))"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_int256": {
+            "label": "int256"
+          },
+          "t_contract(IStakingThales)61088": {
+            "label": "contract IStakingThales"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
     }
   }
 }

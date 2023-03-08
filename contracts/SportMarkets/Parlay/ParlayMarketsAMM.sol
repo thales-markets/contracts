@@ -581,6 +581,22 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         parlaySize = _parlaySize;
     }
 
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific safe box fee
+    /// @param newFee the fee
+    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
+        safeBoxFeePerAddress[_address] = newFee;
+        emit SafeBoxFeePerAddressChanged(_address, newFee);
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific parlay amm fee
+    /// @param newFee the fee
+    function setParlayAmmFeePerAddress(address _address, uint newFee) external onlyOwner {
+        parlayAmmFeePerAddress[_address] = newFee;
+        emit ParlayAmmFeePerAddressChanged(_address, newFee);
+    }
+
     function setAmounts(
         uint _minUSDAmount,
         uint _maxSupportedAmount,
@@ -650,22 +666,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         //sUSD.approve(_curveSUSD, MAX_APPROVAL);
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
-    }
-
-    /// @notice Updates contract parametars
-    /// @param _address which has a specific safe box fee
-    /// @param newFee the fee
-    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
-        safeBoxFeePerAddress[_address] = newFee;
-        emit SafeBoxFeePerAddressChanged(_address, newFee);
-    }
-
-    /// @notice Updates contract parametars
-    /// @param _address which has a specific parlay amm fee
-    /// @param newFee the fee
-    function setParlayAmmFeePerAddress(address _address, uint newFee) external onlyOwner {
-        parlayAmmFeePerAddress[_address] = newFee;
-        emit ParlayAmmFeePerAddressChanged(_address, newFee);
     }
 
     /* ========== MODIFIERS ========== */

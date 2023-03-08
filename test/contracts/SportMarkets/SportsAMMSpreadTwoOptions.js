@@ -16,10 +16,6 @@ const DAY = 86400;
 const WEEK = 604800;
 const YEAR = 31556926;
 
-const hour = 60 * 60;
-const day = 24 * 60 * 60;
-const week = 7 * day;
-
 const {
 	fastForward,
 	toUnit,
@@ -133,6 +129,7 @@ contract('SportsAMM', (accounts) => {
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
+	let GamesOddsObtainerDeployed;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -149,7 +146,6 @@ contract('SportsAMM', (accounts) => {
 		testUSDT,
 		testDAI,
 		Referrals,
-		GamesOddsObtainerDeployed,
 		SportsAMM,
 		SportAMMLiquidityPool;
 
@@ -193,6 +189,7 @@ contract('SportsAMM', (accounts) => {
 
 		await SportPositionalMarketManager.setExpiryDuration(5 * DAY, { from: manager });
 		// await SportPositionalMarketManager.setCancelTimeout(2 * HOUR, { from: manager });
+		//await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
@@ -224,23 +221,23 @@ contract('SportsAMM', (accounts) => {
 		await SportsAMM.initialize(
 			owner,
 			Thales.address,
-			toUnit('100'),
+			toUnit('5000'),
 			toUnit('0.02'),
 			toUnit('0.2'),
-			HOUR,
+			DAY,
 			{ from: owner }
 		);
 
 		await SportsAMM.setParameters(
-			HOUR,
-			toUnit('0.02'),
-			toUnit('0.2'),
-			toUnit('0.001'),
-			toUnit('0.9'),
-			toUnit('100'),
-			toUnit('0.01'),
-			toUnit('0.005'),
-			toUnit('500'),
+			DAY,
+			toUnit('0.013'), //_minSpread
+			toUnit('0.1'), //_maxSpread
+			toUnit('0.001'), //_minSupportedOdds
+			toUnit('0.9'), //_maxSupportedOdds
+			toUnit('1000'), //_defaultCapPerGame
+			toUnit('0.01'), //_safeBoxImpact
+			toUnit('0.005'), //_referrerFee
+			toUnit('500000'), //_threshold
 			{ from: owner }
 		);
 
@@ -281,7 +278,6 @@ contract('SportsAMM', (accounts) => {
 		await Thales.transfer(first, toUnit('100000'), { from: owner });
 		await Thales.transfer(second, toUnit('100000'), { from: owner });
 		await Thales.transfer(third, toUnit('100000'), { from: owner });
-		await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
 
 		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: first });
 		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: second });
@@ -295,7 +291,7 @@ contract('SportsAMM', (accounts) => {
 
 		// create game props
 		game_1_create =
-			'0x0000000000000000000000000000000000000000000000000000000000000020653630636661373830383436616636383937386234393537396535636633393600000000000000000000000000000000000000000000000000000000625755f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf240000000000000000000000000000000000000000000000000000000000004524ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf2400000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000000d41746c616e7461204861776b73000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011436861726c6f74746520486f726e657473000000000000000000000000000000';
+			'0x0000000000000000000000000000000000000000000000000000000000000020653630636661373830383436616636383937386234393537396535636633393600000000000000000000000000000000000000000000000000000000625755f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf240000000000000000000000000000000000000000000000000000000000004524000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000000d41746c616e7461204861776b73000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011436861726c6f74746520486f726e657473000000000000000000000000000000';
 		game_2_create =
 			'0x0000000000000000000000000000000000000000000000000000000000000020393734653366303638623333376431323965643563313364663237613332666200000000000000000000000000000000000000000000000000000000625755f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf240000000000000000000000000000000000000000000000000000000000004524ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf2400000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000000d41746c616e7461204861776b73000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011436861726c6f74746520486f726e657473000000000000000000000000000000';
 		gamesCreated = [game_1_create, game_2_create];
@@ -330,9 +326,9 @@ contract('SportsAMM', (accounts) => {
 		reqIdResolveFoodball = '0xff8887a8535b7a8030962e6f6b1eba61c0f1cb82f706e77d834f15c781e47697';
 		gamesResolvedFootball = [game_1_football_resolve, game_2_football_resolve];
 
-		oddsid = '0x6135363061373861363135353239363137366237393232353866616336613532';
+		oddsid = '0x6536306366613738303834366166363839373862343935373965356366333936';
 		oddsResult =
-			'0x6135363061373861363135353239363137366237393232353866616336613532000000000000000000000000000000000000000000000000000000000000283cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3dc0000000000000000000000000000000000000000000000000000000000000000';
+			'0x6536306366613738303834366166363839373862343935373965356366333936000000000000000000000000000000000000000000000000000000000000283cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3dc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd50800000000000000000000000000000000000000000000000000000000000000c8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd508';
 		oddsResultArray = [oddsResult];
 		reqIdOdds = '0x5bf0ea636f9515e1e1060e5a21e11ef8a628fa99b1effb8aa18624b02c6f36de';
 		// reqIdOdds2 = '';
@@ -457,13 +453,10 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
-		let sportAMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
-		await SportAMMLiquidityPool.setPoolRoundMastercopy(
-			sportAMMLiquidityPoolRoundMastercopy.address,
-			{
-				from: owner,
-			}
-		);
+		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
+		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
 		await Thales.transfer(firstLiquidityProvider, toUnit('1000000'), { from: owner });
 		await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000000'), {
 			from: firstLiquidityProvider,
@@ -484,225 +477,15 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.mint(first, toUnit(100000));
 		await testUSDC.mint(curveSUSD.address, toUnit(100000));
 		await testUSDC.approve(SportsAMM.address, toUnit(100000), { from: first });
+		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 	});
 
-	let rewardTokenAddress;
-	let Vault, vault;
-	let MockPriceFeedDeployed;
-
-	beforeEach(async () => {
-		rewardTokenAddress = owner;
-
-		Vault = artifacts.require('SportVault');
-		vault = await Vault.new();
-
-		await vault.initialize({
-			_owner: owner,
-			_sportsAmm: SportsAMM.address,
-			_sUSD: Thales.address,
-			_roundLength: day,
-			_priceLowerLimit: toUnit(0.1).toString(),
-			_priceUpperLimit: toUnit(1).toString(),
-			_skewImpactLimit: toUnit(-0.03).toString(), // 40%
-			_allocationLimitsPerMarketPerRound: toUnit(10).toString(), // 40%
-			_maxAllowedDeposit: toUnit(1000).toString(), // 20%
-			_utilizationRate: toUnit(0.5).toString(),
-			_minDepositAmount: toUnit(100).toString(),
-			_maxAllowedUsers: 100,
-			_minTradeAmount: toUnit(10).toString(),
-		});
-
-		await vault.setAllocationLimits(toUnit(10), { from: owner });
-		await vault.setMaxAllowedUsers(100, { from: owner });
-		await vault.setMinAllowedDeposit(toUnit(100), { from: owner });
-		await vault.setMaxAllowedDeposit(toUnit(1000), { from: owner });
-		await vault.setUtilizationRate(toUnit(0.5), { from: owner });
-		await vault.setRoundLength(day, { from: owner });
-		await vault.setSportAmm(SportsAMM.address, { from: owner });
-		await vault.setSkewImpactLimit(toUnit(-0.03), { from: owner });
-		await vault.setMinTradeAmount(toUnit(10), { from: owner });
-		await vault.setPriceLimits(toUnit(0.1), toUnit(1), { from: owner });
-
-		await Thales.approve(vault.address, toUnit('100000'), { from: first });
-		await Thales.approve(vault.address, toUnit('100000'), { from: second });
-		await Thales.approve(vault.address, toUnit('100000'), { from: third });
-
-		await StakingThales.setSupportedSportVault(vault.address, true, { from: owner });
-		await StakingThales.startStakingPeriod({ from: owner });
-		await vault.setStakingThales(StakingThales.address, { from: owner });
-
-		await SportsAMM.setSafeBoxFeeAndMinSpreadPerAddress(
-			vault.address,
-			toUnit('0.005'),
-			toUnit('0.005'),
-			{
-				from: owner,
-			}
-		);
-	});
-
-	describe('Test sport vault', () => {
-		it('Vault creation', async () => {
-			let round = await vault.round();
-			console.log('round is:' + round.toString());
-
-			let maxAllowedUsers = await vault.maxAllowedUsers();
-			console.log('maxAllowedUsers is:' + maxAllowedUsers.toString());
-
-			let minDepositAmount = await vault.minDepositAmount();
-			console.log('minDepositAmount is:' + minDepositAmount.toString() / 1e18);
-
-			let utilizationRate = await vault.utilizationRate();
-			console.log('utilizationRate is:' + utilizationRate.toString() / 1e18);
-
-			let maxAllowedDeposit = await vault.maxAllowedDeposit();
-			console.log('maxAllowedDeposit is:' + maxAllowedDeposit.toString() / 1e18);
-
-			let allocationLimitsPerMarketPerRound = await vault.allocationLimitsPerMarketPerRound();
-			console.log(
-				'allocationLimitsPerMarketPerRound is:' +
-					allocationLimitsPerMarketPerRound.toString() / 1e18
-			);
-
-			let skewImpactLimit = await vault.skewImpactLimit();
-			console.log('skewImpactLimit is:' + skewImpactLimit.toString() / 1e18);
-
-			let priceUpperLimit = await vault.priceUpperLimit();
-			console.log('priceUpperLimit is:' + priceUpperLimit.toString() / 1e18);
-
-			let priceLowerLimit = await vault.priceLowerLimit();
-			console.log('priceLowerLimit is:' + priceLowerLimit.toString() / 1e18);
-
-			let roundLength = await vault.roundLength();
-			console.log('roundLength is:' + roundLength);
-
-			let vaultStarted = await vault.vaultStarted();
-			console.log('vaultStarted is:' + vaultStarted);
-
-			await vault.deposit(toUnit(100), { from: first });
-
-			let volume = await StakingThales.getAMMVolume(first);
-			console.log('volume first is:' + volume / 1e18);
-
-			volume = await StakingThales.getAMMVolume(second);
-			console.log('volume second is:' + volume / 1e18);
-
-			round = 1;
-			assert.bnEqual(await vault.getBalancesPerRound(round, first), toUnit(100));
-
-			assert.bnEqual(await Thales.balanceOf(vault.address), toUnit(100));
-			assert.bnEqual(await vault.allocationPerRound(round), toUnit(100));
-			assert.bnEqual(await vault.capPerRound(round), toUnit(100));
-
-			assert.bnEqual(await vault.allocationPerRound(0), 0);
-			assert.bnEqual(await vault.allocationPerRound(2), 0);
-
-			let usersCurrentlyInVault = await vault.usersCurrentlyInVault();
-			console.log('usersCurrentlyInVault is:' + usersCurrentlyInVault);
-
-			await vault.startVault({ from: owner });
-			//round1
-
-			round = 2;
-			await vault.deposit(toUnit(200), { from: second });
-			assert.bnEqual(await vault.getBalancesPerRound(round, first), 0);
-			assert.bnEqual(await vault.getBalancesPerRound(round, second), toUnit(200));
-
-			assert.bnEqual(await Thales.balanceOf(vault.address), toUnit(300));
-			assert.bnEqual(await vault.allocationPerRound(round), toUnit(200));
-			assert.bnEqual(await vault.capPerRound(round), toUnit(300));
-
-			await assert.revert(
-				vault.deposit(toUnit(1000), { from: first }),
-				'Deposit amount exceeds vault cap'
-			);
-			await assert.revert(vault.deposit(toUnit(10), { from: first }), 'Invalid amount');
-
-			usersCurrentlyInVault = await vault.usersCurrentlyInVault();
-			console.log('usersCurrentlyInVault is:' + usersCurrentlyInVault);
-
-			await fastForward(day);
-			// CLOSE ROUND #1 - START ROUND #2
-			await vault.closeRound();
-
-			volume = await StakingThales.getAMMVolume(first);
-			console.log('volume first round 2 is:' + volume / 1e18);
-
-			volume = await StakingThales.getAMMVolume(second);
-			console.log('volume second round 2 is:' + volume / 1e18);
-
-			await StakingThales.delegateVolume(second, { from: first });
-
-			round = 2;
-			assert.bnEqual(await vault.getBalancesPerRound(round, first), toUnit(100));
-			assert.bnEqual(await vault.getBalancesPerRound(round, second), toUnit(200));
-			assert.bnEqual(await Thales.balanceOf(vault.address), toUnit(300));
-
-			await vault.withdrawalRequest({ from: second });
-			assert.bnEqual(await vault.capPerRound(3), toUnit(100));
-			usersCurrentlyInVault = await vault.usersCurrentlyInVault();
-			console.log('usersCurrentlyInVault is:' + usersCurrentlyInVault);
-
-			await fastForward(day);
-			// CLOSE ROUND #1 - START ROUND #3
-			await vault.closeRound();
-
-			volume = await StakingThales.getAMMVolume(first);
-			console.log('volume first round 3 is:' + volume / 1e18);
-
-			volume = await StakingThales.getAMMVolume(second);
-			console.log('volume second round 3 is:' + volume / 1e18);
-			round = 3;
-			assert.bnEqual(await vault.getBalancesPerRound(round, first), toUnit(100));
-			assert.bnEqual(await vault.getBalancesPerRound(round, second), 0);
-			assert.bnEqual(await Thales.balanceOf(vault.address), toUnit(100));
-			assert.bnEqual(await vault.allocationPerRound(round), toUnit(100));
-
-			usersCurrentlyInVault = await vault.usersCurrentlyInVault();
-			console.log('usersCurrentlyInVault is:' + usersCurrentlyInVault);
-
-			await assert.revert(vault.withdrawalRequest({ from: second }), 'Nothing to withdraw');
-
-			await vault.withdrawalRequest({ from: first });
-
-			await fastForward(day);
-			// CLOSE ROUND #1 - START ROUND #4
-			await vault.closeRound();
-			round = 4;
-			assert.bnEqual(await vault.getBalancesPerRound(round, first), 0);
-			assert.bnEqual(await vault.getBalancesPerRound(round, second), 0);
-			assert.bnEqual(await Thales.balanceOf(vault.address), 0);
-			assert.bnEqual(await vault.allocationPerRound(round), 0);
-			usersCurrentlyInVault = await vault.usersCurrentlyInVault();
-			console.log('usersCurrentlyInVault is:' + usersCurrentlyInVault);
-
-			await vault.deposit(toUnit(200), { from: second });
-			await vault.deposit(toUnit(300), { from: first });
-
-			await fastForward(day);
-			// CLOSE ROUND #1 - START ROUND #5
-			await vault.closeRound();
-
-			await vault.deposit(toUnit(100), { from: second });
-			await assert.revert(
-				vault.withdrawalRequest({ from: second }),
-				"Can't withdraw as you already deposited for next round"
-			);
-
-			await fastForward(day);
-			// CLOSE ROUND #1 - START ROUND #6
-			await vault.closeRound();
-
-			roundLength = await vault.roundLength();
-			console.log('roundLength is:' + roundLength);
-
-			round = await vault.round();
-			console.log('round is:' + round);
-
-			let roundStartTime = await vault.roundStartTime(round);
-			console.log('roundStartTime is:' + roundStartTime);
-
+	describe('Test SportsAMM', () => {
+		let deployedMarket;
+		let answer;
+		beforeEach(async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// req. games
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdCreate,
 				gamesCreated,
@@ -713,159 +496,89 @@ contract('SportsAMM', (accounts) => {
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
-
-			assert.equal(await TherundownConsumerDeployed.gameFulfilledCreated(gameid1), true);
-
-			console.log('gameTime ' + gameTime);
-
 			await TherundownConsumerDeployed.createMarketForGame(gameid1);
 			await TherundownConsumerDeployed.marketPerGameId(gameid1);
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
 			deployedMarket = await SportPositionalMarketContract.at(answer.toString());
+		});
+		let position = 0;
+		let value = 100;
 
-			let now = await currentTime();
-			await fastForward(gameTime - now - day);
-			// CLOSE ROUND #1 - START ROUND #7
-			await vault.closeRound();
-			round = await vault.round();
-			console.log('round is:' + round);
-			roundStartTime = await vault.roundStartTime(round);
-			console.log('roundStartTime is:' + roundStartTime);
+		it('Get odds', async () => {
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 0);
+			let sumOfOdds = answer;
+			console.log('Odds for pos 0: ', fromUnit(answer));
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 1);
+			sumOfOdds = sumOfOdds.add(answer);
+			console.log('Odds for pos 1: ', fromUnit(answer));
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 2);
+			sumOfOdds = sumOfOdds.add(answer);
+			console.log('Odds for pos 2: ', fromUnit(answer));
+			console.log('Total odds: ', fromUnit(sumOfOdds));
+		});
 
-			let maturity = await deployedMarket.times();
+		it('Get american odds', async () => {
+			answer = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			let sumOfOdds = answer[0];
+			sumOfOdds = sumOfOdds.add(answer[1]);
+			sumOfOdds = sumOfOdds.add(answer[2]);
+		});
 
-			var maturityBefore = maturity[0];
-			console.log('maturityBefore is:' + maturityBefore);
+		it('Get price', async () => {
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 0);
+			let sumOfPrices = answer;
+			console.log('Price for pos 0: ', fromUnit(answer));
+			sumOfPrices = sumOfPrices.add(answer);
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 1);
+			console.log('Price for pos 1: ', fromUnit(answer));
+			sumOfPrices = sumOfPrices.add(answer);
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 2);
+			console.log('Price for pos 2: ', fromUnit(answer));
+			console.log('Total price: ', fromUnit(sumOfPrices));
+		});
+		it('Get Available to buy from SportsAMM, position 1', async () => {
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			console.log('Available to buy: ', fromUnit(answer));
+		});
 
-			let getCurrentRoundEnd = await vault.getCurrentRoundEnd();
-			console.log('getCurrentRoundEnd is:' + getCurrentRoundEnd);
+		it('Get BuyQuote from SportsAMM, position 1, value: 100', async () => {
+			answer = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
+			console.log('buyAMMQuote: ', fromUnit(answer));
+		});
 
-			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 0);
-			console.log('AvailableToBuy: ' + availableToBuy / 1e18);
+		it('Buy from SportsAMM, position 1, value: 100', async () => {
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
 			let additionalSlippage = toUnit(0.01);
-			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(140));
-			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				1,
+				toUnit(1000)
+			);
 			answer = await SportsAMM.buyFromAMM(
 				deployedMarket.address,
 				1,
-				toUnit(140),
+				toUnit(1000),
 				buyFromAmmQuote,
 				additionalSlippage,
 				{ from: first }
 			);
 
-			let buyPriceImpactFirst = await SportsAMM.buyPriceImpact(
-				deployedMarket.address,
-				0,
-				toUnit(20)
-			);
-			console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
-
-			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(1));
-			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-
-			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(20));
-			console.log('buyQuote 20: ', fromUnit(buyFromAmmQuote));
-
-			let allocationSpentInARound = await vault.allocationSpentInARound(round);
-			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
-
-			let balanceVault = await Thales.balanceOf(vault.address);
-			console.log('balanceVault before trade is:' + balanceVault / 1e18);
-
-			await vault.trade(deployedMarket.address, toUnit(20), 0);
-
-			balanceVault = await Thales.balanceOf(vault.address);
-			console.log('balanceVault after trade is:' + balanceVault / 1e18);
-
-			allocationSpentInARound = await vault.allocationSpentInARound(round);
-			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
-
-			await assert.revert(
-				vault.trade(deployedMarket.address, toUnit(20), 1),
-				'Skew impact too high'
-			);
-
-			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(200));
-			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(1000));
 			answer = await SportsAMM.buyFromAMM(
 				deployedMarket.address,
 				0,
-				toUnit(200),
+				toUnit(1000),
 				buyFromAmmQuote,
 				additionalSlippage,
 				{ from: first }
 			);
 
-			buyPriceImpactFirst = await SportsAMM.buyPriceImpact(deployedMarket.address, 1, toUnit(20));
-			console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
-			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(1));
-			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-
-			let canCloseCurrentRound = await vault.canCloseCurrentRound();
-			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
-
-			await fastForward(day);
-			canCloseCurrentRound = await vault.canCloseCurrentRound();
-			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
-
-			assert.equal(true, await deployedMarket.canResolve());
-
-			assert.equal('Atlanta Hawks', game.homeTeam);
-			assert.equal('Charlotte Hornets', game.awayTeam);
-
-			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-				reqIdResolve,
-				gamesResolved,
-				sportId_4,
-				{ from: wrapper }
-			);
-
-			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
-			assert.equal(100, gameR.homeScore);
-			assert.equal(129, gameR.awayScore);
-
-			// resolve markets
-			const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
-
-			canCloseCurrentRound = await vault.canCloseCurrentRound();
-			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
-
-			let balanceFirst = await vault.getBalancesPerRound(round, first);
-			console.log('balanceFirst is:' + balanceFirst / 1e18);
-
-			let balanceSecond = await vault.getBalancesPerRound(round, second);
-			console.log('balanceSecond is:' + balanceSecond / 1e18);
-
-			balanceVault = await Thales.balanceOf(vault.address);
-			console.log('balanceVault is:' + balanceVault / 1e18);
-
-			let profitAndLossPerRound = await vault.profitAndLossPerRound(round - 1);
-			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
-
-			await fastForward(day);
-			await vault.closeRound();
-
-			round = await vault.round();
-			console.log('round is:' + round);
-
-			balanceFirst = await vault.getBalancesPerRound(round, first);
-			console.log('balanceFirst is:' + balanceFirst / 1e18);
-
-			balanceSecond = await vault.getBalancesPerRound(round, second);
-			console.log('balanceSecond is:' + balanceSecond / 1e18);
-
-			balanceVault = await Thales.balanceOf(vault.address);
-			console.log('balanceVault is:' + balanceVault / 1e18);
-
-			profitAndLossPerRound = await vault.profitAndLossPerRound(round - 1);
-			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
-
-			volume = await StakingThales.getAMMVolume(first);
-			console.log('volume first is:' + volume / 1e18);
-
-			volume = await StakingThales.getAMMVolume(second);
-			console.log('volume second is:' + volume / 1e18);
+			let roundPool = await SportAMMLiquidityPool.getMarketPool(deployedMarket.address);
+			let roundPoolBalanceAfter = await Thales.balanceOf(roundPool);
+			console.log('roundPoolBalanceAfter: ' + roundPoolBalanceAfter / 1e18);
 		});
 	});
 });

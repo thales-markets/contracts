@@ -211,7 +211,7 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
 
     /// @notice Deposit funds from user into vault for the next round
     /// @param amount Value to be deposited
-    function deposit(uint amount) external canDeposit(amount) {
+    function deposit(uint amount) external canDeposit(amount) nonReentrant whenNotPaused {
         sUSD.safeTransferFrom(msg.sender, address(this), amount);
 
         uint nextRound = round + 1;
@@ -239,7 +239,7 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
         emit Deposited(msg.sender, amount);
     }
 
-    function withdrawalRequest() external {
+    function withdrawalRequest() external nonReentrant whenNotPaused {
         require(vaultStarted, "Vault has not started");
         require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
         require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");

@@ -519,6 +519,24 @@
         "type": "bytes32"
       },
       {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "setFirstNormalizedOdds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
         "internalType": "int24",
         "name": "_homeOdds",
         "type": "int24"

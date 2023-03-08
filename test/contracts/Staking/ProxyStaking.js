@@ -115,7 +115,8 @@ contract('StakingThales', (accounts) => {
 			dummy,
 			dummy,
 			dummy,
-			AddressResolverDeployed.address
+			AddressResolverDeployed.address,
+			ZERO_ADDRESS
 		);
 	});
 

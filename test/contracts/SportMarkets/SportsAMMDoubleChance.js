@@ -35,11 +35,26 @@ const {
 } = require('../../utils/helpers');
 
 contract('SportsAMM DoubleChance', (accounts) => {
-	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
+	const [
+		manager,
+		first,
+		owner,
+		second,
+		third,
+		fourth,
+		safeBox,
+		wrapper,
+		firstLiquidityProvider,
+		defaultLiquidityProvider,
+	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
 		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
+
+	const SportAMMLiquidityPoolRoundMastercopy = artifacts.require(
+		'SportAMMLiquidityPoolRoundMastercopy'
+	);
 
 	const SportPositionContract = artifacts.require('SportPosition');
 	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
@@ -133,7 +148,8 @@ contract('SportsAMM DoubleChance', (accounts) => {
 		testUSDT,
 		testDAI,
 		Referrals,
-		SportsAMM;
+		SportsAMM,
+		SportAMMLiquidityPool;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -230,6 +246,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
+			toUnit('500000'),
 			{ from: owner }
 		);
 
@@ -260,6 +277,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			second,
 			second,
 			SportsAMM.address,
+			second,
 			second,
 			second,
 			second,
@@ -420,6 +438,22 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			{ from: owner }
 		);
 
+		let SportAMMLiquidityPoolContract = artifacts.require('SportAMMLiquidityPool');
+		SportAMMLiquidityPool = await SportAMMLiquidityPoolContract.new();
+
+		await SportAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_sportsAmm: SportsAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(10000000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -428,8 +462,30 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			Referrals.address,
 			ZERO_ADDRESS,
 			wrapper,
+			SportAMMLiquidityPool.address,
 			{ from: owner }
 		);
+
+		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
+		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+		await Thales.transfer(firstLiquidityProvider, toUnit('1000000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000000'), {
+			from: firstLiquidityProvider,
+		});
+		await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await SportAMMLiquidityPool.deposit(toUnit(1000000), { from: firstLiquidityProvider });
+		await SportAMMLiquidityPool.start({ from: owner });
+		await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+			from: owner,
+		});
+		await Thales.transfer(defaultLiquidityProvider, toUnit('1000000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000000'), {
+			from: defaultLiquidityProvider,
+		});
 
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
@@ -760,6 +816,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				toUnit('5000'),
 				toUnit('0.01'),
 				toUnit('0.005'),
+				toUnit('500'),
 				{ from: owner }
 			);
 			answer = await SportsAMM.availableToBuyFromAMM(homeTeamNotLoseMarket.address, 0);
@@ -784,6 +841,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				toUnit('5000'),
 				toUnit('0.01'),
 				toUnit('0.005'),
+				toUnit('500'),
 				{ from: owner }
 			);
 
@@ -911,13 +969,6 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			answer = await Thales.balanceOf(first);
 			console.log('Balance after buying: ', fromUnit(answer));
-
-			answer = await SportsAMM.canExerciseMaturedMarket(homeTeamNotLoseMarket.address);
-			console.log('Can exercise options homeTeamNotLoseMarket: ', answer);
-			answer = await SportsAMM.canExerciseMaturedMarket(awayTeamNotLoseMarket.address);
-			console.log('Can exercise options awayTeamNotLoseMarket: ', answer);
-			answer = await SportsAMM.canExerciseMaturedMarket(noDrawMarket.address);
-			console.log('Can exercise options noDrawMarket: ', answer);
 
 			let balancesHomeTeamNotLose = await homeTeamNotLoseMarket.balancesOf(first);
 
@@ -1475,11 +1526,11 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'Spent on game homeTeamNotLose',
-				(await SportsAMM.getSpentOnGame(homeTeamNotLoseMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(homeTeamNotLoseMarket.address)) / 1e18
 			);
 			console.log(
 				'Spent on game deployedMarket',
-				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(deployedMarket.address)) / 1e18
 			);
 
 			// individual buy
@@ -1505,7 +1556,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'Spent on game deployedMarket',
-				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(deployedMarket.address)) / 1e18
 			);
 
 			availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
@@ -1530,7 +1581,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'Spent on game deployedMarket',
-				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(deployedMarket.address)) / 1e18
 			);
 		});
 
@@ -1558,7 +1609,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'Spent on game deployedMarket',
-				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(deployedMarket.address)) / 1e18
 			);
 
 			availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
@@ -1583,7 +1634,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'Spent on game deployedMarket',
-				(await SportsAMM.getSpentOnGame(deployedMarket.address)) / 1e18
+				(await SportsAMM.spentOnGame(deployedMarket.address)) / 1e18
 			);
 		});
 	});

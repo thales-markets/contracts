@@ -340,6 +340,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return gameCreated[_gameId];
     }
 
+    /// @notice view function which returns game startTime
+    /// @param _gameId game id
+    function getGameStartTime(bytes32 _gameId) external view returns (uint256) {
+        return gameCreated[_gameId].startTime;
+    }
+
     /// @notice view function which returns games on certan date and sportid
     /// @param _sportId date
     /// @param _date date

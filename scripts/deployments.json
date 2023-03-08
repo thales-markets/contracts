@@ -181,7 +181,6 @@
 		"ThalesStakingRewardsPoolImplementation": "0x94B417458AF11c991B413C03e79f76bda330AF77",
 		"MarchMadness": "0x29bd4ceDb94C4dC37B4D9c52Ac98Eb4967BFAaa3"
 	},
-
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
 		"PriceFeed": "0xCd9c0E99396627C7746b4363B880939Ac2828d3E",
@@ -466,7 +465,7 @@
 		"GamesQueueImplementation": "0x096382EDb686e37dD02483b5144e3bE3a19ce44B",
 		"TherundownConsumer": "0xdB6EB989127D0c33bC630d7b5B53f87ceCED3ce1",
 		"TherundownConsumerWrapper": "0x29c24C43378513EdBDBcD8671CE2352d326905a4",
-		"TherundownConsumerImplementation": "0x7Ed513fCFb4642753bD781d6AC3B87F37b879a48",
+		"TherundownConsumerImplementation": "0x85AfE4A3B3F4c08C38bb8B2312b1c629323Aa780",
 		"SportPositionalMarketManager": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
 		"SportPositionalMarketManagerImplementation": "0xf0F2876Eb01365a53D129c84aED83A71Ae9479B1",
 		"SportPositionalMarketFactory": "0xB72f87AA15E8FE50Ed364eB4A94486A578fc1556",
@@ -517,7 +516,7 @@
 		"ParlayMarketData": "0x6F511EC517496D9612e597A2295efD77a0d68E9E",
 		"ParlayMarketDataImplementation": "0x5Db1f1e24D5f9826394d59471593B7AEb0489606",
 		"TherundownConsumerVerifier": "0x86991efb34B0Cf55af38E9dACE3f82CD8B70188F",
-		"TherundownConsumerVerifierImplementation": "0x1247aB66dE0C4D76D4CBB86E6F86f93c6f8355aa",
+		"TherundownConsumerVerifierImplementation": "0x7c22139249c33a714950f69972618775f7D5fDD2",
 		"ParlayVerifier": "0xAfdcB1F6563b47601ae77d077391068c4f071e57",
 		"SNXIssuer": "0x5F0CCaBe97bF838c777F08702E17EC300FF78cD0",
 		"AddressResolver": "0x1d551351613a28d676BaC1Af157799e201279198",

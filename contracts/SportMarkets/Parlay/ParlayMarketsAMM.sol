@@ -72,6 +72,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => uint))))))))
         public riskPerGameCombination;
 
+    // @return specific SafeBoxFee per address
+    mapping(address => uint) public safeBoxFeePerAddress;
+    // @return specific parlayAmmFee per address
+    mapping(address => uint) public parlayAmmFeePerAddress;
+
     mapping(bytes32 => uint) public riskPerPackedGamesCombination;
 
     function initialize(
@@ -366,7 +371,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _positions,
             _sUSDPaid
         );
-        uint safeBoxAmount = ((_sUSDPaid - sUSDAfterFees) * safeBoxImpact) / (safeBoxImpact + parlayAmmFee);
+        uint safeBoxAmount = _getSafeBoxAmount(_sUSDPaid, sUSDAfterFees, _differentRecipient);
         // apply all checks
         require(_sUSDPaid >= minUSDAmount, "Low sUSD buy");
         require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");
@@ -538,6 +543,23 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
+    function _getSafeBoxFeePerAddress(address toCheck) internal view returns (uint toReturn) {
+        return safeBoxFeePerAddress[toCheck] > 0 ? safeBoxFeePerAddress[toCheck] : safeBoxImpact;
+    }
+
+    function _getParlayAmmFeePerAddress(address toCheck) internal view returns (uint toReturn) {
+        return parlayAmmFeePerAddress[toCheck] > 0 ? parlayAmmFeePerAddress[toCheck] : parlayAmmFee;
+    }
+
+    function _getSafeBoxAmount(
+        uint sUSDPaid,
+        uint sUSDAfterFees,
+        address toCheck
+    ) internal view returns (uint safeBoxAmount) {
+        uint safeBoxFee = _getSafeBoxFeePerAddress(toCheck);
+        safeBoxAmount = ((sUSDPaid - sUSDAfterFees) * safeBoxFee) / (safeBoxFee + _getParlayAmmFeePerAddress(toCheck));
+    }
+
     /* ========== SETTERS FUNCTIONS ========== */
 
     function setParlayMarketMastercopies(address _parlayMarketMastercopy) external onlyOwner {
@@ -548,6 +570,38 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function setParameters(uint _parlaySize) external onlyOwner {
         parlaySize = _parlaySize;
         emit NewParametersSet(_parlaySize);
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific safe box fee
+    /// @param newFee the fee
+    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
+        safeBoxFeePerAddress[_address] = newFee;
+        emit SafeBoxFeePerAddressChanged(_address, newFee);
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific parlay amm fee
+    /// @param newFee the fee
+    function setParlayAmmFeePerAddress(address _address, uint newFee) external onlyOwner {
+        parlayAmmFeePerAddress[_address] = newFee;
+        emit ParlayAmmFeePerAddressChanged(_address, newFee);
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific safe box fee
+    /// @param newFee the fee
+    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
+        safeBoxFeePerAddress[_address] = newFee;
+        emit SafeBoxFeePerAddressChanged(_address, newFee);
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific parlay amm fee
+    /// @param newFee the fee
+    function setParlayAmmFeePerAddress(address _address, uint newFee) external onlyOwner {
+        parlayAmmFeePerAddress[_address] = newFee;
+        emit ParlayAmmFeePerAddressChanged(_address, newFee);
     }
 
     function setAmounts(
@@ -661,6 +715,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event ExtraAmountTransferredDueToCancellation(address receiver, uint amount);
     event ParlayResolved(address _parlayMarket, address _parlayOwner, bool _userWon);
+    event SafeBoxFeePerAddressChanged(address _address, uint newFee);
+    event ParlayAmmFeePerAddressChanged(address _address, uint newFee);
     event NewParlayMastercopy(address parlayMarketMastercopy);
     event NewParametersSet(uint parlaySize);
     event CurveParametersUpdated(

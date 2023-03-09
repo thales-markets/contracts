@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
+import "../SportMarkets/Parlay/ParlayVerifier.sol";
+
 interface IParlayMarketsAMM {
     /* ========== VIEWS / VARIABLES ========== */
 
@@ -60,4 +62,33 @@ interface IParlayMarketsAMM {
         uint _expectedPayout,
         address _differentRecepient
     ) external;
+
+    function buyQuoteFromParlay(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDPaid
+    )
+        external
+        view
+        returns (
+            uint sUSDAfterFees,
+            uint totalBuyAmount,
+            uint totalQuote,
+            uint initialQuote,
+            uint skewImpact,
+            uint[] memory finalQuotes,
+            uint[] memory amountsToBuy
+        );
+
+    function canCreateParlayMarket(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDToPay
+    ) external view returns (bool canBeCreated);
+
+    function numActiveParlayMarkets() external view returns (uint);
+
+    function activeParlayMarkets(uint index, uint pageSize) external view returns (address[] memory);
+
+    function parlayVerifier() external view returns (ParlayVerifier);
 }

@@ -2,6 +2,30 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pageSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "activeParlayMarkets",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "_sportMarkets",
         "type": "address[]"
@@ -35,6 +59,94 @@
     "name": "buyFromParlay",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sUSDPaid",
+        "type": "uint256"
+      }
+    ],
+    "name": "buyQuoteFromParlay",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "sUSDAfterFees",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalBuyAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "initialQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewImpact",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "finalQuotes",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "amountsToBuy",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sUSDToPay",
+        "type": "uint256"
+      }
+    ],
+    "name": "canCreateParlayMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "canBeCreated",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -115,6 +227,19 @@
   },
   {
     "inputs": [],
+    "name": "numActiveParlayMarkets",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "parlayAmmFee",
     "outputs": [
       {
@@ -134,6 +259,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parlayVerifier",
+    "outputs": [
+      {
+        "internalType": "contract ParlayVerifier",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

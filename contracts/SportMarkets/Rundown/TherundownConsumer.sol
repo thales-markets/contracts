@@ -485,6 +485,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             marketCreated[address(market)] = true;
             canMarketBeUpdated[address(market)] = true;
 
+            oddsObtainer.setFirstNormalizedOdds(game.gameId, address(market));
+
             queues.dequeueGamesCreated();
 
             emit CreateSportsMarket(address(market), game.gameId, game, tags, oddsObtainer.getNormalizedOdds(game.gameId));

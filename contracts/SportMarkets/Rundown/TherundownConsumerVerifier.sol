@@ -372,7 +372,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             consumer.marketCanceled(marketAddress),
             obtainer.invalidOdds(marketAddress),
             consumer.isPausedByCanceledStatus(marketAddress),
-            sportsManager.isMarketPaused(marketAddress)
+            marketAddress != address(0) ? sportsManager.isMarketPaused(marketAddress) : false
         );
     }
 

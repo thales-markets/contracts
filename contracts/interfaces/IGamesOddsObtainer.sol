@@ -84,6 +84,8 @@ interface IGamesOddsObtainer {
         int24 _drawOdds
     ) external;
 
+    function setFirstNormalizedOdds(bytes32 _gameId, address _market) external;
+
     function setBackupOddsAsMainOddsForGame(bytes32 _gameId) external;
 
     function pauseUnpauseChildMarkets(address _main, bool _flag) external;

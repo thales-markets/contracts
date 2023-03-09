@@ -13,6 +13,8 @@ const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { convertToDecimals } = require('../../utils/helpers');
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
+const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+
 contract('StakingThales', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy] = accounts;
 
@@ -138,7 +140,8 @@ contract('StakingThales', (accounts) => {
 			dummy,
 			PriceFeedInstance.address,
 			dummy,
-			AddressResolverDeployed.address
+			AddressResolverDeployed.address,
+			ZERO_ADDRESS
 		);
 	});
 

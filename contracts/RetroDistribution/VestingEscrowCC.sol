@@ -88,7 +88,7 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
         uint locked = initialLocked[_recipient];
 
         if (_time < start) return 0;
-        return MathUpgradeable.min(locked * (_time - start) / (end - start), locked);
+        return MathUpgradeable.min((locked * (_time - start)) / (end - start), locked);
     }
 
     function _totalVested() internal view returns (uint totalVested) {
@@ -207,8 +207,8 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
     }
 
     function setVestingPeriod(uint _vestingPeriod) external onlyOwner {
-       vestingPeriod = _vestingPeriod;
-       emit VestingPeriodChanged(_vestingPeriod);
+        vestingPeriod = _vestingPeriod;
+        emit VestingPeriodChanged(_vestingPeriod);
     }
 
     event Fund(address _recipient, uint _amount);

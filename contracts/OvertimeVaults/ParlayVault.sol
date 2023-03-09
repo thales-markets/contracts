@@ -263,7 +263,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         emit WithdrawalRequested(msg.sender);
     }
 
-    /// @notice Buy market options from Thales AMM
+    /// @notice Buy market options from Parlay AMM
     /// @param sportMarkets parlay market addresses
     /// @param positions to buy options for
     /// @param sUSDPaid amount to pay for parlay
@@ -272,24 +272,9 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         uint[] calldata positions,
         uint sUSDPaid
     ) external nonReentrant whenNotPaused {
-        require(vaultStarted, "Vault has not started");
-        require(sUSDPaid >= minTradeAmount, "Amount less than minimum");
-        require(sUSDPaid < (tradingAllocation() * maxTradeRate) / ONE, "Amount exceeds max value per trade");
-        require(sUSDPaid < (tradingAllocation() - allocationSpentInARound[round]), "Amount exceeds available allocation");
+        (bool canTradeParlay, string memory message, uint expectedPayout) = canTrade(sportMarkets, positions, sUSDPaid);
 
-        require(!parlayExistsInARound(round, sportMarkets), "Parlay market already exists in a round");
-
-        (uint expectedPayout, , , , , uint[] memory finalQuotes, uint[] memory amountsToBuy) = parlayAMM.buyQuoteFromParlay(
-            sportMarkets,
-            positions,
-            sUSDPaid
-        );
-
-        for (uint i = 0; i < sportMarkets.length; i++) {
-            _checkSportMarket(sportMarkets[i], positions[i], finalQuotes[i], amountsToBuy[i]);
-        }
-
-        require(parlayAMM.canCreateParlayMarket(sportMarkets, positions, sUSDPaid), "Cannot create parlay");
+        require(canTradeParlay, message);
 
         _buyFromParlay(sportMarkets, positions, sUSDPaid, expectedPayout);
     }
@@ -435,25 +420,36 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         uint position,
         uint finalQuote,
         uint amount
-    ) internal {
+    ) internal view returns (bool, string memory) {
         ISportPositionalMarket marketContract = ISportPositionalMarket(market);
         (uint maturity, ) = marketContract.times();
-        require(maturity < (roundStartTime[round] + roundLength), "Market time not valid");
 
+        if (maturity >= (roundStartTime[round] + roundLength)) {
+            return (false, "Market time not valid");
+        }
         ISportsAMM.Position ammPosition = (parlayAMM.parlayVerifier()).obtainSportsAMMPosition(position);
 
-        require(finalQuote > 0, "Price not more than 0");
+        if (finalQuote == 0) {
+            return (false, "Price not more than 0");
+        }
 
-        require(finalQuote >= priceLowerLimit && finalQuote <= priceUpperLimit, "Market price not valid");
+        if (!(finalQuote >= priceLowerLimit && finalQuote <= priceUpperLimit)) {
+            return (false, "Market price not valid");
+        }
+
         int pricePositionImpact = ISportsAMM(parlayAMM.sportsAmm()).buyPriceImpact(market, ammPosition, amount);
-        require(pricePositionImpact < skewImpactLimit, "Skew impact too high");
+
+        if (pricePositionImpact >= skewImpactLimit) {
+            return (false, "Skew impact too high");
+        }
 
         address marketToCheck = _getMarketForMaxCountCheck(market);
 
-        require(
-            marketUsedInRoundCount[round][marketToCheck] <= maxMarketUsedInRoundCount,
-            "Market is at the maximum number of tickets"
-        );
+        if (marketUsedInRoundCount[round][marketToCheck] >= maxMarketUsedInRoundCount) {
+            return (false, "Market is at the maximum number of tickets");
+        }
+
+        return (true, "");
     }
 
     /// @notice Get parent market address if market is double chance
@@ -474,6 +470,65 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     }
 
     /* ========== VIEWS ========== */
+
+    /// @notice Can create parlay
+    function canTrade(
+        address[] calldata sportMarkets,
+        uint[] calldata positions,
+        uint sUSDPaid
+    )
+        public
+        view
+        returns (
+            bool,
+            string memory,
+            uint
+        )
+    {
+        if (!vaultStarted) {
+            return (false, "Vault has not started", 0);
+        }
+
+        if (sUSDPaid < minTradeAmount) {
+            return (false, "Amount less than minimum", 0);
+        }
+
+        if (sUSDPaid >= (tradingAllocation() * maxTradeRate) / ONE) {
+            return (false, "Amount exceeds max value per trade", 0);
+        }
+
+        if (sUSDPaid >= tradingAllocation() - allocationSpentInARound[round]) {
+            return (false, "Amount exceeds available allocation", 0);
+        }
+
+        if (parlayExistsInARound(round, sportMarkets)) {
+            return (false, "Parlay market already exists in a round", 0);
+        }
+
+        (uint expectedPayout, , , , , uint[] memory finalQuotes, uint[] memory amountsToBuy) = parlayAMM.buyQuoteFromParlay(
+            sportMarkets,
+            positions,
+            sUSDPaid
+        );
+
+        for (uint i = 0; i < sportMarkets.length; i++) {
+            (bool isEligible, string memory message) = _checkSportMarket(
+                sportMarkets[i],
+                positions[i],
+                finalQuotes[i],
+                amountsToBuy[i]
+            );
+            if (!isEligible) {
+                return (false, message, 0);
+            }
+        }
+
+        if (!(parlayAMM.canCreateParlayMarket(sportMarkets, positions, sUSDPaid))) {
+            return (false, "Cannot create parlay 222", 0);
+        }
+
+        return (true, "", expectedPayout);
+    }
 
     /// @notice Return trading allocation in current round based on utilization rate param
     /// @return uint

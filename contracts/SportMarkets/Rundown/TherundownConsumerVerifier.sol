@@ -190,7 +190,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @notice view function which returns odds in a batch of games
     /// @param _gameIds game ids for which games is looking
     /// @return odds odds array
-    function getOddsForGames(bytes32[] memory _gameIds) external view returns (int24[] memory odds) {
+    function getOddsForGames(bytes32[] memory _gameIds) public view returns (int24[] memory odds) {
         odds = new int24[](3 * _gameIds.length);
         for (uint i = 0; i < _gameIds.length; i++) {
             (int24 home, int24 away, int24 draw, , , , ) = obtainer.getOddsForGame(_gameIds[i]);
@@ -200,10 +200,30 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         }
     }
 
+    /// @notice view function which returns all spread and total properties
+    /// @param _gameIds game ids for which games is looking
+    function getAllPropertiesForGivenGames(bytes32[] memory _gameIds)
+        external
+        view
+        returns (
+            int24[] memory oddsMain,
+            int16[] memory linesSpread,
+            uint24[] memory linesTotal,
+            int24[] memory oddsSpreadTotals
+        )
+    {
+        return (
+            getOddsForGames(_gameIds),
+            getSpreadLinesForGames(_gameIds),
+            getTotalLinesForGames(_gameIds),
+            getSpreadTotalsOddsForGames(_gameIds)
+        );
+    }
+
     /// @notice view function which returns odds in a batch of games
     /// @param _gameIds game ids for which games is looking
     /// @return lines odds array
-    function getSpreadLinesForGames(bytes32[] memory _gameIds) external view returns (int16[] memory lines) {
+    function getSpreadLinesForGames(bytes32[] memory _gameIds) public view returns (int16[] memory lines) {
         lines = new int16[](2 * _gameIds.length);
         for (uint i = 0; i < _gameIds.length; i++) {
             (int16 spreadHome, int16 spreadAway, , ) = obtainer.getLinesForGame(_gameIds[i]);
@@ -215,7 +235,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @notice view function which returns odds in a batch of games
     /// @param _gameIds game ids for which games is looking
     /// @return lines odds array
-    function getTotalLinesForGames(bytes32[] memory _gameIds) external view returns (uint24[] memory lines) {
+    function getTotalLinesForGames(bytes32[] memory _gameIds) public view returns (uint24[] memory lines) {
         lines = new uint24[](2 * _gameIds.length);
         for (uint i = 0; i < _gameIds.length; i++) {
             (, , uint24 totalOver, uint24 totalUnder) = obtainer.getLinesForGame(_gameIds[i]);
@@ -227,7 +247,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @notice view function which returns odds in a batch of games
     /// @param _gameIds game ids for which games is looking
     /// @return odds odds array
-    function getSpreadTotalsOddsForGames(bytes32[] memory _gameIds) external view returns (int24[] memory odds) {
+    function getSpreadTotalsOddsForGames(bytes32[] memory _gameIds) public view returns (int24[] memory odds) {
         odds = new int24[](4 * _gameIds.length);
         for (uint i = 0; i < _gameIds.length; i++) {
             (, , , int24 spreadHomeOdds, int24 spreadAwayOdds, int24 totalOverOdds, int24 totalUnderOdds) = obtainer
@@ -373,6 +393,50 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             obtainer.invalidOdds(marketAddress),
             consumer.isPausedByCanceledStatus(marketAddress),
             marketAddress != address(0) ? sportsManager.isMarketPaused(marketAddress) : false
+        );
+    }
+
+    function getAllGameProperties(bytes32[] memory _gameIds)
+        external
+        view
+        returns (
+            address[] memory _markets,
+            bool[] memory _marketResolved,
+            bool[] memory _marketCanceled,
+            bool[] memory _invalidOdds,
+            bool[] memory _isPausedByCanceledStatus,
+            bool[] memory _isMarketPaused,
+            uint[] memory _startTime
+        )
+    {
+        uint256 arrayLength = _gameIds.length;
+        _markets = new address[](arrayLength);
+        _marketResolved = new bool[](arrayLength);
+        _marketCanceled = new bool[](arrayLength);
+        _invalidOdds = new bool[](arrayLength);
+        _isPausedByCanceledStatus = new bool[](arrayLength);
+        _isMarketPaused = new bool[](arrayLength);
+        _startTime = new uint[](arrayLength);
+
+        for (uint256 i = 0; i < arrayLength; i++) {
+            address marketAddress = consumer.marketPerGameId(_gameIds[i]);
+            _markets[i] = marketAddress;
+            _marketResolved[i] = consumer.marketResolved(marketAddress);
+            _marketCanceled[i] = consumer.marketCanceled(marketAddress);
+            _invalidOdds[i] = obtainer.invalidOdds(marketAddress);
+            _isPausedByCanceledStatus[i] = consumer.isPausedByCanceledStatus(marketAddress);
+            _isMarketPaused[i] = marketAddress != address(0) ? sportsManager.isMarketPaused(marketAddress) : false;
+            _startTime[i] = consumer.getGameStartTime(_gameIds[i]);
+        }
+
+        return (
+            _markets,
+            _marketResolved,
+            _marketCanceled,
+            _invalidOdds,
+            _isPausedByCanceledStatus,
+            _isMarketPaused,
+            _startTime
         );
     }
 

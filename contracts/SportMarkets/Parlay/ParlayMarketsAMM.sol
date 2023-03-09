@@ -220,10 +220,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _sUSDPaid,
         uint _additionalSlippage,
         uint _expectedPayout,
-        address _differentRecepient
+        address _differentRecipient
     ) external nonReentrant notPaused {
-        if (_differentRecepient == address(0)) {
-            _differentRecepient = msg.sender;
+        if (_differentRecipient == address(0)) {
+            _differentRecipient = msg.sender;
         }
         _buyFromParlay(
             _sportMarkets,
@@ -232,10 +232,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _additionalSlippage,
             _expectedPayout,
             true,
-            _differentRecepient
+            _differentRecipient
         );
         if (referrerFee > 0 && referrals != address(0)) {
-            _handleReferrer(_differentRecepient, _sUSDPaid);
+            _handleReferrer(_differentRecipient, _sUSDPaid);
         }
     }
 
@@ -245,11 +245,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _sUSDPaid,
         uint _additionalSlippage,
         uint _expectedPayout,
-        address _differentRecepient,
+        address _differentRecipient,
         address _referrer
     ) external nonReentrant notPaused {
-        if (_differentRecepient == address(0)) {
-            _differentRecepient = msg.sender;
+        if (_differentRecipient == address(0)) {
+            _differentRecipient = msg.sender;
         }
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
@@ -261,10 +261,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _additionalSlippage,
             _expectedPayout,
             true,
-            _differentRecepient
+            _differentRecipient
         );
         if (referrerFee > 0 && referrals != address(0)) {
-            _handleReferrer(_differentRecepient, _sUSDPaid);
+            _handleReferrer(_differentRecipient, _sUSDPaid);
         }
     }
 
@@ -359,7 +359,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _additionalSlippage,
         uint _expectedPayout,
         bool _sendSUSD,
-        address _differentRecepient
+        address _differentRecipient
     ) internal {
         uint totalAmount;
         uint totalQuote;
@@ -393,14 +393,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             sUSDAfterFees,
             (block.timestamp + sportManager.expiryDuration()),
             address(this),
-            _differentRecepient
+            _differentRecipient
         );
 
         emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
 
         _knownMarkets.add(address(parlayMarket));
         parlayMarket.updateQuotes(marketQuotes, totalQuote);
-        sportsAmm.updateParlayVolume(_differentRecepient, _sUSDPaid);
+        sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
         // buy the positions
         _buyPositionsFromSportAMM(
             _sportMarkets,
@@ -408,13 +408,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             amountsToBuy,
             _additionalSlippage,
             address(parlayMarket),
-            _differentRecepient
+            _differentRecipient
         );
         _storeRisk(_sportMarkets, (totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)));
 
         emit ParlayMarketCreated(
             address(parlayMarket),
-            _differentRecepient,
+            _differentRecipient,
             totalAmount,
             _sUSDPaid,
             sUSDAfterFees,
@@ -570,22 +570,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function setParameters(uint _parlaySize) external onlyOwner {
         parlaySize = _parlaySize;
         emit NewParametersSet(_parlaySize);
-    }
-
-    /// @notice Updates contract parametars
-    /// @param _address which has a specific safe box fee
-    /// @param newFee the fee
-    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
-        safeBoxFeePerAddress[_address] = newFee;
-        emit SafeBoxFeePerAddressChanged(_address, newFee);
-    }
-
-    /// @notice Updates contract parametars
-    /// @param _address which has a specific parlay amm fee
-    /// @param newFee the fee
-    function setParlayAmmFeePerAddress(address _address, uint newFee) external onlyOwner {
-        parlayAmmFeePerAddress[_address] = newFee;
-        emit ParlayAmmFeePerAddressChanged(_address, newFee);
     }
 
     /// @notice Updates contract parametars

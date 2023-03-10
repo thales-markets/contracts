@@ -158,6 +158,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         require(amountToMint > 0, "Can't commit a zero trade");
 
         amountToMint = _transformCollateral(amountToMint);
+        // add 1e-6 due to rounding issue, will be sent back to AMM at the end
+        amountToMint = needsTransformingCollateral ? amountToMint + 1 : amountToMint;
 
         uint marketRound = getMarketRound(market);
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);

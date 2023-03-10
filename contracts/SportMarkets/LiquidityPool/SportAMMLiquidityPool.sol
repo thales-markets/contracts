@@ -347,33 +347,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
                 if (market.resolved()) {
                     poolRound.exerciseMarketReadyToExercised(market);
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
-                    if (market.isDoubleChance()) {
-                        poolRound.exerciseMarketReadyToExercised(market.parentMarket());
-                        marketAlreadyExercisedInRound[round][address(market.parentMarket())] = true;
-                    }
-                }
-            }
-        }
-    }
-
-    /// @notice a method to fillMarkets that are already processed
-    function fillMarketsAlreadyExercised(uint batchSize) external {
-        SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
-        ISportPositionalMarket market;
-        uint marketsFilledCount;
-        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            address marketAddress = tradingMarketsPerRound[round][i];
-            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
-                market = ISportPositionalMarket(marketAddress);
-                if (market.resolved()) {
-                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(poolRound));
-                    if (homeBalance == 0 && awayBalance == 0 && drawBalance == 0) {
-                        marketAlreadyExercisedInRound[round][marketAddress] = true;
-                        marketsFilledCount = marketsFilledCount + 1;
-                        if (marketsFilledCount > batchSize) {
-                            return;
-                        }
-                    }
                 }
             }
         }

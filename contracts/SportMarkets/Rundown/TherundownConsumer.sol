@@ -191,7 +191,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                         }
                     } else {
                         // double-check if market existst
-                        if (marketCreated[marketPerGameId[gameForProcessing.gameId]]) {
+                        if (
+                            marketCreated[marketPerGameId[gameForProcessing.gameId]] &&
+                            currentGameValues.startTime > block.timestamp
+                        ) {
                             _pauseOrUnpauseMarket(marketPerGameId[gameForProcessing.gameId], true);
                             oddsObtainer.pauseUnpauseChildMarkets(marketPerGameId[gameForProcessing.gameId], true);
                         }

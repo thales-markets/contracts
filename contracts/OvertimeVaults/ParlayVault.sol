@@ -74,7 +74,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
 
     uint public maxAllowedDeposit;
     uint public utilizationRate;
-    // uint public maxTradeRate;
+    uint public maxTradeRate;
 
     mapping(uint => uint) public capPerRound;
 
@@ -93,7 +93,6 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     IStakingThales public stakingThales;
 
     mapping(uint => uint) public allocationSpentInARound;
-    uint public maxTradeRate;
 
     mapping(uint => mapping(address => uint)) public marketUsedInRoundCount;
     uint public maxMarketUsedInRoundCount;

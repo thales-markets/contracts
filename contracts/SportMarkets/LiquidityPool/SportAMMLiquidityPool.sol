@@ -84,6 +84,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     bool public needsTransformingCollateral;
 
+    mapping(uint => mapping(address => bool)) public marketAlreadyExercisedInRound;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
@@ -339,10 +341,35 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
         ISportPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            poolRound.exerciseMarketReadyToExercised(market);
-            if (market.isDoubleChance()) {
-                poolRound.exerciseMarketReadyToExercised(market.parentMarket());
+            address marketAddress = tradingMarketsPerRound[round][i];
+            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+                market = ISportPositionalMarket(marketAddress);
+                if (market.resolved()) {
+                    poolRound.exerciseMarketReadyToExercised(market);
+                    marketAlreadyExercisedInRound[round][marketAddress] = true;
+                    if (market.isDoubleChance()) {
+                        poolRound.exerciseMarketReadyToExercised(market.parentMarket());
+                        marketAlreadyExercisedInRound[round][address(market.parentMarket())] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    /// @notice a method to fillMarkets that are already processed
+    function fillMarketsAlreadyExercised() external {
+        SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
+        ISportPositionalMarket market;
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            address marketAddress = tradingMarketsPerRound[round][i];
+            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+                market = ISportPositionalMarket(marketAddress);
+                if (market.resolved()) {
+                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(poolRound));
+                    if (homeBalance == 0 && awayBalance == 0 && drawBalance == 0) {
+                        marketAlreadyExercisedInRound[round][marketAddress] = true;
+                    }
+                }
             }
         }
     }
@@ -415,11 +442,14 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
         ISportPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            if (market.resolved()) {
-                (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(poolRound));
-                if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
-                    return true;
+            address marketAddress = tradingMarketsPerRound[round][i];
+            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+                market = ISportPositionalMarket(marketAddress);
+                if (market.resolved()) {
+                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(poolRound));
+                    if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+                        return true;
+                    }
                 }
             }
         }

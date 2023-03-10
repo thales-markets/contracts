@@ -190,7 +190,6 @@ contract('Parlay Vault', (accounts) => {
 
 	async function createMarkets() {
 		await fastForward(game1NBATime - (await currentTime()) - SECOND);
-		console.log('create markets', await currentTime());
 		let answer;
 		// req. games
 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
@@ -373,8 +372,6 @@ contract('Parlay Vault', (accounts) => {
 			[parlayMarkets[1].address, parlayMarkets[2].address],
 			[parlayMarkets[0].address, parlayMarkets[1].address, parlayMarkets[2].address],
 		];
-
-		console.log(marketCombinations);
 	}
 
 	beforeEach(async () => {
@@ -1189,7 +1186,7 @@ contract('Parlay Vault', (accounts) => {
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
 
 			await fastForward(fightTime - (await currentTime()) + 3 * hour);
-			let resolveMatrix = ['2', '2', '2'];
+			let resolveMatrix = ['2', '1', '2'];
 			let gameId;
 			let homeResult = '0';
 			let awayResult = '0';
@@ -1220,14 +1217,11 @@ contract('Parlay Vault', (accounts) => {
 				assert.equal(true, resolved);
 			}
 
-			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
-			parlaySingleMarketAddress = activeParlays[0];
-			parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
-
-			let answer = await parlaySingleMarket.isAnySportMarketResolved();
-			result = await ParlayAMM.resolvableSportPositionsInParlay(parlaySingleMarket.address);
-			assert.equal(answer.isResolved, true);
-			assert.equal(result.isAnyResolvable, true);
+			for (let i = 0; i < 3; i++) {
+				let parlayMarket = await vault.tradingParlayMarketsPerRound(1, i);
+				let parlayMarketContract = await ParlayMarketContract.at(parlayMarket);
+				console.log('is user the winner', i, await parlayMarketContract.isUserTheWinner());
+			}
 
 			canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);

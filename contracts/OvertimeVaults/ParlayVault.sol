@@ -74,7 +74,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
 
     uint public maxAllowedDeposit;
     uint public utilizationRate;
-    uint public maxTradeRate;
+    // uint public maxTradeRate;
 
     mapping(uint => uint) public capPerRound;
 
@@ -93,6 +93,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     IStakingThales public stakingThales;
 
     mapping(uint => uint) public allocationSpentInARound;
+    uint public maxTradeRate;
 
     mapping(uint => mapping(address => uint)) public marketUsedInRoundCount;
     uint public maxMarketUsedInRoundCount;
@@ -376,7 +377,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         for (uint i = 0; i < tradingParlayMarketsPerRound[round].length; i++) {
             parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
             (bool isExercisable, ) = parlayMarket.isParlayExercisable();
-            if (isExercisable) {
+            if (isExercisable && parlayMarket.isUserTheWinner()) {
                 parlayAMM.exerciseParlay(address(parlayMarket));
             }
         }
@@ -551,12 +552,9 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         }
         for (uint i = 0; i < tradingParlayMarketsPerRound[round].length; i++) {
             ParlayMarket parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
-            (bool isResolved, address[] memory resolvableMarkets) = parlayMarket.isAnySportMarketResolved();
-            if (!isResolved || parlayMarket.paused()) {
-                return false;
-            }
-
-            if (resolvableMarkets.length != parlayMarket.numOfSportMarkets()) {
+            if (parlayMarket.parlayAlreadyLost()) continue;
+            (bool isExercisable, ) = parlayMarket.isAnySportMarketExercisable();
+            if (!isExercisable || parlayMarket.paused()) {
                 return false;
             }
         }

@@ -478,7 +478,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchSize",
+        "type": "uint256"
+      }
+    ],
     "name": "fillMarketsAlreadyExercised",
     "outputs": [],
     "stateMutability": "nonpayable",

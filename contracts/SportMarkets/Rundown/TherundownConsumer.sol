@@ -191,7 +191,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                         }
                     } else {
                         // double-check if market existst
-                        if (marketCreated[marketPerGameId[gameForProcessing.gameId]]) {
+                        if (
+                            marketCreated[marketPerGameId[gameForProcessing.gameId]] &&
+                            currentGameValues.startTime > block.timestamp
+                        ) {
                             _pauseOrUnpauseMarket(marketPerGameId[gameForProcessing.gameId], true);
                             oddsObtainer.pauseUnpauseChildMarkets(marketPerGameId[gameForProcessing.gameId], true);
                         }
@@ -338,6 +341,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @return GameCreate game create object
     function getGameCreatedById(bytes32 _gameId) public view returns (GameCreate memory) {
         return gameCreated[_gameId];
+    }
+
+    /// @notice view function which returns game startTime
+    /// @param _gameId game id
+    function getGameStartTime(bytes32 _gameId) external view returns (uint256) {
+        return gameCreated[_gameId].startTime;
     }
 
     /// @notice view function which returns games on certan date and sportid

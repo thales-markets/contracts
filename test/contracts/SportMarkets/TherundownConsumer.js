@@ -964,6 +964,42 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(false, verifier_output_game[2]);
 			assert.equal(false, verifier_output_game[3]);
 			assert.equal(false, verifier_output_game[4]);
+
+			let getAllGameProperties = await verifier.getAllGameProperties([gameFootballid1]);
+			let marketaddressArray = getAllGameProperties[0];
+			let marketResolvedArray = getAllGameProperties[1];
+			let marketCanceledArray = getAllGameProperties[2];
+			let invalidOddsArray = getAllGameProperties[3];
+			let startTimeArray = getAllGameProperties[6];
+
+			assert.equal(1, marketaddressArray.length);
+			assert.equal(1, marketResolvedArray.length);
+			assert.equal(1, marketCanceledArray.length);
+			assert.equal(1, invalidOddsArray.length);
+			assert.equal(1, startTimeArray.length);
+
+			assert.equal(marketAdd, marketaddressArray[0]);
+			assert.equal(true, marketResolvedArray[0]);
+			assert.equal(false, marketCanceledArray[0]);
+			assert.equal(false, invalidOddsArray[0]);
+			assert.bnEqual(1649876400, startTimeArray[0]);
+
+			let getAllPropertiesForGivenGames = await verifier.getAllPropertiesForGivenGames([
+				gameFootballid1,
+			]);
+			let oddsMain = getAllPropertiesForGivenGames[0];
+			let linesSpread = getAllPropertiesForGivenGames[1];
+			let linesTotal = getAllPropertiesForGivenGames[2];
+			let oddsSpreadTotals = getAllPropertiesForGivenGames[3];
+
+			assert.equal(3, oddsMain.length);
+			assert.equal(2, linesSpread.length);
+			assert.equal(2, linesTotal.length);
+			assert.equal(4, oddsSpreadTotals.length);
+
+			assert.bnEqual(40000, oddsMain[0]);
+			assert.bnEqual(-12500, oddsMain[1]);
+			assert.bnEqual(27200, oddsMain[2]);
 		});
 
 		it('Fulfill Games Resolved - Champions League Game 2, resolve market, check results', async () => {

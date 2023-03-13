@@ -30,7 +30,7 @@ contract('TherundownConsumerWrapper', (accounts) => {
 	let paymentResolve;
 	let paymentOdds;
 	let verifier;
-	let dummyAddress;
+	let dummyAddress, dummyReqId;
 	let GamesOddsObtainerDeployed;
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -42,6 +42,7 @@ contract('TherundownConsumerWrapper', (accounts) => {
 
 	beforeEach(async () => {
 		dummyAddress = '0xb69e74324bc030f1b8889236efa461496d439226';
+		dummyReqId = '0xd96bdf45d698fc8da0ddef0ddfd4a700aa1fb2fbe36d315f4eee8bf3e5bd1f0c';
 
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
 			from: manager,
@@ -138,6 +139,12 @@ contract('TherundownConsumerWrapper', (accounts) => {
 		it('Init checking', async () => {
 			assert.bnEqual(ThalesDeployed.address, await wrapper.getOracleAddress());
 			assert.bnEqual(ThalesDeployed.address, await wrapper.getTokenAddress());
+			assert.bnEqual(false, await wrapper.requestIdGamesOddsFulFilled(dummyReqId));
+			assert.bnEqual(false, await wrapper.requestIdGamesCreatedFulFilled(dummyReqId));
+			assert.bnEqual(false, await wrapper.requestIdGamesResolvedFulFilled(dummyReqId));
+			assert.bnEqual(false, await wrapper.areOddsRequestIdsFulFilled([dummyReqId]));
+			assert.bnEqual(false, await wrapper.areCreatedRequestIdsFulFilled([dummyReqId]));
+			assert.bnEqual(false, await wrapper.areResolvedRequestIdsFulFilled([dummyReqId]));
 			assert.bnEqual(paymentCreate, await wrapper.paymentCreate());
 			assert.bnEqual(paymentResolve, await wrapper.paymentResolve());
 			assert.bnEqual(paymentOdds, await wrapper.paymentOdds());

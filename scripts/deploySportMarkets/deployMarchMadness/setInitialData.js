@@ -78,9 +78,9 @@ async function main() {
 
 		const gameIdsPerRound = [
 			Array.from({ length: 32 }, (_, k) => k),
-			Array.from({ length: 16 }, (_, k) => k + 31),
-			Array.from({ length: 8 }, (_, k) => k + 47),
-			Array.from({ length: 4 }, (_, k) => k + 55),
+			Array.from({ length: 16 }, (_, k) => k + 32),
+			Array.from({ length: 8 }, (_, k) => k + 48),
+			Array.from({ length: 4 }, (_, k) => k + 56),
 			[60, 61],
 			[62],
 		];

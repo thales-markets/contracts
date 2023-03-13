@@ -68,6 +68,17 @@ contract('MarchMadness', (accounts) => {
 			);
 		});
 
+		it('Should set array of results', async () => {
+			const _results = Array(63).fill(2);
+
+			_results[1] = 15;
+			_results[5] = 35;
+
+			await marchMadness.setResultArray(_results, { from: owner });
+
+			assert.bnEqual(await marchMadness.results(5), _results[5]);
+		});
+
 		it('Should revert adding the points to round, then pass when it called by owner', async () => {
 			await expect(marchMadness.setPointsToRound(0, 2, { from: first })).to.be.revertedWith(
 				'Ownable: caller is not the owner'

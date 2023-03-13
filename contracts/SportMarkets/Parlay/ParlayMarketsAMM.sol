@@ -393,13 +393,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             sUSDAfterFees,
             (block.timestamp + sportManager.expiryDuration()),
             address(this),
-            _differentRecipient
+            _differentRecipient,
+            totalQuote,
+            marketQuotes
         );
 
         emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
 
         _knownMarkets.add(address(parlayMarket));
-        parlayMarket.updateQuotes(marketQuotes, totalQuote);
         sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
         // buy the positions
         _buyPositionsFromSportAMM(
@@ -468,7 +469,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint numOfMarkets = _sportMarkets.length;
         ISportsAMM.Position sportPosition;
         for (uint i = 0; i < numOfMarkets; i++) {
-            sportPosition = parlayVerifier.obtainSportsAMMPosition(_positions[i]);
+            sportPosition = _obtainSportsAMMPosition(_positions[i]);
             sportsAmm.buyFromAMM(
                 _sportMarkets[i],
                 sportPosition,
@@ -549,6 +550,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function _getParlayAmmFeePerAddress(address toCheck) internal view returns (uint toReturn) {
         return parlayAmmFeePerAddress[toCheck] > 0 ? parlayAmmFeePerAddress[toCheck] : parlayAmmFee;
+    }
+
+    function _obtainSportsAMMPosition(uint _position) internal pure returns (ISportsAMM.Position) {
+        if (_position == 0) {
+            return ISportsAMM.Position.Home;
+        } else if (_position == 1) {
+            return ISportsAMM.Position.Away;
+        }
+        return ISportsAMM.Position.Draw;
     }
 
     function _getSafeBoxAmount(

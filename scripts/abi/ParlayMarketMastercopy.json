@@ -221,6 +221,16 @@
         "internalType": "address",
         "name": "_parlayOwner",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_marketQuotes",
+        "type": "uint256[]"
       }
     ],
     "name": "initialize",

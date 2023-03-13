@@ -1217,12 +1217,6 @@ contract('Parlay Vault', (accounts) => {
 				assert.equal(true, resolved);
 			}
 
-			for (let i = 0; i < 3; i++) {
-				let parlayMarket = await vault.tradingParlayMarketsPerRound(1, i);
-				let parlayMarketContract = await ParlayMarketContract.at(parlayMarket);
-				console.log('is user the winner', i, await parlayMarketContract.isUserTheWinner());
-			}
-
 			canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
 

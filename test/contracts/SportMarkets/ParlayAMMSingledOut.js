@@ -809,6 +809,7 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(answer.toString(), '11');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
+			let parlayPositions2 = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
 			for (let i = 0; i < parlayMarkets.length; i++) {
 				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();

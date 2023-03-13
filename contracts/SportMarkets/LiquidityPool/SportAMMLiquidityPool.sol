@@ -381,7 +381,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     {
         uint nextRound = round + 1;
         stakedThalesForUser = stakingThales.stakedBalanceOf(user);
-        maxDepositForUser = (stakedThalesForUser * stakedThalesMultiplier) / ONE;
+        maxDepositForUser = _transformCollateral((stakedThalesForUser * stakedThalesMultiplier) / ONE);
         availableToDepositForUser = maxDepositForUser > (balancesPerRound[round][user] + balancesPerRound[nextRound][user])
             ? (maxDepositForUser - balancesPerRound[round][user] - balancesPerRound[nextRound][user])
             : 0;
@@ -392,7 +392,9 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @return neededStaked how much the user needs to have staked to withdraw
     function getNeededStakedThalesToWithdrawForUser(address user) external view returns (uint neededStaked) {
         uint nextRound = round + 1;
-        neededStaked = ((balancesPerRound[round][user] + balancesPerRound[nextRound][user]) * ONE) / stakedThalesMultiplier;
+        neededStaked =
+            _reverseTransformCollateral((balancesPerRound[round][user] + balancesPerRound[nextRound][user]) * ONE) /
+            stakedThalesMultiplier;
     }
 
     /// @notice get the pool address for the market
@@ -476,6 +478,14 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     function _transformCollateral(uint value) internal view returns (uint) {
         if (needsTransformingCollateral) {
             return value / 1e12;
+        } else {
+            return value;
+        }
+    }
+
+    function _reverseTransformCollateral(uint value) internal view returns (uint) {
+        if (needsTransformingCollateral) {
+            return value * 1e12;
         } else {
             return value;
         }

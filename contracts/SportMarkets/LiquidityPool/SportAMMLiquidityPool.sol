@@ -410,10 +410,14 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         if (!started || block.timestamp < getRoundEndTime(round)) {
             return false;
         }
+        ISportPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            IPositionalMarket market = IPositionalMarket(tradingMarketsPerRound[round][i]);
-            if ((!market.resolved())) {
-                return false;
+            address marketAddress = tradingMarketsPerRound[round][i];
+            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+                market = ISportPositionalMarket(marketAddress);
+                if (!market.resolved()) {
+                    return false;
+                }
             }
         }
         return true;

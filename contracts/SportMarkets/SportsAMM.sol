@@ -837,7 +837,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     function _buyFromAMM(BuyFromAMMParams memory params) internal {
-        // require(isMarketInAMMTrading(params.market), "Not trading");
+        require(isMarketInAMMTrading(params.market), "Not trading");
 
         // uint optionsCount = ISportPositionalMarket(params.market).optionsCount();
         // require(optionsCount > uint(params.position), "Invalid pos");

@@ -52,31 +52,29 @@ async function main() {
 		const MarchMadness = await ethers.getContractFactory('MarchMadness');
 		const marchMadnessAddress = getTargetAddress('MarchMadness', network);
 		console.log('Found MarchMadness at:', marchMadnessAddress);
-	
+
 		const marchMadness = MarchMadness.attach(marchMadnessAddress);
 
-        const results = [
-            {
-                gameId: 10,
-                teamWinnerIndex: 4,
-            },
-            {
-                gameId: 12,
-                teamWinnerIndex: 10,
-            }
-        ];
+		const results = [
+			{
+				gameId: 10,
+				teamWinnerIndex: 4,
+			},
+			{
+				gameId: 12,
+				teamWinnerIndex: 10,
+			},
+		];
 
-        for (let i = 0; i < results.length; i++) {
-            const tx = await marchMadness.setResultForGame(results[i].gameId, results[i].teamWinnerIndex);
-            await tx.wait().then((e) => {
+		for (let i = 0; i < results.length; i++) {
+			const tx = await marchMadness.setResultForGame(results[i].gameId, results[i].teamWinnerIndex);
+			await tx.wait().then((e) => {
 				txLog(tx, 'Tx log');
 			});
 			await delay(1000);
-        }
-
-
-	} catch(e) {
-		console.log("E ", e);
+		}
+	} catch (e) {
+		console.log('E ', e);
 	}
 }
 

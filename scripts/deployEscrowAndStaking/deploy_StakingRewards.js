@@ -15,6 +15,14 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+		durationPeriod = WEEK;
+		unstakeDurationPeriod = WEEK;
+		thalesAddress = getTargetAddress('ThalesToken', network);
+		ProxyERC20sUSD_address = getTargetAddress('ProxyUSDC', network);
+	}
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 	}

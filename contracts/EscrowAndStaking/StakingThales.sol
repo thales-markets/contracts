@@ -17,6 +17,9 @@ import "../interfaces/IThalesRoyale.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IThalesStakingRewardsPool.sol";
 import "../interfaces/IAddressResolver.sol";
+import "../interfaces/ISportsAMMLiquidityPool.sol";
+import "../interfaces/IThalesAMM.sol";
+import "../interfaces/IPositionalMarketManager.sol";
 
 /// @title A Staking contract that provides logic for staking and claiming rewards
 contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
@@ -115,6 +118,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     mapping(address => address) public delegatedVolume;
     mapping(address => bool) public supportedSportVault;
     mapping(address => bool) public supportedAMMVault;
+
+    ISportsAMMLiquidityPool public sportsAMMLiquidityPool;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -282,21 +287,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address _sportsAMM,
         address _priceFeed,
         address _thalesStakingRewardsPool,
-        address _addressResolver
+        address _addressResolver,
+        address _sportsAMMLiquidityPool
     ) external onlyOwner {
-        require(
-            _snxRewards != address(0) &&
-                _royale != address(0) &&
-                _thalesAMM != address(0) &&
-                _thalesRangedAMM != address(0) &&
-                _exoticBonds != address(0) &&
-                _sportsAMM != address(0) &&
-                _priceFeed != address(0) &&
-                _thalesStakingRewardsPool != address(0) &&
-                _addressResolver != address(0),
-            "Invalid address"
-        );
-
         SNXRewards = ISNXRewards(_snxRewards);
         thalesRoyale = IThalesRoyale(_royale);
         thalesAMM = _thalesAMM;
@@ -306,6 +299,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         priceFeed = IPriceFeed(_priceFeed);
         ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);
         addressResolver = IAddressResolver(_addressResolver);
+        sportsAMMLiquidityPool = ISportsAMMLiquidityPool(_sportsAMMLiquidityPool);
 
         emit AddressesChanged(
             _snxRewards,
@@ -316,7 +310,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             _sportsAMM,
             _priceFeed,
             _thalesStakingRewardsPool,
-            _addressResolver
+            _addressResolver,
+            _sportsAMMLiquidityPool
         );
     }
 
@@ -594,6 +589,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(_stakedBalances[msg.sender] >= amount, "Account doesnt have that much staked");
         require(!unstaking[msg.sender], "Account has already triggered unstake cooldown");
 
+        if (address(sportsAMMLiquidityPool) != address(0)) {
+            require(!sportsAMMLiquidityPool.isUserLPing(msg.sender), "Cannot unstake while LPing");
+        }
+
         if (_calculateAvailableRewardsToClaim(msg.sender) > 0) {
             _claimReward(msg.sender);
         }
@@ -666,7 +665,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param amount to add to the existing protocol volume
     function updateVolume(address account, uint amount) external {
         require(account != address(0) && amount > 0, "Invalid params");
-
         if (delegatedVolume[account] != address(0)) {
             account = delegatedVolume[account];
         }
@@ -680,7 +678,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 supportedAMMVault[msg.sender],
             "Invalid address"
         );
-
+        amount = IPositionalMarketManager(IThalesAMM(sportsAMM).manager()).reverseTransformCollateral(amount);
         if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
@@ -844,7 +842,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     ) internal {
         require(startTimeStamp > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
-        require(!unstaking[staker], "Cannot stake, the staker is paused from staking due to unstaking");
+        require(!unstaking[staker], "The staker is paused from staking due to unstaking");
         // Check if there are not claimable rewards from last period.
         // Claim them, and add new stake
         if (_calculateAvailableRewardsToClaim(staker) > 0) {
@@ -896,14 +894,16 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function _getSNXStakedForAccount(address account) internal view returns (uint snxStaked) {
-        uint cRatio = getCRatio(account);
-        uint targetRatio = getSNXTargetRatio();
-        uint snxPrice = priceFeed.rateForCurrency("SNX");
-        uint debt = ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
-        if (cRatio < targetRatio) {
-            snxStaked = (cRatio.mul(cRatio).mul(debt).mul(1e14)).div(targetRatio.mul(snxPrice));
-        } else {
-            snxStaked = (targetRatio.mul(debt).mul(1e14)).div(snxPrice);
+        if (address(addressResolver) != address(0)) {
+            uint cRatio = getCRatio(account);
+            uint targetRatio = getSNXTargetRatio();
+            uint snxPrice = priceFeed.rateForCurrency("SNX");
+            uint debt = ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
+            if (cRatio < targetRatio) {
+                snxStaked = (cRatio.mul(cRatio).mul(debt).mul(1e14)).div(targetRatio.mul(snxPrice));
+            } else {
+                snxStaked = (targetRatio.mul(debt).mul(1e14)).div(snxPrice);
+            }
         }
     }
 
@@ -953,7 +953,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address sportsAMM,
         address priceFeed,
         address ThalesStakingRewardsPool,
-        address addressResolver
+        address addressResolver,
+        address sportsAMMLiquidityPool
     );
     event EscrowChanged(address newEscrow);
     event StakingPeriodStarted();

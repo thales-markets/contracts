@@ -90,6 +90,8 @@ interface ITherundownConsumer {
 
     function sportsIdPerGame(bytes32 _gameId) external view returns (uint);
 
+    function getGameStartTime(bytes32 _gameId) external view returns (uint256);
+
     function marketPerGameId(bytes32 _gameId) external view returns (address);
 
     function marketResolved(address _market) external view returns (bool);

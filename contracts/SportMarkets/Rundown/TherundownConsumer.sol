@@ -191,7 +191,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                         }
                     } else {
                         // double-check if market existst
-                        if (marketCreated[marketPerGameId[gameForProcessing.gameId]]) {
+                        if (
+                            marketCreated[marketPerGameId[gameForProcessing.gameId]] &&
+                            currentGameValues.startTime > block.timestamp
+                        ) {
                             _pauseOrUnpauseMarket(marketPerGameId[gameForProcessing.gameId], true);
                             oddsObtainer.pauseUnpauseChildMarkets(marketPerGameId[gameForProcessing.gameId], true);
                         }
@@ -340,6 +343,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return gameCreated[_gameId];
     }
 
+    /// @notice view function which returns game startTime
+    /// @param _gameId game id
+    function getGameStartTime(bytes32 _gameId) external view returns (uint256) {
+        return gameCreated[_gameId].startTime;
+    }
+
     /// @notice view function which returns games on certan date and sportid
     /// @param _sportId date
     /// @param _date date
@@ -484,6 +493,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             gameIdPerMarket[address(market)] = game.gameId;
             marketCreated[address(market)] = true;
             canMarketBeUpdated[address(market)] = true;
+
+            oddsObtainer.setFirstNormalizedOdds(game.gameId, address(market));
 
             queues.dequeueGamesCreated();
 

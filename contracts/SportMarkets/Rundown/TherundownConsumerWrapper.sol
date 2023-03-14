@@ -33,6 +33,10 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     mapping(bytes32 => bytes[]) public requestIdGamesResolved;
     mapping(bytes32 => bytes[]) public requestIdGamesOdds;
 
+    mapping(bytes32 => bool) public requestIdGamesCreatedFulFilled;
+    mapping(bytes32 => bool) public requestIdGamesResolvedFulFilled;
+    mapping(bytes32 => bool) public requestIdGamesOddsFulFilled;
+
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
@@ -189,6 +193,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @param _games array of a games
     function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games) external recordChainlinkFulfillment(_requestId) {
         requestIdGamesCreated[_requestId] = _games;
+        requestIdGamesCreatedFulFilled[_requestId] = true;
         consumer.fulfillGamesCreated(_requestId, _games, sportIdPerRequestId[_requestId], datePerRequest[_requestId]);
     }
 
@@ -200,6 +205,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         recordChainlinkFulfillment(_requestId)
     {
         requestIdGamesResolved[_requestId] = _games;
+        requestIdGamesResolvedFulFilled[_requestId] = true;
         consumer.fulfillGamesResolved(_requestId, _games, sportIdPerRequestId[_requestId]);
     }
 
@@ -208,6 +214,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @param _games array of a games
     function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external recordChainlinkFulfillment(_requestId) {
         requestIdGamesOdds[_requestId] = _games;
+        requestIdGamesOddsFulFilled[_requestId] = true;
         consumer.fulfillGamesOdds(_requestId, _games);
     }
 
@@ -223,6 +230,42 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @return address of LINK token
     function getTokenAddress() external view returns (address) {
         return chainlinkTokenAddress();
+    }
+
+    /// @notice add all odds request fulfilled
+    /// @param _requestsIds array of request ids
+    /// @return bool if all fullfilled or not
+    function areOddsRequestIdsFulFilled(bytes32[] memory _requestsIds) external view returns (bool) {
+        for (uint i = 0; i < _requestsIds.length; i++) {
+            if (!requestIdGamesOddsFulFilled[_requestsIds[i]]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// @notice add all creation request fulfilled
+    /// @param _requestsIds array of request ids
+    /// @return bool if all fullfilled or not
+    function areCreatedRequestIdsFulFilled(bytes32[] memory _requestsIds) external view returns (bool) {
+        for (uint i = 0; i < _requestsIds.length; i++) {
+            if (!requestIdGamesCreatedFulFilled[_requestsIds[i]]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// @notice add all resolve request fulfilled
+    /// @param _requestsIds array of request ids
+    /// @return bool if all fullfilled or not
+    function areResolvedRequestIdsFulFilled(bytes32[] memory _requestsIds) external view returns (bool) {
+        for (uint i = 0; i < _requestsIds.length; i++) {
+            if (!requestIdGamesResolvedFulFilled[_requestsIds[i]]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /* ========== INTERNALS ========== */

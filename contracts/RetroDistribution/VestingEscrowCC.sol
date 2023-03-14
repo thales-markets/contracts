@@ -88,7 +88,7 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
         uint locked = initialLocked[_recipient];
 
         if (_time < start) return 0;
-        return MathUpgradeable.min(locked * (_time - start) / (end - start), locked);
+        return MathUpgradeable.min((locked * (_time - start)) / (end - start), locked);
     }
 
     function _totalVested() internal view returns (uint totalVested) {
@@ -131,6 +131,22 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
 
         totalClaimed[msg.sender] = totalClaimed[msg.sender] + claimable;
         emit Claim(msg.sender, claimable);
+    }
+
+    function partialClaim(uint amount) external nonReentrant notPaused {
+        require(disabled[msg.sender] == false, "Account disabled");
+
+        uint timestamp = pausedAt[msg.sender];
+        if (timestamp == 0) {
+            timestamp = block.timestamp;
+        }
+        uint claimable = _totalVestedOf(msg.sender, timestamp) - totalClaimed[msg.sender];
+        require(claimable >= amount, "Amount exceeds claimable value");
+
+        IERC20Upgradeable(token).safeTransfer(msg.sender, amount);
+
+        totalClaimed[msg.sender] = totalClaimed[msg.sender] + amount;
+        emit PartialClaim(msg.sender, amount);
     }
 
     function pauseClaim(address _recipient) external onlyOwner {
@@ -191,14 +207,15 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
     }
 
     function setVestingPeriod(uint _vestingPeriod) external onlyOwner {
-       vestingPeriod = _vestingPeriod;
-       emit VestingPeriodChanged(_vestingPeriod);
+        vestingPeriod = _vestingPeriod;
+        emit VestingPeriodChanged(_vestingPeriod);
     }
 
     event Fund(address _recipient, uint _amount);
     event AllocationIncreased(address _recipient, uint _amount);
     event AllocationDecreased(address _recipient, uint _amount);
     event Claim(address _address, uint _amount);
+    event PartialClaim(address _address, uint _amount);
     event StartTimeChanged(address _recipient, uint _startTime);
     event EndTimeChanged(address _recipient, uint _endTime);
     event TokenChanged(address _token);

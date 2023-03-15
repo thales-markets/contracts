@@ -558,7 +558,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 		let value = 100;
 
 		it('Checking SportsAMM variables', async () => {
-			assert.bnEqual(await SportsAMM.min_spread(), toUnit('0.02'));
+			assert.bnEqual(await SportsAMM.min_spread(), toUnit('0.04'));
 			assert.bnEqual(await SportsAMM.max_spread(), toUnit('0.2'));
 			assert.bnEqual(await SportsAMM.defaultCapPerGame(), toUnit('5000'));
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);

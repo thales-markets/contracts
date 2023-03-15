@@ -11,6 +11,7 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
+import "../../interfaces/ITherundownConsumer.sol";
 
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
@@ -33,6 +34,21 @@ contract ParlayVerifier {
         uint defaultONE;
     }
 
+    struct VerifyMarket {
+        address[] _sportMarkets;
+        uint[] _positions;
+        uint _totalSUSDToPay;
+        ISportsAMM _sportsAMM;
+        address _parlayAMM;
+    }
+
+    struct CachedMarket {
+        bytes32 gameId;
+        uint gameCounter;
+        uint tag1;
+        uint tag2;
+    }
+
     // ISportsAMM sportsAmm;
 
     function verifyMarkets(
@@ -41,36 +57,39 @@ contract ParlayVerifier {
         uint _totalSUSDToPay,
         ISportsAMM _sportsAMM,
         address _parlayAMM
-    ) external view returns (bool eligible) {
+    ) external view returns (bool eligible, uint discount) {
         eligible = true;
         ITherundownConsumer consumer = ITherundownConsumer(_sportsAMM.theRundownConsumer());
-        bytes32[] memory cachedTeams = new bytes32[](_sportMarkets.length * 2);
+        // bytes32[] memory cachedTeams = new bytes32[](_sportMarkets.length * 2);
+        CachedMarket[] memory cachedTeams = new CachedMarket[](_sportMarkets.length * 2);
         uint lastCachedIdx = 0;
         bytes32 gameIdHome;
         bytes32 gameIdAway;
-        uint motoCounter = 0;
+        // uint motoCounter = 0;
         for (uint i = 0; i < _sportMarkets.length; i++) {
             address sportMarket = _sportMarkets[i];
             (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
 
             // check if game IDs already exist
             for (uint j = 0; j < lastCachedIdx; j++) {
-                if (cachedTeams[j] == gameIdHome || cachedTeams[j] == gameIdAway) {
+                if (cachedTeams[j].gameId == gameIdHome || cachedTeams[j].gameId == gameIdAway) {
+                    // uint marketTag1 = ISportPositionalMarket(sportMarket).tags(0);
+                    // uint marketTag2 = ISportPositionalMarket(sportMarket).tags(1);
                     revert("SameTeamOnParlay");
                 }
             }
 
-            cachedTeams[lastCachedIdx++] = gameIdHome;
-            cachedTeams[lastCachedIdx++] = gameIdAway;
+            cachedTeams[lastCachedIdx++].gameId = gameIdHome;
+            cachedTeams[lastCachedIdx++].gameId = gameIdAway;
 
-            uint marketTag = ISportPositionalMarket(_sportMarkets[i]).tags(0);
-            if (marketTag == 9100 || marketTag == 9101) {
-                if (motoCounter > 0) {
-                    eligible = false;
-                    break;
-                }
-                motoCounter++;
-            }
+            // uint marketTag = ISportPositionalMarket(_sportMarkets[i]).tags(0);
+            // if (marketTag == 9100 || marketTag == 9101) {
+            //     if (motoCounter > 0) {
+            //         eligible = false;
+            //         break;
+            //     }
+            //     motoCounter++;
+            // }
         }
     }
 

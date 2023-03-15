@@ -190,6 +190,11 @@
         "internalType": "bool",
         "name": "eligible",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "discount",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

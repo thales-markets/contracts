@@ -79,9 +79,9 @@ contract ParlayVerifier {
         uint _sUSDInRisky,
         address _parlayAMM
     ) internal view returns (bool riskFree) {
-        address[] memory sortedAddresses = new address[](_sportMarkets.length);
-        sortedAddresses = _sort(_sportMarkets);
-        require(_checkRisk(sortedAddresses, _sUSDInRisky, _parlayAMM), "RiskPerComb exceeded");
+        // address[] memory sortedAddresses = new address[](_sportMarkets.length);
+        // sortedAddresses = _sort(_sportMarkets);
+        require(_checkRisk(_sportMarkets, _sUSDInRisky, _parlayAMM), "RiskPerComb exceeded");
         riskFree = true;
     }
 
@@ -215,12 +215,19 @@ contract ParlayVerifier {
         }
     }
 
-    function obtainSportsAMMPosition(uint _position) public pure returns (ISportsAMM.Position position) {
+    function obtainSportsAMMPosition(uint _position) public pure returns (ISportsAMM.Position) {
         if (_position == 0) {
-            position = ISportsAMM.Position.Home;
-        } else {
-            position = _position == 1 ? ISportsAMM.Position.Away : ISportsAMM.Position.Draw;
+            return ISportsAMM.Position.Home;
+        } else if (_position == 1) {
+            return ISportsAMM.Position.Away;
         }
+        return ISportsAMM.Position.Draw;
+    }
+
+    function calculateCombinationKey(address[] memory _sportMarkets) public pure returns (bytes32) {
+        address[] memory sortedAddresses = new address[](_sportMarkets.length);
+        sortedAddresses = _sort(_sportMarkets);
+        return keccak256(abi.encodePacked(sortedAddresses));
     }
 
     function _checkRisk(
@@ -228,24 +235,9 @@ contract ParlayVerifier {
         uint _sUSDInRisk,
         address _parlayAMM
     ) internal view returns (bool riskFree) {
-        if (_sportMarkets.length > 1 && _sportMarkets.length < 9) {
-            address first = _sportMarkets[0];
-            address second = _sportMarkets[1];
-            address third = _sportMarkets.length > 2 ? _sportMarkets[2] : address(0);
-            address fourth = _sportMarkets.length > 3 ? _sportMarkets[3] : address(0);
-            address fifth = _sportMarkets.length > 4 ? _sportMarkets[4] : address(0);
-            address sixth = _sportMarkets.length > 5 ? _sportMarkets[5] : address(0);
-            address seventh = _sportMarkets.length > 6 ? _sportMarkets[6] : address(0);
-            address eight = _sportMarkets.length > 7 ? _sportMarkets[7] : address(0);
-            uint riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerGameCombination(
-                first,
-                second,
-                third,
-                fourth,
-                fifth,
-                sixth,
-                seventh,
-                eight
+        if (_sportMarkets.length > 1 && _sportMarkets.length <= IParlayMarketsAMM(_parlayAMM).parlaySize()) {
+            uint riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerPackedGamesCombination(
+                calculateCombinationKey(_sportMarkets)
             );
             riskFree = (riskCombination + _sUSDInRisk) <= IParlayMarketsAMM(_parlayAMM).maxAllowedRiskPerCombination();
         }

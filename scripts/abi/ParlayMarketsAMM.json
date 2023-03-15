@@ -42,6 +42,49 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "curveSUSD",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "dai",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "usdc",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "usdt",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "curveOnrampEnabled",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxAllowedPegSlippagePercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "CurveParametersUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "receiver",
         "type": "address"
       },
@@ -53,6 +96,19 @@
       }
     ],
     "name": "ExtraAmountTransferredDueToCancellation",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "parlaySize",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewParametersSet",
     "type": "event"
   },
   {
@@ -90,6 +146,19 @@
       }
     ],
     "name": "NewParlayMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "parlayMarketMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "NewParlayMastercopy",
     "type": "event"
   },
   {
@@ -341,7 +410,7 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "sUSD",
+        "name": "sUSDToken",
         "type": "address"
       }
     ],
@@ -865,6 +934,19 @@
   },
   {
     "inputs": [],
+    "name": "maxAllowedPegSlippagePercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maxAllowedRiskPerCombination",
     "outputs": [
       {
@@ -1269,6 +1351,25 @@
       }
     ],
     "name": "riskPerGameCombination",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "riskPerPackedGamesCombination",
     "outputs": [
       {
         "internalType": "uint256",

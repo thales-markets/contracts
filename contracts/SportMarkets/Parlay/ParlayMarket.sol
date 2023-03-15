@@ -63,7 +63,9 @@ contract ParlayMarket is OwnedWithInit {
         uint _sUSDPaid,
         uint _expiryDuration,
         address _parlayMarketsAMM,
-        address _parlayOwner
+        address _parlayOwner,
+        uint _totalQuote,
+        uint[] calldata _marketQuotes
     ) external {
         require(!initialized, "Parlay Market already initialized");
         initialized = true;
@@ -74,12 +76,14 @@ contract ParlayMarket is OwnedWithInit {
         for (uint i = 0; i < numOfSportMarkets; i++) {
             sportMarket[i].sportAddress = _sportMarkets[i];
             sportMarket[i].position = _positionPerMarket[i];
+            sportMarket[i].odd = _marketQuotes[i];
             _sportMarketIndex[_sportMarkets[i]] = i + 1;
         }
         amount = _amount;
         expiry = _expiryDuration;
         sUSDPaid = _sUSDPaid;
         parlayOwner = _parlayOwner;
+        totalResultQuote = _totalQuote;
     }
 
     function isAnySportMarketExercisable() external view returns (bool isExercisable, address[] memory exercisableMarkets) {
@@ -180,13 +184,6 @@ contract ParlayMarket is OwnedWithInit {
     }
 
     //============================== UPDATE PARAMETERS ===========================
-
-    function updateQuotes(uint[] calldata _marketQuotes, uint _totalResultQuote) external onlyAMM {
-        for (uint i = 0; i < numOfSportMarkets; i++) {
-            sportMarket[i].odd = _marketQuotes[i];
-        }
-        totalResultQuote = _totalResultQuote;
-    }
 
     function setPaused(bool _paused) external onlyAMM {
         require(paused != _paused, "State not changed");

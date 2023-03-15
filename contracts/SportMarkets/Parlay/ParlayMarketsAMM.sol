@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 // external
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 
 // interfaces
@@ -26,7 +25,6 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
-    using SafeMathUpgradeable for uint;
     using AddressSetLib for AddressSetLib.AddressSet;
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -63,7 +61,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     AddressSetLib.AddressSet internal _knownMarkets;
     mapping(address => bool) public resolvedParlay;
-    uint maxAllowedPegSlippagePercentage;
+    uint public maxAllowedPegSlippagePercentage;
     ParlayVerifier public parlayVerifier;
     uint public minUSDAmount;
 
@@ -78,6 +76,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     mapping(address => uint) public safeBoxFeePerAddress;
     // @return specific parlayAmmFee per address
     mapping(address => uint) public parlayAmmFeePerAddress;
+
+    mapping(bytes32 => uint) public riskPerPackedGamesCombination;
 
     function initialize(
         address _owner,
@@ -174,7 +174,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
         //cant get a quote on how much collateral is needed from curve for sUSD,
         //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
+        collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid) * (ONE + (ONE_PERCENT / 5))) / ONE;
     }
 
     function canCreateParlayMarket(
@@ -285,20 +285,18 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         //cant get a quote on how much collateral is needed from curve for sUSD,
         //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        uint collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid).mul(ONE.add(ONE_PERCENT.div(5))).div(
-            ONE
-        );
+        uint collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid) * (ONE + (ONE_PERCENT / (5)))) / ONE;
 
         uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
-            ? collateralQuote.mul(1e12)
+            ? collateralQuote * 1e12
             : collateralQuote;
         require(
             maxAllowedPegSlippagePercentage > 0 &&
-                transformedCollateralForPegCheck >= _sUSDPaid.mul(ONE.sub(maxAllowedPegSlippagePercentage)).div(ONE),
+                transformedCollateralForPegCheck >= (_sUSDPaid * (ONE - maxAllowedPegSlippagePercentage)) / ONE,
             "Amount below max allowed peg slippage"
         );
 
-        require(collateralQuote.mul(ONE).div(_sUSDPaid) <= ONE.add(_additionalSlippage), "Slippage too high!");
+        require((collateralQuote * ONE) / (_sUSDPaid) <= (ONE + _additionalSlippage), "Slippage too high!");
 
         IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
         collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
@@ -310,20 +308,22 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function exerciseParlay(address _parlayMarket) external nonReentrant notPaused {
-        require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
+    function exerciseParlay(address _parlayMarket) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseWiningSportMarkets();
     }
 
-    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket) external nonReentrant notPaused {
-        require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
+    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket)
+        external
+        nonReentrant
+        notPaused
+        onlyKnownMarkets(_parlayMarket)
+    {
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseSpecificSportMarket(_sportMarket);
     }
 
-    function resolveParlay() external notPaused {
-        require(_knownMarkets.contains(msg.sender), "Unknown/Expired parlay");
+    function resolveParlay() external notPaused onlyKnownMarkets(msg.sender) {
         _resolveParlay(msg.sender);
     }
 
@@ -393,13 +393,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             sUSDAfterFees,
             (block.timestamp + sportManager.expiryDuration()),
             address(this),
-            _differentRecipient
+            _differentRecipient,
+            totalQuote,
+            marketQuotes
         );
 
         emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
 
         _knownMarkets.add(address(parlayMarket));
-        parlayMarket.updateQuotes(marketQuotes, totalQuote);
         sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
         // buy the positions
         _buyPositionsFromSportAMM(
@@ -410,8 +411,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             address(parlayMarket),
             _differentRecipient
         );
-        _sportMarkets = parlayVerifier.sort(_sportMarkets);
-        _storeRisk(_sportMarkets, (totalAmount - sUSDAfterFees));
+        _storeRisk(_sportMarkets, (totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)));
 
         emit ParlayMarketCreated(
             address(parlayMarket),
@@ -467,15 +467,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address _parlayOwner
     ) internal {
         uint numOfMarkets = _sportMarkets.length;
-        uint buyAMMQuote;
         ISportsAMM.Position sportPosition;
         for (uint i = 0; i < numOfMarkets; i++) {
-            sportPosition = parlayVerifier.obtainSportsAMMPosition(_positions[i]);
+            sportPosition = _obtainSportsAMMPosition(_positions[i]);
             sportsAmm.buyFromAMM(
                 _sportMarkets[i],
                 sportPosition,
                 _proportionalAmounts[i],
-                type(uint256).max,
+                MAX_APPROVAL,
                 _additionalSlippage
             );
             _sendPositionsToMarket(_sportMarkets[i], _positions[i], _parlayMarket, _proportionalAmounts[i]);
@@ -511,16 +510,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function _storeRisk(address[] memory _sportMarkets, uint _sUSDPaid) internal {
-        if (_sportMarkets.length > 1 && _sportMarkets.length < 9) {
-            address first = _sportMarkets[0];
-            address second = _sportMarkets[1];
-            address third = _sportMarkets.length > 2 ? _sportMarkets[2] : address(0);
-            address fourth = _sportMarkets.length > 3 ? _sportMarkets[3] : address(0);
-            address fifth = _sportMarkets.length > 4 ? _sportMarkets[4] : address(0);
-            address sixth = _sportMarkets.length > 5 ? _sportMarkets[5] : address(0);
-            address seventh = _sportMarkets.length > 6 ? _sportMarkets[6] : address(0);
-            address eight = _sportMarkets.length > 7 ? _sportMarkets[7] : address(0);
-            riskPerGameCombination[first][second][third][fourth][fifth][sixth][seventh][eight] += _sUSDPaid;
+        if (_sportMarkets.length > 1 && _sportMarkets.length <= parlaySize) {
+            riskPerPackedGamesCombination[parlayVerifier.calculateCombinationKey(_sportMarkets)] += _sUSDPaid;
         }
     }
 
@@ -546,7 +537,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function _handleReferrer(address buyer, uint volume) internal {
         address referrer = IReferrals(referrals).sportReferrals(buyer);
-        uint referrerShare = volume.mul(ONE).div(ONE.sub(referrerFee)).sub(volume);
+        uint referrerShare = (volume * ONE) / (ONE - referrerFee) - volume;
         if (referrer != address(0) && referrerFee > 0) {
             sUSD.safeTransfer(referrer, referrerShare);
             emit ReferrerPaid(referrer, buyer, referrerShare, volume);
@@ -559,6 +550,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function _getParlayAmmFeePerAddress(address toCheck) internal view returns (uint toReturn) {
         return parlayAmmFeePerAddress[toCheck] > 0 ? parlayAmmFeePerAddress[toCheck] : parlayAmmFee;
+    }
+
+    function _obtainSportsAMMPosition(uint _position) internal pure returns (ISportsAMM.Position) {
+        if (_position == 0) {
+            return ISportsAMM.Position.Home;
+        } else if (_position == 1) {
+            return ISportsAMM.Position.Away;
+        }
+        return ISportsAMM.Position.Draw;
     }
 
     function _getSafeBoxAmount(
@@ -574,11 +574,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function setParlayMarketMastercopies(address _parlayMarketMastercopy) external onlyOwner {
         parlayMarketMastercopy = _parlayMarketMastercopy;
+        emit NewParlayMastercopy(_parlayMarketMastercopy);
     }
 
     function setParameters(uint _parlaySize) external onlyOwner {
-        require(_parlaySize < 9, "parlaySize invalid");
         parlaySize = _parlaySize;
+        emit NewParametersSet(_parlaySize);
     }
 
     /// @notice Updates contract parametars
@@ -666,13 +667,18 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         //sUSD.approve(_curveSUSD, MAX_APPROVAL);
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
+        emit CurveParametersUpdated(_curveSUSD, _dai, _usdc, _usdt, _curveOnrampEnabled, _maxAllowedPegSlippagePercentage);
     }
 
     /* ========== MODIFIERS ========== */
 
-    /* ========== EVENTS ========== */
+    modifier onlyKnownMarkets(address _parlayMarket) {
+        require(_knownMarkets.contains(_parlayMarket), "Unknown parlay market");
+        _;
+    }
 
-    event SetSUSD(address sUSD);
+    /* ========== EVENTS ========== */
+    event SetSUSD(address sUSDToken);
     event NewParlayMarket(address market, address[] markets, uint[] positions, uint amount, uint sUSDpaid);
     event ParlayMarketCreated(
         address market,
@@ -705,4 +711,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event ParlayResolved(address _parlayMarket, address _parlayOwner, bool _userWon);
     event SafeBoxFeePerAddressChanged(address _address, uint newFee);
     event ParlayAmmFeePerAddressChanged(address _address, uint newFee);
+    event NewParlayMastercopy(address parlayMarketMastercopy);
+    event NewParametersSet(uint parlaySize);
+    event CurveParametersUpdated(
+        address curveSUSD,
+        address dai,
+        address usdc,
+        address usdt,
+        bool curveOnrampEnabled,
+        uint maxAllowedPegSlippagePercentage
+    );
 }

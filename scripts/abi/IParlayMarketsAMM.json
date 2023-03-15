@@ -393,6 +393,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gamesPacked",
+        "type": "bytes32"
+      }
+    ],
+    "name": "riskPerPackedGamesCombination",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "sUSD",
     "outputs": [

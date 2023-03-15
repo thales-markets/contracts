@@ -339,7 +339,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     }
 
     /// @notice Iterate all markets in the current round and exercise those ready to be exercised
-    function exerciseMarketsReadyToExercised() public {
+    function exerciseMarketsReadyToExercised() public nonReentrant whenNotPaused {
         SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
         ISportPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {

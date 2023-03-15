@@ -42,6 +42,12 @@ async function main() {
 		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
@@ -61,14 +67,14 @@ async function main() {
 			_roundLength: week,
 			_priceLowerLimit: w3utils.toWei('0.3'),
 			_priceUpperLimit: w3utils.toWei('0.95'),
-			_skewImpactLimit: w3utils.toWei('-0.25'), // -2.5% skew impact
+			_skewImpactLimit: w3utils.toWei('-0.025'), // -2.5% skew impact
 			_maxAllowedDeposit: w3utils.toWei('10000'), // 10k% max deposit per round
 			_utilizationRate: w3utils.toWei('0.50'), // 50% utilization rate
 			_maxTradeRate: w3utils.toWei('0.02'), // 2% max trade rate
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
 			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
 			_minTradeAmount: w3utils.toWei('5'), // minimum trade amount
-			_maxMarketNumberPerRound: 5, // max market tickets per round
+			_maxMarketUsedInRoundCount: 5, // max market tickets per round
 		},
 	]);
 

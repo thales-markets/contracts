@@ -88,6 +88,9 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     /* ========== CONSTRUCTOR ========== */
 
+    // Initializes the implementation contract to avoid potential foul-play
+    constructor() initializer {}
+
     function initialize(InitParams calldata params) external initializer {
         setOwner(params._owner);
         initNonReentrant();

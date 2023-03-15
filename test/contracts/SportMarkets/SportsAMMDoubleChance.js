@@ -239,7 +239,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 		await SportsAMM.setParameters(
 			DAY,
-			toUnit('1.04'), //_minSpread
+			toUnit('0.04'), //_minSpread
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
@@ -809,7 +809,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			await SportsAMM.setParameters(
 				DAY,
-				toUnit('1.04'), //_minSpread
+				toUnit('0.04'), //_minSpread
 				toUnit('0.2'),
 				toUnit('0.001'),
 				toUnit('0.1'),
@@ -834,7 +834,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			await SportsAMM.setParameters(
 				DAY,
-				toUnit('1.04'), //_minSpread
+				toUnit('0.04'), //_minSpread
 				toUnit('0.2'),
 				toUnit('0.001'),
 				toUnit('0.1'),

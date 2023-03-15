@@ -231,7 +231,7 @@ contract('SportsAMM', (accounts) => {
 
 		await SportsAMM.setParameters(
 			DAY,
-			toUnit('1.04'), //_minSpread
+			toUnit('0.04'), //_minSpread
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
@@ -693,7 +693,7 @@ contract('SportsAMM', (accounts) => {
 		let value = 100;
 
 		it('Checking SportsAMM variables', async () => {
-			assert.bnEqual(await SportsAMM.min_spread(), toUnit('0.02'));
+			assert.bnEqual(await SportsAMM.min_spread(), toUnit('0.04'));
 			assert.bnEqual(await SportsAMM.max_spread(), toUnit('0.2'));
 			assert.bnEqual(await SportsAMM.defaultCapPerGame(), toUnit('5000'));
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
@@ -720,7 +720,7 @@ contract('SportsAMM', (accounts) => {
 		it('Setters testing', async () => {
 			answer = await SportsAMM.setParameters(
 				DAY,
-				toUnit('1.04'), //_minSpread
+				toUnit('0.04'), //_minSpread
 				toUnit('0.2'),
 				toUnit('0.001'),
 				toUnit('0.9'),
@@ -1637,7 +1637,7 @@ contract('SportsAMM', (accounts) => {
 		let value = 100;
 
 		it('Checking SportsAMM variables', async () => {
-			assert.bnEqual(await SportsAMM.min_spread(), toUnit('0.02'));
+			assert.bnEqual(await SportsAMM.min_spread(), toUnit('0.04'));
 			assert.bnEqual(await SportsAMM.max_spread(), toUnit('0.2'));
 			assert.bnEqual(await SportsAMM.defaultCapPerGame(), toUnit('5000'));
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);

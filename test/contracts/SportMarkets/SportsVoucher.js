@@ -559,13 +559,13 @@ contract('SportsVauchers', (accounts) => {
 				})
 			).to.be.revertedWith('You are not the voucher owner!');
 
-			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(65));
-			console.log('65 Quote is ' + buyFromAmmQuote / 1e18);
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(67));
+			console.log('67 Quote is ' + buyFromAmmQuote / 1e18);
 
 			let secondBalanceBeforeBurn = await voucher.balanceOf(second);
 			console.log('Second balance before burn is ' + secondBalanceBeforeBurn);
 
-			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(65), id, {
+			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(67), id, {
 				from: second,
 			});
 
@@ -579,7 +579,7 @@ contract('SportsVauchers', (accounts) => {
 			console.log('Balance Away = ' + balanceAway);
 
 			balanceOfVoucher = await Thales.balanceOf(voucher.address);
-			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
+			console.log('sUSD balance of voucher = ' + balanceOfVoucher / 1e18);
 
 			let secondBalanceAfterBurn = await voucher.balanceOf(second);
 			console.log('Second balance after burn is ' + secondBalanceAfterBurn);

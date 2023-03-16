@@ -587,15 +587,7 @@ contract('SportsAMM', (accounts) => {
 				SportsAMM.buyFromAMM(deployedMarket.address, 1, toUnit(1), MAX_NUMBER, additionalSlippage, {
 					from: first,
 				})
-			).to.be.revertedWith('Minting inactive');
-			// answer = await SportsAMM.buyFromAMM(
-			// 	deployedMarket.address,
-			// 	1,
-			// 	toUnit(1),
-			// 	MAX_NUMBER,
-			// 	additionalSlippage,
-			// 	{ from: first }
-			// );
+			).to.be.revertedWith('Not trading');
 		});
 
 		it('Sport Data coverage', async () => {

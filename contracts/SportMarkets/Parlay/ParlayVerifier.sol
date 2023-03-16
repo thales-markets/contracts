@@ -73,23 +73,24 @@ contract ParlayVerifier {
         for (uint i = 0; i < _sportMarkets.length; i++) {
             address sportMarket = _sportMarkets[i];
             (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
-            (tag1,tag2) = ISportPositionalMarket(sportMarket).getTags();
+            (tag1, tag2) = ISportPositionalMarket(sportMarket).getTags();
             // check if game IDs already exist
             for (uint j = 0; j < lastCachedIdx; j++) {
                 if (cachedTeams[j].gameId == gameIdHome || cachedTeams[j].gameId == gameIdAway) {
-                    if(cachedTeams[j].gameCounter > 0 || cachedTeams[j].tag2 == tag2) {
+                    if (cachedTeams[j].gameCounter > 0 || cachedTeams[j].tag2 == tag2) {
                         revert("SameTeamOnParlay");
                     }
                     cachedTeams[j].gameCounter += 1;
-                    discount = discount > 0 ? (discount*_getDiscountForTagsCombination(tag1,tag2)) : _getDiscountForTagsCombination(tag1,tag2);
+                    discount = discount > 0
+                        ? (discount * _getDiscountForTagsCombination(tag1, tag2))
+                        : _getDiscountForTagsCombination(tag1, tag2);
                 }
             }
 
-            (cachedTeams[lastCachedIdx].tag1,cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
+            (cachedTeams[lastCachedIdx].tag1, cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
             cachedTeams[lastCachedIdx++].gameId = gameIdHome;
-            (cachedTeams[lastCachedIdx].tag1,cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
+            (cachedTeams[lastCachedIdx].tag1, cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
             cachedTeams[lastCachedIdx++].gameId = gameIdAway;
-
         }
     }
 
@@ -304,9 +305,9 @@ contract ParlayVerifier {
         home = keccak256(abi.encodePacked(game.homeTeam));
         away = keccak256(abi.encodePacked(game.awayTeam));
     }
-    
-    function _getDiscountForTagsCombination(uint tag1, uint tag2) private pure returns(uint discount) {
-        if(tag1 >= SOCCER_TAG) {
+
+    function _getDiscountForTagsCombination(uint tag1, uint tag2) private pure returns (uint discount) {
+        if (tag1 >= SOCCER_TAG) {
             discount = SOCCER_DISCOUNT;
         }
     }

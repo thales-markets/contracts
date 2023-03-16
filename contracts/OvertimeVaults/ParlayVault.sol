@@ -376,7 +376,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         for (uint i = 0; i < tradingParlayMarketsPerRound[round].length; i++) {
             parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
             (bool isExercisable, ) = parlayMarket.isParlayExercisable();
-            if (isExercisable) {
+            if (!parlayMarket.fundsIssued() && isExercisable) {
                 parlayAMM.exerciseParlay(address(parlayMarket));
             }
         }
@@ -551,14 +551,10 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         }
         for (uint i = 0; i < tradingParlayMarketsPerRound[round].length; i++) {
             ParlayMarket parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
-            (bool isResolved, address[] memory resolvableMarkets) = parlayMarket.isAnySportMarketResolved();
-            if (!isResolved || parlayMarket.paused()) {
-                return false;
-            }
-
-            if (resolvableMarkets.length != parlayMarket.numOfSportMarkets()) {
-                return false;
-            }
+            (bool isExercisable, ) = parlayMarket.isParlayExercisable();
+            if (parlayMarket.fundsIssued()) continue;
+            else if (!parlayMarket.fundsIssued() && (isExercisable || parlayMarket.parlayAlreadyLost())) continue;
+            else if (!parlayMarket.fundsIssued() && !parlayMarket.parlayAlreadyLost()) false;
         }
         return true;
     }

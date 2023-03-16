@@ -29,26 +29,13 @@ async function main() {
 		network = 'polygon';
 	}
 
-	if (networkObj.chainId == 10) {
-		network = 'optimisticEthereum';
-		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	} else if (networkObj.chainId == 69) {
-		network = 'optimisticKovan';
-		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	} else if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
-		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
-	} else {
-		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
 	}
 
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + network);
-
-	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSDaddress);
-
-	priceFeedAddress = getTargetAddress('PriceFeed', network);
-	console.log('Found PriceFeed at:' + priceFeedAddress);
 
 	// // We get the contract to deploy
 
@@ -66,10 +53,23 @@ async function main() {
 		PositionalMarketMastercopyDeployed.address
 	);
 
+	const PositionMastercopy = await ethers.getContractFactory('PositionMastercopy');
+	const PositionMastercopyDeployed = await PositionMastercopy.deploy();
+	await PositionMastercopyDeployed.deployed();
+
+	console.log('PositionMastercopy deployed to:', PositionMastercopyDeployed.address);
+	setTargetAddress('PositionMastercopy', network, PositionMastercopyDeployed.address);
+
 	await hre.run('verify:verify', {
 		address: PositionalMarketMastercopyDeployed.address,
 		constructorArguments: [],
 		contract: 'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
+	});
+
+	await hre.run('verify:verify', {
+		address: PositionMastercopyDeployed.address,
+		constructorArguments: [],
+		contract: 'contracts/Positions/PositionMastercopy.sol:PositionMastercopy',
 	});
 
 	function delay(time) {

@@ -204,7 +204,7 @@ contract('SportsVauchers', (accounts) => {
 
 		await SportsAMM.setParameters(
 			DAY,
-			toUnit('0.01'),
+			toUnit('0.04'), //_minSpread
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
@@ -578,13 +578,13 @@ contract('SportsVauchers', (accounts) => {
 				})
 			).to.be.revertedWith('You are not the voucher owner!');
 
-			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(65));
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(67));
 			console.log('65 Quote is ' + buyFromAmmQuote / 1e6);
 
 			let secondBalanceBeforeBurn = await voucher.balanceOf(second);
 			console.log('Second balance before burn is ' + secondBalanceBeforeBurn);
 
-			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(65), id, {
+			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(67), id, {
 				from: second,
 			});
 

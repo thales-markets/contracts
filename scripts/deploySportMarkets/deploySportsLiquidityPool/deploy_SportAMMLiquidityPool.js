@@ -46,6 +46,12 @@ async function main() {
 		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);

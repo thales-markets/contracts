@@ -15,6 +15,8 @@ import "../../interfaces/ITherundownConsumer.sol";
 
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
+    uint private constant SOCCER_TAG = 9010;
+    uint private constant SOCCER_DISCOUNT = 30;
 
     struct InitialQuoteParameters {
         address[] sportMarkets;
@@ -65,31 +67,29 @@ contract ParlayVerifier {
         uint lastCachedIdx = 0;
         bytes32 gameIdHome;
         bytes32 gameIdAway;
+        uint tag1;
+        uint tag2;
         // uint motoCounter = 0;
         for (uint i = 0; i < _sportMarkets.length; i++) {
             address sportMarket = _sportMarkets[i];
             (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
-
+            (tag1,tag2) = ISportPositionalMarket(sportMarket).getTags();
             // check if game IDs already exist
             for (uint j = 0; j < lastCachedIdx; j++) {
                 if (cachedTeams[j].gameId == gameIdHome || cachedTeams[j].gameId == gameIdAway) {
-                    // uint marketTag1 = ISportPositionalMarket(sportMarket).tags(0);
-                    // uint marketTag2 = ISportPositionalMarket(sportMarket).tags(1);
-                    revert("SameTeamOnParlay");
+                    if(cachedTeams[j].gameCounter > 0 || cachedTeams[j].tag2 == tag2) {
+                        revert("SameTeamOnParlay");
+                    }
+                    cachedTeams[j].gameCounter += 1;
+                    discount = discount > 0 ? (discount*_getDiscountForTagsCombination(tag1,tag2)) : _getDiscountForTagsCombination(tag1,tag2);
                 }
             }
 
+            (cachedTeams[lastCachedIdx].tag1,cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
             cachedTeams[lastCachedIdx++].gameId = gameIdHome;
+            (cachedTeams[lastCachedIdx].tag1,cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
             cachedTeams[lastCachedIdx++].gameId = gameIdAway;
 
-            // uint marketTag = ISportPositionalMarket(_sportMarkets[i]).tags(0);
-            // if (marketTag == 9100 || marketTag == 9101) {
-            //     if (motoCounter > 0) {
-            //         eligible = false;
-            //         break;
-            //     }
-            //     motoCounter++;
-            // }
         }
     }
 
@@ -303,5 +303,11 @@ contract ParlayVerifier {
 
         home = keccak256(abi.encodePacked(game.homeTeam));
         away = keccak256(abi.encodePacked(game.awayTeam));
+    }
+    
+    function _getDiscountForTagsCombination(uint tag1, uint tag2) private pure returns(uint discount) {
+        if(tag1 >= SOCCER_TAG) {
+            discount = SOCCER_DISCOUNT;
+        }
     }
 }

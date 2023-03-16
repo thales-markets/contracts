@@ -124,10 +124,10 @@
 		"SafeBoxImplementation": "0x6B33b99E3D3213DF963375E6d94aBa968351f803",
 		"PriceFeed": "0x563cCaBfBaCCb1a2e00d21704570cFc1AF21f47f",
 		"PriceFeedImplementation": "0x1c6BD32F85cB64962958649e8304e7e7020C0B3c",
-		"PositionMastercopy": "0x8947da500Eb47F82df21143D0C01A29862a8C3c5",
-		"PositionalMarketMastercopy": "0x89DF505C693ac7e07d8d5D6308fe0bd041033CDb",
+		"PositionMastercopy": "0x91FAE7D06d8D831Ae9054614516fe8802711a32a",
+		"PositionalMarketMastercopy": "0x642682d2FA61c49d204b657ADe5ab0142295E227",
 		"PositionalMarketManager": "0x95d93c88c1b5190fA7FA4350844e0663e5a11fF0",
-		"PositionalMarketManagerImplementation": "0xBE086E0A2c588Ad64C8530048cE4356190D6a6F3",
+		"PositionalMarketManagerImplementation": "0xA5bb23E43B154f698b3f7040d5D043474a5426Cd",
 		"PositionalMarketFactory": "0xE2881cAd27db4C27fB3814AD97ccA694B80c0fA0",
 		"PositionalMarketFactoryImplementation": "0xE0B31640B07E4BCFAFc190d7DDE951BA3286Dd63",
 		"PositionalMarketData": "0x036adEA6bc1fD0247c2796f8D201B28C0dC2a67d",
@@ -184,7 +184,13 @@
 		"SportAMMLiquidityPoolImplementation": "0x252033bcff3CFe5be23a09D1Bb4Dc2cb90202c23",
 		"SportAMMLiquidityPoolRoundMastercopy": "0xDdfeEFb6F13434fD2851C54aDE55B204AC06c6a0",
 		"DefaultLiquidityProvider": "0x2FE737c9c14eA857eca2E9BD6C09be96532E5188",
-		"DefaultLiquidityProviderImplementation": "0x789c830e1a02423Ec9a1375d5d2763Faca2dA846"
+		"DefaultLiquidityProviderImplementation": "0x789c830e1a02423Ec9a1375d5d2763Faca2dA846",
+		"SportVault": "0xE26374c7aFe71a2a6AB4A61080772547C43B87E6",
+		"SportVaultImplementation": "0x6485d7093398D3136C3558c55d66CbB80bC99db0",
+		"ParlayVault": "0xAb9E5fc491c743AE0b45f7100fAf611Deb8FeC4A",
+		"ParlayVaultImplementation": "0xF88A3A166c756f9467429D21922A4B60D918E1Ae",
+		"SportVaultSafu": "0xE26374c7aFe71a2a6AB4A61080772547C43B87E6",
+		"SportVaultSafuImplementation": "0x6485d7093398D3136C3558c55d66CbB80bC99db0"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

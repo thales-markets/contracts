@@ -35,6 +35,11 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + network);
 
@@ -73,7 +78,7 @@ async function main() {
 	}
 
 	function delay(time) {
-		return new Promise(function(resolve) {
+		return new Promise(function (resolve) {
 			setTimeout(resolve, time);
 		});
 	}
@@ -81,7 +86,7 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

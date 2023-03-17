@@ -269,6 +269,11 @@
       "address": "0x05C191f8Df6bFb72EFfc865550cF23982cafD753",
       "txHash": "0xba2d080d45999674e85e8f463dd1a5367722699c0d54959722e75236de143b48",
       "kind": "transparent"
+    },
+    {
+      "address": "0xFd4D94e538aF8c176540a1Ad7009184F03476737",
+      "txHash": "0x38be940c1a1984f66a10fd29e90e903f5b4f80edf771fac4a4c9d8a352d10a64",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -41808,6 +41813,154 @@
           },
           "t_array(t_uint256)dyn_storage": {
             "label": "uint256[]"
+          }
+        }
+      }
+    },
+    "208b0777c68b4065665d6cadcfd0da67cd5f63ca33633e72ba1e2ff835c3daaa": {
+      "address": "0x33C80874a21Bb2AA6238a82552592Cb14AE4F2Fe",
+      "txHash": "0x394fd777b0b5e52bfdf4fe83e996a2aff85a6d7e9af7dee1fdae67005f3d73d8",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)8234",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:24"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "overtimeVoucher",
+            "type": "t_contract(OvertimeVoucher)61435",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:27"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "whitelistedAddressesPerPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:30"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "addressClaimedVoucherPerPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:33"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "voucherAmount",
+            "type": "t_uint256",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:36"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "periodEnd",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:39"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "period",
+            "type": "t_uint256",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:42"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)8234": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(OvertimeVoucher)61435": {
+            "label": "contract OvertimeVoucher"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
           }
         }
       }

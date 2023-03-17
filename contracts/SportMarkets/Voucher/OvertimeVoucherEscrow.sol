@@ -60,6 +60,8 @@ contract OvertimeVoucherEscrow is Initializable, ProxyOwned, PausableUpgradeable
         periodEnd[1] = _periodEnd;
 
         setWhitelistedAddresses(_whitelistedAddresses, true);
+
+        sUSD.approve(_overtimeVoucher, type(uint256).max);
     }
 
     /// @notice Mints OvertimeVoucher and sends it to the user if given address

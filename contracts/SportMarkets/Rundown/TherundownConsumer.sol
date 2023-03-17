@@ -167,13 +167,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 // if name of fighter (away or home) is not the same
                 if (
                     (!verifier.areTeamsEqual(gameForProcessing.homeTeam, currentGameValues.homeTeam) ||
-                        !verifier.areTeamsEqual(gameForProcessing.awayTeam, currentGameValues.awayTeam)) && _sportId == 7
+                        !verifier.areTeamsEqual(gameForProcessing.awayTeam, currentGameValues.awayTeam))
                 ) {
                     // double-check if market exists -> cancel market -> create new for queue
                     if (marketCreated[marketPerGameId[gameForProcessing.gameId]]) {
-                        _cancelMarket(gameForProcessing.gameId, 0, false);
-                        _updateGameOnADate(gameForProcessing.gameId, _date, _sportId);
-                        _createGameFulfill(_requestId, gameForProcessing, _sportId);
+                        if (_sportId == 7) {
+                            _cancelMarket(gameForProcessing.gameId, 0, false);
+                            _updateGameOnADate(gameForProcessing.gameId, _date, _sportId);
+                            _createGameFulfill(_requestId, gameForProcessing, _sportId);
+                        } else {
+                            _pauseOrUnpauseMarket(marketPerGameId[gameForProcessing.gameId], true);
+                            oddsObtainer.pauseUnpauseChildMarkets(marketPerGameId[gameForProcessing.gameId], true);
+                        }
                     }
                     // checking time
                 } else if (gameForProcessing.startTime != currentGameValues.startTime) {

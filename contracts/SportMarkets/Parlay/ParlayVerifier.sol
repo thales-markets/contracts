@@ -11,6 +11,7 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
+import "../../interfaces/ITherundownConsumer.sol";
 
 contract ParlayVerifier {
     uint private constant ONE = 1e18;

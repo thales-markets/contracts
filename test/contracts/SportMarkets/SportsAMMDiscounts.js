@@ -230,7 +230,7 @@ contract('SportsAMM', (accounts) => {
 
 		await SportsAMM.setParameters(
 			DAY,
-			toUnit('0.02'),
+			toUnit('0.04'), //_minSpread
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
@@ -553,7 +553,7 @@ contract('SportsAMM', (accounts) => {
 			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
 				deployedMarket.address,
 				1,
-				toUnit(72000)
+				toUnit(71190)
 			);
 			answer = await Thales.balanceOf(first);
 			let before_balance = answer;
@@ -562,7 +562,7 @@ contract('SportsAMM', (accounts) => {
 			answer = await SportsAMM.buyFromAMM(
 				deployedMarket.address,
 				1,
-				toUnit(72000),
+				toUnit(71190),
 				buyFromAmmQuote,
 				additionalSlippage,
 				{ from: first }
@@ -582,7 +582,7 @@ contract('SportsAMM', (accounts) => {
 			buyPriceImpactSecond = await SportsAMM.buyPriceImpact(
 				deployedMarket.address,
 				0,
-				toUnit(72000)
+				toUnit(71190)
 			);
 			console.log('buyPriceImpactSecond ALL: ', fromUnit(buyPriceImpactSecond));
 

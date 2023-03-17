@@ -460,6 +460,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                         sportManager.reverseTransformCollateral(sUSDAfterFees),
                         parlaySize,
                         sportManager.reverseTransformCollateral(1),
+                        initialQuote,
                         sportsAmm
                     )
                 );

@@ -24,6 +24,7 @@ contract ParlayVerifier {
         uint totalSUSDToPay;
         uint parlaySize;
         uint defaultONE;
+        uint discount;
         ISportsAMM sportsAMM;
     }
 
@@ -34,6 +35,7 @@ contract ParlayVerifier {
         ISportsAMM sportsAmm;
         uint sUSDAfterFees;
         uint defaultONE;
+        uint discount;
     }
 
     struct VerifyMarket {
@@ -161,7 +163,8 @@ contract ParlayVerifier {
                         amountsToBuy,
                         params.sportsAMM,
                         params.totalSUSDToPay,
-                        params.defaultONE
+                        params.defaultONE,
+                        params.discount
                     )
                 );
             }
@@ -201,6 +204,7 @@ contract ParlayVerifier {
             totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
         if (totalQuote > 0) {
+            totalQuote = params.discount > 0 ? (totalQuote * params.discount) / ONE : totalQuote;
             if (totalQuote < IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds()) {
                 totalQuote = IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds();
             }

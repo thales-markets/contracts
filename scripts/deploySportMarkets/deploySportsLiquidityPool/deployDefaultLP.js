@@ -51,6 +51,12 @@ async function main() {
 		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 

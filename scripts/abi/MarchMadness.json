@@ -923,6 +923,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256[63]",
+        "name": "_results",
+        "type": "uint256[63]"
+      }
+    ],
+    "name": "setResultArray",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_gameId",
         "type": "uint256"

@@ -233,7 +233,7 @@ contract('SportsAMM', (accounts) => {
 
 		await SportsAMM.setParameters(
 			HOUR,
-			toUnit('0.02'),
+			toUnit('0.04'), //_minSpread
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),

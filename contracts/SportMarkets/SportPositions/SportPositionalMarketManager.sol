@@ -435,13 +435,24 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         uint _outcome,
         uint8 _homeScore,
         uint8 _awayScore,
-        address _consumer
+        address _consumer,
+        bool _useBackupOdds
     ) external {
         require(msg.sender == owner || whitelistedCancelAddresses[msg.sender], "Invalid resolver");
         require(!isDoubleChance[_market], "Not supported for double chance markets");
 
+        if (_outcome != 0) {
+            require(!_useBackupOdds, "Only use backup odds on cancelation, if needed!");
+        }
+
         if (_consumer == theRundownConsumer) {
-            ITherundownConsumer(theRundownConsumer).resolveMarketManually(_market, _outcome, _homeScore, _awayScore);
+            ITherundownConsumer(theRundownConsumer).resolveMarketManually(
+                _market,
+                _outcome,
+                _homeScore,
+                _awayScore,
+                _useBackupOdds
+            );
         }
     }
 

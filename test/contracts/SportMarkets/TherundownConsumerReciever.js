@@ -78,6 +78,7 @@ contract('TheRundownConsumer', (accounts) => {
 	let MockTherundownConsumerWrapper;
 	let initializeConsumerData;
 	let GamesOddsObtainerDeployed;
+	let GamesOddsReceiverDeployed;
 	let gamesQueue;
 	let game_1_create;
 	let game_1_update_after;
@@ -641,6 +642,17 @@ contract('TheRundownConsumer', (accounts) => {
 			{ from: owner }
 		);
 
+		let GamesOddsReceiver = artifacts.require('GamesOddsReceiver');
+		GamesOddsReceiverDeployed = await GamesOddsReceiver.new({ from: owner });
+
+		await GamesOddsReceiverDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			GamesOddsObtainerDeployed.address,
+			[fourth],
+			{ from: owner }
+		);
+
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
 			gamesQueue.address,
@@ -659,6 +671,17 @@ contract('TheRundownConsumer', (accounts) => {
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 		await verifier.setObtainer(GamesOddsObtainerDeployed.address, { from: owner });
 		await verifier.setSportsManager(SportPositionalMarketManager.address, { from: owner });
+		await GamesOddsReceiverDeployed.addToWhitelist([third], true, { from: owner });
+
+		await GamesOddsObtainerDeployed.setContracts(
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			GamesOddsReceiverDeployed.address,
+			{
+				from: owner,
+			}
+		);
 	});
 
 	describe('Init', () => {
@@ -1833,11 +1856,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread,
-				oddsid_create_result_array_1,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[-20700, 17000, 0],
+				[550, -550],
+				[-120, 120],
+				[20000, 20000],
+				[-120, 120],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(2, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -1988,11 +2015,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread,
-				oddsid_create_result_array_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[-20700, 17000, 0],
+				[-550, 550],
+				[-120, 120],
+				[20000, 20000],
+				[-120, 120],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(2, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -2131,11 +2162,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread,
-				oddsid_create_result_array_1,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[-20700, 17000, 0],
+				[550, -550],
+				[-120, 120],
+				[20000, 20000],
+				[-120, 120],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(2, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -2277,11 +2312,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread,
-				oddsid_create_result_array_1,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[-20700, 17000, 0],
+				[550, -550],
+				[-120, 120],
+				[20000, 20000],
+				[-120, 120],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(2, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -2499,12 +2538,6 @@ contract('TheRundownConsumer', (accounts) => {
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, 1, 2, false, { from: third })
 			).to.be.revertedWith('ID15');
-
-			await expect(
-				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, true, {
-					from: third,
-				})
-			).to.be.revertedWith('ID17');
 
 			const tx_2 = await TherundownConsumerDeployed.resolveMarketManually(
 				marketAdd,
@@ -2741,9 +2774,17 @@ contract('TheRundownConsumer', (accounts) => {
 	describe('Odds for game', () => {
 		it('Get odds per game, check results, geme not created, no odds created', async () => {
 			// req. games
-			const tx = await TherundownConsumerDeployed.fulfillGamesOdds(reqIdOdds, oddsResultArray, {
-				from: wrapper,
-			});
+			const tx = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6135363061373861363135353239363137366237393232353866616336613532'],
+				[0, 0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				{
+					from: third,
+				}
+			);
 
 			// game not created so zero odds
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(oddsid);
@@ -2808,11 +2849,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9016, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -2899,11 +2944,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -2982,11 +3031,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(false, await deployedMarket.paused());
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3031,11 +3084,6 @@ contract('TheRundownConsumer', (accounts) => {
 				_sportId: sportId_4,
 				_id: gameid1,
 			});
-
-			assert.eventEqual(tx_cancel.logs[2], 'CancelSportsMarket', {
-				_marketAddress: marketAdd,
-			});
-
 			assert.equal(true, await TherundownConsumerDeployed.marketCanceled(marketAdd));
 			assert.equal(false, await deployedMarket.paused());
 		});
@@ -3106,11 +3154,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3123,11 +3175,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds_total = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total,
-				oddsResultArray_total,
+			const tx_odds_total = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[10300, -11300],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -3214,11 +3270,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3231,11 +3291,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds_spread = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread,
-				oddsResultArray_spread,
+			const tx_odds_spread = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[450, -450],
+				[10300, -11300],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -3322,11 +3386,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3339,11 +3407,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds_spread = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread,
-				oddsResultArray_spread,
+			const tx_odds_spread = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[450, -450],
+				[10300, -11300],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -3356,11 +3428,15 @@ contract('TheRundownConsumer', (accounts) => {
 				await GamesOddsObtainerDeployed.currentActiveSpreadChildMarket(marketAdd)
 			);
 
-			const tx_odds_spread_update = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread_update,
-				oddsResultArray_spread_update,
+			const tx_odds_spread_update = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[450, -450],
+				[-12000, 12000],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3437,11 +3513,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3454,11 +3534,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds_total = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total,
-				oddsResultArray_total,
+			const tx_odds_total = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[10300, -11300],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -3477,11 +3561,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await childMarket.tags(0));
 			assert.bnEqual(10002, await childMarket.tags(1));
 
-			const tx_odds_total_update = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total_update,
-				oddsResultArray_total_update,
+			const tx_odds_total_update = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[-12000, 12000],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3558,11 +3646,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3575,11 +3667,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds_total = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total,
-				oddsResultArray_total,
+			const tx_odds_total = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[10300, -11300],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -3599,11 +3695,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await childMarket.tags(0));
 			assert.bnEqual(10002, await childMarket.tags(1));
 
-			const tx_odds_total_update = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total_update,
-				oddsResultArray_total_update,
+			const tx_odds_total_update = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[-12000, 12000],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3613,11 +3713,15 @@ contract('TheRundownConsumer', (accounts) => {
 				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
 			);
 
-			const tx_odds_total_update_line = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total_update_line,
-				oddsResultArray_total_update_line,
+			const tx_odds_total_update_line = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[210, 210],
+				[-12000, 12000],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3712,11 +3816,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3729,11 +3837,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds_spread = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread,
-				oddsResultArray_spread,
+			const tx_odds_spread = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[450, -450],
+				[10300, -11300],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -3769,11 +3881,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await childMarket.tags(0));
 			assert.bnEqual(10001, await childMarket.tags(1));
 
-			const tx_odds_spread_update = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread_update,
-				oddsResultArray_spread_update,
+			const tx_odds_spread_update = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[450, -450],
+				[12000, -12000],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3783,11 +3899,15 @@ contract('TheRundownConsumer', (accounts) => {
 				await GamesOddsObtainerDeployed.currentActiveSpreadChildMarket(marketAdd)
 			);
 
-			const tx_odds_spread_update_line = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread_update_line,
-				oddsResultArray_spread_update_line,
+			const tx_odds_spread_update_line = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[550, -550],
+				[12000, -12000],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.equal(true, await childMarket.paused());
@@ -3878,11 +3998,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3895,11 +4019,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds_total = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total,
-				oddsResultArray_total,
+			const tx_odds_total = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[10300, -11300],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -3919,11 +4047,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await childMarket.tags(0));
 			assert.bnEqual(10002, await childMarket.tags(1));
 
-			const tx_odds_total_update = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total_update,
-				oddsResultArray_total_update,
+			const tx_odds_total_update = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[-12000, 12000],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3933,11 +4065,15 @@ contract('TheRundownConsumer', (accounts) => {
 				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
 			);
 
-			const tx_odds_total_update_line = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total_update_line,
-				oddsResultArray_total_update_line,
+			const tx_odds_total_update_line = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[210, 210],
+				[-12000, 12000],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3965,11 +4101,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await childMarket.tags(0));
 			assert.bnEqual(10002, await childMarket_new.tags(1));
 
-			const tx_odds_total_update_pause = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total_update,
-				oddsResultArray_total_update,
+			const tx_odds_total_update_pause = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[-12000, 12000],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -3993,7 +4133,7 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.bnEqual(0, spreadTotalsOddsForGames[0]);
 			assert.bnEqual(0, spreadTotalsOddsForGames[1]);
 			assert.bnEqual(-12000, spreadTotalsOddsForGames[2]);
-			assert.bnEqual(-12000, spreadTotalsOddsForGames[3]);
+			assert.bnEqual(12000, spreadTotalsOddsForGames[3]);
 
 			assert.bnEqual(2, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 			assert.bnEqual(
@@ -4071,11 +4211,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -4088,11 +4232,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds_spread = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread,
-				oddsResultArray_spread,
+			const tx_odds_spread = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[450, -450],
+				[10300, -11300],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -4118,11 +4266,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await childMarket.tags(0));
 			assert.bnEqual(10001, await childMarket.tags(1));
 
-			const tx_odds_spread_update = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread_update,
-				oddsResultArray_spread_update,
+			const tx_odds_spread_update = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[450, -450],
+				[-12000, 12000],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -4132,11 +4284,15 @@ contract('TheRundownConsumer', (accounts) => {
 				await GamesOddsObtainerDeployed.currentActiveSpreadChildMarket(marketAdd)
 			);
 
-			const tx_odds_spread_update_line = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread_update_line,
-				oddsResultArray_spread_update_line,
+			const tx_odds_spread_update_line = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[550, -550],
+				[10300, -11300],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.equal(true, await childMarket.paused());
@@ -4159,11 +4315,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await childMarket_new.tags(0));
 			assert.bnEqual(10001, await childMarket_new.tags(1));
 
-			const tx_odds_spread_update_pause = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_spread_update,
-				oddsResultArray_spread_update,
+			const tx_odds_spread_update_pause = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[450, -450],
+				[-12000, 12000],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -4297,6 +4457,48 @@ contract('TheRundownConsumer', (accounts) => {
 				_verifier: wrapper,
 				_oddsObtainer: wrapper,
 			});
+
+			const tx_consumer = await GamesOddsReceiverDeployed.setConsumerAddress(wrapper, {
+				from: owner,
+			});
+
+			await expect(
+				GamesOddsReceiverDeployed.setConsumerAddress(wrapper, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				GamesOddsReceiverDeployed.setConsumerAddress(ZERO_ADDRESS, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid address');
+
+			// check if event is emited
+			assert.eventEqual(tx_consumer.logs[0], 'NewConsumerAddress', {
+				_consumer: wrapper,
+			});
+
+			const tx_obtainer = await GamesOddsReceiverDeployed.setObtainerAddress(wrapper, {
+				from: owner,
+			});
+
+			await expect(
+				GamesOddsReceiverDeployed.setObtainerAddress(wrapper, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				GamesOddsReceiverDeployed.setObtainerAddress(ZERO_ADDRESS, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid address');
+
+			// check if event is emited
+			assert.eventEqual(tx_obtainer.logs[0], 'NewObtainerAddress', {
+				_obtainer: wrapper,
+			});
 		});
 	});
 
@@ -4413,11 +4615,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await deployedMarket.tags(0));
 
 			// invalid odds zero as draw
-			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -4430,11 +4636,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-			const tx_odds_total = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total,
-				oddsResultArray_total,
+			const tx_odds_total = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[10300, -11300],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -4453,11 +4663,15 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(9004, await childMarket.tags(0));
 			assert.bnEqual(10002, await childMarket.tags(1));
 
-			const tx_odds_total_update = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total_update,
-				oddsResultArray_total_update,
+			const tx_odds_total_update = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[-12000, 12000],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -4470,21 +4684,29 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(false, await childMarket.paused());
 
 			// invalid odds zero as draw
-			const tx_odds_removeline = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_2,
-				oddsResultArray_2,
+			const tx_odds_removeline = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
 			assert.equal(true, await childMarket.paused());
 
-			const tx_odds_total_update_back = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds_total_update,
-				oddsResultArray_total_update,
+			const tx_odds_total_update_back = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[-12000, 12000],
 				{
-					from: wrapper,
+					from: third,
 				}
 			);
 
@@ -4558,12 +4780,31 @@ contract('TheRundownConsumer', (accounts) => {
 		assert.equal(false, await deployedMarket.canResolve());
 		assert.equal(9004, await deployedMarket.tags(0));
 
+		// whitelist expected
+		await expect(
+			GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				{
+					from: wrapper,
+				}
+			)
+		).to.be.revertedWith('Whitelisted address');
+
 		// invalid odds zero as draw
-		const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
-			reqIdOdds_2,
-			oddsResultArray_2,
+		let tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+			['0x6536306366613738303834366166363839373862343935373965356366333936'],
+			[10300, -11300, 0],
+			[0, 0],
+			[0, 0],
+			[0, 0],
+			[0, 0],
 			{
-				from: wrapper,
+				from: third,
 			}
 		);
 
@@ -4576,11 +4817,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 		assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
 
-		const tx_odds_spread = await TherundownConsumerDeployed.fulfillGamesOdds(
-			reqIdOdds_spread,
-			oddsResultArray_spread,
+		const tx_odds_spread = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+			['0x6536306366613738303834366166363839373862343935373965356366333936'],
+			[10300, -11300, 0],
+			[450, -450],
+			[10300, -11300],
+			[0, 0],
+			[0, 0],
 			{
-				from: wrapper,
+				from: third,
 			}
 		);
 		assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
@@ -4595,11 +4840,15 @@ contract('TheRundownConsumer', (accounts) => {
 
 		let childMarket = await SportPositionalMarketContract.at(mainMarketSpreadChildMarket);
 
-		const tx_odds_spread_update = await TherundownConsumerDeployed.fulfillGamesOdds(
-			reqIdOdds_spread_update,
-			oddsResultArray_spread_update,
+		const tx_odds_spread_update = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+			['0x6536306366613738303834366166363839373862343935373965356366333936'],
+			[10300, -11300, 0],
+			[450, -450],
+			[-12000, 12000],
+			[0, 0],
+			[0, 0],
 			{
-				from: wrapper,
+				from: third,
 			}
 		);
 
@@ -4612,20 +4861,28 @@ contract('TheRundownConsumer', (accounts) => {
 		assert.equal(false, await childMarket.paused());
 
 		// invalid odds zero as draw
-		const tx_odds_update_spread_remove = await TherundownConsumerDeployed.fulfillGamesOdds(
-			reqIdOdds_2,
-			oddsResultArray_2,
+		const tx_odds_update_spread_remove = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+			['0x6536306366613738303834366166363839373862343935373965356366333936'],
+			[10300, -11300, 0],
+			[0, 0],
+			[0, 0],
+			[0, 0],
+			[0, 0],
 			{
-				from: wrapper,
+				from: third,
 			}
 		);
 		assert.equal(true, await childMarket.paused());
 
-		await TherundownConsumerDeployed.fulfillGamesOdds(
-			reqIdOdds_spread_update,
-			oddsResultArray_spread_update,
+		await GamesOddsReceiverDeployed.fulfillGamesOdds(
+			['0x6536306366613738303834366166363839373862343935373965356366333936'],
+			[10300, -11300, 0],
+			[450, -450],
+			[-12000, 12000],
+			[0, 0],
+			[0, 0],
 			{
-				from: wrapper,
+				from: third,
 			}
 		);
 		assert.equal(false, await childMarket.paused());

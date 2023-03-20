@@ -1213,6 +1213,7 @@ contract('SportsAMM', (accounts) => {
 				0,
 				0,
 				0,
+				false,
 				{
 					from: owner,
 				}
@@ -1222,10 +1223,9 @@ contract('SportsAMM', (accounts) => {
 			console.log('Result resolved: ', answer.toString());
 			marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
 			// check if event is emited
-			assert.eventEqual(tx_resolve.logs[1], 'ResolveSportsMarket', {
+			assert.eventEqual(tx_resolve.logs[1], 'CancelSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameid1,
-				_outcome: 0,
 			});
 
 			answer = await Thales.balanceOf(first);
@@ -1315,6 +1315,7 @@ contract('SportsAMM', (accounts) => {
 				1,
 				2,
 				TherundownConsumerDeployed.address,
+				false,
 				{
 					from: second,
 				}
@@ -1445,6 +1446,7 @@ contract('SportsAMM', (accounts) => {
 				user2_position + 1,
 				1,
 				2,
+				false,
 				{ from: owner }
 			);
 			answer = await deployedMarket.result();
@@ -1558,6 +1560,7 @@ contract('SportsAMM', (accounts) => {
 				user2_position + 1,
 				1,
 				2,
+				false,
 				{ from: owner }
 			);
 			answer = await deployedMarket.result();
@@ -2101,8 +2104,11 @@ contract('SportsAMM', (accounts) => {
 				{ from: first }
 			);
 
-			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(
+			let cancelTx = await TherundownConsumerDeployed.resolveMarketManually(
 				deployedMarket.address,
+				0,
+				0,
+				0,
 				false,
 				{
 					from: third,
@@ -2170,8 +2176,11 @@ contract('SportsAMM', (accounts) => {
 				{ from: first }
 			);
 
-			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(
+			let cancelTx = await TherundownConsumerDeployed.resolveMarketManually(
 				deployedMarket.address,
+				0,
+				0,
+				0,
 				false,
 				{
 					from: third,

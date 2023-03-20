@@ -957,8 +957,11 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				{ from: second }
 			);
 
-			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(
+			let cancelTx = await TherundownConsumerDeployed.resolveMarketManually(
 				deployedMarket.address,
+				0,
+				0,
+				0,
 				false,
 				{
 					from: third,
@@ -1230,6 +1233,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				1,
 				2,
 				TherundownConsumerDeployed.address,
+				false,
 				{
 					from: second,
 				}
@@ -1424,6 +1428,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				2,
 				1,
 				2,
+				false,
 				{ from: owner }
 			);
 			answer = await deployedMarket.result();

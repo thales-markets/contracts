@@ -187,14 +187,16 @@
 		"SportAMMLiquidityPoolRoundMastercopy": "0xDdfeEFb6F13434fD2851C54aDE55B204AC06c6a0",
 		"DefaultLiquidityProvider": "0x2FE737c9c14eA857eca2E9BD6C09be96532E5188",
 		"DefaultLiquidityProviderImplementation": "0x789c830e1a02423Ec9a1375d5d2763Faca2dA846",
-		"SportVault": "0xE26374c7aFe71a2a6AB4A61080772547C43B87E6",
+		"SportVault": "0xfF7AEA98740fA1e2a9eB81680583e62aaFf1e3Ad",
 		"SportVaultImplementation": "0x6485d7093398D3136C3558c55d66CbB80bC99db0",
 		"ParlayVault": "0xAb9E5fc491c743AE0b45f7100fAf611Deb8FeC4A",
 		"ParlayVaultImplementation": "0xF88A3A166c756f9467429D21922A4B60D918E1Ae",
 		"SportVaultSafu": "0xE26374c7aFe71a2a6AB4A61080772547C43B87E6",
 		"SportVaultSafuImplementation": "0x6485d7093398D3136C3558c55d66CbB80bC99db0",
 		"GamesOddsReceiver": "0x652F74591683CdAbA32A21ac87f2D4Cb840C252A",
-		"GamesOddsReceiverImplementation": "0x4D7a6cE55B34a94453080e9b9f7A89D8543C1C4F"
+		"GamesOddsReceiverImplementation": "0x4D7a6cE55B34a94453080e9b9f7A89D8543C1C4F",
+		"SportVaultDegen": "0xA852a651377fbE23f3d3acF5919c3D092aD4b77d",
+		"SportVaultDegenImplementation": "0x6485d7093398D3136C3558c55d66CbB80bC99db0"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

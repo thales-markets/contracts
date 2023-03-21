@@ -63,7 +63,7 @@ async function main() {
 	const obtainer = await ethers.getContractFactory('GamesOddsObtainer');
 	let obtainerAddress = getTargetAddress('GamesOddsObtainer', network);
 
-	console.log('GamesOddsObtainer address: ', verifierAddress);
+	console.log('GamesOddsObtainer address: ', obtainerAddress);
 
 	const consumer = await ethers.getContractFactory('TherundownConsumer');
 	let consumerAddress = getTargetAddress('TherundownConsumer', network);

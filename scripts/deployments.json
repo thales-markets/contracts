@@ -476,9 +476,9 @@
 		"GamesQueueImplementation": "0x096382EDb686e37dD02483b5144e3bE3a19ce44B",
 		"TherundownConsumer": "0xdB6EB989127D0c33bC630d7b5B53f87ceCED3ce1",
 		"TherundownConsumerWrapper": "0x0c6Bf9a7eb31777ACf77d68Ea7EA46D5382cFdD6",
-		"TherundownConsumerImplementation": "0x85AfE4A3B3F4c08C38bb8B2312b1c629323Aa780",
+		"TherundownConsumerImplementation": "0x0588D61e89A24145a9f8fe00778bF65Ff9365ac2",
 		"SportPositionalMarketManager": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
-		"SportPositionalMarketManagerImplementation": "0xf0F2876Eb01365a53D129c84aED83A71Ae9479B1",
+		"SportPositionalMarketManagerImplementation": "0xC6D3AC5C44610a80fD56bFf588FCA076233Ef982",
 		"SportPositionalMarketFactory": "0xB72f87AA15E8FE50Ed364eB4A94486A578fc1556",
 		"SportPositionalMarketFactoryImplementation": "0xbF6c6d81dae1eEfA6B45eF107BCBC1795dB18d42",
 		"SportPositionMastercopy": "0x7D820c6248b975B433b78f83839F456616B18a4c",
@@ -544,7 +544,7 @@
 		"ThalesAMMUtils": "0x5aA87dbA0F1486DB34Cd806eDa32f4d66ca4Ae30",
 		"OvertimeWorldCupZebro": "0xD66eE2D0F8810304402F6bE0E57E7C0a261b54A3",
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
-		"GamesOddsObtainerImplementation": "0xC2f7FF7C4AfcD1f1D8e37c3Cd578a4007820c8D4",
+		"GamesOddsObtainerImplementation": "0x0A55DA2317F0A6eE54faadF9e7c46C3Fa74bE2E4",
 		"MarchMadness": "0x81FB5DAb46Ba7fb5b85D7fcBbF019a400a2000FD",
 		"ParlayVault": "0x7e415D74eb5B01531B2059D1901aCe751c6B26B3",
 		"ParlayVaultImplementation": "0xf932D24Eb62fEFfe7A929E7Fc206B6EBB4B2A22a",
@@ -553,7 +553,9 @@
 		"SportAMMLiquidityPoolRoundMastercopy": "0x7FEdfaF6BF9820e280fd5c0DCd0b50AE15a2a7Ee",
 		"StakingThalesImplementation": "0x769666FDD20139327603F702C848edb7e4ff9Be4",
 		"DefaultLiquidityProvider": "0x05C191f8Df6bFb72EFfc865550cF23982cafD753",
-		"DefaultLiquidityProviderImplementation": "0x97D6d6bdb457de9EaE2f17f01c4753BC6021b376"
+		"DefaultLiquidityProviderImplementation": "0x97D6d6bdb457de9EaE2f17f01c4753BC6021b376",
+		"GamesOddsReceiver": "0x07d762943f2501C630cCDb82e3BD81DB4Ee45256",
+		"GamesOddsReceiverImplementation": "0x764A51F3C84158E70d228122c4cE2BC7A605DFdF"
 	},
 	"localhost": {
 		"Airdrop": "",

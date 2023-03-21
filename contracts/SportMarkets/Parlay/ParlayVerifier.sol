@@ -22,6 +22,10 @@ contract ParlayVerifier {
     uint private constant NBA_TAG = 9004;
     uint private constant NBA_DISCOUNT = 5 * 1e16;
 
+    uint private constant TAG_NUMBER_SPREAD = 10001;
+    uint private constant TAG_NUMBER_TOTAL = 10002;
+    uint private constant DOUBLE_CHANCE_TAG = 10003;
+
     struct InitialQuoteParameters {
         address[] sportMarkets;
         uint[] positions;
@@ -87,13 +91,19 @@ contract ParlayVerifier {
                     console.log("> j: ", j);
                     console.log(">>> tag1: ", tag1);
                     console.log(">>> tag2: ", tag2);
-                    if (cachedTeams[j].gameCounter > 0 || cachedTeams[j].tag2 == tag2) {
+                    if (
+                        cachedTeams[j].gameCounter > 0 ||
+                        cachedTeams[j].tag2 == tag2 ||
+                        cachedTeams[j].tag2 == DOUBLE_CHANCE_TAG
+                    ) {
                         revert("SameTeamOnParlay");
                     }
                     cachedTeams[j].gameCounter += 1;
+                    console.log("> discount: ", discount);
                     discount = discount > 0
-                        ? (discount * _getDiscountForTagsCombination(tag1, tag2)) / ONE
-                        : _getDiscountForTagsCombination(tag1, tag2);
+                        ? (discount * (ONE + _getDiscountForTagsCombination(tag1, tag2))) / ONE
+                        : (ONE + _getDiscountForTagsCombination(tag1, tag2));
+                    console.log(">>> discount: ", discount);
                 }
             }
 
@@ -211,9 +221,12 @@ contract ParlayVerifier {
             finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / params.buyQuoteAmounts[i]) / ONE;
             totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
+        console.log(">> totalQuote (before enter): ", totalQuote);
         if (totalQuote > 0) {
             console.log(">> disc: ", params.discount);
+            console.log(">> totalQuote (pre): ", totalQuote);
             totalQuote = params.discount > 0 ? (totalQuote * params.discount) / ONE : totalQuote;
+            console.log(">> totalQuote (post):", totalQuote);
             if (totalQuote < IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds()) {
                 totalQuote = IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds();
             }

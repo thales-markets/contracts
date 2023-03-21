@@ -882,13 +882,13 @@ contract('ParlayAMM', (accounts) => {
 				_game: game_4,
 			});
 
-			// console.log("4. game:");
-			// console.log("==> home: ", game_4.homeTeam);
-			// console.log("==> away: ", game_4.awayTeam);
+			console.log('4. game:');
+			console.log('==> home: ', game_4.homeTeam);
+			console.log('==> away: ', game_4.awayTeam);
 
-			// console.log("5. game:");
-			// console.log("==> home: ", game_5.homeTeam);
-			// console.log("==> away: ", game_5.awayTeam);
+			console.log('5. game:');
+			console.log('==> home: ', game_5.homeTeam);
+			console.log('==> away: ', game_5.awayTeam);
 
 			// create markets
 			const tx_create_4 = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
@@ -912,8 +912,18 @@ contract('ParlayAMM', (accounts) => {
 				_game: game_4,
 			});
 
-			// let allMarkets = await SportPositionalMarketManager.activeMarkets('0', '100');
-			// console.log(allMarkets);
+			let allMarkets = await SportPositionalMarketManager.activeMarkets('0', '100');
+			console.log(allMarkets);
+			for (let i = 0; i < allMarkets.length; i++) {
+				let market = await SportPositionalMarketContract.at(allMarkets[i]);
+				let tags = await market.getTags();
+				let gameDetails = await market.getGameDetails();
+				console.log('market ', i, ' : ', market.address);
+				console.log('  tag1: ', parseInt(tags[0]));
+				console.log('  tag2: ', parseInt(tags[1]));
+				console.log('  gameDetails: ', gameDetails[1].toString());
+				console.log('  \n');
+			}
 			// console.log(mainMarketSpreadChildMarket);
 			// console.log(mainMarketTotalChildMarket);
 
@@ -931,27 +941,33 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(true, await deployedMarket_4.canResolve());
 			assert.equal(true, await deployedMarket_5.canResolve());
 
+			let market_1 = await SportPositionalMarketContract.at(allMarkets[0]);
+			let market_2 = await SportPositionalMarketContract.at(allMarkets[5]);
+			let market_3 = await SportPositionalMarketContract.at(allMarkets[2]);
+			let market_4 = await SportPositionalMarketContract.at(allMarkets[4]);
+			let market_5 = await SportPositionalMarketContract.at(allMarkets[10]);
+
 			// console.log('parlay 1: ', deployedMarket_1.address);
 			// console.log('parlay 2: ', deployedMarket_2.address);
 			// console.log('parlay 3: ', deployedMarket_3.address);
 			// console.log('parlay 4: ', deployedMarket_4.address);
 
-			parlayMarkets = [
-				deployedMarket_1,
-				deployedMarket_5,
-				deployedMarket_3,
-				deployedMarket_4,
-				deployedMarket_6,
-				deployedMarket_7,
-			];
-			equalParlayMarkets = [
-				deployedMarket_1,
-				deployedMarket_2,
-				deployedMarket_3,
-				deployedMarket_4,
-				deployedMarket_6,
-				deployedMarket_7,
-			];
+			parlayMarkets = [market_1, market_2, market_3, market_4, market_5];
+
+			console.log(market_1.address);
+			console.log(market_2.address);
+			console.log(market_3.address);
+			console.log(market_4.address);
+			console.log(market_5.address);
+			// console.log(deployedMarket_5.address);
+			// equalParlayMarkets = [
+			// 	deployedMarket_1,
+			// 	deployedMarket_2,
+			// 	deployedMarket_3,
+			// 	deployedMarket_4,
+			// 	deployedMarket_6,
+			// 	deployedMarket_7,
+			// ];
 		});
 
 		it('Create/Buy Parlay', async () => {
@@ -961,9 +977,9 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(answer.toString(), '13');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
-			let parlayPositions2 = ['1', '1', '1', '1'];
+			let parlayPositions2 = ['1', '1', '1', '1', '0'];
 			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length - 2; i++) {
+			for (let i = 0; i < parlayMarkets.length; i++) {
 				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
 				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
 			}
@@ -996,10 +1012,10 @@ contract('ParlayAMM', (accounts) => {
 			answer = await SportPositionalMarketManager.numActiveMarkets();
 			assert.equal(answer.toString(), '13');
 			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1'];
+			parlayPositions = ['1', '1', '1', '1', '1'];
 			let parlayPositions2 = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length - 2; i++) {
+			for (let i = 0; i < parlayMarkets.length; i++) {
 				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
 				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
 			}

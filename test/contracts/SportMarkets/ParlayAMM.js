@@ -1559,6 +1559,7 @@ contract('ParlayAMM', (accounts) => {
 						resolveMatrix[i],
 						homeResult,
 						awayResult,
+						false,
 						{ from: owner }
 					);
 				}
@@ -1602,6 +1603,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -1648,6 +1650,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -1765,6 +1768,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -1822,6 +1826,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -1879,6 +1884,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -1936,6 +1942,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -2004,6 +2011,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -2082,6 +2090,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -2148,6 +2157,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -2194,6 +2204,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
@@ -2228,6 +2239,7 @@ contract('ParlayAMM', (accounts) => {
 						'1',
 						'3',
 						'2',
+						false,
 						{ from: owner }
 					);
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
@@ -2238,6 +2250,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
@@ -2271,6 +2284,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
@@ -2281,6 +2295,7 @@ contract('ParlayAMM', (accounts) => {
 						'1',
 						'3',
 						'2',
+						false,
 						{ from: owner }
 					);
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
@@ -2290,6 +2305,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
@@ -2325,6 +2341,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2340,6 +2357,7 @@ contract('ParlayAMM', (accounts) => {
 						'1',
 						'3',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2355,6 +2373,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2370,6 +2389,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2411,6 +2431,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2429,6 +2450,7 @@ contract('ParlayAMM', (accounts) => {
 						'1',
 						'3',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2447,6 +2469,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2465,6 +2488,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2508,6 +2532,7 @@ contract('ParlayAMM', (accounts) => {
 						'1',
 						'3',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2526,6 +2551,7 @@ contract('ParlayAMM', (accounts) => {
 						'1',
 						'3',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2544,6 +2570,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2562,6 +2589,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2605,6 +2633,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2623,6 +2652,7 @@ contract('ParlayAMM', (accounts) => {
 						'1',
 						'3',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2641,6 +2671,7 @@ contract('ParlayAMM', (accounts) => {
 						'2',
 						'1',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
@@ -2659,6 +2690,7 @@ contract('ParlayAMM', (accounts) => {
 						'1',
 						'3',
 						'2',
+						false,
 						{ from: owner }
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();

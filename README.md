@@ -48,3 +48,7 @@ List off all deployed contracts are listed [here](https://contracts.thalesmarket
 [![npm version](https://badge.fury.io/js/thales-contracts.svg)](https://badge.fury.io/js/thales-contracts)
 
 This repo may be installed via `npm install` to support both node.js scripting applications and Solidity contract development.
+
+
+## Relevant DAO addresses  
+Arbitrum treasury: 0x2902e381c9caacd17d25a2e008db0a9a4687fdbf

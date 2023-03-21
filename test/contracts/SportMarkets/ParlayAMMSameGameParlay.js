@@ -799,6 +799,13 @@ contract('ParlayAMM', (accounts) => {
 			);
 			assert.equal(false, await deployedMarket_1.paused());
 
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('2');
+			let deployedMarket_6 = await SportPositionalMarketContract.at(answer);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('3');
+			let deployedMarket_7 = await SportPositionalMarketContract.at(answer);
+			assert.equal(deployedMarket_6.address, mainMarketTotalChildMarket);
+			assert.equal(deployedMarket_7.address, mainMarketSpreadChildMarket);
+
 			await fastForward(fightTime - (await currentTime()) - SECOND);
 
 			// req games
@@ -905,8 +912,10 @@ contract('ParlayAMM', (accounts) => {
 				_game: game_4,
 			});
 
-			let allMarkets = await SportPositionalMarketManager.activeMarkets('0', '100');
-			console.log(allMarkets);
+			// let allMarkets = await SportPositionalMarketManager.activeMarkets('0', '100');
+			// console.log(allMarkets);
+			// console.log(mainMarketSpreadChildMarket);
+			// console.log(mainMarketTotalChildMarket);
 
 			assert.equal(deployedMarket_4.address, marketAdd_4);
 			assert.equal(deployedMarket_5.address, marketAdd_5);
@@ -914,11 +923,6 @@ contract('ParlayAMM', (accounts) => {
 			answer = await SportPositionalMarketManager.numActiveMarkets();
 			// assert.equal(answer.toString(), '11');
 			assert.equal(answer.toString(), '13');
-			console.log(await currentTime());
-			let time_deployed1 = await deployedMarket_1.times();
-			assert.equal(false, await deployedMarket_1.paused());
-			console.log(time_deployed1[0].toString());
-			console.log((await currentTime()) - parseInt(time_deployed1[0]));
 			await fastForward(await currentTime());
 
 			assert.equal(true, await deployedMarket_1.canResolve());
@@ -932,20 +936,34 @@ contract('ParlayAMM', (accounts) => {
 			// console.log('parlay 3: ', deployedMarket_3.address);
 			// console.log('parlay 4: ', deployedMarket_4.address);
 
-			parlayMarkets = [deployedMarket_1, deployedMarket_5, deployedMarket_3, deployedMarket_4];
-			equalParlayMarkets = [deployedMarket_1, deployedMarket_2, deployedMarket_3, deployedMarket_4];
+			parlayMarkets = [
+				deployedMarket_1,
+				deployedMarket_5,
+				deployedMarket_3,
+				deployedMarket_4,
+				deployedMarket_6,
+				deployedMarket_7,
+			];
+			equalParlayMarkets = [
+				deployedMarket_1,
+				deployedMarket_2,
+				deployedMarket_3,
+				deployedMarket_4,
+				deployedMarket_6,
+				deployedMarket_7,
+			];
 		});
 
 		it('Create/Buy Parlay', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '11');
+			assert.equal(answer.toString(), '13');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayPositions2 = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length; i++) {
+			for (let i = 0; i < parlayMarkets.length - 2; i++) {
 				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
 				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
 			}
@@ -955,6 +973,44 @@ contract('ParlayAMM', (accounts) => {
 				parlayPositions,
 				totalSUSDToPay
 			);
+			let buyParlayTX = await ParlayAMM.buyFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				{ from: first }
+			);
+			// console.log("event: \n", buyParlayTX.logs[0]);
+
+			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+				account: first,
+				sUSDPaid: totalSUSDToPay,
+			});
+		});
+
+		it('Create/Buy Parlay same game parlay', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '13');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayPositions2 = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length - 2; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+			}
+			let slippage = toUnit('0.01');
+			console.log('buyQuote --->');
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			console.log('buyTX --->');
 			let buyParlayTX = await ParlayAMM.buyFromParlay(
 				parlayMarketsAddress,
 				parlayPositions,

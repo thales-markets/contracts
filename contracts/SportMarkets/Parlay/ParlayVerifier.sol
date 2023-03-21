@@ -13,10 +13,14 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 
+import "hardhat/console.sol";
+
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
     uint private constant SOCCER_TAG = 9010;
-    uint private constant SOCCER_DISCOUNT = 30;
+    uint private constant SOCCER_DISCOUNT = 30 * 1e16;
+    uint private constant NBA_TAG = 9004;
+    uint private constant NBA_DISCOUNT = 5 * 1e16;
 
     struct InitialQuoteParameters {
         address[] sportMarkets;
@@ -79,12 +83,16 @@ contract ParlayVerifier {
             // check if game IDs already exist
             for (uint j = 0; j < lastCachedIdx; j++) {
                 if (cachedTeams[j].gameId == gameIdHome || cachedTeams[j].gameId == gameIdAway) {
+                    console.log("> i: ", i);
+                    console.log("> j: ", j);
+                    console.log(">>> tag1: ", tag1);
+                    console.log(">>> tag2: ", tag2);
                     if (cachedTeams[j].gameCounter > 0 || cachedTeams[j].tag2 == tag2) {
                         revert("SameTeamOnParlay");
                     }
                     cachedTeams[j].gameCounter += 1;
                     discount = discount > 0
-                        ? (discount * _getDiscountForTagsCombination(tag1, tag2))
+                        ? (discount * _getDiscountForTagsCombination(tag1, tag2)) / ONE
                         : _getDiscountForTagsCombination(tag1, tag2);
                 }
             }
@@ -204,6 +212,7 @@ contract ParlayVerifier {
             totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
         if (totalQuote > 0) {
+            console.log(">> disc: ", params.discount);
             totalQuote = params.discount > 0 ? (totalQuote * params.discount) / ONE : totalQuote;
             if (totalQuote < IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds()) {
                 totalQuote = IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds();
@@ -313,6 +322,8 @@ contract ParlayVerifier {
     function _getDiscountForTagsCombination(uint tag1, uint tag2) private pure returns (uint discount) {
         if (tag1 >= SOCCER_TAG) {
             discount = SOCCER_DISCOUNT;
+        } else if (tag1 == NBA_TAG) {
+            discount = NBA_DISCOUNT;
         }
     }
 }

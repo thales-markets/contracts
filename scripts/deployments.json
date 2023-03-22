@@ -196,7 +196,13 @@
 		"GamesOddsReceiver": "0x652F74591683CdAbA32A21ac87f2D4Cb840C252A",
 		"GamesOddsReceiverImplementation": "0x4D7a6cE55B34a94453080e9b9f7A89D8543C1C4F",
 		"SportVaultDegen": "0xA852a651377fbE23f3d3acF5919c3D092aD4b77d",
-		"SportVaultDegenImplementation": "0x6485d7093398D3136C3558c55d66CbB80bC99db0"
+		"SportVaultDegenImplementation": "0x6485d7093398D3136C3558c55d66CbB80bC99db0",
+		"AmmVaultDegen": "0x640c34D9595AD5351Da8c5C833Bbd1AfD20519ea",
+		"AmmVaultDegenImplementation": "0x4aD6Bc23486D1e6F8caf9b02E702D801cAc04b3b",
+		"AmmVault": "0x0A29CddbdAAf56342507574820864dAc967D2683",
+		"AmmVaultImplementation": "0x4aD6Bc23486D1e6F8caf9b02E702D801cAc04b3b",
+		"AmmVaultSafu": "0x008A4e30A8b41781F5cb017b197aA9Aa4Cd53b46",
+		"AmmVaultSafuImplementation": "0x4aD6Bc23486D1e6F8caf9b02E702D801cAc04b3b"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

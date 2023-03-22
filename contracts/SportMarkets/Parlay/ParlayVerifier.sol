@@ -227,7 +227,7 @@ contract ParlayVerifier {
         }
         console.log(">> totalQuote (before enter): ", totalQuote);
         if (totalQuote > 0) {
-            console.log(">> disc: ", params.sgpFee);
+            console.log(">> sgpFee: ", params.sgpFee);
             console.log(">> totalQuote (pre): ", totalQuote);
             totalQuote = params.sgpFee > 0 ? ((totalQuote * ONE * ONE) / params.sgpFee) / ONE : totalQuote;
             console.log(">> totalQuote (post):", totalQuote);

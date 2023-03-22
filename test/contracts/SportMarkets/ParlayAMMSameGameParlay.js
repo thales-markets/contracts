@@ -623,6 +623,15 @@ contract('ParlayAMM', (accounts) => {
 				from: owner,
 			}
 		);
+		let nba_sgp_fee = toUnit(0.95);
+		let soccer_sgp_fee = toUnit(0.7);
+		let nfl_sgp_fee = toUnit(0.9);
+		let nhl_sgp_fee = toUnit(0.85);
+
+		await ParlayAMM.setSgpFeePerSport(9004, nba_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerSport(9016, soccer_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerSport(9002, nfl_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerSport(9007, nhl_sgp_fee, { from: owner });
 
 		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: first });
 		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: second });
@@ -941,10 +950,15 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(true, await deployedMarket_4.canResolve());
 			assert.equal(true, await deployedMarket_5.canResolve());
 
+			// Atalanta vs Charlotte
 			let market_1 = await SportPositionalMarketContract.at(allMarkets[0]);
+			//  Clayton Carpenter vs Edgar Chairez
 			let market_2 = await SportPositionalMarketContract.at(allMarkets[4]);
+			// Atletico Madrid vs Manchester City
 			let market_3 = await SportPositionalMarketContract.at(allMarkets[5]);
+			// Liverpool vs Benfica
 			let market_4 = await SportPositionalMarketContract.at(allMarkets[9]);
+			// Atalanta vs Charlotte totals
 			let market_5 = await SportPositionalMarketContract.at(allMarkets[2]);
 
 			// console.log('parlay 1: ', deployedMarket_1.address);
@@ -954,20 +968,12 @@ contract('ParlayAMM', (accounts) => {
 
 			parlayMarkets = [market_1, market_2, market_3, market_4, market_5];
 
-			console.log(market_1.address);
-			console.log(market_2.address);
-			console.log(market_3.address);
-			console.log(market_4.address);
-			console.log(market_5.address);
+			// console.log(market_1.address);
+			// console.log(market_2.address);
+			// console.log(market_3.address);
+			// console.log(market_4.address);
+			// console.log(market_5.address);
 			// console.log(deployedMarket_5.address);
-			// equalParlayMarkets = [
-			// 	deployedMarket_1,
-			// 	deployedMarket_2,
-			// 	deployedMarket_3,
-			// 	deployedMarket_4,
-			// 	deployedMarket_6,
-			// 	deployedMarket_7,
-			// ];
 		});
 
 		it('Create/Buy Parlay', async () => {

@@ -183,6 +183,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      }
+    ],
+    "name": "getSgpFeePerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "sgpFee",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_parlayMarket",
         "type": "address"

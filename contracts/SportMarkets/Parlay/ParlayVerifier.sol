@@ -32,7 +32,7 @@ contract ParlayVerifier {
         uint totalSUSDToPay;
         uint parlaySize;
         uint defaultONE;
-        uint discount;
+        uint sgpFee;
         ISportsAMM sportsAMM;
     }
 
@@ -43,7 +43,7 @@ contract ParlayVerifier {
         ISportsAMM sportsAmm;
         uint sUSDAfterFees;
         uint defaultONE;
-        uint discount;
+        uint sgpFee;
     }
 
     struct VerifyMarket {
@@ -69,7 +69,7 @@ contract ParlayVerifier {
         uint _totalSUSDToPay,
         ISportsAMM _sportsAMM,
         address _parlayAMM
-    ) external view returns (bool eligible, uint discount) {
+    ) external view returns (bool eligible, uint sgpFee) {
         eligible = true;
         ITherundownConsumer consumer = ITherundownConsumer(_sportsAMM.theRundownConsumer());
         // bytes32[] memory cachedTeams = new bytes32[](_sportMarkets.length * 2);
@@ -86,7 +86,10 @@ contract ParlayVerifier {
             (tag1, tag2) = ISportPositionalMarket(sportMarket).getTags();
             // check if game IDs already exist
             for (uint j = 0; j < lastCachedIdx; j++) {
-                if (cachedTeams[j].gameId == gameIdHome || cachedTeams[j].gameId == gameIdAway) {
+                if (
+                    (cachedTeams[j].gameId == gameIdHome ||
+                        (j > 1 && cachedTeams[j].gameId == gameIdAway && cachedTeams[j - 1].gameId != gameIdHome))
+                ) {
                     console.log("> i: ", i);
                     console.log("> j: ", j);
                     console.log(">>> tag1: ", tag1);
@@ -99,11 +102,12 @@ contract ParlayVerifier {
                         revert("SameTeamOnParlay");
                     }
                     cachedTeams[j].gameCounter += 1;
-                    console.log("> discount: ", discount);
-                    discount = discount > 0
-                        ? (discount * (ONE + _getDiscountForTagsCombination(tag1, tag2))) / ONE
-                        : (ONE + _getDiscountForTagsCombination(tag1, tag2));
-                    console.log(">>> discount: ", discount);
+                    console.log("> sgpFee: ", sgpFee);
+
+                    sgpFee = sgpFee > 0
+                        ? (sgpFee * IParlayMarketsAMM(_parlayAMM).getSgpFeePerSport(tag1)) / ONE
+                        : IParlayMarketsAMM(_parlayAMM).getSgpFeePerSport(tag1);
+                    console.log(">>> sgpFee: ", sgpFee);
                 }
             }
 
@@ -182,7 +186,7 @@ contract ParlayVerifier {
                         params.sportsAMM,
                         params.totalSUSDToPay,
                         params.defaultONE,
-                        params.discount
+                        params.sgpFee
                     )
                 );
             }
@@ -223,9 +227,9 @@ contract ParlayVerifier {
         }
         console.log(">> totalQuote (before enter): ", totalQuote);
         if (totalQuote > 0) {
-            console.log(">> disc: ", params.discount);
+            console.log(">> disc: ", params.sgpFee);
             console.log(">> totalQuote (pre): ", totalQuote);
-            totalQuote = params.discount > 0 ? (totalQuote * params.discount) / ONE : totalQuote;
+            totalQuote = params.sgpFee > 0 ? ((totalQuote * ONE * ONE) / params.sgpFee) / ONE : totalQuote;
             console.log(">> totalQuote (post):", totalQuote);
             if (totalQuote < IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds()) {
                 totalQuote = IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds();
@@ -330,13 +334,5 @@ contract ParlayVerifier {
 
         home = keccak256(abi.encodePacked(game.homeTeam));
         away = keccak256(abi.encodePacked(game.awayTeam));
-    }
-
-    function _getDiscountForTagsCombination(uint tag1, uint tag2) private pure returns (uint discount) {
-        if (tag1 >= SOCCER_TAG) {
-            discount = SOCCER_DISCOUNT;
-        } else if (tag1 == NBA_TAG) {
-            discount = NBA_DISCOUNT;
-        }
     }
 }

@@ -232,7 +232,7 @@ contract('ParlayAMM', (accounts) => {
 	let safeBoxImpact = toUnit('0.02');
 	let minUSDAmount = '10';
 	let maxSupportedAmount = '20000';
-	let maxSupportedOdd = '0.005';
+	let maxSupportedOdd = '0.05';
 
 	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 	let parlayMarkets = [];
@@ -942,10 +942,10 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(true, await deployedMarket_5.canResolve());
 
 			let market_1 = await SportPositionalMarketContract.at(allMarkets[0]);
-			let market_2 = await SportPositionalMarketContract.at(allMarkets[5]);
-			let market_3 = await SportPositionalMarketContract.at(allMarkets[2]);
-			let market_4 = await SportPositionalMarketContract.at(allMarkets[4]);
-			let market_5 = await SportPositionalMarketContract.at(allMarkets[10]);
+			let market_2 = await SportPositionalMarketContract.at(allMarkets[4]);
+			let market_3 = await SportPositionalMarketContract.at(allMarkets[5]);
+			let market_4 = await SportPositionalMarketContract.at(allMarkets[9]);
+			let market_5 = await SportPositionalMarketContract.at(allMarkets[2]);
 
 			// console.log('parlay 1: ', deployedMarket_1.address);
 			// console.log('parlay 2: ', deployedMarket_2.address);
@@ -979,7 +979,7 @@ contract('ParlayAMM', (accounts) => {
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayPositions2 = ['1', '1', '1', '1', '0'];
 			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length; i++) {
+			for (let i = 0; i < parlayMarkets.length - 1; i++) {
 				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
 				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
 			}

@@ -247,7 +247,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     }
 
     /// @notice resolveMarketsBatch resolve all markets in the batch
-    /// @param the batch
+    /// @param markets the batch
     function resolveMarketsBatch(address[] calldata markets) external override {
         for (uint i = 0; i < markets.length; i++) {
             address market = markets[i];

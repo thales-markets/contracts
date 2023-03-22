@@ -43,9 +43,6 @@ async function main() {
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + network);
 
-	priceFeedAddress = getTargetAddress('PriceFeed', network);
-	console.log('Found PriceFeed at:' + priceFeedAddress);
-
 	// // We get the contract to deploy
 
 	const positionalManagerAddress = getTargetAddress('PositionalMarketManager', network);

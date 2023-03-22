@@ -46,6 +46,8 @@ interface IPositionalMarketManager {
 
     function resolveMarket(address market) external;
 
+    function resolveMarketsBatch(address[] calldata markets) external;
+
     function expireMarkets(address[] calldata market) external;
 
     function transferSusdTo(

@@ -371,6 +371,11 @@
       "kind": "transparent"
     },
     {
+      "address": "0xaB8f1fF41e58Bc5A4587161a9b95F71fa39e1553",
+      "txHash": "0x519e52a58b81214fa505804a5578d3cf14b40f9939687c373a873c746326a349",
+      "kind": "transparent"
+    },
+    {
       "address": "0xe431892c52960D04E5827375C4Fac96631C6c6a6",
       "txHash": "0x7a21958c4fd8e5ce9a8fc6de3327c58c1666898b9088445c9d58d4d9cdd8541f",
       "kind": "transparent"
@@ -70906,6 +70911,154 @@
           },
           "t_mapping(t_uint256,t_bool)": {
             "label": "mapping(uint256 => bool)"
+          }
+        }
+      }
+    },
+    "208b0777c68b4065665d6cadcfd0da67cd5f63ca33633e72ba1e2ff835c3daaa": {
+      "address": "0x17019988CC39733f5b02338A6ADc04DED7E1AFc8",
+      "txHash": "0xac3644ac9680237c089fb07cc50e8ba431e4a5f8a41f110063eecda65a712c8c",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)8234",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:24"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "overtimeVoucher",
+            "type": "t_contract(OvertimeVoucher)61452",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:27"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "whitelistedAddressesPerPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:30"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "addressClaimedVoucherPerPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:33"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "voucherAmount",
+            "type": "t_uint256",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:36"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "periodEnd",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:39"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "period",
+            "type": "t_uint256",
+            "src": "contracts/SportMarkets/Voucher/OvertimeVoucherEscrow.sol:42"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)8234": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(OvertimeVoucher)61452": {
+            "label": "contract OvertimeVoucher"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
           }
         }
       }

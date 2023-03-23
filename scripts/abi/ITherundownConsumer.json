@@ -71,6 +71,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "gameFulfilledCreated",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_market",
         "type": "address"
@@ -516,6 +535,11 @@
         "internalType": "uint8",
         "name": "_awayScore",
         "type": "uint8"
+      },
+      {
+        "internalType": "bool",
+        "name": "_usebackupOdds",
+        "type": "bool"
       }
     ],
     "name": "resolveMarketManually",

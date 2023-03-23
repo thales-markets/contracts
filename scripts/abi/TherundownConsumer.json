@@ -786,24 +786,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_useBackupOdds",
-        "type": "bool"
-      }
-    ],
-    "name": "cancelMarketManually",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes32[]",
         "name": "_gameIds",
         "type": "bytes32[]"
@@ -1867,6 +1849,11 @@
         "internalType": "uint8",
         "name": "_awayScore",
         "type": "uint8"
+      },
+      {
+        "internalType": "bool",
+        "name": "_useBackupOdds",
+        "type": "bool"
       }
     ],
     "name": "resolveMarketManually",

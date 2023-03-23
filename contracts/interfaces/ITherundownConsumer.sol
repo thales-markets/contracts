@@ -41,6 +41,8 @@ interface ITherundownConsumer {
 
     function isChildMarket(address _market) external view returns (bool);
 
+    function gameFulfilledCreated(bytes32 _gameId) external view returns (bool);
+
     // write functions
     function fulfillGamesCreated(
         bytes32 _requestId,
@@ -76,7 +78,8 @@ interface ITherundownConsumer {
         address _market,
         uint _outcome,
         uint8 _homeScore,
-        uint8 _awayScore
+        uint8 _awayScore,
+        bool _usebackupOdds
     ) external;
 
     function getOddsForGame(bytes32 _gameId)

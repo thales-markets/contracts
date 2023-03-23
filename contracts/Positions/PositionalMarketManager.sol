@@ -246,6 +246,19 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         _maturedMarkets.add(market);
     }
 
+    /// @notice resolveMarketsBatch resolve all markets in the batch
+    /// @param the batch
+    function resolveMarketsBatch(address[] calldata markets) external override {
+        for (uint i = 0; i < markets.length; i++) {
+            address market = markets[i];
+            if (_activeMarkets.contains(market)) {
+                PositionalMarket(market).resolve();
+                _activeMarkets.remove(market);
+                _maturedMarkets.add(market);
+            }
+        }
+    }
+
     /// @notice expireMarkets removes expired markets from matured markets
     /// @param markets array of market addresses
     function expireMarkets(address[] calldata markets) external override notPaused onlyOwner {

@@ -53,13 +53,13 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vaultAddress = getTargetAddress('ParlayVault', network);
+	const vaultAddress = getTargetAddress('SportVaultDegen', network);
 	console.log('Found Vault at:', vaultAddress);
 
-	const Vault = await ethers.getContractFactory('ParlayVault');
+	const Vault = await ethers.getContractFactory('SportVault');
 	const Vaultdeployed = await Vault.attach(vaultAddress);
 
-	await Vaultdeployed.setSkewImpactLimit(w3utils.toWei('-0.01'), { from: owner.address });
+	await Vaultdeployed.setSkewImpactLimit(w3utils.toWei('-0.04'), { from: owner.address });
 	// const week = 7 * 24 * 60 * 60;
 	// await Vaultdeployed.setRoundLength(week, { from: owner.address });
 }

@@ -83,6 +83,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_parent",
+        "type": "address"
+      }
+    ],
+    "name": "getAllChildMarketsFromParent",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"

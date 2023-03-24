@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "../../interfaces/ISportsAMM.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
+import "../../interfaces/IGamesOddsObtainer.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -150,6 +151,17 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             }
         }
         return marketPriceImpact;
+    }
+
+    function getSameGameParlayQuotes(address[] memory _mainMarkets) external returns (ActiveMarketsPriceImpact[] memory) {
+        address mainMarket = _mainMarkets[0];
+        (uint numOfSpread, , uint numOfTotals, ) = IGamesOddsObtainer(ISportPositionalMarketManager(manager).oddsObtainer())
+            .getSpreadTotalsChildMarketsFromParent(mainMarket);
+        address[] memory spreadMarkets = new address[](numOfSpread);
+        address[] memory totalsMarkets = new address[](numOfTotals);
+        (numOfSpread, spreadMarkets, numOfTotals, totalsMarkets) = IGamesOddsObtainer(
+            ISportPositionalMarketManager(manager).oddsObtainer()
+        ).getSpreadTotalsChildMarketsFromParent(mainMarket);
     }
 
     function setSportPositionalMarketManager(address _manager) external onlyOwner {

@@ -227,6 +227,37 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "_mainMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "getSameGameParlayQuotes",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "int256[]",
+            "name": "priceImpact",
+            "type": "int256[]"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.ActiveMarketsPriceImpact[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"

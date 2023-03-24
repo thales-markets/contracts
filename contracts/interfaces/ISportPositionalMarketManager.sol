@@ -38,6 +38,8 @@ interface ISportPositionalMarketManager {
 
     function isWhitelistedAddress(address _address) external view returns (bool);
 
+    function oddsObtainer() external view returns (address);
+
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function createMarket(

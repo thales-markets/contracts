@@ -257,12 +257,49 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice function which retrievers all markert addresses for given parent market
     /// @param _parent parent market
     /// @return address[] child addresses
-    function getAllChildMarketsFromParent(address _parent) public view returns (address[] memory) {
+    function getAllChildMarketsFromParent(address _parent) external view returns (address[] memory) {
         address[] memory allMarkets = new address[](numberOfChildMarkets[_parent]);
         for (uint i = 0; i < numberOfChildMarkets[_parent]; i++) {
             allMarkets[i] = mainMarketChildMarketIndex[_parent][i];
         }
         return allMarkets;
+    }
+
+    /// @notice function which retrievers all markert addresses for given parent market
+    /// @param _parent parent market
+    /// @return numOfSpreadMarkets number of spread child
+    /// @return spreadMarkets spread child addresses
+    /// @return numOfTotalsMarkets number of totals child
+    /// @return totalMarkets spread child addresses
+    function getSpreadTotalsChildMarketsFromParent(address _parent)
+        external
+        view
+        returns (
+            uint numOfSpreadMarkets,
+            address[] memory spreadMarkets,
+            uint numOfTotalsMarkets,
+            address[] memory totalMarkets
+        )
+    {
+        address[] memory allMarkets = new address[](numberOfChildMarkets[_parent]);
+        uint totalSpread;
+        bool[] memory index = new bool[](allMarkets.length);
+        for (uint i = 0; i < numberOfChildMarkets[_parent]; i++) {
+            allMarkets[i] = mainMarketChildMarketIndex[_parent][i];
+            if (isSpreadChildMarket[allMarkets[i]]) {
+                totalSpread++;
+                index[i] = true;
+            }
+        }
+        spreadMarkets = new address[](totalSpread);
+        totalMarkets = new address[](allMarkets.length - totalSpread);
+        for (uint i = 0; i < allMarkets.length; i++) {
+            if (index[i]) {
+                spreadMarkets[numOfSpreadMarkets++] = allMarkets[i];
+            } else {
+                totalMarkets[numOfTotalsMarkets++] = allMarkets[i];
+            }
+        }
     }
 
     /// @notice are odds valid or not

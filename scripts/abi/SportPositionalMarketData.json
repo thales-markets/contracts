@@ -238,16 +238,16 @@
         "components": [
           {
             "internalType": "address",
-            "name": "market",
+            "name": "mainMarket",
             "type": "address"
           },
           {
-            "internalType": "int256[]",
-            "name": "priceImpact",
-            "type": "int256[]"
+            "internalType": "uint256[]",
+            "name": "sgpMarketOdds",
+            "type": "uint256[]"
           }
         ],
-        "internalType": "struct SportPositionalMarketData.ActiveMarketsPriceImpact[]",
+        "internalType": "struct SportPositionalMarketData.SameGameParlayMarket[]",
         "name": "",
         "type": "tuple[]"
       }

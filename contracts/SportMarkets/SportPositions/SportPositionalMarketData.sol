@@ -21,6 +21,11 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         int[] priceImpact;
     }
 
+    struct SameGameParlayMarket {
+        address mainMarket;
+        uint[] sgpMarketOdds;
+    }
+
     uint private constant ONE = 1e18;
 
     address public manager;
@@ -153,15 +158,28 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         return marketPriceImpact;
     }
 
-    function getSameGameParlayQuotes(address[] memory _mainMarkets) external returns (ActiveMarketsPriceImpact[] memory) {
+    function getSameGameParlayQuotes(address[] memory _mainMarkets) external returns (SameGameParlayMarket[] memory) {
         address mainMarket = _mainMarkets[0];
-        (uint numOfSpread, , uint numOfTotals, ) = IGamesOddsObtainer(ISportPositionalMarketManager(manager).oddsObtainer())
-            .getSpreadTotalsChildMarketsFromParent(mainMarket);
+        (uint numOfSpread, , uint numOfTotals, ) = IGamesOddsObtainer(
+            ISportPositionalMarketManager(manager).getOddsObtainer()
+        ).getSpreadTotalsChildMarketsFromParent(mainMarket);
         address[] memory spreadMarkets = new address[](numOfSpread);
         address[] memory totalsMarkets = new address[](numOfTotals);
         (numOfSpread, spreadMarkets, numOfTotals, totalsMarkets) = IGamesOddsObtainer(
-            ISportPositionalMarketManager(manager).oddsObtainer()
+            ISportPositionalMarketManager(manager).getOddsObtainer()
         ).getSpreadTotalsChildMarketsFromParent(mainMarket);
+        SameGameParlayMarket[] memory sgpMarkets = new SameGameParlayMarket[](
+            (_mainMarkets.length * (numOfSpread + numOfTotals) + ((numOfSpread * numOfTotals)))
+        );
+        uint sgpCounter;
+        for (uint i = 0; i < _mainMarkets.length; i++) {
+            // todo: get odds for main*(totals+spread)
+            // import parlayAMM to obtain odds
+        }
+        for (uint i = 0; i < _mainMarkets.length; i++) {
+            // todo: get odds for (totals*spread)
+            // import parlayAMM to import odds
+        }
     }
 
     function setSportPositionalMarketManager(address _manager) external onlyOwner {

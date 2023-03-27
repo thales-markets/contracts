@@ -85,6 +85,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit SetObtainerAddress(_oddsObtainer);
     }
 
+    function getOddsObtainer() external view override returns (address obtainer) {
+        obtainer = oddsObtainer;
+    }
+
     /// @notice setNeedsTransformingCollateral sets needsTransformingCollateral value
     /// @param _needsTransformingCollateral boolen value to be set
     function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {

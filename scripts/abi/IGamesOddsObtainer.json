@@ -243,6 +243,40 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_parent",
+        "type": "address"
+      }
+    ],
+    "name": "getSpreadTotalsChildMarketsFromParent",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "numOfSpreadMarkets",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "spreadMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "numOfTotalsMarkets",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "totalMarkets",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_market",
         "type": "address"
       }

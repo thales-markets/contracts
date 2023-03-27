@@ -86,10 +86,9 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     mapping(uint => mapping(address => bool)) public marketAlreadyExercisedInRound;
 
-    /* ========== CONSTRUCTOR ========== */
+    bool public roundClosingPrepared;
 
-    // Initializes the implementation contract to avoid potential foul-play
-    constructor() initializer {}
+    /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
         setOwner(params._owner);
@@ -117,7 +116,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     /// @notice Deposit funds from user into pool for the next round
     /// @param amount Value to be deposited
-    function deposit(uint amount) external canDeposit(amount) nonReentrant whenNotPaused {
+    function deposit(uint amount) external canDeposit(amount) nonReentrant whenNotPaused roundClosingNotPrepared {
         uint nextRound = round + 1;
         address roundPool = _getOrCreateRoundPool(nextRound);
         sUSD.safeTransferFrom(msg.sender, roundPool, amount);
@@ -156,7 +155,13 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @notice get sUSD to mint for buy and store market as trading in the round
     /// @param market to trade
     /// @param amountToMint amount to get for mint
-    function commitTrade(address market, uint amountToMint) external nonReentrant whenNotPaused onlyAMM {
+    function commitTrade(address market, uint amountToMint)
+        external
+        nonReentrant
+        whenNotPaused
+        onlyAMM
+        roundClosingNotPrepared
+    {
         require(started, "Pool has not started");
         require(amountToMint > 0, "Can't commit a zero trade");
 
@@ -194,7 +199,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         address market,
         uint optionsAmount,
         ISportsAMM.Position position
-    ) external nonReentrant whenNotPaused onlyAMM {
+    ) external nonReentrant whenNotPaused onlyAMM roundClosingNotPrepared {
         if (optionsAmount > 0) {
             require(started, "Pool has not started");
 
@@ -223,7 +228,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         address market,
         uint optionsAmount,
         address position
-    ) external nonReentrant whenNotPaused onlyAMM {
+    ) external nonReentrant whenNotPaused onlyAMM roundClosingNotPrepared {
         if (optionsAmount > 0) {
             require(started, "Pool has not started");
 
@@ -241,13 +246,20 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @notice request withdrawal from the LP
     /// @param market to check
     /// @return roundPool the pool for the passed market
-    function getOrCreateMarketPool(address market) external onlyAMM nonReentrant whenNotPaused returns (address roundPool) {
+    function getOrCreateMarketPool(address market)
+        external
+        onlyAMM
+        nonReentrant
+        whenNotPaused
+        roundClosingNotPrepared
+        returns (address roundPool)
+    {
         uint marketRound = getMarketRound(market);
         roundPool = _getOrCreateRoundPool(marketRound);
     }
 
     /// @notice request withdrawal from the LP
-    function withdrawalRequest() external nonReentrant whenNotPaused {
+    function withdrawalRequest() external nonReentrant whenNotPaused roundClosingNotPrepared {
         require(started, "Pool has not started");
         require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
         require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
@@ -272,12 +284,21 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         emit WithdrawalRequested(msg.sender);
     }
 
-    /// @notice Close current round and begin next round,
-    /// excercise options of trading markets and calculate profit and loss
-    function closeRound() external nonReentrant whenNotPaused {
+    /// @notice Prepare round closing
+    /// excercise options of trading markets and ensure there are no markets left unresolved
+    function prepareRoundClosing() external nonReentrant whenNotPaused roundClosingNotPrepared {
         require(canCloseCurrentRound(), "Can't close current round");
         // excercise market options
         exerciseMarketsReadyToExercised();
+        roundClosingPrepared = true;
+    }
+
+    /// @notice Close current round and begin next round,
+    /// calculate profit and loss and process withdrawals
+    function closeRound() external nonReentrant whenNotPaused {
+        require(roundClosingPrepared, "Round closing not prepared");
+        // set for next round to false
+        roundClosingPrepared = false;
 
         address roundPool = roundPools[round];
         // final balance is the final amount of sUSD in the round pool
@@ -342,7 +363,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     }
 
     /// @notice Iterate all markets in the current round and exercise those ready to be exercised
-    function exerciseMarketsReadyToExercised() public {
+    function exerciseMarketsReadyToExercised() public roundClosingNotPrepared {
         SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
         ISportPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
@@ -698,6 +719,11 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     modifier onlyAMM() {
         require(msg.sender == address(sportsAMM), "only the AMM may perform these methods");
+        _;
+    }
+
+    modifier roundClosingNotPrepared() {
+        require(!roundClosingPrepared, "Not allowed during roundClosingPrepared");
         _;
     }
 

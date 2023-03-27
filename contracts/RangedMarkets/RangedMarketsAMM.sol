@@ -501,6 +501,17 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit SoldToAMM(msg.sender, address(rangedMarket), position, amount, pricePaid, address(sUSD), target);
     }
 
+    /// @notice resolveRangedMarketsBatch resolve all markets in the batch
+    /// @param markets the batch
+    function resolveRangedMarketsBatch(address[] calldata markets) external {
+        for (uint i = 0; i < markets.length; i++) {
+            address market = markets[i];
+            if (_knownMarkets.contains(market) && !RangedMarket(market).resolved()) {
+                RangedMarket(market).resolveMarket();
+            }
+        }
+    }
+
     function _sellToAmmQuoteDetailedWithLeftAndRightQuotes(
         RangedMarket.Position position,
         uint amount,

@@ -34,6 +34,7 @@ contract ParlayVerifier {
         uint defaultONE;
         uint sgpFee;
         ISportsAMM sportsAMM;
+        address parlayAMM;
     }
 
     struct FinalQuoteParameters {
@@ -47,11 +48,9 @@ contract ParlayVerifier {
     }
 
     struct VerifyMarket {
-        address[] _sportMarkets;
-        uint[] _positions;
-        uint _totalSUSDToPay;
-        ISportsAMM _sportsAMM;
-        address _parlayAMM;
+        address[] sportMarkets;
+        ISportsAMM sportsAMM;
+        address parlayAMM;
     }
 
     struct CachedMarket {
@@ -63,25 +62,31 @@ contract ParlayVerifier {
 
     // ISportsAMM sportsAmm;
 
-    function verifyMarkets(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _totalSUSDToPay,
-        ISportsAMM _sportsAMM,
-        address _parlayAMM
-    ) external view returns (bool eligible, uint sgpFee) {
+    function _verifyMarkets(VerifyMarket memory params)
+        internal
+        view
+        returns (
+            // address[] memory _sportMarkets,
+            // uint[] memory _positions,
+            // uint _totalSUSDToPay,
+            // ISportsAMM _sportsAMM,
+            // address _parlayAMM
+            bool eligible,
+            uint sgpFee
+        )
+    {
         eligible = true;
-        ITherundownConsumer consumer = ITherundownConsumer(_sportsAMM.theRundownConsumer());
+        ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
         // bytes32[] memory cachedTeams = new bytes32[](_sportMarkets.length * 2);
-        CachedMarket[] memory cachedTeams = new CachedMarket[](_sportMarkets.length * 2);
+        CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
         uint lastCachedIdx = 0;
         bytes32 gameIdHome;
         bytes32 gameIdAway;
         uint tag1;
         uint tag2;
         // uint motoCounter = 0;
-        for (uint i = 0; i < _sportMarkets.length; i++) {
-            address sportMarket = _sportMarkets[i];
+        for (uint i = 0; i < params.sportMarkets.length; i++) {
+            address sportMarket = params.sportMarkets[i];
             (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
             (tag1, tag2) = ISportPositionalMarket(sportMarket).getTags();
             // check if game IDs already exist
@@ -105,8 +110,8 @@ contract ParlayVerifier {
                     console.log("> sgpFee: ", sgpFee);
 
                     sgpFee = sgpFee > 0
-                        ? (sgpFee * IParlayMarketsAMM(_parlayAMM).getSgpFeePerSport(tag1)) / ONE
-                        : IParlayMarketsAMM(_parlayAMM).getSgpFeePerSport(tag1);
+                        ? (sgpFee * IParlayMarketsAMM(params.parlayAMM).getSgpFeePerSport(tag1)) / ONE
+                        : IParlayMarketsAMM(params.parlayAMM).getSgpFeePerSport(tag1);
                     console.log(">>> sgpFee: ", sgpFee);
                 }
             }
@@ -142,8 +147,9 @@ contract ParlayVerifier {
     {
         uint numOfMarkets = params.sportMarkets.length;
         uint inverseSum;
-        // require(params.totalSUSDToPay < ONE, "Low amount");
-        if (numOfMarkets == params.positions.length && numOfMarkets > 0 && numOfMarkets <= params.parlaySize) {
+        bool eligible;
+        (eligible, params.sgpFee) = _verifyMarkets(VerifyMarket(params.sportMarkets, params.sportsAMM, params.parlayAMM));
+        if (eligible && numOfMarkets == params.positions.length && numOfMarkets > 0 && numOfMarkets <= params.parlaySize) {
             finalQuotes = new uint[](numOfMarkets);
             amountsToBuy = new uint[](numOfMarkets);
             uint[] memory marketOdds;

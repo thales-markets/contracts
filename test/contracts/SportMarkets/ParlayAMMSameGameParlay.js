@@ -33,6 +33,7 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 const { BN } = require('bn.js');
+const { expect } = require('chai');
 
 contract('ParlayAMM', (accounts) => {
 	const [
@@ -240,6 +241,7 @@ contract('ParlayAMM', (accounts) => {
 	let parlayMarkets2 = [];
 	let parlayMarkets3 = [];
 	let parlayMarkets4 = [];
+	let parlayMarkets5 = [];
 
 	let equalParlayMarkets = [];
 	let parlayPositions = [];
@@ -1005,6 +1007,7 @@ contract('ParlayAMM', (accounts) => {
 			parlayMarkets2 = [market_6, market_2, market_3, market_4, market_5];
 			parlayMarkets3 = [market_6, market_1, market_3, market_4, market_5];
 			parlayMarkets4 = [market_6, market_7, market_8, market_4, market_5];
+			parlayMarkets5 = [market_1, market_2, market_3, market_4, market_6];
 
 			// console.log(market_1.address);
 			// console.log(market_2.address);
@@ -1086,6 +1089,26 @@ contract('ParlayAMM', (accounts) => {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 			});
+		});
+
+		it('Create/Buy Parlay same game parlay | final result + spread', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '15');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1', '1'];
+			let parlayPositions2 = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets5.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets5[i].address.toString().toUpperCase();
+				parlayMarketsAddress[i] = parlayMarkets5[i].address.toString().replace('0X', '0x');
+			}
+			let slippage = toUnit('0.01');
+			console.log('buyQuote --->');
+			await expect(
+				ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
+			).to.be.revertedWith('SameTeamOnParlay');
 		});
 		it('Create/Buy Parlay same game parlay | totals + spread', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);

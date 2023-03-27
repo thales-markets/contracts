@@ -102,7 +102,9 @@ contract ParlayVerifier {
                     if (
                         cachedTeams[j].gameCounter > 0 ||
                         cachedTeams[j].tag2 == tag2 ||
-                        cachedTeams[j].tag2 == DOUBLE_CHANCE_TAG
+                        cachedTeams[j].tag2 == DOUBLE_CHANCE_TAG ||
+                        (cachedTeams[j].tag2 == TAG_NUMBER_SPREAD && tag2 == 0) ||
+                        (cachedTeams[j].tag2 == 0 && tag2 == TAG_NUMBER_SPREAD)
                     ) {
                         revert("SameTeamOnParlay");
                     }

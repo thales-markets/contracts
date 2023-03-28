@@ -1050,6 +1050,11 @@
         "internalType": "address",
         "name": "_consumer",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_useBackupOdds",
+        "type": "bool"
       }
     ],
     "name": "resolveMarketWithResult",

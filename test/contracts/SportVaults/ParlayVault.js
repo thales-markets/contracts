@@ -1207,6 +1207,7 @@ contract('Parlay Vault', (accounts) => {
 					resolveMatrix[i],
 					homeResult,
 					awayResult,
+					false,
 					{ from: owner }
 				);
 			}

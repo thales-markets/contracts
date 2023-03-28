@@ -1,6 +1,5 @@
 const { ethers, upgrades } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
-const w3utils = require('web3-utils');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -53,16 +52,25 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vaultAddress = getTargetAddress('SportVaultDegen', network);
-	console.log('Found Vault at:', vaultAddress);
+	const voucherEscrowAddress = getTargetAddress('OvertimeVoucherEscrow', network);
+	console.log('Found OvertimeVoucherEscrow at:', voucherEscrowAddress);
 
-	const Vault = await ethers.getContractFactory('SportVault');
-	const Vaultdeployed = await Vault.attach(vaultAddress);
+	const VoucherEscrow = await ethers.getContractFactory('OvertimeVoucherEscrow');
+	const implementation = await upgrades.prepareUpgrade(voucherEscrowAddress, VoucherEscrow);
 
-	await Vaultdeployed.setSkewImpactLimit(w3utils.toWei('-0.04'), { from: owner.address });
-	// const week = 7 * 24 * 60 * 60;
-	// await Vaultdeployed.setRoundLength(week, { from: owner.address });
+	if (networkObj.chainId == 420) {
+		await upgrades.upgradeProxy(voucherEscrowAddress, VoucherEscrow);
+		console.log('OvertimeVoucherEscrow upgraded');
+	}
+
+	console.log('OvertimeVoucherEscrowImplementation: ', implementation);
+	setTargetAddress('OvertimeVoucherEscrowImplementation', network, implementation);
+
+	await hre.run('verify:verify', {
+		address: implementation,
+	});
 }
+
 main()
 	.then(() => process.exit(0))
 	.catch((error) => {

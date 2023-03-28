@@ -390,6 +390,12 @@
         "internalType": "address",
         "name": "_sportsManager",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_receiver",
+        "type": "address"
       }
     ],
     "name": "NewContractAddresses",
@@ -1518,6 +1524,19 @@
   },
   {
     "inputs": [],
+    "name": "oddsReceiver",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -1634,6 +1653,11 @@
       {
         "internalType": "address",
         "name": "_sportsManager",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_receiver",
         "type": "address"
       }
     ],

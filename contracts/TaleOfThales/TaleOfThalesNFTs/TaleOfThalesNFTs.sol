@@ -30,6 +30,10 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         Type itemType;
     }
 
+    string public name = "Tale of Thales";
+
+    string public symbol = "TOT";
+
     mapping(uint256 => Item[]) public collectionToItems;
     mapping(uint256 => uint256) public itemIndexToCollection;
     mapping(uint256 => mapping(address => bool)) public addressCanMintCollection;
@@ -211,7 +215,7 @@ contract TaleOfThalesNFTs is ERC1155, Ownable, Pausable, ERC1155Burnable {
         uint256 _collectionId = _collectionIndex != 0 ? _collectionIndex : itemIndexToCollection[_itemIndex];
         return
             collectionToMinimalVolume[_collectionId] != 0 &&
-            (staking.stakedBalanceOf(_minter) > collectionToMinimalVolume[_collectionId] ||
+            (staking.getAMMVolume(_minter) > collectionToMinimalVolume[_collectionId] ||
                 addressCanMintCollection[_collectionId][_minter]);
     }
 

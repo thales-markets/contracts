@@ -1,6 +1,7 @@
 const { ethers, upgrades } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
 const w3utils = require('web3-utils');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -18,10 +19,6 @@ async function main() {
 		network = 'mainnet';
 	}
 
-	if (networkObj.chainId == 69) {
-		networkObj.name = 'optimisticKovan';
-		network = 'optimisticKovan';
-	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
@@ -52,17 +49,44 @@ async function main() {
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
+	console.log('Network id:' + networkObj.chainId);
 
-	const vaultAddress = getTargetAddress('SportVaultDegen', network);
-	console.log('Found Vault at:', vaultAddress);
+	let overtimeVoucher = getTargetAddress('OvertimeVoucher', network);
 
-	const Vault = await ethers.getContractFactory('SportVault');
-	const Vaultdeployed = await Vault.attach(vaultAddress);
+	let whitelistedAddresses = ['0x9841484A4a6C0B61C4EEa71376D76453fd05eC9C'];
 
-	await Vaultdeployed.setSkewImpactLimit(w3utils.toWei('-0.04'), { from: owner.address });
-	// const week = 7 * 24 * 60 * 60;
-	// await Vaultdeployed.setRoundLength(week, { from: owner.address });
+	console.log('Found ProxyERC20sUSD at:' + proxySUSD);
+
+	const periodEnd = 1679657818;
+
+	const VoucherEscrow = await ethers.getContractFactory('OvertimeVoucherEscrow');
+	const voucherEscrow = await upgrades.deployProxy(VoucherEscrow, [
+		owner.address,
+		proxySUSD,
+		overtimeVoucher,
+		whitelistedAddresses,
+		w3utils.toWei('5'),
+		periodEnd,
+	]);
+
+	await voucherEscrow.deployed();
+
+	console.log('OvertimeVoucherEscrow deployed to:', voucherEscrow.address);
+	setTargetAddress('OvertimeVoucherEscrow', network, voucherEscrow.address);
+
+	const implementation = await getImplementationAddress(ethers.provider, voucherEscrow.address);
+	console.log('OvertimeVoucherEscrowImplementation: ', implementation);
+	setTargetAddress('OvertimeVoucherEscrowImplementation', network, implementation);
+
+	try {
+		await hre.run('verify:verify', {
+			address: implementation,
+		});
+	} catch (e) {
+		console.log(e);
+	}
 }
+
 main()
 	.then(() => process.exit(0))
 	.catch((error) => {

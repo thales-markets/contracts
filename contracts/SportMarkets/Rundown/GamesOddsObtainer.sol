@@ -55,6 +55,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public childMarketCreated;
     mapping(address => bool) public normalizedOddsForMarketFulfilled;
     mapping(address => uint[]) public normalizedOddsForMarket;
+    address public oddsReceiver;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -84,7 +85,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         bytes32 requestId,
         IGamesOddsObtainer.GameOdds memory _game,
         uint _sportId
-    ) external onlyConsumer {
+    ) external canUpdateOdds {
         if (_areOddsValid(_game)) {
             uint[] memory currentNormalizedOdd = getNormalizedOdds(_game.gameId);
             IGamesOddsObtainer.GameOdds memory currentOddsBeforeSave = gameOdds[_game.gameId];
@@ -635,13 +636,15 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     function setContracts(
         address _consumer,
         address _verifier,
-        address _sportsManager
+        address _sportsManager,
+        address _receiver
     ) external onlyOwner {
         consumer = ITherundownConsumer(_consumer);
         verifier = ITherundownConsumerVerifier(_verifier);
         sportsManager = ISportPositionalMarketManager(_sportsManager);
+        oddsReceiver = _receiver;
 
-        emit NewContractAddresses(_consumer, _verifier, _sportsManager);
+        emit NewContractAddresses(_consumer, _verifier, _sportsManager, _receiver);
     }
 
     /// @notice sets if sport is suported or not (delete from supported sport)
@@ -653,6 +656,11 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     /* ========== MODIFIERS ========== */
+
+    modifier canUpdateOdds() {
+        require(msg.sender == address(consumer) || msg.sender == oddsReceiver, "Invalid sender");
+        _;
+    }
 
     modifier onlyConsumer() {
         require(msg.sender == address(consumer), "Only consumer");
@@ -676,7 +684,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     );
     event InvalidOddsForMarket(bytes32 _requestId, address _marketAddress, bytes32 _id, IGamesOddsObtainer.GameOdds _game);
     event OddsCircuitBreaker(address _marketAddress, bytes32 _id);
-    event NewContractAddresses(address _consumer, address _verifier, address _sportsManager);
+    event NewContractAddresses(address _consumer, address _verifier, address _sportsManager, address _receiver);
     event CreateChildSpreadSportsMarket(
         address _main,
         address _child,

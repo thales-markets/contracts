@@ -46,6 +46,12 @@ async function main() {
 		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
@@ -63,26 +69,26 @@ async function main() {
 			_thalesAmm: thalesAMM,
 			_sUSD: proxySUSD,
 			_roundLength: week,
-			_priceLowerLimit: w3utils.toWei('0.10'),
+			_priceLowerLimit: w3utils.toWei('0.75'),
 			_priceUpperLimit: w3utils.toWei('0.90'),
-			_skewImpactLimit: w3utils.toWei('-0.05'), // -3% skew impact
+			_skewImpactLimit: w3utils.toWei('0'), // -3% skew impact
 			_allocationLimitsPerMarketPerRound: w3utils.toWei('5'), // 10% limit per market
 			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
-			_utilizationRate: w3utils.toWei('0.10'), // 50% utilization rate
+			_utilizationRate: w3utils.toWei('0.20'), // 50% utilization rate
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
 			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
-			_minTradeAmount: w3utils.toWei('3'), // minimum trade amount
+			_minTradeAmount: w3utils.toWei('5'), // minimum trade amount
 		},
 	]);
 
 	await vault.deployed();
 
 	console.log('Vault deployed to:', vault.address);
-	setTargetAddress('AmmVaultDegen', network, vault.address);
+	setTargetAddress('AmmVaultSafu', network, vault.address);
 
 	const implementation = await getImplementationAddress(ethers.provider, vault.address);
 	console.log('VaultImplementation: ', implementation);
-	setTargetAddress('AmmVaultDegenImplementation', network, implementation);
+	setTargetAddress('AmmVaultSafuImplementation', network, implementation);
 
 	try {
 		await hre.run('verify:verify', {

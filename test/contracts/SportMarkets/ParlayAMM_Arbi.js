@@ -1604,6 +1604,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -1650,6 +1651,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -1767,6 +1769,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -1824,6 +1827,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -1882,6 +1886,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}
@@ -1960,6 +1965,7 @@ contract('ParlayAMM', (accounts) => {
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
+							false,
 							{ from: owner }
 						);
 					}

@@ -136,7 +136,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         if (balancesPerRound[round][msg.sender] == 0 && balancesPerRound[nextRound][msg.sender] == 0) {
             require(usersCurrentlyInPool < maxAllowedUsers, "Max amount of users reached");
             usersPerRound[nextRound].push(msg.sender);
-            userInRound[nextRound][msg.sender] = true;
             usersCurrentlyInPool = usersCurrentlyInPool + 1;
         }
 
@@ -315,21 +314,17 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         for (uint i = 0; i < usersPerRound[round].length; i++) {
             address user = usersPerRound[round][i];
             uint balanceAfterCurRound = (balancesPerRound[round][user] * profitAndLossPerRound[round]) / ONE;
-            if (userInRound[round][user]) {
-                if (!withdrawalRequested[user] && (profitAndLossPerRound[round] > 0)) {
-                    balancesPerRound[round + 1][user] = balancesPerRound[round + 1][user] + balanceAfterCurRound;
-                    userInRound[round + 1][user] = true;
-                    usersPerRound[round + 1].push(user);
-                    if (address(stakingThales) != address(0)) {
-                        stakingThales.updateVolume(user, balanceAfterCurRound);
-                    }
-                } else {
-                    balancesPerRound[round + 1][user] = 0;
-                    sUSD.safeTransferFrom(roundPool, user, balanceAfterCurRound);
-                    withdrawalRequested[user] = false;
-                    userInRound[round + 1][user] = false;
-                    emit Claimed(user, balanceAfterCurRound);
+            if (!withdrawalRequested[user] && (profitAndLossPerRound[round] > 0)) {
+                balancesPerRound[round + 1][user] = balancesPerRound[round + 1][user] + balanceAfterCurRound;
+                usersPerRound[round + 1].push(user);
+                if (address(stakingThales) != address(0)) {
+                    stakingThales.updateVolume(user, balanceAfterCurRound);
                 }
+            } else {
+                balancesPerRound[round + 1][user] = 0;
+                sUSD.safeTransferFrom(roundPool, user, balanceAfterCurRound);
+                withdrawalRequested[user] = false;
+                emit Claimed(user, balanceAfterCurRound);
             }
         }
 

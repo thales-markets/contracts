@@ -13,8 +13,6 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 
-import "hardhat/console.sol";
-
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
     uint private constant SOCCER_TAG = 9010;
@@ -88,17 +86,15 @@ contract ParlayVerifier {
         for (uint i = 0; i < params.sportMarkets.length; i++) {
             address sportMarket = params.sportMarkets[i];
             (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
-            (tag1, tag2) = ISportPositionalMarket(sportMarket).getTags();
+            tag1 = ISportPositionalMarket(sportMarket).tags(0);
+            tag2 = consumer.isChildMarket(sportMarket) ? ISportPositionalMarket(sportMarket).tags(1) : 0;
+
             // check if game IDs already exist
             for (uint j = 0; j < lastCachedIdx; j++) {
                 if (
                     (cachedTeams[j].gameId == gameIdHome ||
                         (j > 1 && cachedTeams[j].gameId == gameIdAway && cachedTeams[j - 1].gameId != gameIdHome))
                 ) {
-                    console.log("> i: ", i);
-                    console.log("> j: ", j);
-                    console.log(">>> tag1: ", tag1);
-                    console.log(">>> tag2: ", tag2);
                     if (
                         cachedTeams[j].gameCounter > 0 ||
                         cachedTeams[j].tag2 == tag2 ||
@@ -109,12 +105,10 @@ contract ParlayVerifier {
                         revert("SameTeamOnParlay");
                     }
                     cachedTeams[j].gameCounter += 1;
-                    console.log("> sgpFee: ", sgpFee);
 
                     sgpFee = sgpFee > 0
                         ? (sgpFee * IParlayMarketsAMM(params.parlayAMM).getSgpFeePerSport(tag1)) / ONE
                         : IParlayMarketsAMM(params.parlayAMM).getSgpFeePerSport(tag1);
-                    console.log(">>> sgpFee: ", sgpFee);
                 }
             }
 
@@ -233,12 +227,8 @@ contract ParlayVerifier {
             finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / params.buyQuoteAmounts[i]) / ONE;
             totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
-        console.log(">> totalQuote (before enter): ", totalQuote);
         if (totalQuote > 0) {
-            console.log(">> sgpFee: ", params.sgpFee);
-            console.log(">> totalQuote (pre): ", totalQuote);
             totalQuote = params.sgpFee > 0 ? ((totalQuote * ONE * ONE) / params.sgpFee) / ONE : totalQuote;
-            console.log(">> totalQuote (post):", totalQuote);
             if (totalQuote < IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds()) {
                 totalQuote = IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds();
             }

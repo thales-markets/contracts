@@ -169,7 +169,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             ISportPositionalMarketManager(manager).getOddsObtainer()
         ).getSpreadTotalsChildMarketsFromParent(mainMarket);
         SameGameParlayMarket[] memory sgpMarkets = new SameGameParlayMarket[](
-            (_mainMarkets.length * (numOfSpread + numOfTotals) + ((numOfSpread * numOfTotals)))
+            (_mainMarkets.length * numOfTotals) + (numOfSpread * numOfTotals)
         );
         uint sgpCounter;
         for (uint i = 0; i < _mainMarkets.length; i++) {

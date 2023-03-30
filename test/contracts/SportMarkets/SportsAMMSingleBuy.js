@@ -570,6 +570,7 @@ contract('SportsAMM', (accounts) => {
 				1,
 				2,
 				TherundownConsumerDeployed.address,
+				false,
 				{
 					from: second,
 				}

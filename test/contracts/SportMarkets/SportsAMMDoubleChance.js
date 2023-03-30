@@ -1146,6 +1146,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 					1,
 					2,
 					TherundownConsumerDeployed.address,
+					false,
 					{
 						from: second,
 					}

@@ -1204,5 +1204,15 @@ contract('ParlayAMM', (accounts) => {
 				sUSDPaid: totalSUSDToPay,
 			});
 		});
+
+		it('Read from SportMarketData', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '15');
+			const tx = await SportPositionalMarketData.getCombinedOddsForMarket(parlayMarkets[0].address);
+			console.log(tx);
+			console.log(tx.combinedOdds[0].toString());
+		});
 	});
 });

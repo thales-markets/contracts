@@ -103,6 +103,49 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_mainMarket",
+        "type": "address"
+      }
+    ],
+    "name": "getCombinedOddsForMarket",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "mainMarket",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256[2]",
+                "name": "tags",
+                "type": "uint256[2]"
+              },
+              {
+                "internalType": "uint256[4]",
+                "name": "odds",
+                "type": "uint256[4]"
+              }
+            ],
+            "internalType": "struct SportPositionalMarketData.CombinedOdds[]",
+            "name": "combinedOdds",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.SameGameParlayMarket",
+        "name": "sgpMarket",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getOddsForAllActiveMarkets",
     "outputs": [
@@ -242,9 +285,21 @@
             "type": "address"
           },
           {
-            "internalType": "uint256[]",
-            "name": "sgpMarketOdds",
-            "type": "uint256[]"
+            "components": [
+              {
+                "internalType": "uint256[2]",
+                "name": "tags",
+                "type": "uint256[2]"
+              },
+              {
+                "internalType": "uint256[4]",
+                "name": "odds",
+                "type": "uint256[4]"
+              }
+            ],
+            "internalType": "struct SportPositionalMarketData.CombinedOdds[]",
+            "name": "combinedOdds",
+            "type": "tuple[]"
           }
         ],
         "internalType": "struct SportPositionalMarketData.SameGameParlayMarket[]",

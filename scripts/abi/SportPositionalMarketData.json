@@ -127,9 +127,9 @@
                 "type": "uint256[2]"
               },
               {
-                "internalType": "uint256[4]",
+                "internalType": "uint256[6]",
                 "name": "odds",
-                "type": "uint256[4]"
+                "type": "uint256[6]"
               }
             ],
             "internalType": "struct SportPositionalMarketData.CombinedOdds[]",
@@ -292,9 +292,9 @@
                 "type": "uint256[2]"
               },
               {
-                "internalType": "uint256[4]",
+                "internalType": "uint256[6]",
                 "name": "odds",
-                "type": "uint256[4]"
+                "type": "uint256[6]"
               }
             ],
             "internalType": "struct SportPositionalMarketData.CombinedOdds[]",

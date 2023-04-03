@@ -27,7 +27,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     }
     struct CombinedOdds {
         uint[2] tags;
-        uint[4] odds;
+        uint[6] odds;
     }
     struct SameGameParlayMarket {
         address mainMarket;
@@ -183,12 +183,13 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                     ISportPositionalMarket(totalsMarkets[i]).tags(0),
                     ISportPositionalMarket(totalsMarkets[i]).tags(1)
                 ];
-                for (uint j = 0; j < 4; j++) {
+                uint numOfOdds = ISportPositionalMarket(_mainMarket).optionsCount() > 2 ? 6 : 4;
+                for (uint j = 0; j < numOfOdds; j++) {
                     address[] memory markets = new address[](2);
                     markets[0] = _mainMarket;
                     markets[1] = totalsMarkets[i];
                     uint[] memory positions = new uint[](2);
-                    positions[0] = j > 1 ? 1 : 0;
+                    positions[0] = j > 1 ? j % numOfOdds < 2 ? 2 : 1 : 0;
                     positions[1] = j % 2;
                     (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
                         .buyQuoteFromParlay(markets, positions, ONE);

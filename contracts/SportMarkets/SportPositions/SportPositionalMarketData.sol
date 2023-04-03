@@ -186,7 +186,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                     markets[0] = _mainMarket;
                     markets[1] = totalsMarket;
                     uint[] memory positions = new uint[](2);
-                    positions[0] = j > 1 ? j % numOfOdds < 2 ? 2 : 1 : 0;
+                    positions[0] = j > 1 ? (j > 3 ? 2 : 1) : 0;
                     positions[1] = j % 2;
                     (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
                         .buyQuoteFromParlay(markets, positions, ONE);

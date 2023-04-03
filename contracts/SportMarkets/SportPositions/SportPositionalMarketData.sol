@@ -169,58 +169,49 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     function getCombinedOddsForMarket(address _mainMarket) external view returns (SameGameParlayMarket memory sgpMarket) {
         if (ISportPositionalMarketManager(manager).isActiveMarket(_mainMarket)) {
             sgpMarket.mainMarket = _mainMarket;
-            (
-                uint numOfSpread,
-                address[] memory spreadMarkets,
-                uint numOfTotals,
-                address[] memory totalsMarkets
-            ) = IGamesOddsObtainer(ISportPositionalMarketManager(manager).getOddsObtainer())
-                    .getSpreadTotalsChildMarketsFromParent(_mainMarket);
-            CombinedOdds[] memory totalCombainedOdds = new CombinedOdds[](3 * numOfTotals);
-            for (uint i = 0; i < numOfTotals; i++) {
+            (address totalsMarket, address spreadMarket) = IGamesOddsObtainer(
+                ISportPositionalMarketManager(manager).getOddsObtainer()
+            ).getActiveChildMarketsFromParent(_mainMarket);
+            CombinedOdds[] memory totalCombainedOdds = new CombinedOdds[](2);
+            if (totalsMarket != address(0)) {
                 CombinedOdds memory newCombinedOdds;
                 newCombinedOdds.tags = [
-                    ISportPositionalMarket(totalsMarkets[i]).tags(0),
-                    ISportPositionalMarket(totalsMarkets[i]).tags(1)
+                    ISportPositionalMarket(totalsMarket).tags(0),
+                    ISportPositionalMarket(totalsMarket).tags(1)
                 ];
+
                 uint numOfOdds = ISportPositionalMarket(_mainMarket).optionsCount() > 2 ? 6 : 4;
                 for (uint j = 0; j < numOfOdds; j++) {
                     address[] memory markets = new address[](2);
                     markets[0] = _mainMarket;
-                    markets[1] = totalsMarkets[i];
+                    markets[1] = totalsMarket;
                     uint[] memory positions = new uint[](2);
                     positions[0] = j > 1 ? j % numOfOdds < 2 ? 2 : 1 : 0;
                     positions[1] = j % 2;
                     (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
                         .buyQuoteFromParlay(markets, positions, ONE);
                 }
-                totalCombainedOdds[i] = newCombinedOdds;
+                totalCombainedOdds[0] = newCombinedOdds;
+            }
+            if (spreadMarket != address(0)) {
+                CombinedOdds memory newCombinedOdds;
+                newCombinedOdds.tags = [
+                    ISportPositionalMarket(spreadMarket).tags(1),
+                    ISportPositionalMarket(totalsMarket).tags(1)
+                ];
+                for (uint j = 0; j < 4; j++) {
+                    address[] memory markets = new address[](2);
+                    markets[0] = totalsMarket;
+                    markets[1] = spreadMarket;
+                    uint[] memory positions = new uint[](2);
+                    positions[0] = j > 1 ? 1 : 0;
+                    positions[1] = j % 2;
+                    (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
+                        .buyQuoteFromParlay(markets, positions, ONE);
+                }
+                totalCombainedOdds[1] = newCombinedOdds;
             }
             sgpMarket.combinedOdds = totalCombainedOdds;
-        }
-    }
-
-    function getSameGameParlayQuotes(address[] memory _mainMarkets) external returns (SameGameParlayMarket[] memory) {
-        address mainMarket = _mainMarkets[0];
-        (uint numOfSpread, , uint numOfTotals, ) = IGamesOddsObtainer(
-            ISportPositionalMarketManager(manager).getOddsObtainer()
-        ).getSpreadTotalsChildMarketsFromParent(mainMarket);
-        address[] memory spreadMarkets = new address[](numOfSpread);
-        address[] memory totalsMarkets = new address[](numOfTotals);
-        (numOfSpread, spreadMarkets, numOfTotals, totalsMarkets) = IGamesOddsObtainer(
-            ISportPositionalMarketManager(manager).getOddsObtainer()
-        ).getSpreadTotalsChildMarketsFromParent(mainMarket);
-        SameGameParlayMarket[] memory sgpMarkets = new SameGameParlayMarket[](
-            (_mainMarkets.length * numOfTotals) + (numOfSpread * numOfTotals)
-        );
-        uint sgpCounter;
-        for (uint i = 0; i < _mainMarkets.length; i++) {
-            // todo: get odds for main*(totals+spread)
-            // import parlayAMM to obtain odds
-        }
-        for (uint i = 0; i < _mainMarkets.length; i++) {
-            // todo: get odds for (totals*spread)
-            // import parlayAMM to import odds
         }
     }
 

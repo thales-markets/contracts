@@ -88,12 +88,17 @@
         "type": "address"
       }
     ],
-    "name": "getAllChildMarketsFromParent",
+    "name": "getActiveChildMarketsFromParent",
     "outputs": [
       {
-        "internalType": "address[]",
+        "internalType": "address",
         "name": "",
-        "type": "address[]"
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

@@ -20,7 +20,7 @@ interface IGamesOddsObtainer {
 
     // view
 
-    function getAllChildMarketsFromParent(address _parent) external view returns (address[] memory);
+    function getActiveChildMarketsFromParent(address _parent) external view returns (address, address);
 
     function getSpreadTotalsChildMarketsFromParent(address _parent)
         external

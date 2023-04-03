@@ -268,39 +268,15 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice function which retrievers all markert addresses for given parent market
     /// @param _parent parent market
-    /// @return numOfSpreadMarkets number of spread child
-    /// @return spreadMarkets spread child addresses
-    /// @return numOfTotalsMarkets number of totals child
-    /// @return totalMarkets spread child addresses
-    function getSpreadTotalsChildMarketsFromParent(address _parent)
+    /// @return totalsMarket totals child address
+    /// @return spreadsMarket spread child address
+    function getActiveChildMarketsFromParent(address _parent)
         external
         view
-        returns (
-            uint numOfSpreadMarkets,
-            address[] memory spreadMarkets,
-            uint numOfTotalsMarkets,
-            address[] memory totalMarkets
-        )
+        returns (address totalsMarket, address spreadsMarket)
     {
-        address[] memory allMarkets = new address[](numberOfChildMarkets[_parent]);
-        uint totalSpread;
-        bool[] memory index = new bool[](allMarkets.length);
-        for (uint i = 0; i < numberOfChildMarkets[_parent]; i++) {
-            allMarkets[i] = mainMarketChildMarketIndex[_parent][i];
-            if (isSpreadChildMarket[allMarkets[i]]) {
-                totalSpread++;
-                index[i] = true;
-            }
-        }
-        spreadMarkets = new address[](totalSpread);
-        totalMarkets = new address[](allMarkets.length - totalSpread);
-        for (uint i = 0; i < allMarkets.length; i++) {
-            if (index[i]) {
-                spreadMarkets[numOfSpreadMarkets++] = allMarkets[i];
-            } else {
-                totalMarkets[numOfTotalsMarkets++] = allMarkets[i];
-            }
-        }
+        totalsMarket = currentActiveTotalChildMarket[_parent];
+        spreadsMarket = currentActiveSpreadChildMarket[_parent];
     }
 
     /// @notice are odds valid or not

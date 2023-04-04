@@ -166,7 +166,22 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         return marketPriceImpact;
     }
 
+    function getCombinedOddsForBatchOfMarkets(address[] memory _marketBatch)
+        external
+        view
+        returns (SameGameParlayMarket[] memory sgpMarkets)
+    {
+        sgpMarkets = new SameGameParlayMarket[](_marketBatch.length);
+        for (uint i = 0; i < _marketBatch.length; i++) {
+            sgpMarkets[i] = _getCombinedOddsForMarket(_marketBatch[i]);
+        }
+    }
+
     function getCombinedOddsForMarket(address _mainMarket) external view returns (SameGameParlayMarket memory sgpMarket) {
+        sgpMarket = _getCombinedOddsForMarket(_mainMarket);
+    }
+
+    function _getCombinedOddsForMarket(address _mainMarket) internal view returns (SameGameParlayMarket memory sgpMarket) {
         if (ISportPositionalMarketManager(manager).isActiveMarket(_mainMarket)) {
             sgpMarket.mainMarket = _mainMarket;
             (address totalsMarket, address spreadMarket) = IGamesOddsObtainer(

@@ -64,7 +64,7 @@ interface IPositionalMarket {
 
     function exerciseOptions() external returns (uint);
 
-    function burnOptions(uint amount) external;
+    function burnOptions(address account, uint amount) external;
 
-    function burnOptionsMaximum() external;
+    function burnOptionsMaximum(address account) external;
 }

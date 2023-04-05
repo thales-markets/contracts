@@ -209,21 +209,21 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
     }
 
     /// @notice burnOptionsMaximum burns option tokens based on maximum burnable account amount
-    function burnOptionsMaximum() external override {
+    function burnOptionsMaximum(address account) external override {
         require(
             !_manager().onlyAMMMintingAndBurning() || msg.sender == _manager().getThalesAMM(),
             "Only allowed from ThalesAMM"
         );
-        _burnOptions(msg.sender, _getMaximumBurnable(msg.sender));
+        _burnOptions(account, _getMaximumBurnable(account));
     }
 
     /// @notice burnOptions burns option tokens based on amount
-    function burnOptions(uint amount) external override {
+    function burnOptions(address account, uint amount) external override {
         require(
             !_manager().onlyAMMMintingAndBurning() || msg.sender == _manager().getThalesAMM(),
             "Only allowed from ThalesAMM"
         );
-        _burnOptions(msg.sender, amount);
+        _burnOptions(account, amount);
     }
 
     /// @notice resolve function for resolving market if possible

@@ -303,7 +303,7 @@ contract('Position', (accounts) => {
 			await fastForward(200);
 
 			await assert.revert(
-				market.burnOptions(toUnit(0), { from: minter }),
+				market.burnOptions(minter, toUnit(0), { from: minter }),
 				'Can not burn zero amount!'
 			);
 		});
@@ -320,7 +320,7 @@ contract('Position', (accounts) => {
 			await fastForward(200);
 
 			await assert.revert(
-				market.burnOptions(value_2, { from: minter }),
+				market.burnOptions(minter, value_2, { from: minter }),
 				'There is not enough options!'
 			);
 		});
@@ -339,7 +339,7 @@ contract('Position', (accounts) => {
 
 			await fastForward(200);
 
-			const tx = await market.burnOptions(minimum, { from: initialCreator });
+			const tx = await market.burnOptions(initialCreator, minimum, { from: initialCreator });
 
 			await assertAllBnEqual(
 				[down.balanceOf(initialCreator), up.balanceOf(initialCreator)],
@@ -359,7 +359,7 @@ contract('Position', (accounts) => {
 			await fastForward(200);
 
 			await assert.revert(
-				market.burnOptions(value_1, { from: initialCreator }),
+				market.burnOptions(initialCreator, value_1, { from: initialCreator }),
 				'There is not enough options!'
 			);
 		});

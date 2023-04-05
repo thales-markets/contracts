@@ -702,7 +702,7 @@ contract('Position', (accounts) => {
 			assert.bnEqual(totalSupplies.down, value);
 
 			// burn all
-			const tx = await market.burnOptionsMaximum({ from: initialCreator });
+			const tx = await market.burnOptionsMaximum(initialCreator, { from: initialCreator });
 
 			// after burn
 			let valueZero = toUnit(0);
@@ -741,7 +741,7 @@ contract('Position', (accounts) => {
 			assert.bnEqual(totalSupplies.down, value);
 
 			// burn only one
-			const tx = await market.burnOptions(toUnit(1), { from: initialCreator });
+			const tx = await market.burnOptions(initialCreator, toUnit(1), { from: initialCreator });
 
 			// after burn
 			let valueTwo = toUnit(2);
@@ -781,7 +781,7 @@ contract('Position', (accounts) => {
 
 			// burn 5 but has 3
 			await assert.revert(
-				market.burnOptions(toUnit(5), { from: initialCreator }),
+				market.burnOptions(initialCreator, toUnit(5), { from: initialCreator }),
 				'There is not enough options!'
 			);
 		});
@@ -809,7 +809,7 @@ contract('Position', (accounts) => {
 
 			// burn 5 but has 3
 			await assert.revert(
-				market.burnOptions(toUnit(0), { from: initialCreator }),
+				market.burnOptions(initialCreator, toUnit(0), { from: initialCreator }),
 				'Can not burn zero amount!'
 			);
 		});

@@ -71137,7 +71137,7 @@
           {
             "contract": "SportAMMLiquidityPool",
             "label": "sportsAMM",
-            "type": "t_contract(ISportsAMM)66502",
+            "type": "t_contract(ISportsAMM)66456",
             "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:39"
           },
           {
@@ -71263,7 +71263,7 @@
           {
             "contract": "SportAMMLiquidityPool",
             "label": "stakingThales",
-            "type": "t_contract(IStakingThales)66589",
+            "type": "t_contract(IStakingThales)66543",
             "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:71"
           },
           {
@@ -71322,7 +71322,7 @@
           }
         ],
         "types": {
-          "t_contract(ISportsAMM)66502": {
+          "t_contract(ISportsAMM)66456": {
             "label": "contract ISportsAMM"
           },
           "t_contract(IERC20Upgradeable)8234": {
@@ -71361,7 +71361,7 @@
           "t_mapping(t_uint256,t_uint256)": {
             "label": "mapping(uint256 => uint256)"
           },
-          "t_contract(IStakingThales)66589": {
+          "t_contract(IStakingThales)66543": {
             "label": "contract IStakingThales"
           },
           "t_array(t_uint256)49_storage": {
@@ -71863,316 +71863,6 @@
           },
           "t_bool": {
             "label": "bool"
-          }
-        }
-      }
-    },
-    "375bfa4eb08d7f2ac70061e5d8eb2b9780fd02d741b6ceba7a45c6e7fcf581f4": {
-      "address": "0x48B30c659923A847627B43dB51A4ACd056DDCb5A",
-      "txHash": "0x6295971e9a4c578203824b3dd321f1d25a6f61eea3d9e892d34fa6c6f0de9ebb",
-      "layout": {
-        "storage": [
-          {
-            "contract": "Initializable",
-            "label": "_initialized",
-            "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
-          },
-          {
-            "contract": "Initializable",
-            "label": "_initializing",
-            "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
-          },
-          {
-            "contract": "ProxyOwned",
-            "label": "owner",
-            "type": "t_address",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
-          },
-          {
-            "contract": "ProxyOwned",
-            "label": "nominatedOwner",
-            "type": "t_address",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
-          },
-          {
-            "contract": "ProxyOwned",
-            "label": "_initialized",
-            "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
-          },
-          {
-            "contract": "ProxyOwned",
-            "label": "_transferredAtInit",
-            "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
-          },
-          {
-            "contract": "ContextUpgradeable",
-            "label": "__gap",
-            "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
-          },
-          {
-            "contract": "PausableUpgradeable",
-            "label": "_paused",
-            "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
-          },
-          {
-            "contract": "PausableUpgradeable",
-            "label": "__gap",
-            "type": "t_array(t_uint256)49_storage",
-            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
-          },
-          {
-            "contract": "ProxyReentrancyGuard",
-            "label": "_guardCounter",
-            "type": "t_uint256",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
-          },
-          {
-            "contract": "ProxyReentrancyGuard",
-            "label": "_initialized",
-            "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "sportsAMM",
-            "type": "t_contract(ISportsAMM)66466",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:39"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "sUSD",
-            "type": "t_contract(IERC20Upgradeable)8234",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:40"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "started",
-            "type": "t_bool",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:42"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "round",
-            "type": "t_uint256",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:44"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "roundLength",
-            "type": "t_uint256",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:45"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "firstRoundStartTime",
-            "type": "t_uint256",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:46"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "roundPools",
-            "type": "t_mapping(t_uint256,t_address)",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:48"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "usersPerRound",
-            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:50"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "userInRound",
-            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:51"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "balancesPerRound",
-            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:53"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "allocationPerRound",
-            "type": "t_mapping(t_uint256,t_uint256)",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:54"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "withdrawalRequested",
-            "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:56"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "tradingMarketsPerRound",
-            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:58"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "isTradingMarketInARound",
-            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:59"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "profitAndLossPerRound",
-            "type": "t_mapping(t_uint256,t_uint256)",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:61"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "cumulativeProfitAndLoss",
-            "type": "t_mapping(t_uint256,t_uint256)",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:62"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "maxAllowedDeposit",
-            "type": "t_uint256",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:64"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "minDepositAmount",
-            "type": "t_uint256",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:65"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "maxAllowedUsers",
-            "type": "t_uint256",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:66"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "usersCurrentlyInPool",
-            "type": "t_uint256",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:67"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "defaultLiquidityProvider",
-            "type": "t_address",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:69"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "stakingThales",
-            "type": "t_contract(IStakingThales)66553",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:71"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "stakedThalesMultiplier",
-            "type": "t_uint256",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:73"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "poolRoundMastercopy",
-            "type": "t_address",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:75"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "whitelistedDeposits",
-            "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:77"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "totalDeposited",
-            "type": "t_uint256",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:79"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "onlyWhitelistedStakersAllowed",
-            "type": "t_bool",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:81"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "whitelistedStakers",
-            "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:83"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "needsTransformingCollateral",
-            "type": "t_bool",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:85"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "marketAlreadyExercisedInRound",
-            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:87"
-          },
-          {
-            "contract": "SportAMMLiquidityPool",
-            "label": "roundClosingPrepared",
-            "type": "t_bool",
-            "src": "contracts\\SportMarkets\\LiquidityPool\\SportAMMLiquidityPool.sol:89"
-          }
-        ],
-        "types": {
-          "t_contract(ISportsAMM)66466": {
-            "label": "contract ISportsAMM"
-          },
-          "t_contract(IERC20Upgradeable)8234": {
-            "label": "contract IERC20Upgradeable"
-          },
-          "t_bool": {
-            "label": "bool"
-          },
-          "t_uint256": {
-            "label": "uint256"
-          },
-          "t_mapping(t_uint256,t_address)": {
-            "label": "mapping(uint256 => address)"
-          },
-          "t_address": {
-            "label": "address"
-          },
-          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
-            "label": "mapping(uint256 => address[])"
-          },
-          "t_array(t_address)dyn_storage": {
-            "label": "address[]"
-          },
-          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
-            "label": "mapping(uint256 => mapping(address => bool))"
-          },
-          "t_mapping(t_address,t_bool)": {
-            "label": "mapping(address => bool)"
-          },
-          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
-            "label": "mapping(uint256 => mapping(address => uint256))"
-          },
-          "t_mapping(t_address,t_uint256)": {
-            "label": "mapping(address => uint256)"
-          },
-          "t_mapping(t_uint256,t_uint256)": {
-            "label": "mapping(uint256 => uint256)"
-          },
-          "t_contract(IStakingThales)66553": {
-            "label": "contract IStakingThales"
-          },
-          "t_array(t_uint256)49_storage": {
-            "label": "uint256[49]"
-          },
-          "t_array(t_uint256)50_storage": {
-            "label": "uint256[50]"
           }
         }
       }

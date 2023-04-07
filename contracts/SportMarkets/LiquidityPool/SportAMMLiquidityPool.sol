@@ -88,6 +88,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     bool public roundClosingPrepared;
 
+    uint public usersProcessedInRound;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
@@ -289,15 +291,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         require(canCloseCurrentRound(), "Can't close current round");
         // excercise market options
         exerciseMarketsReadyToExercised();
-        roundClosingPrepared = true;
-    }
-
-    /// @notice Close current round and begin next round,
-    /// calculate profit and loss and process withdrawals
-    function closeRound() external nonReentrant whenNotPaused {
-        require(roundClosingPrepared, "Round closing not prepared");
-        // set for next round to false
-        roundClosingPrepared = false;
 
         address roundPool = roundPools[round];
         // final balance is the final amount of sUSD in the round pool
@@ -311,7 +304,24 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             profitAndLossPerRound[round] = (currentBalance * ONE) / allocationPerRound[round];
         }
 
-        for (uint i = 0; i < usersPerRound[round].length; i++) {
+        roundClosingPrepared = true;
+    }
+
+    /// @notice Prepare round closing
+    /// excercise options of trading markets and ensure there are no markets left unresolved
+    function processRoundClosingBatch(uint batchSize) external nonReentrant whenNotPaused {
+        require(roundClosingPrepared, "Round closing not prepared");
+        require(usersProcessedInRound < usersPerRound[round].length, "All users already processed");
+        require(batchSize > 0, "batchSize has to be greater than 0");
+
+        address roundPool = roundPools[round];
+
+        uint endCursor = usersProcessedInRound + batchSize;
+        if (endCursor > usersPerRound[round].length) {
+            endCursor = usersPerRound[round].length;
+        }
+
+        for (uint i = usersProcessedInRound; i < endCursor; i++) {
             address user = usersPerRound[round][i];
             uint balanceAfterCurRound = (balancesPerRound[round][user] * profitAndLossPerRound[round]) / ONE;
             if (!withdrawalRequested[user] && (profitAndLossPerRound[round] > 0)) {
@@ -326,7 +336,19 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
                 withdrawalRequested[user] = false;
                 emit Claimed(user, balanceAfterCurRound);
             }
+            usersProcessedInRound = usersProcessedInRound + 1;
         }
+    }
+
+    /// @notice Close current round and begin next round,
+    /// calculate profit and loss and process withdrawals
+    function closeRound() external nonReentrant whenNotPaused {
+        require(roundClosingPrepared, "Round closing not prepared");
+        require(usersProcessedInRound == usersPerRound[round].length, "Not all users processed yet");
+        // set for next round to false
+        roundClosingPrepared = false;
+
+        address roundPool = roundPools[round];
 
         //always claim for defaultLiquidityProvider
         if (balancesPerRound[round][defaultLiquidityProvider] > 0) {
@@ -353,6 +375,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         address roundPoolNewRound = _getOrCreateRoundPool(round);
 
         sUSD.safeTransferFrom(roundPool, roundPoolNewRound, sUSD.balanceOf(roundPool));
+
+        usersProcessedInRound = 0;
 
         emit RoundClosed(round - 1, profitAndLossPerRound[round - 1]);
     }
@@ -494,6 +518,12 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         } else {
             _round = 1;
         }
+    }
+
+    /// @notice Return the count of users in current round
+    /// @return _the count of users in current round
+    function getUsersCountInCurrentRound() external view returns (uint) {
+        return usersPerRound[round].length;
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */

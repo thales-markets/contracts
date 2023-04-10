@@ -74,7 +74,7 @@
 		"ParlayMarketMastercopy": "0xFe09453B10D10953c482F6cc6Ab367f57Ce195FD",
 		"ParlayVerifier": "0xE6dD36180CB089810D5fE11Bb766CbbC51d7D23b",
 		"ParlayMarketData": "0x3bD77B8FE52242797C29Df251418873Ae34F0641",
-		"ParlayMarketDataImplementation": "0xEa3b0AfDAf4d5B4e64e51C2Af43860831105372E",
+		"ParlayMarketDataImplementation": "0xB7CfA3AfFd1313410ffC3a891af5675d658e526f",
 		"ExoticMarketManager": "0x9a51524422DDF1B8AfEc04CBa6451a6c50320998",
 		"ExoticMarketManagerImplementation": "0x0fA6b2516ce46013182f3F1F31aa7bfb04FD409B",
 		"ThalesOracleCouncil": "0xDF3eefC2ED0F31947a67f0e817DfD92717630E38",
@@ -114,13 +114,17 @@
 		"ParlayVault": "0x8285047F33c26c1Bf5B387f2b07F21A2aF29Ace2",
 		"ParlayVaultImplementation": "0xb17e469585BA51Fc7973659dd8d96E516Ea4f4a3",
 		"TaleOfThalesNFTs": "0xA9218C6d51b87EB3ee74E14Cb5D50BDE00Be7021",
-		"SportAMMLiquidityPoolImplementation": "0x3aE1Bf5f9481a42940fEb4a1DfCC943128088280",
+		"SportAMMLiquidityPoolImplementation": "0xcAa383B59EC3D8f1fa8da2afBb8B80Bf959EB7B6",
 		"SportAMMLiquidityPoolRoundMastercopy": "0xAEa1bE15Adb75A49aceeF392A6d37625d993952a",
 		"DefaultLiquidityProviderImplementation": "0x0bAc9eC4126cE5b62BEE2e99823c2b2e96c396b5",
 		"MarchMadness": "0x3b05d4C58De4E96Ea093032c6D70C7e4212a4c31",
 		"ThalesAMMOld": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
 		"GamesOddsReceiver": "0x1B3Dd18F0A31926A8cc24dF87C69B0ba303A04a1",
-		"GamesOddsReceiverImplementation": "0x9350B6808EB0727929031a79F516094D66E4Ad18"
+		"GamesOddsReceiverImplementation": "0x9350B6808EB0727929031a79F516094D66E4Ad18",
+		"SportAMMLiquidityPoolData": "0x23823f1C7C4AE2Acef3bCCFCD5F282AE078150C2",
+		"SportAMMLiquidityPoolDataImplementation": "0xE070A4D5A17D458a237d20f23b49737dA308561c",
+		"SportVaultData": "0x741AD22a9444D1B5e6606a3587EfFA5b8995321c",
+		"SportVaultDataImplementation": "0x606B55b96c833277e972aA18e4ef7D3f53bc6073"
 	},
 	"arbitrumOne": {
 		"ProxyUSDC": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
@@ -171,7 +175,7 @@
 		"ParlayMarketMastercopy": "0x40dEE0d7914FED2749E6b2dBb028Ac67aD453BE0",
 		"ParlayVerifier": "0x1947a5F72cA24978b435EC80C3da70fd82d72B45",
 		"ParlayMarketData": "0xff9d1B34f369CAf91c6b69761e2A06f78ed3cd9d",
-		"ParlayMarketDataImplementation": "0x87e81Bb60c3394A3c2425747545916781B49786b",
+		"ParlayMarketDataImplementation": "0x170a5714112daEfF20E798B6e92e25B86Ea603C1",
 		"GamesOddsObtainer": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
 		"GamesOddsObtainerImplementation": "0x31F71B6E97392D23Cf0759E520cD4Db35b5D2dd9",
 		"OvertimeVoucher": "0x9Ee26dcb9A3F1104B37A5dCc8573c8b144c7ce42",
@@ -187,7 +191,7 @@
 		"ThalesStakingRewardsPoolImplementation": "0x94B417458AF11c991B413C03e79f76bda330AF77",
 		"MarchMadness": "0x29bd4ceDb94C4dC37B4D9c52Ac98Eb4967BFAaa3",
 		"SportAMMLiquidityPool": "0x8e9018b48456202aA9bb3E485192B8475822B874",
-		"SportAMMLiquidityPoolImplementation": "0xb463c8FCff74cfA617B4e213943D5d1AD107aD36",
+		"SportAMMLiquidityPoolImplementation": "0x13AC74A68C898677aA14ce1D8B3c47B6BBCECE0E",
 		"SportAMMLiquidityPoolRoundMastercopy": "0xDdfeEFb6F13434fD2851C54aDE55B204AC06c6a0",
 		"DefaultLiquidityProvider": "0x2FE737c9c14eA857eca2E9BD6C09be96532E5188",
 		"DefaultLiquidityProviderImplementation": "0x789c830e1a02423Ec9a1375d5d2763Faca2dA846",
@@ -207,7 +211,11 @@
 		"AmmVaultImplementation": "0x4aD6Bc23486D1e6F8caf9b02E702D801cAc04b3b",
 		"AmmVaultSafu": "0x008A4e30A8b41781F5cb017b197aA9Aa4Cd53b46",
 		"AmmVaultSafuImplementation": "0x4aD6Bc23486D1e6F8caf9b02E702D801cAc04b3b",
-		"TaleOfThalesNFTs": "0xe42517a1Bf3E6Bd088Bf26ead8d8754e0e2BeBA3"
+		"TaleOfThalesNFTs": "0xe42517a1Bf3E6Bd088Bf26ead8d8754e0e2BeBA3",
+		"SportVaultData": "0x4830853AC480A7ee1a86E1B4Fa909f0665858f01",
+		"SportVaultDataImplementation": "0x832E1A314A1780260cD698C519332CCad7bA322d",
+		"SportAMMLiquidityPoolData": "0x230893C24804B89D0ec3FFfFa243CE32C6b6541B",
+		"SportAMMLiquidityPoolDataImplementation": "0xbe425C88aED5f38d8F34d4BaFe43015284892E5d"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -543,8 +551,8 @@
 		"ParlayAMM": "0x0ec9D8Dac2178b041f85f60E3cF13CfaA3d23e0e",
 		"ParlayAMMImplementation": "0x11b14A8E88e76F13E0bB64645306a957A07F288A",
 		"ParlayMarketMastercopy": "0x4b04bE9a525f11e0a712A3a626701D560d13DD30",
-		"ParlayMarketData": "0x6F511EC517496D9612e597A2295efD77a0d68E9E",
-		"ParlayMarketDataImplementation": "0x5Db1f1e24D5f9826394d59471593B7AEb0489606",
+		"ParlayMarketData": "0x1218A1DF0Fc5934d44Ea52B298e91Fe6C9Bcee1b",
+		"ParlayMarketDataImplementation": "0x13A8666D68AB4AA43b5A7734447850605364a0E1",
 		"TherundownConsumerVerifier": "0x86991efb34B0Cf55af38E9dACE3f82CD8B70188F",
 		"TherundownConsumerVerifierImplementation": "0x7c22139249c33a714950f69972618775f7D5fDD2",
 		"ParlayVerifier": "0xAfdcB1F6563b47601ae77d077391068c4f071e57",
@@ -574,7 +582,9 @@
 		"DefaultLiquidityProvider": "0x05C191f8Df6bFb72EFfc865550cF23982cafD753",
 		"DefaultLiquidityProviderImplementation": "0x97D6d6bdb457de9EaE2f17f01c4753BC6021b376",
 		"GamesOddsReceiver": "0x07d762943f2501C630cCDb82e3BD81DB4Ee45256",
-		"GamesOddsReceiverImplementation": "0x764A51F3C84158E70d228122c4cE2BC7A605DFdF"
+		"GamesOddsReceiverImplementation": "0x764A51F3C84158E70d228122c4cE2BC7A605DFdF",
+		"SportAMMLiquidityPoolData": "0xB0b68F811Eb18E63aD942A7EcAE038715d4026c6",
+		"SportAMMLiquidityPoolDataImplementation": "0xe503039A4ef5279eCB8F961C4870e3a6790a1b88"
 	},
 	"localhost": {
 		"Airdrop": "",

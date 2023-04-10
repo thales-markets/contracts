@@ -719,6 +719,7 @@ contract('SportsAMM', (accounts) => {
 			);
 
 			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(20);
 			await SportAMMLiquidityPool.closeRound();
 
 			round = await SportAMMLiquidityPool.round();
@@ -745,6 +746,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
 
 			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(20);
 			await SportAMMLiquidityPool.closeRound();
 
 			balancesPerRoundLP = await SportAMMLiquidityPool.balancesPerRound(
@@ -790,6 +792,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('canCloseCurrentRound 3 ' + canCloseCurrentRound);
 
 			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(20);
 			await SportAMMLiquidityPool.closeRound();
 
 			round = await SportAMMLiquidityPool.round();

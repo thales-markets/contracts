@@ -59,6 +59,7 @@ npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyalePass/de
 npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyale/verifyOnly.js
 
 scripts:
+npx hardhat run --network optimisticEthereum scripts/deploySportMarkets/deploySportsLiquidityPool/upgrade_SportAMMLiquidityPool.js
 npx hardhat verify ADDRESS_CONTRACT --network polygon
 npx hardhat verify 0xDdfeEFb6F13434fD2851C54aDE55B204AC06c6a0 --network arbitrumOne --contract contracts/SportMarkets/LiquidityPool/SportAMMLiquidityPoolRoundMastercopy.sol:SportAMMLiquidityPoolRoundMastercopy
 npx hardhat size-contracts

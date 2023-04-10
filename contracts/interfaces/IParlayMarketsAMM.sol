@@ -89,4 +89,10 @@ interface IParlayMarketsAMM {
     function activeParlayMarkets(uint index, uint pageSize) external view returns (address[] memory);
 
     function parlayVerifier() external view returns (ParlayVerifier);
+
+    function minUSDAmount() external view returns (uint);
+
+    function maxSupportedAmount() external view returns (uint);
+
+    function safeBoxImpact() external view returns (uint);
 }

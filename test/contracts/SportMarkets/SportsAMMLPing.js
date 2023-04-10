@@ -51,6 +51,7 @@ contract('SportsAMM', (accounts) => {
 		defaultLiquidityProvider,
 		firstLiquidityProvider,
 		secondLiquidityProvider,
+		thirdLiquidityProvider,
 	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -583,10 +584,20 @@ contract('SportsAMM', (accounts) => {
 				from: owner,
 			});
 
+			await Thales.transfer(thirdLiquidityProvider, toUnit('100'), { from: owner });
+			await Thales.approve(SportAMMLiquidityPool.address, toUnit('100'), {
+				from: thirdLiquidityProvider,
+			});
+
+			await SportAMMLiquidityPool.setWhitelistedAddresses([thirdLiquidityProvider], true, {
+				from: owner,
+			});
+
 			let isUserLPing = await SportAMMLiquidityPool.isUserLPing(firstLiquidityProvider);
 			console.log('isUserLPing firstLiquidityProvider: ' + isUserLPing);
 
 			await SportAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+			await SportAMMLiquidityPool.deposit(toUnit(100), { from: thirdLiquidityProvider });
 
 			isUserLPing = await SportAMMLiquidityPool.isUserLPing(firstLiquidityProvider);
 			console.log('isUserLPing firstLiquidityProvider after deposit: ' + isUserLPing);
@@ -706,7 +717,40 @@ contract('SportsAMM', (accounts) => {
 				'Round closing not prepared'
 			);
 
+			await expect(SportAMMLiquidityPool.processRoundClosingBatch(1)).to.be.revertedWith(
+				'Round closing not prepared'
+			);
+
 			await SportAMMLiquidityPool.prepareRoundClosing();
+
+			let getUsersCountInCurrentRound = await SportAMMLiquidityPool.getUsersCountInCurrentRound();
+			console.log('getUsersCountInCurrentRound: ' + getUsersCountInCurrentRound);
+
+			let usersProcessedInRound = await SportAMMLiquidityPool.usersProcessedInRound();
+			console.log('usersProcessedInRound: ' + usersProcessedInRound);
+
+			await expect(SportAMMLiquidityPool.closeRound()).to.be.revertedWith(
+				'Not all users processed yet'
+			);
+
+			await SportAMMLiquidityPool.processRoundClosingBatch(1);
+
+			usersProcessedInRound = await SportAMMLiquidityPool.usersProcessedInRound();
+			console.log('usersProcessedInRound after batch: ' + usersProcessedInRound);
+
+			await expect(SportAMMLiquidityPool.closeRound()).to.be.revertedWith(
+				'Not all users processed yet'
+			);
+
+			await SportAMMLiquidityPool.processRoundClosingBatch(1);
+
+			usersProcessedInRound = await SportAMMLiquidityPool.usersProcessedInRound();
+			console.log('usersProcessedInRound after batch: ' + usersProcessedInRound);
+
+			await expect(SportAMMLiquidityPool.processRoundClosingBatch(1)).to.be.revertedWith(
+				'All users already processed'
+			);
+
 			await SportAMMLiquidityPool.closeRound();
 
 			round = await SportAMMLiquidityPool.round();
@@ -738,6 +782,7 @@ contract('SportsAMM', (accounts) => {
 				SportAMMLiquidityPool.withdrawalRequest({ from: firstLiquidityProvider })
 			).to.be.revertedWith('Not allowed during roundClosingPrepared');
 
+			await SportAMMLiquidityPool.processRoundClosingBatch(200);
 			await SportAMMLiquidityPool.closeRound();
 
 			balancesPerRoundLP = await SportAMMLiquidityPool.balancesPerRound(
@@ -783,6 +828,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('canCloseCurrentRound 3 ' + canCloseCurrentRound);
 
 			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(200);
 			await SportAMMLiquidityPool.closeRound();
 
 			round = await SportAMMLiquidityPool.round();

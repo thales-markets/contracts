@@ -681,6 +681,19 @@
   },
   {
     "inputs": [],
+    "name": "getUsersCountInCurrentRound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "hasMarketsReadyToBeExercised",
     "outputs": [
       {
@@ -949,6 +962,19 @@
   {
     "inputs": [],
     "name": "prepareRoundClosing",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "processRoundClosingBatch",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1474,6 +1500,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "usersProcessedInRound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

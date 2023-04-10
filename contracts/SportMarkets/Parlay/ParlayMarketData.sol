@@ -30,6 +30,15 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => uint) public userNumOfParlays;
     address public parlayMarketsAMM;
 
+    struct ParlayAmmParameters {
+        uint minUSDAmount;
+        uint maxSupportedAmount;
+        uint maxSupportedOdds;
+        uint parlayAmmFee;
+        uint safeBoxImpact;
+        uint parlaySize;
+    }
+
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
         setOwner(_owner);
         parlayMarketsAMM = _parlayMarketsAMM;
@@ -193,6 +202,18 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         )
     {
         (homeParlays, awayParlays, drawParlays) = _getAllParlaysForGame(_sportMarket);
+    }
+
+    function getParlayAMMParameters() external view returns (ParlayAmmParameters memory) {
+        return
+            ParlayAmmParameters(
+                IParlayMarketsAMM(parlayMarketsAMM).minUSDAmount(),
+                IParlayMarketsAMM(parlayMarketsAMM).maxSupportedAmount(),
+                IParlayMarketsAMM(parlayMarketsAMM).maxSupportedOdds(),
+                IParlayMarketsAMM(parlayMarketsAMM).parlayAmmFee(),
+                IParlayMarketsAMM(parlayMarketsAMM).safeBoxImpact(),
+                IParlayMarketsAMM(parlayMarketsAMM).parlaySize()
+            );
     }
 
     function _getAllParlaysForGame(address _sportMarket)

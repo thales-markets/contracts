@@ -267,6 +267,51 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getParlayAMMParameters",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "minUSDAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxSupportedAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxSupportedOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "parlayAmmFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "safeBoxImpact",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "parlaySize",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ParlayMarketData.ParlayAmmParameters",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",

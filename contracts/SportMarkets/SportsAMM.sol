@@ -136,6 +136,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return the cap per sportID and childID. based on the tagID[0] and tagID[1]
     mapping(uint => mapping(uint => uint)) public capPerSportAndChild;
 
+    // @return specific min_spread per address
+    mapping(uint => uint) public min_spreadPerSport;
+
     struct BuyFromAMMParams {
         address market;
         ISportsAMM.Position position;
@@ -287,9 +290,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     function _getMinSpreadToUse(bool useDefaultMinSpread, address market) internal view returns (uint min_spreadToUse) {
+        uint spreadTag = min_spreadPerSport[ISportPositionalMarket(market).tags(0)];
         min_spreadToUse = useDefaultMinSpread
             ? min_spread
-            : (min_spreadPerAddress[msg.sender] > 0 ? min_spreadPerAddress[msg.sender] : min_spread);
+            : (
+                min_spreadPerAddress[msg.sender] > 0
+                    ? min_spreadPerAddress[msg.sender]
+                    : (spreadTag > 0 ? spreadTag : min_spread)
+            );
     }
 
     function _buyFromAMMQuoteDoubleChance(
@@ -730,6 +738,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function setCapPerSport(uint _sportID, uint _capPerSport) external onlyOwner {
         capPerSport[_sportID] = _capPerSport;
         emit SetCapPerSport(_sportID, _capPerSport);
+    }
+
+    /// @notice Setting the Min Spread per Sport ID
+    /// @param _sportID The tagID used for each market
+    /// @param _minSpread The min spread amount used for the sportID
+    function setMinSpreadPerSport(uint _sportID, uint _minSpread) external onlyOwner {
+        min_spreadPerSport[_sportID] = _minSpread;
+        emit SetCapPerSport(_sportID, _minSpread);
     }
 
     /// @notice Setting the Cap per Sport ID
@@ -1186,6 +1202,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetSportsPositionalMarketManager(address _manager);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SetCapPerSport(uint _sport, uint _cap);
+    event SetMinSpreadPerSport(uint _sport, uint _spread);
     event SetCapPerMarket(address _market, uint _cap);
     event SetCapPerSportAndChild(uint _sport, uint _child, uint _cap);
 }

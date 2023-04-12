@@ -76,4 +76,11 @@ interface ISportsAMM {
     ) external view returns (int impact);
 
     function obtainOdds(address _market, ISportsAMM.Position _position) external view returns (uint oddsToReturn);
+
+    function buyFromAmmQuoteWithDifferentCollateral(
+        address market,
+        ISportsAMM.Position position,
+        uint amount,
+        address collateral
+    ) external view returns (uint collateralQuote, uint sUSDToPay);
 }

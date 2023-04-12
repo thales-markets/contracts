@@ -54,6 +54,9 @@ async function main() {
 	const SportMarketData = await ethers.getContractFactory('SportPositionalMarketData');
 	const SportMarketManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
+	const TherundownConsumerAddress = getTargetAddress('TherundownConsumer', network);
+	const GamesOddsObtainerAddress = getTargetAddress('GamesOddsObtainer', network);
+	const OvertimeVoucherEscrowAddress = getTargetAddress('OvertimeVoucherEscrow', network);
 
 	const SportMarketDataDeployed = await upgrades.deployProxy(SportMarketData, [owner.address]);
 	await SportMarketDataDeployed.deployed;
@@ -80,6 +83,14 @@ async function main() {
 	});
 	await delay(5000);
 	await SportMarketDataDeployed.setSportsAMM(SportsAMMAddress, { from: owner.address });
+	await delay(5000);
+	await SportMarketDataDeployed.setConsumer(TherundownConsumerAddress, { from: owner.address });
+	await delay(5000);
+	await SportMarketDataDeployed.setOddsObtainer(GamesOddsObtainerAddress, { from: owner.address });
+	await delay(5000);
+	await SportMarketDataDeployed.setVoucherEscrow(OvertimeVoucherEscrowAddress, {
+		from: owner.address,
+	});
 	await delay(5000);
 
 	// try {

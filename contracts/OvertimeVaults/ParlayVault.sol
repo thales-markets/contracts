@@ -97,6 +97,8 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     mapping(uint => mapping(address => uint)) public marketUsedInRoundCount;
     uint public maxMarketUsedInRoundCount;
 
+    uint public marketsProcessedInRound;
+
     /* ========== CONSTRUCTOR ========== */
 
     function __BaseSportVault_init(
@@ -214,6 +216,8 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         allocationPerRound[round] = sUSD.balanceOf(address(this));
         capPerRound[round + 1] = allocationPerRound[round];
 
+        marketsProcessedInRound = 0;
+
         emit RoundClosed(round - 1, profitAndLossPerRound[round - 1]);
     }
 
@@ -277,6 +281,30 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         require(canTradeParlay, message);
 
         _buyFromParlay(sportMarkets, positions, sUSDPaid, expectedPayout);
+    }
+
+    /// @notice Exercises parlay markets in a round
+    /// @param batchSize number of markets to be processed
+    function exerciseMarketsReadyToExercised(uint batchSize) external nonReentrant whenNotPaused {
+        require(canCloseCurrentRound(), "Can't close current round");
+        require(marketsProcessedInRound < tradingParlayMarketsPerRound[round].length, "All markets already processed");
+        require(batchSize > 0, "batchSize has to be greater than 0");
+
+        uint endCursor = marketsProcessedInRound + batchSize;
+        if (endCursor > tradingParlayMarketsPerRound[round].length) {
+            endCursor = tradingParlayMarketsPerRound[round].length;
+        }
+
+        ParlayMarket parlayMarket;
+        for (uint i = marketsProcessedInRound; i < endCursor; i++) {
+            parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
+            (bool isExercisable, ) = parlayMarket.isParlayExercisable();
+            if (!parlayMarket.fundsIssued() && isExercisable) {
+                parlayAMM.exerciseParlay(address(parlayMarket));
+            }
+
+            marketsProcessedInRound += 1;
+        }
     }
 
     /// @notice Set length of rounds
@@ -373,12 +401,14 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     // @notice Exercises parlay markets in a round
     function _exerciseMarketsReadyToExercised() internal {
         ParlayMarket parlayMarket;
-        for (uint i = 0; i < tradingParlayMarketsPerRound[round].length; i++) {
+        for (uint i = marketsProcessedInRound; i < tradingParlayMarketsPerRound[round].length; i++) {
             parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
             (bool isExercisable, ) = parlayMarket.isParlayExercisable();
             if (!parlayMarket.fundsIssued() && isExercisable) {
                 parlayAMM.exerciseParlay(address(parlayMarket));
             }
+
+            marketsProcessedInRound += 1;
         }
     }
 

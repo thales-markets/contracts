@@ -1234,6 +1234,18 @@ contract('Parlay Vault', (accounts) => {
 			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
 
 			await fastForward(day);
+			await assert.revert(
+				vault.exerciseMarketsReadyToExercised(0),
+				'batchSize has to be greater than 0'
+			);
+
+			await vault.exerciseMarketsReadyToExercised(100);
+
+			await assert.revert(
+				vault.exerciseMarketsReadyToExercised(100),
+				'All markets already processed'
+			);
+
 			await vault.closeRound();
 
 			round = await vault.round();

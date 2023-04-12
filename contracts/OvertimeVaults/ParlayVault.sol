@@ -584,7 +584,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
             (bool isExercisable, ) = parlayMarket.isParlayExercisable();
             if (parlayMarket.fundsIssued()) continue;
             else if (!parlayMarket.fundsIssued() && (isExercisable || parlayMarket.parlayAlreadyLost())) continue;
-            else if (!parlayMarket.fundsIssued() && !parlayMarket.parlayAlreadyLost()) false;
+            else if (!parlayMarket.fundsIssued() && !parlayMarket.parlayAlreadyLost()) return false;
         }
         return true;
     }

@@ -532,11 +532,35 @@ contract('SportsAMM', (accounts) => {
 			console.log('Total odds: ', fromUnit(sumOfOdds));
 		});
 
-		it('Get Available to buy from SportsAMM, positions', async () => {
+		it('Get Min Spread, set new', async () => {
+			const default_min_spread = await SportsAMM.min_spread();
+			console.log('Default min_spread: ', default_min_spread.toString());
+			console.log('Default min_spread: ', fromUnit(default_min_spread));
+
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
 			console.log('Available to buy 1: ', fromUnit(answer));
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 0);
 			console.log('Available to buy 0: ', fromUnit(answer));
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
+			console.log('Available to buy 2: ', fromUnit(answer));
+
+			await SportsAMM.setMinSpreadPerSport(tagID_16, 1, { from: owner });
+			const min_spreadForSport = await SportsAMM.min_spreadPerSport(tagID_16);
+
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			console.log('SETTING NEW SPREAD PER SPORT: ', 1);
+			console.log('NEW SPREAD PER SPORT 9016: ', min_spreadForSport.toString());
+			console.log('Available to buy 1: ', fromUnit(answer));
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 0);
+			console.log('Available to buy 0: ', fromUnit(answer));
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
+			console.log('Available to buy 2: ', fromUnit(answer));
+		});
+		it('Get Available to buy from SportsAMM, positions', async () => {
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 0);
+			console.log('Available to buy 0: ', fromUnit(answer));
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			console.log('Available to buy 1: ', fromUnit(answer));
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
 			console.log('Available to buy 2: ', fromUnit(answer));
 		});
@@ -544,11 +568,93 @@ contract('SportsAMM', (accounts) => {
 		it('Get BuyQuote from SportsAMM, position 1, value: 100', async () => {
 			answer = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
 			console.log('buyAMMQuote: ', fromUnit(answer));
+			await SportsAMM.setMinSpreadPerSport(tagID_16, 1, { from: owner });
+			const min_spreadForSport = await SportsAMM.min_spreadPerSport(tagID_16);
+
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			console.log('SETTING NEW SPREAD PER SPORT: ', 1);
+			console.log('NEW SPREAD PER SPORT 9016: ', min_spreadForSport.toString());
+
+			answer = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
+			console.log('buyAMMQuote: ', fromUnit(answer));
+		});
+
+		it('Get default market odds', async () => {
+			answer = await SportsAMM.getMarketDefaultOdds(deployedMarket.address, false);
+			let sum = 0;
+			console.log('odds: ', answer[0].toString());
+			console.log('odds: ', answer[1].toString());
+			console.log('odds: ', answer[2].toString());
+			sum = answer[0].add(answer[1]).add(answer[2]);
+			console.log('sum: ', sum.toString());
+
+			await SportsAMM.setMinSpreadPerSport(tagID_16, 1, { from: owner });
+			const min_spreadForSport = await SportsAMM.min_spreadPerSport(tagID_16);
+
+			console.log('SETTING NEW SPREAD PER SPORT: ', 1);
+			console.log('NEW SPREAD PER SPORT 9016: ', min_spreadForSport.toString());
+
+			answer = await SportsAMM.getMarketDefaultOdds(deployedMarket.address, false);
+			console.log('odds: ', answer[0].toString());
+			console.log('odds: ', answer[1].toString());
+			console.log('odds: ', answer[2].toString());
+			sum = answer[0].add(answer[1]).add(answer[2]);
+			console.log('sum: ', sum.toString());
 		});
 
 		it('Buy from SportsAMM, position 1, value: 100', async () => {
 			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
 			let additionalSlippage = toUnit(0.01);
+
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				1,
+				toUnit(1000)
+			);
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				1,
+				toUnit(1000),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 2, toUnit(1000));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				2,
+				toUnit(1000),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(1000));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				0,
+				toUnit(1000),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			let roundPool = await SportAMMLiquidityPool.getMarketPool(deployedMarket.address);
+			let roundPoolBalanceAfter = await Thales.balanceOf(roundPool);
+			console.log('roundPoolBalanceAfter: ' + roundPoolBalanceAfter / 1e18);
+		});
+
+		it('Buy from SportsAMM, position 1, value: 100, changed spread', async () => {
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			let additionalSlippage = toUnit(0.01);
+
+			await SportsAMM.setMinSpreadPerSport(tagID_16, 1, { from: owner });
+			const min_spreadForSport = await SportsAMM.min_spreadPerSport(tagID_16);
+
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			console.log('SETTING NEW SPREAD PER SPORT: ', 1);
+			console.log('NEW SPREAD PER SPORT 9016: ', min_spreadForSport.toString());
 
 			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
 				deployedMarket.address,

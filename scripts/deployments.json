@@ -124,7 +124,9 @@
 		"SportAMMLiquidityPoolData": "0x23823f1C7C4AE2Acef3bCCFCD5F282AE078150C2",
 		"SportAMMLiquidityPoolDataImplementation": "0xE070A4D5A17D458a237d20f23b49737dA308561c",
 		"SportVaultData": "0x741AD22a9444D1B5e6606a3587EfFA5b8995321c",
-		"SportVaultDataImplementation": "0x606B55b96c833277e972aA18e4ef7D3f53bc6073"
+		"SportVaultDataImplementation": "0x606B55b96c833277e972aA18e4ef7D3f53bc6073",
+		"SportVaultUpsettoor": "0x5e2b49c68f1fD68AF1354c377eaceC2f05632D3F",
+		"SportVaultUpsettoorImplementation": "0x51B774FF4b48e73ef8F9699dA827Ef9E33485abE"
 	},
 	"arbitrumOne": {
 		"ProxyUSDC": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
@@ -215,7 +217,9 @@
 		"SportVaultData": "0x4830853AC480A7ee1a86E1B4Fa909f0665858f01",
 		"SportVaultDataImplementation": "0x832E1A314A1780260cD698C519332CCad7bA322d",
 		"SportAMMLiquidityPoolData": "0x230893C24804B89D0ec3FFfFa243CE32C6b6541B",
-		"SportAMMLiquidityPoolDataImplementation": "0xbe425C88aED5f38d8F34d4BaFe43015284892E5d"
+		"SportAMMLiquidityPoolDataImplementation": "0xbe425C88aED5f38d8F34d4BaFe43015284892E5d",
+		"SportVaultUpsettoor": "0x31c2947c86412A5e33794105aA034DD9312eb711",
+		"SportVaultUpsettoorImplementation": "0x6485d7093398D3136C3558c55d66CbB80bC99db0"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

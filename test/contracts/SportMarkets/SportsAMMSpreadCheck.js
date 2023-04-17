@@ -586,7 +586,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('odds: ', answer[1].toString());
 			console.log('odds: ', answer[2].toString());
 			sum = answer[0].add(answer[1]).add(answer[2]);
-			console.log('sum: ', sum.toString());
+			console.log('sum: ', fromUnit(sum));
 
 			await SportsAMM.setMinSpreadPerSport(tagID_16, 1, { from: owner });
 			const min_spreadForSport = await SportsAMM.min_spreadPerSport(tagID_16);
@@ -599,7 +599,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('odds: ', answer[1].toString());
 			console.log('odds: ', answer[2].toString());
 			sum = answer[0].add(answer[1]).add(answer[2]);
-			console.log('sum: ', sum.toString());
+			console.log('sum: ', fromUnit(sum));
 		});
 
 		it('Buy from SportsAMM, position 1, value: 100', async () => {

@@ -93,7 +93,8 @@ contract ParlayVerifier {
             for (uint j = 0; j < lastCachedIdx; j++) {
                 if (
                     (cachedTeams[j].gameId == gameIdHome ||
-                        (j > 1 && cachedTeams[j].gameId == gameIdAway && cachedTeams[j - 1].gameId != gameIdHome))
+                        (j > 1 && cachedTeams[j].gameId == gameIdAway && cachedTeams[j - 1].gameId != gameIdHome)) &&
+                    cachedTeams[j].tag1 == tag1
                 ) {
                     if (
                         cachedTeams[j].gameCounter > 0 ||

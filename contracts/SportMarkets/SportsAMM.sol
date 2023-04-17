@@ -22,7 +22,6 @@ import "../interfaces/IReferrals.sol";
 import "../interfaces/ISportsAMM.sol";
 import "../interfaces/ITherundownConsumerWrapper.sol";
 
-import "hardhat/console.sol";
 import "./SportsAMMUtils.sol";
 import "./LiquidityPool/SportAMMLiquidityPool.sol";
 
@@ -299,7 +298,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     ? min_spreadPerAddress[msg.sender]
                     : (spreadTag > 0 ? spreadTag : min_spread)
             );
-        console.log(min_spreadToUse);
     }
 
     function _buyFromAMMQuoteDoubleChance(

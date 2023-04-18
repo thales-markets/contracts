@@ -15,11 +15,9 @@ import "../../interfaces/ITherundownConsumer.sol";
 
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
-    uint private constant SOCCER_TAG = 9010;
-    uint private constant SOCCER_DISCOUNT = 30 * 1e16;
-    uint private constant NBA_TAG = 9004;
-    uint private constant NBA_DISCOUNT = 5 * 1e16;
 
+    uint private constant TAG_F1 = 9445;
+    uint private constant TAG_MOTOGP = 9497;
     uint private constant TAG_NUMBER_SPREAD = 10001;
     uint private constant TAG_NUMBER_TOTAL = 10002;
     uint private constant DOUBLE_CHANCE_TAG = 10003;
@@ -82,13 +80,14 @@ contract ParlayVerifier {
         bytes32 gameIdAway;
         uint tag1;
         uint tag2;
-        // uint motoCounter = 0;
+        uint motoCounter = 0;
         for (uint i = 0; i < params.sportMarkets.length; i++) {
             address sportMarket = params.sportMarkets[i];
             (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
             tag1 = ISportPositionalMarket(sportMarket).tags(0);
             tag2 = consumer.isChildMarket(sportMarket) ? ISportPositionalMarket(sportMarket).tags(1) : 0;
-
+            motoCounter = (tag1 == TAG_F1 || tag1 == TAG_MOTOGP) ? ++motoCounter : motoCounter;
+            require(motoCounter <= 1, "2xMotosport");
             // check if game IDs already exist
             for (uint j = 0; j < lastCachedIdx; j++) {
                 if (

@@ -579,7 +579,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('buyAMMQuote: ', fromUnit(answer));
 		});
 
-		it('Get default market odds', async () => {
+		it('Get default market odds with old and new spread', async () => {
 			answer = await SportsAMM.getMarketDefaultOdds(deployedMarket.address, false);
 			let sum = 0;
 			console.log('odds: ', answer[0].toString());
@@ -600,6 +600,78 @@ contract('SportsAMM', (accounts) => {
 			console.log('odds: ', answer[2].toString());
 			sum = answer[0].add(answer[1]).add(answer[2]);
 			console.log('sum: ', fromUnit(sum));
+		});
+
+		it('Get default market odds with old and new spread and no SafeBox', async () => {
+			await SportsAMM.setParameters(
+				DAY,
+				toUnit('0.04'), //_minSpread
+				toUnit('0.1'), //_maxSpread
+				toUnit('0.001'), //_minSupportedOdds
+				toUnit('0.9'), //_maxSupportedOdds
+				toUnit('1000'), //_defaultCapPerGame
+				toUnit('0'), //_safeBoxImpact
+				toUnit('0.005'), //_referrerFee
+				toUnit('500000'), //_threshold
+				{ from: owner }
+			);
+			answer = await SportsAMM.getMarketDefaultOdds(deployedMarket.address, false);
+			let sum = 0;
+			console.log('odds: ', answer[0].toString());
+			console.log('odds: ', answer[1].toString());
+			console.log('odds: ', answer[2].toString());
+			sum = answer[0].add(answer[1]).add(answer[2]);
+			console.log('sum: ', fromUnit(sum));
+
+			await SportsAMM.setMinSpreadPerSport(tagID_16, toUnit('0.02'), { from: owner });
+			const min_spreadForSport = await SportsAMM.min_spreadPerSport(tagID_16);
+
+			console.log('SETTING NEW SPREAD PER SPORT: ', 1);
+			console.log('NEW SPREAD PER SPORT 9016: ', min_spreadForSport.toString());
+
+			answer = await SportsAMM.getMarketDefaultOdds(deployedMarket.address, false);
+			console.log('odds: ', answer[0].toString());
+			console.log('odds: ', answer[1].toString());
+			console.log('odds: ', answer[2].toString());
+			sum = answer[0].add(answer[1]).add(answer[2]);
+			console.log('sum: ', fromUnit(sum));
+			assert.bnLt(sum, toUnit('1.02001'));
+		});
+
+		it('Set spread to 10% and no SafeBox', async () => {
+			await SportsAMM.setParameters(
+				DAY,
+				toUnit('0.04'), //_minSpread
+				toUnit('0.1'), //_maxSpread
+				toUnit('0.001'), //_minSupportedOdds
+				toUnit('0.9'), //_maxSupportedOdds
+				toUnit('1000'), //_defaultCapPerGame
+				toUnit('0'), //_safeBoxImpact
+				toUnit('0.005'), //_referrerFee
+				toUnit('500000'), //_threshold
+				{ from: owner }
+			);
+			answer = await SportsAMM.getMarketDefaultOdds(deployedMarket.address, false);
+			let sum = 0;
+			console.log('odds: ', answer[0].toString());
+			console.log('odds: ', answer[1].toString());
+			console.log('odds: ', answer[2].toString());
+			sum = answer[0].add(answer[1]).add(answer[2]);
+			console.log('sum: ', fromUnit(sum));
+
+			await SportsAMM.setMinSpreadPerSport(tagID_16, toUnit('0.1'), { from: owner });
+			const min_spreadForSport = await SportsAMM.min_spreadPerSport(tagID_16);
+
+			console.log('SETTING NEW SPREAD PER SPORT: ', 1);
+			console.log('NEW SPREAD PER SPORT 9016: ', min_spreadForSport.toString());
+
+			answer = await SportsAMM.getMarketDefaultOdds(deployedMarket.address, false);
+			console.log('odds: ', answer[0].toString());
+			console.log('odds: ', answer[1].toString());
+			console.log('odds: ', answer[2].toString());
+			sum = answer[0].add(answer[1]).add(answer[2]);
+			console.log('sum: ', fromUnit(sum));
+			assert.bnLt(sum, toUnit('1.1001'));
 		});
 
 		it('Buy from SportsAMM, position 1, value: 100', async () => {

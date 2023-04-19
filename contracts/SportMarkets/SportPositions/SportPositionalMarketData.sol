@@ -13,9 +13,6 @@ import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
-    uint private constant TAG_NUMBER_SPREAD = 10001;
-    uint private constant TAG_NUMBER_TOTAL = 10002;
-    uint private constant DOUBLE_CHANCE_TAG = 10003;
     struct ActiveMarketsOdds {
         address market;
         uint[] odds;

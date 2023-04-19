@@ -290,13 +290,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     function _getMinSpreadToUse(bool useDefaultMinSpread, address market) internal view returns (uint min_spreadToUse) {
-        uint spreadTag = min_spreadPerSport[ISportPositionalMarket(market).tags(0)];
+        uint spreadForTag = min_spreadPerSport[ISportPositionalMarket(market).tags(0)];
         min_spreadToUse = useDefaultMinSpread
-            ? (spreadTag > 0 ? spreadTag : min_spread)
+            ? (spreadForTag > 0 ? spreadForTag : min_spread)
             : (
                 min_spreadPerAddress[msg.sender] > 0
                     ? min_spreadPerAddress[msg.sender]
-                    : (spreadTag > 0 ? spreadTag : min_spread)
+                    : (spreadForTag > 0 ? spreadForTag : min_spread)
             );
     }
 

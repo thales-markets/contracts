@@ -136,9 +136,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return the cap per sportID and childID. based on the tagID[0] and tagID[1]
     mapping(uint => mapping(uint => uint)) public capPerSportAndChild;
 
-    // @return specific min_spread per address
-    mapping(uint => uint) public min_spreadPerSport;
-
     struct BuyFromAMMParams {
         address market;
         ISportsAMM.Position position;
@@ -158,6 +155,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @return the adddress of the AMMLP contract
     SportAMMLiquidityPool public liquidityPool;
+
+    // @return specific min_spread per address
+    mapping(uint => uint) public min_spreadPerSport;
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions

@@ -289,8 +289,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
+    function _getTagsForMarket(address _market) internal view returns (uint tag1, uint tag2) {
+        ISportPositionalMarket sportMarket = ISportPositionalMarket(_market);
+        tag1 = sportMarket.tags(0);
+        tag2 = sportMarket.isChild() ? sportMarket.tags(1) : 0;
+    }
+
     function _getMinSpreadToUse(bool useDefaultMinSpread, address market) internal view returns (uint min_spreadToUse) {
-        uint spreadForTag = min_spreadPerSport[ISportPositionalMarket(market).tags(0)];
+        (uint tag1, uint tag2) = _getTagsForMarket(market);
+        uint spreadForTag = tag2 > 0 && min_spreadPerSport[tag2] > 0 ? min_spreadPerSport[tag2] : min_spreadPerSport[tag1];
         min_spreadToUse = useDefaultMinSpread
             ? (spreadForTag > 0 ? spreadForTag : min_spread)
             : (
@@ -798,15 +805,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return toReturn cap to use
     function _calculateCapToBeUsed(address market) internal view returns (uint toReturn) {
         toReturn = capPerMarket[market];
+        (uint tag1, uint tag2) = _getTagsForMarket(market);
         if (toReturn == 0) {
-            uint firstTag = ISportPositionalMarket(market).tags(0);
-            uint capFirstTag = capPerSport[firstTag];
+            uint capFirstTag = capPerSport[tag1];
             capFirstTag = capFirstTag > 0 ? capFirstTag : defaultCapPerGame;
             toReturn = capFirstTag;
 
-            if (ITherundownConsumer(theRundownConsumer).isChildMarket(market)) {
-                uint secondTag = ISportPositionalMarket(market).tags(1);
-                uint capSecondTag = capPerSportAndChild[firstTag][secondTag];
+            if (tag2 > 0) {
+                uint capSecondTag = capPerSportAndChild[tag1][tag2];
                 toReturn = capSecondTag > 0 ? capSecondTag : capFirstTag / 2;
             }
         }

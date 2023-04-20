@@ -635,7 +635,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('odds: ', answer[2].toString());
 			sum = answer[0].add(answer[1]).add(answer[2]);
 			console.log('sum: ', fromUnit(sum));
-			assert.bnLt(sum, toUnit('1.02001'));
+			assert.bnLt(sum, toUnit('1.0201'));
 		});
 
 		it('Set spread to 10% and no SafeBox', async () => {

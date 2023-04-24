@@ -308,6 +308,31 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_tag1",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_tag2",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_spread",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMinSpreadPerSport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_manager",
         "type": "address"
@@ -964,6 +989,30 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "min_spreadPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "minimalTimeLeftToMaturity",
     "outputs": [
@@ -1303,6 +1352,29 @@
       }
     ],
     "name": "setCurveSUSD",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tag2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minSpread",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinSpreadPerSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -524,8 +524,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         uint assetPrice,
         uint strikePriceStep
     ) internal view returns (MarketParams[] memory marketParams, uint dateLimit) {
-        // uint currentTimestamp = block.timestamp;
-        uint currentTimestamp = 1681988229; // 4
+        uint currentTimestamp = block.timestamp;
         uint date = _getDateFromTimestamp(currentTimestamp);
         uint dayInWeek = DateTime.getDayOfWeek(date);
         dateLimit = DateTime.addMonths(date, marketCreationMonthLimit);

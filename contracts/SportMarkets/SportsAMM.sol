@@ -157,7 +157,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     SportAMMLiquidityPool public liquidityPool;
 
     // @return specific min_spread per address
-    mapping(uint => mapping(uint => uint)) public min_spreadPerSport;
+    mapping(uint => mapping(uint => uint)) public minSpreadPerSport;
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
@@ -297,8 +297,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _getMinSpreadToUse(bool useDefaultMinSpread, address market) internal view returns (uint min_spreadToUse) {
         (uint tag1, uint tag2) = _getTagsForMarket(market);
-        // uint spreadForTag = tag2 > 0 && min_spreadPerSport[tag2] > 0 ? min_spreadPerSport[tag2] : min_spreadPerSport[tag1];
-        uint spreadForTag = min_spreadPerSport[tag1][tag2];
+        uint spreadForTag = tag2 > 0 && minSpreadPerSport[tag1][tag2] > 0
+            ? minSpreadPerSport[tag1][tag2]
+            : minSpreadPerSport[tag1][0];
         min_spreadToUse = useDefaultMinSpread
             ? (spreadForTag > 0 ? spreadForTag : min_spread)
             : (
@@ -757,7 +758,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint _tag2,
         uint _minSpread
     ) external onlyOwner {
-        min_spreadPerSport[_tag1][_tag2] = _minSpread;
+        minSpreadPerSport[_tag1][_tag2] = _minSpread;
         emit SetMinSpreadPerSport(_tag1, _tag2, _minSpread);
     }
 

@@ -416,24 +416,27 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
         address target = _getTarget(market, position);
 
-        address _liquidityPool = liquidityPool.getOrCreateMarketPool(market);
+        _transferPositions(market);
 
         //transfer options first to have max burn available
-        IERC20Upgradeable(target).safeTransferFrom(msg.sender, _liquidityPool, amount);
+        IERC20Upgradeable(target).safeTransferFrom(msg.sender, address(this), amount);
 
         uint sUSDFromBurning = IPositionalMarketManager(manager).transformCollateral(
-            IPositionalMarket(market).getMaximumBurnable(_liquidityPool)
+            IPositionalMarket(market).getMaximumBurnable(address(this))
         );
         if (sUSDFromBurning > 0) {
-            IPositionalMarket(market).burnOptionsMaximum(_liquidityPool);
+            IPositionalMarket(market).burnOptionsMaximum();
         }
 
         uint safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - (pricePaid);
+        uint ammBalance = IERC20Upgradeable(sUSD).balanceOf(address(this));
         if (safeBoxImpact == 0) {
             safeBoxShare = 0;
         }
 
-        liquidityPool.commitTrade(market, pricePaid + safeBoxShare);
+        if (pricePaid + safeBoxShare > ammBalance) {
+            liquidityPool.commitTrade(market, pricePaid + safeBoxShare - ammBalance);
+        }
         sUSD.safeTransfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
@@ -442,8 +445,17 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
         _updateSpentOnMarketOnSell(market, pricePaid, sUSDFromBurning, msg.sender, safeBoxShare);
 
+        _sendMintedPositionsAndUSDToLiquidityPool(market);
+
         emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), target);
         return pricePaid;
+    }
+
+    function _transferPositions(address market) internal {
+        (uint upBalance, uint downBalance) = ammUtils.getBalanceOfPositionsOnMarket(market, address(liquidityPool));
+
+        liquidityPool.getOptionsForBuy(market, upBalance, IThalesAMM.Position.Up);
+        liquidityPool.getOptionsForBuy(market, downBalance, IThalesAMM.Position.Down);
     }
 
     /// @notice Retrieve sUSD from the contract

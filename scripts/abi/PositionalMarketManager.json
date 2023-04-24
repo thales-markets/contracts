@@ -97,6 +97,31 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bool[7]",
+        "name": "weekDays",
+        "type": "bool[7]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[7]",
+        "name": "weekHours",
+        "type": "uint256[7]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "monthLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MarketCreationParametersChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "market",
         "type": "address"
@@ -306,6 +331,25 @@
     "type": "event"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "oracleKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "_getStrikePriceStep",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "result",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -502,6 +546,37 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "oracleKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getMarketParams",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikeDate",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PositionalMarketManager.MarketParams[]",
+        "name": "marketParams",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getThalesAMM",
     "outputs": [
@@ -612,6 +687,38 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "marketCreationDays",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketCreationDaysCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "marketCreationEnabled",
     "outputs": [
@@ -619,6 +726,38 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "marketCreationHours",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketCreationMonthLimit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -945,6 +1084,29 @@
       }
     ],
     "name": "setMarketCreationEnabled",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool[7]",
+        "name": "weekDays",
+        "type": "bool[7]"
+      },
+      {
+        "internalType": "uint256[7]",
+        "name": "weekHours",
+        "type": "uint256[7]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "monthLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMarketCreationParameters",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

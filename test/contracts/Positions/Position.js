@@ -114,6 +114,10 @@ contract('Position', (accounts) => {
 
 		await thalesAMM.setImpliedVolatilityPerAsset(AUDKey, toUnit(100), { from: owner.address });
 
+		const weekDays = [true, true, true, true, true, true, true];
+		const weekHours = [8, 8, 8, 8, 8, 8, 8];
+		await manager.connect(creator).setMarketCreationParameters(weekDays, weekHours, 3);
+
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
 			sUSDSynth.approve(manager.address, sUSDQty, { from: initialCreator }),
@@ -126,8 +130,16 @@ contract('Position', (accounts) => {
 
 	describe('Transfers', () => {
 		it('Can transfer tokens.', async () => {
-			let now = await currentTime();
-			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), creator);
+			const marketParams = await manager.getMarketParams(AUDKey);
+
+			market = await createMarket(
+				manager,
+				AUDKey,
+				marketParams[1].strikePrice,
+				marketParams[1].strikeDate,
+				toUnit(2),
+				creator
+			);
 			await fastForward(100);
 
 			const options = await market.options();
@@ -239,8 +251,16 @@ contract('Position', (accounts) => {
 		});
 
 		it('Can transferFrom tokens.', async () => {
-			let now = await currentTime();
-			market = await createMarket(manager, AUDKey, toUnit(1), now + 2 * DAY, toUnit(2), creator);
+			const marketParams = await manager.getMarketParams(AUDKey);
+
+			market = await createMarket(
+				manager,
+				AUDKey,
+				marketParams[4].strikePrice,
+				marketParams[4].strikeDate,
+				toUnit(2),
+				creator
+			);
 			await fastForward(100);
 
 			const options = await market.options();
@@ -284,7 +304,7 @@ contract('Position', (accounts) => {
 	describe('Exercising Options', () => {
 		it('Exercising options updates balances properly', async () => {
 			const totalSupply = await down.totalSupply();
-			await fastForward(2 * DAY);
+			await fastForward(12 * DAY);
 			await market.exerciseOptions({ from: minter });
 			await assertAllBnEqual([down.balanceOf(minter), down.totalSupply()], [toBN(0), toUnit(1)]);
 		});

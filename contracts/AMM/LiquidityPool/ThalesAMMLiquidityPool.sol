@@ -86,6 +86,12 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     mapping(uint => mapping(address => bool)) public marketAlreadyExercisedInRound;
 
+    bool public roundClosingPrepared;
+
+    uint public usersProcessedInRound;
+
+    uint public marketsProcessedInRound;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
@@ -114,7 +120,7 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     /// @notice Deposit funds from user into pool for the next round
     /// @param amount Value to be deposited
-    function deposit(uint amount) external canDeposit(amount) nonReentrant whenNotPaused {
+    function deposit(uint amount) external canDeposit(amount) nonReentrant whenNotPaused roundClosingNotPrepared {
         uint nextRound = round + 1;
         address roundPool = _getOrCreateRoundPool(nextRound);
         sUSD.safeTransferFrom(msg.sender, roundPool, amount);
@@ -153,7 +159,13 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     /// @notice get sUSD to mint for buy and store market as trading in the round
     /// @param market to trade
     /// @param amountToMint amount to get for mint
-    function commitTrade(address market, uint amountToMint) external nonReentrant whenNotPaused onlyAMM {
+    function commitTrade(address market, uint amountToMint)
+        external
+        nonReentrant
+        whenNotPaused
+        onlyAMM
+        roundClosingNotPrepared
+    {
         require(started, "Pool has not started");
         require(amountToMint > 0, "Can't commit a zero trade");
 
@@ -191,7 +203,7 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         address market,
         uint optionsAmount,
         IThalesAMM.Position position
-    ) external nonReentrant whenNotPaused onlyAMM {
+    ) external nonReentrant whenNotPaused onlyAMM roundClosingNotPrepared {
         if (optionsAmount > 0) {
             require(started, "Pool has not started");
 
@@ -217,7 +229,7 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         address market,
         uint optionsAmount,
         address position
-    ) external nonReentrant whenNotPaused onlyAMM {
+    ) external nonReentrant whenNotPaused onlyAMM roundClosingNotPrepared {
         if (optionsAmount > 0) {
             require(started, "Pool has not started");
 
@@ -232,16 +244,23 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         }
     }
 
-    /// @notice request withdrawal from the LP
+    /// @notice get or create market pool for given market
     /// @param market to check
     /// @return roundPool the pool for the passed market
-    function getOrCreateMarketPool(address market) external onlyAMM nonReentrant whenNotPaused returns (address roundPool) {
+    function getOrCreateMarketPool(address market)
+        external
+        onlyAMM
+        nonReentrant
+        whenNotPaused
+        roundClosingNotPrepared
+        returns (address roundPool)
+    {
         uint marketRound = getMarketRound(market);
         roundPool = _getOrCreateRoundPool(marketRound);
     }
 
     /// @notice request withdrawal from the LP
-    function withdrawalRequest() external nonReentrant whenNotPaused {
+    function withdrawalRequest() external nonReentrant whenNotPaused roundClosingNotPrepared {
         require(started, "Pool has not started");
         require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
         require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
@@ -266,9 +285,9 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         emit WithdrawalRequested(msg.sender);
     }
 
-    /// @notice Close current round and begin next round,
-    /// excercise options of trading markets and calculate profit and loss
-    function closeRound() external nonReentrant whenNotPaused {
+    /// @notice Prepare round closing
+    /// excercise options of trading markets and ensure there are no markets left unresolved
+    function prepareRoundClosing() external nonReentrant whenNotPaused roundClosingNotPrepared {
         require(canCloseCurrentRound(), "Can't close current round");
         // excercise market options
         exerciseMarketsReadyToExercised();
@@ -285,26 +304,51 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             profitAndLossPerRound[round] = (currentBalance * ONE) / allocationPerRound[round];
         }
 
-        for (uint i = 0; i < usersPerRound[round].length; i++) {
+        roundClosingPrepared = true;
+    }
+
+    /// @notice Prepare round closing
+    /// excercise options of trading markets and ensure there are no markets left unresolved
+    function processRoundClosingBatch(uint batchSize) external nonReentrant whenNotPaused {
+        require(roundClosingPrepared, "Round closing not prepared");
+        require(usersProcessedInRound < usersPerRound[round].length, "All users already processed");
+        require(batchSize > 0, "batchSize has to be greater than 0");
+
+        address roundPool = roundPools[round];
+
+        uint endCursor = usersProcessedInRound + batchSize;
+        if (endCursor > usersPerRound[round].length) {
+            endCursor = usersPerRound[round].length;
+        }
+
+        for (uint i = usersProcessedInRound; i < endCursor; i++) {
             address user = usersPerRound[round][i];
             uint balanceAfterCurRound = (balancesPerRound[round][user] * profitAndLossPerRound[round]) / ONE;
-            if (userInRound[round][user]) {
-                if (!withdrawalRequested[user] && (profitAndLossPerRound[round] > 0)) {
-                    balancesPerRound[round + 1][user] = balancesPerRound[round + 1][user] + balanceAfterCurRound;
-                    userInRound[round + 1][user] = true;
-                    usersPerRound[round + 1].push(user);
-                    if (address(stakingThales) != address(0)) {
-                        stakingThales.updateVolume(user, balanceAfterCurRound);
-                    }
-                } else {
-                    balancesPerRound[round + 1][user] = 0;
-                    sUSD.safeTransferFrom(roundPool, user, balanceAfterCurRound);
-                    withdrawalRequested[user] = false;
-                    userInRound[round + 1][user] = false;
-                    emit Claimed(user, balanceAfterCurRound);
+            if (!withdrawalRequested[user] && (profitAndLossPerRound[round] > 0)) {
+                balancesPerRound[round + 1][user] = balancesPerRound[round + 1][user] + balanceAfterCurRound;
+                usersPerRound[round + 1].push(user);
+                if (address(stakingThales) != address(0)) {
+                    stakingThales.updateVolume(user, balanceAfterCurRound);
                 }
+            } else {
+                balancesPerRound[round + 1][user] = 0;
+                sUSD.safeTransferFrom(roundPool, user, balanceAfterCurRound);
+                withdrawalRequested[user] = false;
+                emit Claimed(user, balanceAfterCurRound);
             }
+            usersProcessedInRound = usersProcessedInRound + 1;
         }
+    }
+
+    /// @notice Close current round and begin next round,
+    /// calculate profit and loss and process withdrawals
+    function closeRound() external nonReentrant whenNotPaused {
+        require(roundClosingPrepared, "Round closing not prepared");
+        require(usersProcessedInRound == usersPerRound[round].length, "Not all users processed yet");
+        // set for next round to false
+        roundClosingPrepared = false;
+
+        address roundPool = roundPools[round];
 
         //always claim for defaultLiquidityProvider
         if (balancesPerRound[round][defaultLiquidityProvider] > 0) {
@@ -332,14 +376,17 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
         sUSD.safeTransferFrom(roundPool, roundPoolNewRound, sUSD.balanceOf(roundPool));
 
+        usersProcessedInRound = 0;
+        marketsProcessedInRound = 0;
+
         emit RoundClosed(round - 1, profitAndLossPerRound[round - 1]);
     }
 
     /// @notice Iterate all markets in the current round and exercise those ready to be exercised
-    function exerciseMarketsReadyToExercised() public {
+    function exerciseMarketsReadyToExercised() public roundClosingNotPrepared {
         ThalesAMMLiquidityPoolRound poolRound = ThalesAMMLiquidityPoolRound(roundPools[round]);
         IPositionalMarket market;
-        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+        for (uint i = marketsProcessedInRound; i < tradingMarketsPerRound[round].length; i++) {
             address marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = IPositionalMarket(marketAddress);
@@ -347,6 +394,42 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
                     poolRound.exerciseMarketReadyToExercised(market);
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
                 }
+
+                marketsProcessedInRound += 1;
+            }
+        }
+    }
+
+    /// @notice Exercises markets in a round
+    /// @param batchSize number of markets to be processed
+    function exerciseMarketsReadyToExercisedBatch(uint batchSize)
+        external
+        nonReentrant
+        whenNotPaused
+        roundClosingNotPrepared
+    {
+        require(canCloseCurrentRound(), "Can't close current round");
+        require(marketsProcessedInRound < tradingMarketsPerRound[round].length, "All markets already processed");
+        require(batchSize > 0, "batchSize has to be greater than 0");
+
+        ThalesAMMLiquidityPoolRound poolRound = ThalesAMMLiquidityPoolRound(roundPools[round]);
+
+        uint endCursor = marketsProcessedInRound + batchSize;
+        if (endCursor > tradingMarketsPerRound[round].length) {
+            endCursor = tradingMarketsPerRound[round].length;
+        }
+
+        IPositionalMarket market;
+        for (uint i = marketsProcessedInRound; i < endCursor; i++) {
+            address marketAddress = tradingMarketsPerRound[round][i];
+            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+                market = IPositionalMarket(marketAddress);
+                if (market.resolved()) {
+                    poolRound.exerciseMarketReadyToExercised(market);
+                    marketAlreadyExercisedInRound[round][marketAddress] = true;
+                }
+
+                marketsProcessedInRound += 1;
             }
         }
     }
@@ -692,6 +775,11 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     modifier onlyAMM() {
         require(msg.sender == address(thalesAMM), "only the AMM may perform these methods");
+        _;
+    }
+
+    modifier roundClosingNotPrepared() {
+        require(!roundClosingPrepared, "Not allowed during roundClosingPrepared");
         _;
     }
 

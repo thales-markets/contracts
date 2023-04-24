@@ -185,7 +185,7 @@
         "type": "address"
       }
     ],
-    "name": "setRhalesAMMLiquidityPool",
+    "name": "setThalesAMMLiquidityPool",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

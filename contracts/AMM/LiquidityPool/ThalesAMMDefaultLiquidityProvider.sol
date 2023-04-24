@@ -32,7 +32,7 @@ contract ThalesAMMDefaultLiquidityProvider is ProxyOwned, Initializable, ProxyRe
 
     /// @notice Setting the ThalesAMMLiquidityPool
     /// @param _thalesAMMLiquidityPool Address of Staking contract
-    function setRhalesAMMLiquidityPool(address _thalesAMMLiquidityPool) external onlyOwner {
+    function setThalesAMMLiquidityPool(address _thalesAMMLiquidityPool) external onlyOwner {
         if (liquidityPool != address(0)) {
             sUSD.approve(liquidityPool, 0);
         }

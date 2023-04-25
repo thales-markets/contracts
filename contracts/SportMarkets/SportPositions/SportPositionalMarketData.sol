@@ -11,6 +11,11 @@ import "../../interfaces/IParlayMarketsAMM.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "./SportPositionalMarket.sol";
+import "./SportPositionalMarketManager.sol";
+import "../Rundown/GamesOddsObtainer.sol";
+import "../Rundown/TherundownConsumer.sol";
+import "../Voucher/OvertimeVoucherEscrow.sol";
 
 contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     uint private constant TAG_NUMBER_SPREAD = 10001;
@@ -25,6 +30,50 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         address market;
         int[] priceImpact;
     }
+
+    struct MarketData {
+        bytes32 gameId;
+        string gameLabel;
+        uint firstTag;
+        uint secondTag;
+        uint maturity;
+        bool resolved;
+        uint finalResult;
+        bool cancelled;
+        bool paused;
+        uint[] odds;
+        address[] childMarkets;
+        address[] doubleChanceMarkets;
+        uint8 homeScore;
+        uint8 awayScore;
+        int16 spread;
+        uint24 total;
+    }
+
+    struct MarketLiquidityAndPriceImpact {
+        int homePriceImpact;
+        int awayPriceImpact;
+        int drawPriceImpact;
+        uint homeLiquidity;
+        uint awayLiquidity;
+        uint drawLiquidity;
+    }
+
+    struct PositionDetails {
+        int priceImpact;
+        uint liquidity;
+        uint quote;
+        uint quoteDifferentCollateral;
+    }
+
+    struct VoucherEscrowData {
+        uint period;
+        bool isWhitelisted;
+        bool isClaimed;
+        uint voucherAmount;
+        bool isPeriodEnded;
+        uint periodEnd;
+    }
     struct CombinedOdds {
         uint[2] tags;
         uint[6] odds;
@@ -38,15 +87,18 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
 
     address public manager;
     address public sportsAMM;
+    address public oddsObtainer;
+    address public consumer;
+    address public voucherEscrow;
 
     function initialize(address _owner) external initializer {
         setOwner(_owner);
     }
 
     function getOddsForAllActiveMarkets() external view returns (ActiveMarketsOdds[] memory) {
-        address[] memory activeMarkets = ISportPositionalMarketManager(manager).activeMarkets(
+        address[] memory activeMarkets = SportPositionalMarketManager(manager).activeMarkets(
             0,
-            ISportPositionalMarketManager(manager).numActiveMarkets()
+            SportPositionalMarketManager(manager).numActiveMarkets()
         );
         ActiveMarketsOdds[] memory marketOdds = new ActiveMarketsOdds[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
@@ -61,7 +113,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         view
         returns (ActiveMarketsOdds[] memory)
     {
-        address[] memory activeMarkets = ISportPositionalMarketManager(manager).activeMarkets(
+        address[] memory activeMarkets = SportPositionalMarketManager(manager).activeMarkets(
             batchNumber * batchSize,
             batchSize
         );
@@ -74,14 +126,14 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function getBaseOddsForAllActiveMarkets() external view returns (ActiveMarketsOdds[] memory) {
-        address[] memory activeMarkets = ISportPositionalMarketManager(manager).activeMarkets(
+        address[] memory activeMarkets = SportPositionalMarketManager(manager).activeMarkets(
             0,
-            ISportPositionalMarketManager(manager).numActiveMarkets()
+            SportPositionalMarketManager(manager).numActiveMarkets()
         );
         ActiveMarketsOdds[] memory marketOdds = new ActiveMarketsOdds[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             marketOdds[i].market = activeMarkets[i];
-            marketOdds[i].odds = new uint[](ISportPositionalMarket(activeMarkets[i]).optionsCount());
+            marketOdds[i].odds = new uint[](SportPositionalMarket(activeMarkets[i]).optionsCount());
 
             for (uint j = 0; j < marketOdds[i].odds.length; j++) {
                 if (ISportsAMM(sportsAMM).isMarketInAMMTrading(activeMarkets[i])) {
@@ -105,14 +157,14 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         view
         returns (ActiveMarketsPriceImpact[] memory)
     {
-        address[] memory activeMarkets = ISportPositionalMarketManager(manager).activeMarkets(
+        address[] memory activeMarkets = SportPositionalMarketManager(manager).activeMarkets(
             batchNumber * batchSize,
             batchSize
         );
         ActiveMarketsPriceImpact[] memory marketPriceImpact = new ActiveMarketsPriceImpact[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             marketPriceImpact[i].market = activeMarkets[i];
-            marketPriceImpact[i].priceImpact = new int[](ISportPositionalMarket(activeMarkets[i]).optionsCount());
+            marketPriceImpact[i].priceImpact = new int[](SportPositionalMarket(activeMarkets[i]).optionsCount());
 
             for (uint j = 0; j < marketPriceImpact[i].priceImpact.length; j++) {
                 if (ISportsAMM(sportsAMM).isMarketInAMMTrading(activeMarkets[i])) {
@@ -136,14 +188,14 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function getPriceImpactForAllActiveMarkets() external view returns (ActiveMarketsPriceImpact[] memory) {
-        address[] memory activeMarkets = ISportPositionalMarketManager(manager).activeMarkets(
+        address[] memory activeMarkets = SportPositionalMarketManager(manager).activeMarkets(
             0,
-            ISportPositionalMarketManager(manager).numActiveMarkets()
+            SportPositionalMarketManager(manager).numActiveMarkets()
         );
         ActiveMarketsPriceImpact[] memory marketPriceImpact = new ActiveMarketsPriceImpact[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             marketPriceImpact[i].market = activeMarkets[i];
-            marketPriceImpact[i].priceImpact = new int[](ISportPositionalMarket(activeMarkets[i]).optionsCount());
+            marketPriceImpact[i].priceImpact = new int[](SportPositionalMarket(activeMarkets[i]).optionsCount());
 
             for (uint j = 0; j < marketPriceImpact[i].priceImpact.length; j++) {
                 if (ISportsAMM(sportsAMM).isMarketInAMMTrading(activeMarkets[i])) {
@@ -230,6 +282,101 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    function getMarketData(address market) external view returns (MarketData memory) {
+        SportPositionalMarket sportMarket = SportPositionalMarket(market);
+
+        (bytes32 gameId, string memory gameLabel) = sportMarket.getGameDetails();
+        uint secondTag = sportMarket.isDoubleChance() || sportMarket.isChild() ? sportMarket.tags(1) : 0;
+        (uint maturity, ) = sportMarket.times();
+        (, uint8 homeScore, uint8 awayScore, , ) = TherundownConsumer(consumer).gameResolved(gameId);
+
+        return
+            MarketData(
+                gameId,
+                gameLabel,
+                sportMarket.tags(0),
+                secondTag,
+                maturity,
+                sportMarket.resolved(),
+                sportMarket.finalResult(),
+                sportMarket.cancelled(),
+                sportMarket.paused(),
+                ISportsAMM(sportsAMM).getMarketDefaultOdds(market, false),
+                GamesOddsObtainer(oddsObtainer).getAllChildMarketsFromParent(market),
+                SportPositionalMarketManager(manager).getDoubleChanceMarketsByParentMarket(market),
+                homeScore,
+                awayScore,
+                GamesOddsObtainer(oddsObtainer).childMarketSread(market),
+                GamesOddsObtainer(oddsObtainer).childMarketTotal(market)
+            );
+    }
+
+    function getMarketLiquidityAndPriceImpact(address market) external view returns (MarketLiquidityAndPriceImpact memory) {
+        SportPositionalMarket sportMarket = SportPositionalMarket(market);
+        uint optionsCount = sportMarket.optionsCount();
+
+        MarketLiquidityAndPriceImpact memory marketLiquidityAndPriceImpact = MarketLiquidityAndPriceImpact(0, 0, 0, 0, 0, 0);
+
+        for (uint i = 0; i < optionsCount; i++) {
+            ISportsAMM.Position position;
+            if (i == 0) {
+                position = ISportsAMM.Position.Home;
+                marketLiquidityAndPriceImpact.homePriceImpact = ISportsAMM(sportsAMM).buyPriceImpact(market, position, ONE);
+                marketLiquidityAndPriceImpact.homeLiquidity = ISportsAMM(sportsAMM).availableToBuyFromAMM(market, position);
+            } else if (i == 1) {
+                position = ISportsAMM.Position.Away;
+                marketLiquidityAndPriceImpact.awayPriceImpact = ISportsAMM(sportsAMM).buyPriceImpact(market, position, ONE);
+                marketLiquidityAndPriceImpact.awayLiquidity = ISportsAMM(sportsAMM).availableToBuyFromAMM(market, position);
+            } else {
+                position = ISportsAMM.Position.Draw;
+                marketLiquidityAndPriceImpact.drawPriceImpact = ISportsAMM(sportsAMM).buyPriceImpact(market, position, ONE);
+                marketLiquidityAndPriceImpact.drawLiquidity = ISportsAMM(sportsAMM).availableToBuyFromAMM(market, position);
+            }
+        }
+
+        return marketLiquidityAndPriceImpact;
+    }
+
+    function getPositionDetails(
+        address market,
+        ISportsAMM.Position position,
+        uint amount,
+        address collateral
+    ) external view returns (PositionDetails memory) {
+        uint quoteDifferentCollateral = 0;
+        if (collateral != address(0)) {
+            (uint collateralQuote, uint sUSDToPay) = ISportsAMM(sportsAMM).buyFromAmmQuoteWithDifferentCollateral(
+                market,
+                position,
+                amount,
+                collateral
+            );
+            quoteDifferentCollateral = collateralQuote;
+        }
+
+        return
+            PositionDetails(
+                ISportsAMM(sportsAMM).buyPriceImpact(market, position, amount),
+                ISportsAMM(sportsAMM).availableToBuyFromAMM(market, position),
+                ISportsAMM(sportsAMM).buyFromAmmQuote(market, position, amount),
+                quoteDifferentCollateral
+            );
+    }
+
+    function getVoucherEscrowData(address user) external view returns (VoucherEscrowData memory) {
+        uint period = OvertimeVoucherEscrow(voucherEscrow).period();
+
+        return
+            VoucherEscrowData(
+                period,
+                OvertimeVoucherEscrow(voucherEscrow).isWhitelistedAddress(user),
+                OvertimeVoucherEscrow(voucherEscrow).addressClaimedVoucherPerPeriod(period, user),
+                OvertimeVoucherEscrow(voucherEscrow).voucherAmount(),
+                OvertimeVoucherEscrow(voucherEscrow).claimingPeriodEnded(),
+                OvertimeVoucherEscrow(voucherEscrow).periodEnd(period)
+            );
+    }
+
     function setSportPositionalMarketManager(address _manager) external onlyOwner {
         manager = _manager;
         emit SportPositionalMarketManagerChanged(_manager);
@@ -240,6 +387,24 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         emit SetSportsAMM(_sportsAMM);
     }
 
+    function setOddsObtainer(address _oddsObtainer) external onlyOwner {
+        oddsObtainer = _oddsObtainer;
+        emit SetOddsObtainer(_oddsObtainer);
+    }
+
+    function setConsumer(address _consumer) external onlyOwner {
+        consumer = _consumer;
+        emit SetConsumer(_consumer);
+    }
+
+    function setVoucherEscrow(address _voucherEscrow) external onlyOwner {
+        voucherEscrow = _voucherEscrow;
+        emit SetVoucherEscrow(_voucherEscrow);
+    }
+
     event SportPositionalMarketManagerChanged(address _manager);
     event SetSportsAMM(address _sportsAMM);
+    event SetOddsObtainer(address _oddsObtainer);
+    event SetConsumer(address _consumer);
+    event SetVoucherEscrow(address _voucherEscrow);
 }

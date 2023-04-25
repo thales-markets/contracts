@@ -555,6 +555,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "exerciseMarketsReadyToExercised",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getAvailableToDeposit",
     "outputs": [
@@ -734,6 +747,19 @@
       }
     ],
     "name": "marketUsedInRoundCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketsProcessedInRound",
     "outputs": [
       {
         "internalType": "uint256",

@@ -73,6 +73,14 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         uint downPrice;
     }
 
+    struct ActiveMarketsInfoPerPosition {
+        address market;
+        uint price;
+        uint liquidity;
+        int priceImpact;
+        uint strikePrice;
+    }
+
     struct RangedMarketPricesAndLiqudity {
         uint inPrice;
         uint outPrice;
@@ -235,6 +243,119 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             }
         }
         return marketPrices;
+    }
+
+    /// @notice getAvailableAssets all assets currently available
+    /// @return all available assets
+    function getAvailableAssets() external view returns (bytes32[] memory) {
+        address[] memory activeMarkets = PositionalMarketManager(manager).activeMarkets(
+            0,
+            PositionalMarketManager(manager).numActiveMarkets()
+        );
+        bytes32[] memory allActiveAssets = new bytes32[](activeMarkets.length);
+        for (uint i = 0; i < activeMarkets.length; i++) {
+            IPositionalMarket market = IPositionalMarket(activeMarkets[i]);
+            (bytes32 key, uint strikePrice, ) = market.getOracleDetails();
+            allActiveAssets[i] = key;
+        }
+        return allActiveAssets;
+    }
+
+    /// @notice getMaturityDates all strike dates currently available
+    /// @param asset to get markets for
+    /// @return all available dates per asset
+    function getMaturityDates(bytes32 asset) external view returns (uint[] memory) {
+        address[] memory activeMarkets = PositionalMarketManager(manager).activeMarkets(
+            0,
+            PositionalMarketManager(manager).numActiveMarkets()
+        );
+        uint[] memory activeDates = new uint[](activeMarkets.length);
+        for (uint i = 0; i < activeMarkets.length; i++) {
+            IPositionalMarket market = IPositionalMarket(activeMarkets[i]);
+            (bytes32 key, uint strikePrice, ) = market.getOracleDetails();
+            if (key == asset) {
+                (uint strikeDate, ) = market.times();
+                activeDates[i] = strikeDate;
+            }
+        }
+        return activeDates;
+    }
+
+    /// @notice get a list of all markets per asset and strike date
+    /// @param asset to get markets for
+    /// @param strikeDateParam asset to get markets for
+    /// @return a list of all markets per asset and strike date
+    function getMarketsForAssetAndStrikeDate(bytes32 asset, uint strikeDateParam) external view returns (address[] memory) {
+        address[] memory activeMarkets = PositionalMarketManager(manager).activeMarkets(
+            0,
+            PositionalMarketManager(manager).numActiveMarkets()
+        );
+        address[] memory activeMarketsToReturn = new address[](activeMarkets.length);
+        for (uint i = 0; i < activeMarkets.length; i++) {
+            IPositionalMarket market = IPositionalMarket(activeMarkets[i]);
+            (bytes32 key, uint strikePrice, ) = market.getOracleDetails();
+            if (key == asset) {
+                (uint strikeDate, ) = market.times();
+                if (strikeDate == strikeDateParam) {
+                    activeMarketsToReturn[i] = activeMarkets[i];
+                }
+            }
+        }
+        return activeMarketsToReturn;
+    }
+
+    /// @notice market info for a list of markets and position
+    /// @param markets to get info for
+    /// @param position asset to get info for
+    /// @return market info for a list of markets and position
+    function getActiveMarketsInfoPerPosition(address[] calldata markets, IThalesAMM.Position position)
+        external
+        view
+        returns (ActiveMarketsInfoPerPosition[] memory)
+    {
+        ActiveMarketsInfoPerPosition[] memory activeMarkets = new ActiveMarketsInfoPerPosition[](markets.length);
+        for (uint i = 0; i < markets.length; i++) {
+            activeMarkets[i].market = markets[i];
+            IPositionalMarket market = IPositionalMarket(markets[i]);
+            (bytes32 key, uint strikePrice, ) = market.getOracleDetails();
+
+            activeMarkets[i].strikePrice = strikePrice;
+
+            activeMarkets[i].liquidity = IThalesAMM(thalesAMM).availableToBuyFromAMM(markets[i], position);
+            activeMarkets[i].priceImpact = IThalesAMM(thalesAMM).buyPriceImpact(markets[i], position, ONE);
+            activeMarkets[i].price = IThalesAMM(thalesAMM).buyFromAmmQuote(markets[i], position, ONE);
+        }
+        return activeMarkets;
+    }
+
+    /// @notice getMaturityDates all strike dates currently available
+    /// @param markets to get info for
+    /// @param position asset to get info for
+    /// @return all available dates per asset
+    function getRangedActiveMarketsInfoPerPosition(address[] calldata markets, RangedMarket.Position position)
+        external
+        view
+        returns (ActiveMarketsInfoPerPosition[] memory)
+    {
+        ActiveMarketsInfoPerPosition[] memory activeMarkets = new ActiveMarketsInfoPerPosition[](markets.length);
+        for (uint i = 0; i < markets.length; i++) {
+            activeMarkets[i].market = markets[i];
+            IPositionalMarket leftMarket = IPositionalMarket(RangedMarket(markets[i]).leftMarket());
+            IPositionalMarket rightMarket = IPositionalMarket(RangedMarket(markets[i]).rightMarket());
+            (bytes32 key, uint strikePrice, ) = leftMarket.getOracleDetails();
+            activeMarkets[i].strikePrice = strikePrice;
+
+            activeMarkets[i].liquidity = RangedMarketsAMM(rangedMarketsAMM).availableToBuyFromAMM(
+                RangedMarket(markets[i]),
+                position
+            );
+            activeMarkets[i].price = RangedMarketsAMM(rangedMarketsAMM).buyFromAmmQuote(
+                RangedMarket(markets[i]),
+                position,
+                ONE
+            );
+        }
+        return activeMarkets;
     }
 
     /// @notice getRangedMarketPricesAndLiquidity returns prices and liquidity for ranged market

@@ -34,7 +34,7 @@
 		"PositionalMarketFactory": "0xdb5a5475002F3A09A033DCF21327c81E5cDD86fb",
 		"PositionalMarketFactoryImplementation": "0xFaE0177f052c9F020e6e984aCCF98241Ae35FACd",
 		"PositionalMarketData": "0x21382a033E581a2D685826449d6c9b3d6507e23C",
-		"PositionalMarketDataImplementation": "0x6B88627e43bE7CbE48Cf616c6576F5aA15423F35",
+		"PositionalMarketDataImplementation": "0xB32fe0D20f995fcD540F19326A258679bCD0B9E5",
 		"RangedAMMImplementation": "0x181B43AC8f2bcda81e0f40B16Cb74B109dEaCFC9",
 		"RangedPositionMastercopy": "0x7801Efa8E30606D2d4c9848852b56ff03efDAd5c",
 		"RangedMarketMastercopy": "0xe5109CC91F2c236Fbee3752AF06dC92d4BDddC84",

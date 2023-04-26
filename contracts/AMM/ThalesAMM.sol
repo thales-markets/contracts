@@ -429,14 +429,11 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         }
 
         uint safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - (pricePaid);
-        uint ammBalance = IERC20Upgradeable(sUSD).balanceOf(address(this));
         if (safeBoxImpact == 0) {
             safeBoxShare = 0;
         }
 
-        if (pricePaid + safeBoxShare > ammBalance) {
-            liquidityPool.commitTrade(market, pricePaid + safeBoxShare - ammBalance);
-        }
+        liquidityPool.commitTrade(market, pricePaid + safeBoxShare);
         sUSD.safeTransfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
@@ -1049,6 +1046,30 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     function setCapPerAsset(bytes32 asset, uint _cap) external onlyOwner {
         _capPerAsset[asset] = _cap;
         emit SetCapPerAsset(asset, _cap);
+    }
+
+    /// @notice Send tokens from this contract to the destination address
+    /// @param tokens to iterate and transfer
+    /// @param account Address where to send the tokens
+    /// @param amount Amount of tokens to be sent
+    /// @param all ignore amount and send whole balance
+    function transferTokens(
+        address[] calldata tokens,
+        address payable account,
+        uint amount,
+        bool all
+    ) external onlyOwner {
+        require(tokens.length > 0, "tokens array cant be empty");
+        for (uint256 index = 0; index < tokens.length; index++) {
+            if (all) {
+                IERC20Upgradeable(tokens[index]).safeTransfer(
+                    account,
+                    IERC20Upgradeable(tokens[index]).balanceOf(address(this))
+                );
+            } else {
+                IERC20Upgradeable(tokens[index]).safeTransfer(account, amount);
+            }
+        }
     }
 
     // events

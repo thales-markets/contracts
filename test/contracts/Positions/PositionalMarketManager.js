@@ -26,6 +26,7 @@ let aggregator_sAUD;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const DAY = 24 * 60 * 60;
+const WEEK = 7 * DAY;
 
 contract('PositionalMarketManager', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator] = accounts;
@@ -131,494 +132,593 @@ contract('PositionalMarketManager', (accounts) => {
 		]);
 	});
 
-	// describe('Market tracking', () => {
-	// 	it('Multiple markets can exist simultaneously, and debt is tracked properly across them. ', async () => {
-	// 		const now = await currentTime();
-	// 		const markets = await Promise.all(
-	// 			[toUnit(1), toUnit(2), toUnit(3)].map((price) =>
-	// 				createMarket(manager, sAUDKey, price, now + 200, toUnit(1), creator)
-	// 			)
-	// 		);
+	describe('Market tracking', () => {
+		it('Multiple markets can exist simultaneously, and debt is tracked properly across them. ', async () => {
+			const now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
 
-	// 		let beforeDeposit = await manager.totalDeposited();
-	// 		assert.bnEqual(beforeDeposit, toUnit(3));
-	// 		await markets[0].mint(toUnit(2), { from: initialCreator });
-	// 		let afterDeposit = toUnit(5);
+			const markets = await Promise.all(
+				[
+					toUnit(price + strikePriceStep),
+					toUnit(price - strikePriceStep),
+					toUnit(price + 2 * strikePriceStep),
+				].map((price) => createMarket(manager, sAUDKey, price, now + 200, toUnit(1), creator))
+			);
 
-	// 		assert.bnEqual(await manager.totalDeposited(), afterDeposit);
+			let beforeDeposit = await manager.totalDeposited();
+			assert.bnEqual(beforeDeposit, toUnit(3));
+			await markets[0].mint(toUnit(2), { from: initialCreator });
+			let afterDeposit = toUnit(5);
 
-	// 		await fastForward(expiryDuration + 1000);
-	// 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), await currentTime());
+			assert.bnEqual(await manager.totalDeposited(), afterDeposit);
 
-	// 		await Promise.all(
-	// 			markets.map((m) => {
-	// 				manager.resolveMarket(m.address);
-	// 			})
-	// 		);
+			await fastForward(expiryDuration + 1000);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price, 8), await currentTime());
 
-	// 		assert.bnEqual(await markets[0].result(), toBN(0));
-	// 		assert.bnEqual(await markets[1].result(), toBN(0));
-	// 		assert.bnEqual(await markets[2].result(), toBN(1));
+			await Promise.all(
+				markets.map((m) => {
+					manager.resolveMarket(m.address);
+				})
+			);
 
-	// 		await manager.connect(creator).expireMarkets([markets[1].address]);
+			assert.bnEqual(await markets[0].result(), toBN(1));
+			assert.bnEqual(await markets[1].result(), toBN(0));
+			assert.bnEqual(await markets[2].result(), toBN(1));
 
-	// 		assert.bnEqual(await manager.totalDeposited(), afterDeposit.sub(toUnit(1)));
-	// 		await manager.connect(creator).expireMarkets([markets[0].address]);
-	// 		await manager.connect(creator).expireMarkets([markets[2].address]);
-	// 	});
+			await manager.connect(creator).expireMarkets([markets[1].address]);
 
-	// 	it('Market resolution fails for unknown markets', async () => {
-	// 		await assert.revert(manager.resolveMarket(initialCreator), 'Not an active market');
-	// 	});
-
-	// 	it('Adding, resolving, and expiring markets properly updates market lists ', async () => {
-	// 		const numMarkets = 8;
-	// 		const markets = [];
-	// 		assert.bnEqual(await manager.numActiveMarkets(), toBN(0));
-	// 		assert.equal((await manager.activeMarkets(0, 100)).length, 0);
-	// 		const now = await currentTime();
-	// 		for (let i = 0; i < numMarkets; i++) {
-	// 			let market = await createMarket(manager, sAUDKey, toUnit(i), now + 200, toUnit(1), creator);
-	// 			markets.push(market);
-	// 		}
-	// 		assert.bnEqual(await manager.numMaturedMarkets(), toBN(0));
-	// 		assert.equal((await manager.maturedMarkets(0, 100)).length, 0);
-
-	// 		const evenMarkets = markets
-	// 			.filter((e, i) => i % 2 === 0)
-	// 			.map((m) => m.address)
-	// 			.sort();
-	// 		const oddMarkets = markets
-	// 			.filter((e, i) => i % 2 !== 0)
-	// 			.map((m) => m.address)
-	// 			.sort();
-
-	// 		const createdMarkets = markets.map((m) => m.address).sort();
-
-	// 		let recordedMarkets = await manager.activeMarkets(0, 100);
-	// 		let recordedMarketsSorted = [...recordedMarkets].sort();
-	// 		assert.bnEqual(await manager.numActiveMarkets(), toBN(numMarkets));
-	// 		assert.equal(createdMarkets.length, recordedMarketsSorted.length);
-	// 		createdMarkets.forEach((p, i) => assert.equal(p, recordedMarketsSorted[i]));
-
-	// 		// Resolve all the even markets, ensuring they have been transferred.
-	// 		await fastForward(expiryDuration + 1000);
-	// 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), await currentTime());
-
-	// 		await Promise.all(evenMarkets.map((m) => manager.resolveMarket(m)));
-
-	// 		assert.bnEqual(await manager.numActiveMarkets(), toBN(4));
-	// 		recordedMarkets = await manager.activeMarkets(0, 100);
-	// 		recordedMarketsSorted = [...recordedMarkets].sort();
-	// 		assert.equal(oddMarkets.length, recordedMarketsSorted.length);
-	// 		oddMarkets.forEach((p, i) => assert.equal(p, recordedMarketsSorted[i]));
-
-	// 		assert.bnEqual(await manager.numMaturedMarkets(), toBN(4));
-	// 		recordedMarkets = await manager.maturedMarkets(0, 100);
-	// 		recordedMarketsSorted = [...recordedMarkets].sort();
-	// 		assert.equal(evenMarkets.length, recordedMarkets.length);
-	// 		evenMarkets.forEach((p, i) => assert.equal(p, recordedMarkets[i]));
-
-	// 		// Destroy those markets
-	// 		await manager.connect(creator).expireMarkets(evenMarkets);
-
-	// 		// Mature the rest of the markets
-	// 		await Promise.all(oddMarkets.map((m) => manager.resolveMarket(m)));
-	// 		let remainingMarkets = await manager.maturedMarkets(0, 100);
-	// 		let remainingMarketsSorted = [...remainingMarkets].sort();
-	// 		assert.bnEqual(await manager.numMaturedMarkets(), toBN(numMarkets / 2));
-	// 		oddMarkets.forEach((p, i) => assert.equal(p, remainingMarketsSorted[i]));
-
-	// 		// Can remove the last market
-	// 		const lastMarket = (await manager.maturedMarkets(numMarkets / 2 - 1, 1))[0];
-	// 		assert.isTrue(remainingMarkets.includes(lastMarket));
-	// 		await manager.connect(creator).expireMarkets([lastMarket]);
-	// 		remainingMarkets = await manager.maturedMarkets(0, 100);
-	// 		remainingMarketsSorted = [...remainingMarkets].sort();
-	// 		assert.bnEqual(await manager.numMaturedMarkets(), toBN(numMarkets / 2 - 1));
-	// 		assert.isFalse(remainingMarketsSorted.includes(lastMarket));
-
-	// 		// Destroy the remaining markets.
-	// 		await manager.connect(creator).expireMarkets(remainingMarketsSorted);
-	// 		assert.bnEqual(await manager.numActiveMarkets(), toBN(0));
-	// 		assert.equal((await manager.activeMarkets(0, 100)).length, 0);
-	// 		assert.bnEqual(await manager.numMaturedMarkets(), toBN(0));
-	// 		assert.equal((await manager.maturedMarkets(0, 100)).length, 0);
-	// 	});
-
-	// 	it('Pagination works properly ', async () => {
-	// 		const numMarkets = 8;
-	// 		const now = await currentTime();
-	// 		const markets = [];
-	// 		const windowSize = 3;
-	// 		let ms;
-
-	// 		// Empty list
-	// 		for (let i = 0; i < numMarkets; i++) {
-	// 			ms = await manager.activeMarkets(i, 2);
-	// 			assert.equal(ms.length, 0);
-	// 		}
-
-	// 		for (let i = 1; i <= numMarkets; i++) {
-	// 			markets.push(
-	// 				await createMarket(manager, sAUDKey, toUnit(i), now + 100, toUnit(1), creator)
-	// 			);
-	// 		}
-
-	// 		// Single elements
-	// 		for (let i = 0; i < numMarkets; i++) {
-	// 			ms = await manager.activeMarkets(i, 1);
-	// 			assert.equal(ms.length, 1);
-	// 			const m = await PositionalMarket.at(ms[0]);
-	// 			assert.bnEqual((await m.oracleDetails()).strikePrice, toUnit(i + 1));
-	// 		}
-
-	// 		// shifting window
-	// 		for (let i = 0; i < numMarkets - windowSize; i++) {
-	// 			ms = await manager.activeMarkets(i, windowSize);
-	// 			assert.equal(ms.length, windowSize);
-
-	// 			for (let j = 0; j < windowSize; j++) {
-	// 				const m = await PositionalMarket.at(ms[j]);
-	// 				assert.bnEqual((await m.oracleDetails()).strikePrice, toUnit(i + j + 1));
-	// 			}
-	// 		}
-
-	// 		// entire list
-	// 		ms = await manager.activeMarkets(0, numMarkets);
-	// 		assert.equal(ms.length, numMarkets);
-	// 		for (let i = 0; i < numMarkets; i++) {
-	// 			const m = await PositionalMarket.at(ms[i]);
-	// 			assert.bnEqual((await m.oracleDetails()).strikePrice, toUnit(i + 1));
-	// 		}
-
-	// 		// Page extends past end of list
-	// 		ms = await manager.activeMarkets(numMarkets - windowSize, windowSize * 2);
-	// 		assert.equal(ms.length, windowSize);
-	// 		for (let i = numMarkets - windowSize; i < numMarkets; i++) {
-	// 			const j = i - (numMarkets - windowSize);
-	// 			const m = await PositionalMarket.at(ms[j]);
-	// 			assert.bnEqual((await m.oracleDetails()).strikePrice, toUnit(i + 1));
-	// 		}
-
-	// 		// zero page size
-	// 		for (let i = 0; i < numMarkets; i++) {
-	// 			ms = await manager.activeMarkets(i, 0);
-	// 			assert.equal(ms.length, 0);
-	// 		}
-
-	// 		// index past the end
-	// 		for (let i = 0; i < 3; i++) {
-	// 			ms = await manager.activeMarkets(numMarkets, i);
-	// 			assert.equal(ms.length, 0);
-	// 		}
-
-	// 		// Page size larger than entire list
-	// 		ms = await manager.activeMarkets(0, numMarkets * 2);
-	// 		assert.equal(ms.length, numMarkets);
-	// 		for (let i = 0; i < numMarkets; i++) {
-	// 			const m = await PositionalMarket.at(ms[i]);
-	// 			assert.bnEqual((await m.oracleDetails()).strikePrice, toUnit(i + 1));
-	// 		}
-	// 	});
-
-	// 	it('Only owner can expire markets', async () => {
-	// 		const now = await currentTime();
-	// 		const newMarket = await createMarket(
-	// 			manager,
-	// 			sAUDKey,
-	// 			toUnit(100),
-	// 			now + 100,
-	// 			toUnit(3),
-	// 			creator
-	// 		);
-	// 		await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
-	// 		await manager.resolveMarket(newMarket.address);
-	// 		const REVERT = 'Only the contract owner may perform this action';
-	// 		await assert.revert(manager.connect(minterSigner).expireMarkets([newMarket.address]), REVERT);
-	// 	});
-	// });
-
-	describe('Create market checks', async () => {
-		let maturity, date, strikePrice;
-		beforeEach(async () => {
-			maturity = (await currentTime()) + DAY;
-			let date = new Date(maturity);
-			date.setHours(0, 0, 0, 0);
-			date = Date.parse(date);
-			strikePrice = 2100;
+			assert.bnEqual(await manager.totalDeposited(), afterDeposit.sub(toUnit(1)));
+			await manager.connect(creator).expireMarkets([markets[0].address]);
+			await manager.connect(creator).expireMarkets([markets[2].address]);
 		});
 
-		it('Cannot create duplicate markets price-wise', async () => {
-			const timestamp = await currentTime();
+		it('Market resolution fails for unknown markets', async () => {
+			await assert.revert(manager.resolveMarket(initialCreator), 'Not an active market');
+		});
 
-			await manager.connect(creator).setMaxTimeToMaturity(300 * DAY);
+		it('Adding, resolving, and expiring markets properly updates market lists ', async () => {
+			const numMarkets = 8;
+			const markets = [];
+			assert.bnEqual(await manager.numActiveMarkets(), toBN(0));
+			assert.equal((await manager.activeMarkets(0, 100)).length, 0);
+			const now = await currentTime();
 
-			await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), timestamp);
-			await thalesAMM.setImpliedVolatilityPerAsset(ETHKey, toUnit(58), { from: owner.address });
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
 
-			const impliedVolatility = await thalesAMM.impliedVolatilityPerAsset(ETHKey);
-			const rate = await priceFeed.rateForCurrency(ETHKey);
+			for (let i = 0; i < numMarkets; i++) {
+				let market = await createMarket(
+					manager,
+					sAUDKey,
+					toUnit(price + i * strikePriceStep),
+					now + 200,
+					toUnit(1),
+					creator
+				);
+				markets.push(market);
+			}
+			assert.bnEqual(await manager.numMaturedMarkets(), toBN(0));
+			assert.equal((await manager.maturedMarkets(0, 100)).length, 0);
 
-			console.log('impliedVolatility', impliedVolatility / 1e18);
-			console.log('rateForCurrency', rate / 1e18);
+			const evenMarkets = markets
+				.filter((e, i) => i % 2 === 0)
+				.map((m) => m.address)
+				.sort();
+			const oddMarkets = markets
+				.filter((e, i) => i % 2 !== 0)
+				.map((m) => m.address)
+				.sort();
 
-			const weekDays = [false, true, false, true, true, false, false];
-			const weekHours = [0, 8, 0, 8, 10, 0, 0];
-			await manager.setMarketCreationParameters(weekDays, weekHours, 3);
+			const createdMarkets = markets.map((m) => m.address).sort();
 
-			const result1 = await manager._getStrikePriceStep(ETHKey);
-			console.log(result1 / 1);
+			let recordedMarkets = await manager.activeMarkets(0, 100);
+			let recordedMarketsSorted = [...recordedMarkets].sort();
+			assert.bnEqual(await manager.numActiveMarkets(), toBN(numMarkets));
+			assert.equal(createdMarkets.length, recordedMarketsSorted.length);
+			createdMarkets.forEach((p, i) => assert.equal(p, recordedMarketsSorted[i]));
 
-			const result = await manager.getMarketParams(ETHKey);
+			// Resolve all the even markets, ensuring they have been transferred.
+			await fastForward(expiryDuration + 1000);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), await currentTime());
 
-			for (let i = 0; i < result.length; i++) {
-				console.log(i, 'strike price', result[i].strikePrice / 1);
-				console.log(i, 'strike date', result[i].strikeDate / 1);
+			await Promise.all(evenMarkets.map((m) => manager.resolveMarket(m)));
 
-				if (result[i].strikePrice != 0) {
-					let canCreate = await manager.canCreateMarket(
-						ETHKey,
-						result[i].strikeDate,
-						result[i].strikePrice
+			assert.bnEqual(await manager.numActiveMarkets(), toBN(4));
+			recordedMarkets = await manager.activeMarkets(0, 100);
+			recordedMarketsSorted = [...recordedMarkets].sort();
+			assert.equal(oddMarkets.length, recordedMarketsSorted.length);
+			oddMarkets.forEach((p, i) => assert.equal(p, recordedMarketsSorted[i]));
+
+			assert.bnEqual(await manager.numMaturedMarkets(), toBN(4));
+			recordedMarkets = await manager.maturedMarkets(0, 100);
+			recordedMarketsSorted = [...recordedMarkets].sort();
+			assert.equal(evenMarkets.length, recordedMarkets.length);
+			evenMarkets.forEach((p, i) => assert.equal(p, recordedMarkets[i]));
+
+			// Destroy those markets
+			await manager.connect(creator).expireMarkets(evenMarkets);
+
+			// Mature the rest of the markets
+			await Promise.all(oddMarkets.map((m) => manager.resolveMarket(m)));
+			let remainingMarkets = await manager.maturedMarkets(0, 100);
+			let remainingMarketsSorted = [...remainingMarkets].sort();
+			assert.bnEqual(await manager.numMaturedMarkets(), toBN(numMarkets / 2));
+			oddMarkets.forEach((p, i) => assert.equal(p, remainingMarketsSorted[i]));
+
+			// Can remove the last market
+			const lastMarket = (await manager.maturedMarkets(numMarkets / 2 - 1, 1))[0];
+			assert.isTrue(remainingMarkets.includes(lastMarket));
+			await manager.connect(creator).expireMarkets([lastMarket]);
+			remainingMarkets = await manager.maturedMarkets(0, 100);
+			remainingMarketsSorted = [...remainingMarkets].sort();
+			assert.bnEqual(await manager.numMaturedMarkets(), toBN(numMarkets / 2 - 1));
+			assert.isFalse(remainingMarketsSorted.includes(lastMarket));
+
+			// Destroy the remaining markets.
+			await manager.connect(creator).expireMarkets(remainingMarketsSorted);
+			assert.bnEqual(await manager.numActiveMarkets(), toBN(0));
+			assert.equal((await manager.activeMarkets(0, 100)).length, 0);
+			assert.bnEqual(await manager.numMaturedMarkets(), toBN(0));
+			assert.equal((await manager.maturedMarkets(0, 100)).length, 0);
+		});
+
+		it('Pagination works properly ', async () => {
+			const numMarkets = 8;
+			const now = await currentTime();
+			const markets = [];
+			const windowSize = 3;
+			let ms;
+
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			// Empty list
+			for (let i = 0; i < numMarkets; i++) {
+				ms = await manager.activeMarkets(i, 2);
+				//assert.equal(ms.length, 0);
+			}
+
+			for (let i = 1; i <= numMarkets; i++) {
+				markets.push(
+					await createMarket(
+						manager,
+						sAUDKey,
+						toUnit(price + i * strikePriceStep),
+						now + 200,
+						toUnit(1),
+						creator
+					)
+				);
+			}
+
+			// Single elements
+			for (let i = 0; i < numMarkets; i++) {
+				console.log(markets[i].address);
+				ms = await manager.activeMarkets(i, 1);
+				console.log(ms[0]);
+				assert.equal(ms.length, 1);
+				const m = await PositionalMarket.at(ms[0]);
+				assert.bnEqual(
+					(await m.oracleDetails()).strikePrice,
+					toUnit(price + (i + 1) * strikePriceStep)
+				);
+			}
+
+			// shifting window
+			for (let i = 0; i < numMarkets - windowSize; i++) {
+				ms = await manager.activeMarkets(i, windowSize);
+				assert.equal(ms.length, windowSize);
+
+				for (let j = 0; j < windowSize; j++) {
+					const m = await PositionalMarket.at(ms[j]);
+					assert.bnEqual(
+						(await m.oracleDetails()).strikePrice,
+						toUnit(price + (i + j + 1) * strikePriceStep)
 					);
-					assert.equal(canCreate[0], true);
 				}
 			}
 
-			let canCreate = await manager.canCreateMarket(
-				ETHKey,
-				result[2].strikeDate,
-				result[5].strikePrice
-			);
+			// entire list
+			ms = await manager.activeMarkets(0, numMarkets);
+			assert.equal(ms.length, numMarkets);
+			for (let i = 0; i < numMarkets; i++) {
+				const m = await PositionalMarket.at(ms[i]);
+				assert.bnEqual(
+					(await m.oracleDetails()).strikePrice,
+					toUnit(price + (i + 1) * strikePriceStep)
+				);
+			}
 
-			console.log('canCreate', canCreate);
-			console.log('canCreate', canCreate[2] / 1);
+			// Page extends past end of list
+			ms = await manager.activeMarkets(numMarkets - windowSize, windowSize * 2);
+			assert.equal(ms.length, windowSize);
+			for (let i = numMarkets - windowSize; i < numMarkets; i++) {
+				const j = i - (numMarkets - windowSize);
+				const m = await PositionalMarket.at(ms[j]);
+				assert.bnEqual(
+					(await m.oracleDetails()).strikePrice,
+					toUnit(price + (i + 1) * strikePriceStep)
+				);
+			}
+
+			// zero page size
+			for (let i = 0; i < numMarkets; i++) {
+				ms = await manager.activeMarkets(i, 0);
+				assert.equal(ms.length, 0);
+			}
+
+			// index past the end
+			for (let i = 0; i < 3; i++) {
+				ms = await manager.activeMarkets(numMarkets, i);
+				assert.equal(ms.length, 0);
+			}
+
+			// Page size larger than entire list
+			ms = await manager.activeMarkets(0, numMarkets * 2);
+			assert.equal(ms.length, numMarkets);
+			for (let i = 0; i < numMarkets; i++) {
+				const m = await PositionalMarket.at(ms[i]);
+				assert.bnEqual(
+					(await m.oracleDetails()).strikePrice,
+					toUnit(price + (i + 1) * strikePriceStep)
+				);
+			}
 		});
 
-		// it('Cannot create duplicate markets price-wise', async () => {
-		// 	const priceBuffer = await manager.priceBuffer();
-		// 	const impliedVolatility = await thalesAMM.impliedVolatilityPerAsset(ETHKey);
-
-		// 	let strikePriceUpperLimit =
-		// 		strikePrice +
-		// 		(strikePrice * (priceBuffer / Math.pow(10, 18)) * (impliedVolatility / Math.pow(10, 18))) /
-		// 			100;
-		// 	const strikePriceLowerLimit =
-		// 		strikePrice -
-		// 		(strikePrice * (priceBuffer / Math.pow(10, 18)) * (impliedVolatility / Math.pow(10, 18))) /
-		// 			100;
-		// 	await createMarket(manager, ETHKey, toUnit(strikePrice), maturity, toUnit(3), creator);
-
-		// 	await assert.revert(
-		// 		createMarket(manager, ETHKey, toUnit(strikePriceUpperLimit), maturity, toUnit(3), creator),
-		// 		'A market already exists within that timeframe and price buffer'
-		// 	);
-		// 	await assert.revert(
-		// 		createMarket(manager, ETHKey, toUnit(strikePriceLowerLimit), maturity, toUnit(3), creator),
-		// 		'A market already exists within that timeframe and price buffer'
-		// 	);
-		// });
-
-		// it('Cannot create duplicate markets time-wise', async () => {
-		// 	const timeframe = await manager.timeframeBuffer();
-		// 	await assert.revert(
-		// 		createMarket(
-		// 			manager,
-		// 			ETHKey,
-		// 			toUnit(strikePrice),
-		// 			maturity + timeframe * 60,
-		// 			toUnit(3),
-		// 			creator
-		// 		),
-		// 		'A market already exists within that timeframe and price buffer'
-		// 	);
-		// 	await assert.revert(
-		// 		createMarket(
-		// 			manager,
-		// 			ETHKey,
-		// 			toUnit(strikePrice),
-		// 			maturity - timeframe * 60,
-		// 			toUnit(3),
-		// 			creator
-		// 		),
-		// 		'A market already exists within that timeframe and price buffer'
-		// 	);
-		// });
-
-		// it('Market creation is disabled on timeframe buffer increase', async () => {
-		// 	await manager.connect(creator).setTimeframeBuffer(3);
-		// 	await assert.revert(
-		// 		createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY * 3, toUnit(3), creator),
-		// 		'A market already exists within that timeframe and price buffer'
-		// 	);
-
-		// 	await assert.revert(
-		// 		createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY * 2, toUnit(3), creator),
-		// 		'A market already exists within that timeframe and price buffer'
-		// 	);
-
-		// 	await assert.revert(
-		// 		createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY, toUnit(3), creator),
-		// 		'A market already exists within that timeframe and price buffer'
-		// 	);
-
-		// 	// on 4 days appart market can be created
-		// 	await createMarket(
-		// 		manager,
-		// 		ETHKey,
-		// 		toUnit(strikePrice),
-		// 		maturity + 4 * DAY,
-		// 		toUnit(3),
-		// 		creator
-		// 	);
-		// });
+		it('Only owner can expire markets', async () => {
+			const now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+			const newMarket = await createMarket(
+				manager,
+				sAUDKey,
+				toUnit(price - 2 * strikePriceStep),
+				now + 200,
+				toUnit(3),
+				creator
+			);
+			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
+			await manager.resolveMarket(newMarket.address);
+			const REVERT = 'Only the contract owner may perform this action';
+			await assert.revert(manager.connect(minterSigner).expireMarkets([newMarket.address]), REVERT);
+		});
 	});
 
-	// describe('Manager conducts all sUSD transfers', () => {
-	// 	it('Can not be called by non market address', async () => {
+	// describe('Create market checks', async () => {
+	// 	let maturity, date, strikePrice;
+	// 	beforeEach(async () => {
+	// 		maturity = (await currentTime()) + DAY;
+	// 		let date = new Date(maturity);
+	// 		date.setHours(0, 0, 0, 0);
+	// 		date = Date.parse(date);
+	// 		strikePrice = 2100;
+	// 	});
+
+	// 	it('Cannot create duplicate markets price-wise', async () => {
+	// 		const timestamp = await currentTime();
+
+	// 		await manager.connect(creator).setMaxTimeToMaturity(300 * DAY);
+
+	// 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), timestamp);
+	// 		await thalesAMM.setImpliedVolatilityPerAsset(ETHKey, toUnit(58), { from: owner.address });
+
+	// 		const impliedVolatility = await thalesAMM.impliedVolatilityPerAsset(ETHKey);
+	// 		const rate = await priceFeed.rateForCurrency(ETHKey);
+
+	// 		console.log('impliedVolatility', impliedVolatility / 1e18);
+	// 		console.log('rateForCurrency', rate / 1e18);
+
+	// 		const weekDays = [false, true, false, true, true, false, false];
+	// 		const weekHours = [0, 8, 0, 8, 10, 0, 0];
+	// 		await manager.setMarketCreationParameters(weekDays, weekHours, 3);
+
+	// 		const result1 = await manager._getStrikePriceStep(ETHKey);
+	// 		console.log(result1 / 1);
+
+	// 		const result = await manager.getMarketParams(ETHKey);
+
+	// 		for (let i = 0; i < result.length; i++) {
+	// 			console.log(i, 'strike price', result[i].strikePrice / 1);
+	// 			console.log(i, 'strike date', result[i].strikeDate / 1);
+
+	// 			if (result[i].strikePrice != 0) {
+	// 				let canCreate = await manager.canCreateMarket(
+	// 					ETHKey,
+	// 					result[i].strikeDate,
+	// 					result[i].strikePrice
+	// 				);
+	// 				assert.equal(canCreate[0], true);
+	// 			}
+	// 		}
+
+	// 		let canCreate = await manager.canCreateMarket(
+	// 			ETHKey,
+	// 			result[2].strikeDate,
+	// 			result[5].strikePrice
+	// 		);
+
+	// 		console.log('canCreate', canCreate);
+	// 		console.log('canCreate', canCreate[2] / 1);
+	// 	});
+
+	// 	it('Cannot create duplicate markets price-wise', async () => {
+	// 		const priceBuffer = await manager.priceBuffer();
+	// 		const impliedVolatility = await thalesAMM.impliedVolatilityPerAsset(ETHKey);
+
+	// 		let strikePriceUpperLimit =
+	// 			strikePrice +
+	// 			(strikePrice * (priceBuffer / Math.pow(10, 18)) * (impliedVolatility / Math.pow(10, 18))) /
+	// 				100;
+	// 		const strikePriceLowerLimit =
+	// 			strikePrice -
+	// 			(strikePrice * (priceBuffer / Math.pow(10, 18)) * (impliedVolatility / Math.pow(10, 18))) /
+	// 				100;
+	// 		await createMarket(manager, ETHKey, toUnit(strikePrice), maturity, toUnit(3), creator);
+
 	// 		await assert.revert(
-	// 			manager.transferSusdTo(initialCreator, exerciser, toUnit(1).toString()),
-	// 			'Market unknown'
+	// 			createMarket(manager, ETHKey, toUnit(strikePriceUpperLimit), maturity, toUnit(3), creator),
+	// 			'A market already exists within that timeframe and price buffer'
+	// 		);
+	// 		await assert.revert(
+	// 			createMarket(manager, ETHKey, toUnit(strikePriceLowerLimit), maturity, toUnit(3), creator),
+	// 			'A market already exists within that timeframe and price buffer'
 	// 		);
 	// 	});
-	// });
 
-	// describe('Deposit management', () => {
-	// 	it('Only active markets can modify the total deposits.', async () => {
-	// 		const now = await currentTime();
-	// 		await createMarket(manager, sAUDKey, toUnit(1), now + 100, toUnit(3), creator);
-
+	// 	it('Cannot create duplicate markets time-wise', async () => {
+	// 		const timeframe = await manager.timeframeBuffer();
 	// 		await assert.revert(
-	// 			manager.connect(minterSigner).incrementTotalDeposited(toUnit(2).toString()),
-	// 			'Permitted only for active markets'
+	// 			createMarket(
+	// 				manager,
+	// 				ETHKey,
+	// 				toUnit(strikePrice),
+	// 				maturity + timeframe * 60,
+	// 				toUnit(3),
+	// 				creator
+	// 			),
+	// 			'A market already exists within that timeframe and price buffer'
 	// 		);
 	// 		await assert.revert(
-	// 			manager.connect(minterSigner).decrementTotalDeposited(toUnit(2).toString()),
-	// 			'Permitted only for known markets'
+	// 			createMarket(
+	// 				manager,
+	// 				ETHKey,
+	// 				toUnit(strikePrice),
+	// 				maturity - timeframe * 60,
+	// 				toUnit(3),
+	// 				creator
+	// 			),
+	// 			'A market already exists within that timeframe and price buffer'
 	// 		);
 	// 	});
-	// 	it('Creating and destroying a market affects total deposits properly.', async () => {
-	// 		const now = await currentTime();
-	// 		let depositBefore = await manager.totalDeposited();
-	// 		const newMarket = await createMarket(
+
+	// 	it('Market creation is disabled on timeframe buffer increase', async () => {
+	// 		await manager.connect(creator).setTimeframeBuffer(3);
+	// 		await assert.revert(
+	// 			createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY * 3, toUnit(3), creator),
+	// 			'A market already exists within that timeframe and price buffer'
+	// 		);
+
+	// 		await assert.revert(
+	// 			createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY * 2, toUnit(3), creator),
+	// 			'A market already exists within that timeframe and price buffer'
+	// 		);
+
+	// 		await assert.revert(
+	// 			createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY, toUnit(3), creator),
+	// 			'A market already exists within that timeframe and price buffer'
+	// 		);
+
+	// 		// on 4 days appart market can be created
+	// 		await createMarket(
 	// 			manager,
-	// 			sAUDKey,
-	// 			toUnit(200),
-	// 			now + 200,
-	// 			toUnit(5),
+	// 			ETHKey,
+	// 			toUnit(strikePrice),
+	// 			maturity + 4 * DAY,
+	// 			toUnit(3),
 	// 			creator
 	// 		);
-	// 		assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(5).toString()));
-
-	// 		await fastForward(expiryDuration + 1000);
-	// 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(5, 8), await currentTime());
-
-	// 		await manager.resolveMarket(newMarket.address);
-	// 		await manager.connect(creator).expireMarkets([newMarket.address]);
-
-	// 		assert.bnEqual(await manager.totalDeposited(), depositBefore);
-	// 	});
-	// 	it('Minting more reflects total deposit properly.', async () => {
-	// 		const now = await currentTime();
-	// 		let depositBefore = await manager.totalDeposited();
-	// 		const newMarket = await createMarket(
-	// 			manager,
-	// 			sAUDKey,
-	// 			toUnit(1),
-	// 			now + 200,
-	// 			toUnit(5),
-	// 			creator
-	// 		);
-	// 		assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(5).toString()));
-
-	// 		await newMarket.mint(toUnit(2), { from: initialCreator });
-	// 		assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(7).toString()));
 	// 	});
 	// });
 
-	// describe('Whitelisted addresses', () => {
-	// 	it('Only owner can set whitelisted addresses', async () => {
-	// 		await assert.revert(
-	// 			manager.connect(minterSigner).setWhitelistedAddresses([dummy, exerciser, secondCreator]),
-	// 			'Only the contract owner may perform this action'
-	// 		);
-	// 	});
+	describe('Manager conducts all sUSD transfers', () => {
+		it('Can not be called by non market address', async () => {
+			await assert.revert(
+				manager.transferSusdTo(initialCreator, exerciser, toUnit(1).toString()),
+				'Market unknown'
+			);
+		});
+	});
 
-	// 	it('Cannot enable whitelisted feature if whitelist addresses is empty', async () => {
-	// 		await assert.revert(
-	// 			manager.connect(creator).setWhitelistedAddresses([]),
-	// 			'Whitelisted addresses cannot be empty'
-	// 		);
+	describe('Deposit management', () => {
+		it('Only active markets can modify the total deposits.', async () => {
+			const now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
 
-	// 		assert.equal(await manager.onlyWhitelistedAddressesCanCreateMarkets(), false);
-	// 	});
+			await createMarket(
+				manager,
+				sAUDKey,
+				toUnit(price - 2 * strikePriceStep),
+				now + 200,
+				toUnit(3),
+				creator
+			);
 
-	// 	it('Only whitelisted address can create markets', async () => {
-	// 		const now = await currentTime();
+			await assert.revert(
+				manager.connect(minterSigner).incrementTotalDeposited(toUnit(2).toString()),
+				'Permitted only for active markets'
+			);
+			await assert.revert(
+				manager.connect(minterSigner).decrementTotalDeposited(toUnit(2).toString()),
+				'Permitted only for known markets'
+			);
+		});
+		it('Creating and destroying a market affects total deposits properly.', async () => {
+			const now = await currentTime();
+			let depositBefore = await manager.totalDeposited();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+			const newMarket = await createMarket(
+				manager,
+				sAUDKey,
+				toUnit(price + 3 * strikePriceStep),
+				now + 200,
+				toUnit(5),
+				creator
+			);
+			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(5).toString()));
 
-	// 		await manager.connect(creator).setWhitelistedAddresses([dummy, exerciser, secondCreator]);
+			await fastForward(expiryDuration + 1000);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(5, 8), await currentTime());
 
-	// 		await assert.revert(
-	// 			manager
-	// 				.connect(minterSigner)
-	// 				.createMarket(sAUDKey, toUnit(1).toString(), now + 100, toUnit(5).toString()),
-	// 			'Only whitelisted addresses can create markets'
-	// 		);
-	// 	});
+			await manager.resolveMarket(newMarket.address);
+			await manager.connect(creator).expireMarkets([newMarket.address]);
 
-	// 	it('Can remove whitelisted address', async () => {
-	// 		const now = await currentTime();
+			assert.bnEqual(await manager.totalDeposited(), depositBefore);
+		});
+		it('Minting more reflects total deposit properly.', async () => {
+			const now = await currentTime();
+			let depositBefore = await manager.totalDeposited();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+			const newMarket = await createMarket(
+				manager,
+				sAUDKey,
+				toUnit(price),
+				now + 200,
+				toUnit(5),
+				creator
+			);
+			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(5).toString()));
 
-	// 		await manager.connect(creator).removeWhitelistedAddress(dummy);
+			await newMarket.mint(toUnit(2), { from: initialCreator });
+			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(7).toString()));
+		});
+	});
 
-	// 		await assert.revert(
-	// 			manager
-	// 				.connect(dummySigner)
-	// 				.createMarket(sAUDKey, toUnit(1).toString(), now + 100, toUnit(5).toString()),
-	// 			'Only whitelisted addresses can create markets'
-	// 		);
-	// 	});
+	describe('Whitelisted addresses', () => {
+		it('Only owner can set whitelisted addresses', async () => {
+			await assert.revert(
+				manager.connect(minterSigner).setWhitelistedAddresses([dummy, exerciser, secondCreator]),
+				'Only the contract owner may perform this action'
+			);
+		});
 
-	// 	it('Can add whitelisted address', async () => {
-	// 		const now = await currentTime();
+		it('Cannot enable whitelisted feature if whitelist addresses is empty', async () => {
+			await assert.revert(
+				manager.connect(creator).setWhitelistedAddresses([]),
+				'Whitelisted addresses cannot be empty'
+			);
 
-	// 		await manager.connect(creator).addWhitelistedAddress(initialCreator);
+			assert.equal(await manager.onlyWhitelistedAddressesCanCreateMarkets(), false);
+		});
 
-	// 		const tx = await manager
-	// 			.connect(creator)
-	// 			.createMarket(sAUDKey, toUnit(10).toString(), now + 100, toUnit(5).toString());
-	// 		let receipt = await tx.wait();
-	// 		assert.equal(receipt.events.length, 10);
-	// 	});
+		it('Only whitelisted address can create markets', async () => {
+			const now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
 
-	// 	it('Anyone can create market if whitelisted addresses feature is disabled', async () => {
-	// 		const now = await currentTime();
-	// 		await manager.connect(creator).disableWhitelistedAddresses();
+			await manager.connect(creator).setWhitelistedAddresses([dummy, exerciser, secondCreator]);
 
-	// 		const tx = await manager
-	// 			.connect(minterSigner)
-	// 			.createMarket(sAUDKey, toUnit(11).toString(), now + 100, toUnit(5).toString());
-	// 		let receipt = await tx.wait();
-	// 		assert.equal(receipt.events.length, 10);
-	// 	});
+			await assert.revert(
+				manager
+					.connect(minterSigner)
+					.createMarket(sAUDKey, toUnit(price).toString(), now + 200, toUnit(5).toString()),
+				'Only whitelisted addresses can create markets'
+			);
+		});
 
-	// 	it('Enable whitelisted addresses feature', async () => {
-	// 		const now = await currentTime();
-	// 		await manager.connect(creator).enableWhitelistedAddresses();
+		it('Can remove whitelisted address', async () => {
+			const now = await currentTime();
 
-	// 		await assert.revert(
-	// 			manager
-	// 				.connect(dummySigner)
-	// 				.createMarket(sAUDKey, toUnit(1).toString(), now + 100, toUnit(5).toString()),
-	// 			'Only whitelisted addresses can create markets'
-	// 		);
-	// 	});
+			await manager.connect(creator).removeWhitelistedAddress(dummy);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
 
-	// 	it('Price feed can be set', async () => {
-	// 		await manager.connect(creator).setPriceFeed(priceFeed.address);
+			await assert.revert(
+				manager
+					.connect(dummySigner)
+					.createMarket(sAUDKey, toUnit(price).toString(), now + 200, toUnit(5).toString()),
+				'Only whitelisted addresses can create markets'
+			);
+		});
 
-	// 		assert.equal(await manager.priceFeed(), priceFeed.address);
-	// 	});
-	// });
+		it('Can add whitelisted address', async () => {
+			const now = await currentTime();
+
+			await manager.connect(creator).addWhitelistedAddress(initialCreator);
+
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			const tx = await manager
+				.connect(creator)
+				.createMarket(
+					sAUDKey,
+					toUnit(price - strikePriceStep).toString(),
+					now + 200,
+					toUnit(5).toString()
+				);
+			let receipt = await tx.wait();
+			assert.equal(receipt.events.length, 10);
+		});
+
+		it('Anyone can create market if whitelisted addresses feature is disabled', async () => {
+			const now = await currentTime();
+			await manager.connect(creator).disableWhitelistedAddresses();
+
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			const tx = await manager
+				.connect(minterSigner)
+				.createMarket(
+					sAUDKey,
+					toUnit(price + strikePriceStep).toString(),
+					now + 200,
+					toUnit(5).toString()
+				);
+			let receipt = await tx.wait();
+			assert.equal(receipt.events.length, 10);
+		});
+
+		it('Enable whitelisted addresses feature', async () => {
+			const now = await currentTime();
+			await manager.connect(creator).enableWhitelistedAddresses();
+
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await assert.revert(
+				manager
+					.connect(dummySigner)
+					.createMarket(
+						sAUDKey,
+						toUnit(price + 6 * strikePriceStep).toString(),
+						now + 200,
+						toUnit(5).toString()
+					),
+				'Only whitelisted addresses can create markets'
+			);
+		});
+
+		it('Price feed can be set', async () => {
+			await manager.connect(creator).setPriceFeed(priceFeed.address);
+
+			assert.equal(await manager.priceFeed(), priceFeed.address);
+		});
+	});
 });

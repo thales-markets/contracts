@@ -236,11 +236,15 @@ contract('ThalesAMM', (accounts) => {
 	describe('AMM Negative Skew Impact', () => {
 		it('buying test ', async () => {
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
-				now + day * 12,
+				toUnit(price + 2 * strikePriceStep),
+				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);
@@ -401,11 +405,15 @@ contract('ThalesAMM', (accounts) => {
 
 		it('buying test #2', async () => {
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
-				now + day * 7,
+				toUnit(price + 3 * strikePriceStep),
+				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);

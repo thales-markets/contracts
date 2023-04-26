@@ -97,20 +97,14 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bool[7]",
-        "name": "weekDays",
-        "type": "bool[7]"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256[7]",
-        "name": "weekHours",
-        "type": "uint256[7]"
+        "internalType": "uint256",
+        "name": "_allowedDate1",
+        "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "monthLimit",
+        "name": "_allowedDate2",
         "type": "uint256"
       }
     ],
@@ -331,25 +325,6 @@
     "type": "event"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "oracleKey",
-        "type": "bytes32"
-      }
-    ],
-    "name": "_getStrikePriceStep",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "result",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -391,6 +366,32 @@
     "name": "addWhitelistedAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "allowedDate1",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "allowedDate2",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -553,24 +554,12 @@
         "type": "bytes32"
       }
     ],
-    "name": "getMarketParams",
+    "name": "getStrikePriceStep",
     "outputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "strikePrice",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikeDate",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct PositionalMarketManager.MarketParams[]",
-        "name": "marketParams",
-        "type": "tuple[]"
+        "internalType": "uint256",
+        "name": "result",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -687,38 +676,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "marketCreationDays",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "marketCreationDaysCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "marketCreationEnabled",
     "outputs": [
@@ -726,25 +683,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "marketCreationHours",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1091,18 +1029,13 @@
   {
     "inputs": [
       {
-        "internalType": "bool[7]",
-        "name": "weekDays",
-        "type": "bool[7]"
-      },
-      {
-        "internalType": "uint256[7]",
-        "name": "weekHours",
-        "type": "uint256[7]"
+        "internalType": "uint256",
+        "name": "_allowedDate1",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "monthLimit",
+        "name": "_allowedDate2",
         "type": "uint256"
       }
     ],

@@ -227,13 +227,18 @@ contract('ThalesAMM', (accounts) => {
 
 	describe('Test AMM', () => {
 		it('price fully unlikely ', async () => {
-			let strike = 44000; //2593 works 2592 doesnt
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
+			let strike = price - 3 * strikePriceStep;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
 				toUnit(strike),
-				now + day * 13,
+				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);

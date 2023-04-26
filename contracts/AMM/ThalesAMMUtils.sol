@@ -150,7 +150,7 @@ contract ThalesAMMUtils {
         uint balancePositionAfter,
         uint available,
         uint max_spread
-    ) public view returns (uint _sellImpactReturned) {
+    ) public view returns (uint _maxPossibleSkew) {
         uint maxPossibleSkew = _balancePosition + (available) - (balanceOtherSide);
         uint skew = balancePositionAfter - (balanceOtherSideAfter);
         uint newImpact = (max_spread * ((skew * ONE) / (maxPossibleSkew))) / ONE;

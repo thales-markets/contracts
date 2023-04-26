@@ -252,11 +252,15 @@ contract('ThalesAMM', (accounts) => {
 			let transformedCollateral = await manager.transformCollateral(toUnit(10).toString());
 
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 4 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
-				now + day * 10,
+				toUnit(price + 4 * strikePriceStep),
+				now - 4 * day + 2 * WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);

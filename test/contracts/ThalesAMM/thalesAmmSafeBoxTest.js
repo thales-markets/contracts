@@ -233,13 +233,18 @@ contract('ThalesAMM', (accounts) => {
 
 	describe('Test Safe Box', () => {
 		it('Safe box ', async () => {
-			let strike = 4000;
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
+			let strike = price;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
 				toUnit(strike),
-				now + day * 10,
+				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);
@@ -331,13 +336,18 @@ contract('ThalesAMM', (accounts) => {
 		});
 
 		it('Safe box sell ', async () => {
-			let strike = 4000;
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
+			let strike = price;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
 				toUnit(strike),
-				now + day * 12,
+				now + 2 * WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);
@@ -422,8 +432,8 @@ contract('ThalesAMM', (accounts) => {
 
 			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
-			assert.bnGte(safeBoxsUSD, toUnit(60));
-			assert.bnLte(safeBoxsUSD, toUnit(61));
+			assert.bnGte(safeBoxsUSD, toUnit(62));
+			assert.bnLte(safeBoxsUSD, toUnit(63));
 		});
 	});
 

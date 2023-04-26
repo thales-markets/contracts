@@ -17,6 +17,8 @@ let market, up, down, position, Synth;
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const DAY = 24 * 60 * 60;
+const WEEK = 7 * DAY;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
@@ -229,11 +231,15 @@ contract('ThalesAMM', (accounts) => {
 	describe('Test AMM', () => {
 		it('additional slippage test on buy ', async () => {
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(10000),
-				now + day * 10,
+				toUnit(price + strikePriceStep),
+				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);
@@ -297,11 +303,15 @@ contract('ThalesAMM', (accounts) => {
 
 	it('additional slippage test on sell ', async () => {
 		let now = await currentTime();
+		await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+		let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+		let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 		let newMarket = await createMarket(
 			manager,
 			sETHKey,
-			toUnit(10000),
-			now + day * 12,
+			toUnit(price + 2 * strikePriceStep),
+			now + WEEK + 200,
 			toUnit(10),
 			creatorSigner
 		);

@@ -25,6 +25,7 @@ let market, up, down, Position, Synth, addressResolver;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const DAY = 24 * 60 * 60;
+const WEEK = 7 * DAY;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
@@ -114,10 +115,6 @@ contract('Position', (accounts) => {
 
 		await thalesAMM.setImpliedVolatilityPerAsset(AUDKey, toUnit(100), { from: owner.address });
 
-		const weekDays = [true, true, true, true, true, true, true];
-		const weekHours = [8, 8, 8, 8, 8, 8, 8];
-		await manager.connect(creator).setMarketCreationParameters(weekDays, weekHours, 3);
-
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
 			sUSDSynth.approve(manager.address, sUSDQty, { from: initialCreator }),
@@ -130,13 +127,16 @@ contract('Position', (accounts) => {
 
 	describe('Transfers', () => {
 		it('Can transfer tokens.', async () => {
-			const marketParams = await manager.getMarketParams(AUDKey);
+			const now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(AUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(AUDKey)) / 1e18;
 
 			market = await createMarket(
 				manager,
 				AUDKey,
-				marketParams[1].strikePrice,
-				marketParams[1].strikeDate,
+				toUnit(price + strikePriceStep),
+				now + 200,
 				toUnit(2),
 				creator
 			);
@@ -251,13 +251,16 @@ contract('Position', (accounts) => {
 		});
 
 		it('Can transferFrom tokens.', async () => {
-			const marketParams = await manager.getMarketParams(AUDKey);
+			const now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(AUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(AUDKey)) / 1e18;
 
 			market = await createMarket(
 				manager,
 				AUDKey,
-				marketParams[4].strikePrice,
-				marketParams[4].strikeDate,
+				toUnit(price + 2 * strikePriceStep),
+				now + 200,
 				toUnit(2),
 				creator
 			);
@@ -323,7 +326,7 @@ contract('Position', (accounts) => {
 			await fastForward(200);
 
 			await assert.revert(
-				market.burnOptions(minter, toUnit(0), { from: minter }),
+				market.burnOptions(toUnit(0), { from: minter }),
 				'Can not burn zero amount!'
 			);
 		});
@@ -340,7 +343,7 @@ contract('Position', (accounts) => {
 			await fastForward(200);
 
 			await assert.revert(
-				market.burnOptions(minter, value_2, { from: minter }),
+				market.burnOptions(value_2, { from: minter }),
 				'There is not enough options!'
 			);
 		});
@@ -359,7 +362,7 @@ contract('Position', (accounts) => {
 
 			await fastForward(200);
 
-			const tx = await market.burnOptions(initialCreator, minimum, { from: initialCreator });
+			const tx = await market.burnOptions(minimum, { from: initialCreator });
 
 			await assertAllBnEqual(
 				[down.balanceOf(initialCreator), up.balanceOf(initialCreator)],
@@ -379,7 +382,7 @@ contract('Position', (accounts) => {
 			await fastForward(200);
 
 			await assert.revert(
-				market.burnOptions(initialCreator, value_1, { from: initialCreator }),
+				market.burnOptions(value_1, { from: initialCreator }),
 				'There is not enough options!'
 			);
 		});

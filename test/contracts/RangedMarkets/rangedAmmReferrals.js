@@ -345,11 +345,16 @@ contract('RangedAMM', (accounts) => {
 	describe('Test ranged AMM', () => {
 		it('test referrers ', async () => {
 			let now = await currentTime();
+
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let leftMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(9000),
-				now + day * 10,
+				toUnit(price - 2 * strikePriceStep),
+				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);
@@ -358,8 +363,8 @@ contract('RangedAMM', (accounts) => {
 			let rightMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(11000),
-				now + day * 10,
+				toUnit(price + 2 * strikePriceStep),
+				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);

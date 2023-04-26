@@ -18,6 +18,7 @@ let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const WEEK = 7 * 24 * 60 * 60;
+const DAY = 24 * 60 * 60;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
@@ -245,11 +246,16 @@ contract('PostitionalMarketData', (accounts) => {
 	describe('Test Market Data', () => {
 		it('test batch methods', async () => {
 			let now = await currentTime();
+
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
-				now + day * 10,
+				toUnit(price + 10 * strikePriceStep),
+				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);

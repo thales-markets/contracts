@@ -452,11 +452,16 @@ contract('Vault', (accounts) => {
 			console.log('getCurrentRoundEnd is:' + getCurrentRoundEnd);
 
 			now = await currentTime();
+
+			await manager.setMarketCreationParameters(now - week + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(ETHkey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(ETHkey)) / 1e18;
+
 			let market1 = await createMarket(
 				manager,
 				ETHkey,
-				toUnit(12000),
-				now + day * 5,
+				toUnit(price + 2 * strikePriceStep),
+				now + week + 200,
 				toUnit(10),
 				creatorSigner
 			);

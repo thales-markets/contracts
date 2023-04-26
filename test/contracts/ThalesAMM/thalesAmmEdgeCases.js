@@ -19,6 +19,7 @@ let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const WEEK = 604800;
+const DAY = 24 * 60 * 60;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
@@ -237,11 +238,15 @@ contract('ThalesAMM', (accounts) => {
 	describe('Test AMM', () => {
 		it('Strike more than current price ', async () => {
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(4000),
-				now + hour * 8,
+				toUnit(price + 2 * strikePriceStep),
+				now + 200,
 				toUnit(10),
 				creatorSigner
 			);
@@ -285,11 +290,15 @@ contract('ThalesAMM', (accounts) => {
 
 	it('Strike less than current price ', async () => {
 		let now = await currentTime();
+		await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+		let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+		let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 		let newMarket = await createMarket(
 			manager,
 			sETHKey,
-			toUnit(3900),
-			now + hour * 8,
+			toUnit(price - 3 * strikePriceStep),
+			now + WEEK + 200,
 			toUnit(10),
 			creatorSigner
 		);

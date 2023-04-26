@@ -235,11 +235,15 @@ contract('ThalesAMM', (accounts) => {
 	describe('Test AMM', () => {
 		it('buying test ', async () => {
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(1200),
-				now + day * 2,
+				toUnit(price - 2 * strikePriceStep),
+				now - 3 * day + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);

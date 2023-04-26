@@ -29,6 +29,7 @@ let aggregator_sAUD, aggregator_iAUD, aggregator_sUSD, aggregator_nonRate;
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const hour = 60 * 60;
 const DAY = 24 * hour;
+const WEEK = 7 * DAY;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
@@ -55,7 +56,7 @@ async function createMarketAndMintMore(
 		.createMarket(
 			sAUDKey,
 			initialStrikePrice.toString(),
-			timeToMaturityParam,
+			now + timeToMaturityParam,
 			toUnit(2).toString()
 		);
 
@@ -78,7 +79,7 @@ contract('Position', (accounts) => {
 	const expiryDuration = toBN(26 * 7 * 24 * 60 * 60);
 	const maxTimeToMaturity = toBN(365 * 24 * 60 * 60);
 
-	const initialStrikePrice = toUnit(100);
+	let initialStrikePrice = toUnit(100);
 	const initialStrikePriceValue = 100;
 
 	const sAUDKey = toBytes32('sAUD');
@@ -148,10 +149,6 @@ contract('Position', (accounts) => {
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
 		await factory.connect(owner).setPositionalMarketMastercopy(positionalMarketMastercopy.address);
 		await factory.connect(owner).setPositionMastercopy(PositionMastercopy.address);
-
-		const weekDays = [true, true, true, true, true, true, true];
-		const weekHours = [8, 8, 8, 8, 8, 8, 8];
-		await manager.connect(creator).setMarketCreationParameters(weekDays, weekHours, 3);
 
 		let ThalesAMM = artifacts.require('ThalesAMM');
 		thalesAMM = await ThalesAMM.new();
@@ -252,14 +249,16 @@ contract('Position', (accounts) => {
 		it('Can create a market', async () => {
 			const now = await currentTime();
 
-			marketParams = await manager.getMarketParams(sAUDKey);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
 
 			const result = await manager
 				.connect(creator)
 				.createMarket(
 					sAUDKey,
-					marketParams[1].strikePrice,
-					marketParams[1].strikeDate,
+					toUnit(price + strikePriceStep).toString(),
+					now + 200,
 					toUnit(2).toString()
 				);
 
@@ -274,9 +273,9 @@ contract('Position', (accounts) => {
 			assert.eventEqual(marketCreatedEvent, 'MarketCreated', {
 				creator: initialCreator,
 				oracleKey: sAUDKey,
-				strikePrice: marketParams[1].strikePrice,
-				maturityDate: toBN(marketParams[1].strikeDate),
-				expiryDate: toBN(marketParams[1].strikeDate).add(expiryDuration),
+				strikePrice: toUnit(price + strikePriceStep),
+				maturityDate: toBN(now + timeToMaturity),
+				expiryDate: toBN(now + timeToMaturity).add(expiryDuration),
 				up: upAddress,
 				down: downAddress,
 			});
@@ -297,10 +296,11 @@ contract('Position', (accounts) => {
 			market = await PositionalMarket.at(marketCreatedEvent.args.market);
 
 			const times = await market.times();
-			assert.bnEqual(times.maturity, toBN(marketParams[1].strikeDate));
-			assert.bnEqual(times.expiry, toBN(marketParams[1].strikeDate).add(expiryDuration));
+			assert.bnEqual(times.maturity, toBN(now + 200));
+			assert.bnEqual(times.expiry, toBN(now + 200).add(expiryDuration));
 			const oracleDetails = await market.oracleDetails();
 			assert.equal(oracleDetails.key, sAUDKey);
+			assert.bnEqual(oracleDetails.strikePrice, toUnit(price + strikePriceStep));
 			assert.equal(await market.creator(), initialCreator);
 			assert.equal(await market.owner(), manager.address);
 			assert.equal(await market.sUSD(), sUSDSynth.address);
@@ -314,24 +314,31 @@ contract('Position', (accounts) => {
 		it('Cannot create markets for invalid keys.', async () => {
 			const now = await currentTime();
 
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
 			await assert.revert(
 				manager
 					.connect(creator)
-					.createMarket(nonRate, toUnit(1).toString(), now + 100, toUnit(2).toString()),
+					.createMarket(nonRate, toUnit(price).toString(), now + 200, toUnit(2).toString()),
 				'Invalid key'
 			);
 		});
 
 		it('Cannot create a market too far into the future', async () => {
 			const now = await currentTime();
-			marketParams = await manager.getMarketParams(sAUDKey);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
 			await assert.revert(
 				manager
 					.connect(creator)
 					.createMarket(
 						sAUDKey,
-						marketParams[1].strikePrice,
-						marketParams[1].strikeDate + maxTimeToMaturity + 200,
+						toUnit(price).toString(),
+						now + maxTimeToMaturity + 200,
 						toUnit(0.1).toString()
 					),
 				'Maturity too far in the future'
@@ -382,20 +389,26 @@ contract('Position', (accounts) => {
 				'Market creation is disabled'
 			);
 
-			marketParams = await manager.getMarketParams(sAUDKey);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
 			await manager.connect(creator).setMarketCreationEnabled(true);
 			const tx = await manager
 				.connect(creator)
 				.createMarket(
 					sAUDKey,
-					marketParams[3].strikePrice,
-					marketParams[3].strikeDate,
+					toUnit(price + 3 * strikePriceStep).toString(),
+					now + 200,
 					toUnit(5).toString()
 				);
 			const event = await transactionEvent(tx, 'MarketCreated');
 			const localMarket = await PositionalMarket.at(event.args.market);
 
-			assert.bnEqual((await localMarket.oracleDetails()).strikePrice, marketParams[3].strikePrice);
+			assert.bnEqual(
+				(await localMarket.oracleDetails()).strikePrice,
+				toUnit(price + 3 * strikePriceStep)
+			);
 		});
 
 		it('Cannot create a market if maturity is in the past.', async () => {
@@ -411,28 +424,26 @@ contract('Position', (accounts) => {
 
 	describe('Market expiry', () => {
 		it('Can expire markets', async () => {
-			let now = await currentTime();
-			marketParams = await manager.getMarketParams(sAUDKey);
-			console.log('now', now);
-			console.log('strike date', marketParams[0].strikeDate / 1);
-			await fastForward(marketParams[0].strikeDate / 1 - now);
+			const now = await currentTime();
 
-			console.log('lol', now);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
 
 			const [newMarket, newerMarket] = await Promise.all([
 				createMarket(
 					manager,
 					sAUDKey,
-					marketParams[2].strikePrice,
-					marketParams[2].strikeDate,
+					toUnit(price + 2 * strikePriceStep),
+					now + 200,
 					toUnit(3),
 					creator
 				),
 				createMarket(
 					manager,
 					sAUDKey,
-					marketParams[4].strikePrice,
-					marketParams[4].strikeDate,
+					toUnit(price - 2 * strikePriceStep),
+					now + 200,
 					toUnit(1),
 					creator
 				),
@@ -443,11 +454,7 @@ contract('Position', (accounts) => {
 			const newAddress = newMarket.address;
 			const newerAddress = newerMarket.address;
 
-			now = await currentTime();
-			await fastForward(marketParams[4].strikeDate / 1 + DAY - now);
-
-			console.log('now', await currentTime());
-			console.log('strike date 4', marketParams[4].strikeDate / 1);
+			await fastForward(expiryDuration.add(toBN(1000)));
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(5, 8), await currentTime());
 
 			await manager.resolveMarket(newAddress);
@@ -468,13 +475,15 @@ contract('Position', (accounts) => {
 
 		it('Cannot expire an unresolved market.', async () => {
 			const now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
 
-			marketParams = await manager.getMarketParams(sAUDKey);
 			const newMarket = await createMarket(
 				manager,
 				sAUDKey,
-				marketParams[7].strikePrice,
-				marketParams[7].strikeDate,
+				toUnit(price + 3 * strikePriceStep),
+				now + 200,
 				toUnit(3),
 				creator
 			);
@@ -485,17 +494,20 @@ contract('Position', (accounts) => {
 
 			it('Cannot expire an unexpired market.', async () => {
 				const now = await currentTime();
-				marketParams = await manager.getMarketParams(sAUDKey);
+				await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+				let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+				let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
 				const newMarket = await createMarket(
 					manager,
 					sAUDKey,
-					marketParams[5].strikePrice,
-					marketParams[5].strikeDate,
+					toUnit(price),
+					now + 200,
 					toUnit(3),
 					creator
 				);
 
-				await fastForward(5 * DAY + 500);
+				await fastForward(300);
 				await aggregator_sAUD.setLatestAnswer(convertToDecimals(5, 8), await currentTime());
 
 				await manager.resolveMarket(newMarket.address);
@@ -507,10 +519,14 @@ contract('Position', (accounts) => {
 
 			it('Cannot expire a market if the manager is paused.', async () => {
 				const now = await currentTime();
+				await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+				let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+				let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
 				const newMarket = await createMarket(
 					manager,
 					sAUDKey,
-					toUnit(1),
+					toUnit(price - strikePriceStep),
 					now + 200,
 					toUnit(3),
 					creator
@@ -553,13 +569,18 @@ contract('Position', (accounts) => {
 
 		it('Mint more and check balance', async () => {
 			let now = await currentTime();
-			marketParams = await manager.getMarketParams(sAUDKey);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			initialStrikePrice = price + strikePriceStep;
+
 			await createMarketAndMintMore(
 				sAUDKey,
-				marketParams[0].strikePrice,
+				toUnit(price + strikePriceStep),
 				now,
 				creator,
-				marketParams[0].strikeDate
+				timeToMaturity
 			);
 
 			const options = await market.options();
@@ -601,116 +622,154 @@ contract('Position', (accounts) => {
 			const two = toBN(2);
 			assert.isFalse(await market.resolved());
 
-			let price = marketParams[0].strikePrice / 1e18;
 			let now = await currentTime();
-			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price / 2, 8), now); // initialStrikePrice.div(two)
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePrice / 2, 8), now); // initialStrikePrice.div(two)
 
 			assert.bnEqual(await market.result(), Side.Down);
 			now = await currentTime();
-			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price * 2, 8), now);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePrice * 2, 8), now);
 			assert.bnEqual(await market.result(), Side.Up);
 
 			await fastForward(timeToMaturity + 10);
 			now = await currentTime();
 
-			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price * 2, 8), now);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePrice * 2, 8), now);
 			await manager.resolveMarket(market.address);
 
 			assert.isTrue(await market.resolved());
 			now = await currentTime();
-			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price / 2, 8), now);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePrice / 2, 8), now);
 
 			assert.bnEqual(await market.result(), Side.Up);
 			now = await currentTime();
-			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price * 2, 8), now);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePrice * 2, 8), now);
 
 			assert.bnEqual(await market.result(), Side.Up);
 		});
 
 		it('Result resolves correctly up.', async () => {
 			let now = await currentTime();
-			marketParams = await manager.getMarketParams(sAUDKey);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
 			await createMarketAndMintMore(
 				sAUDKey,
-				marketParams[2].strikePrice,
+				toUnit(price - 2 * strikePriceStep),
 				now,
 				creator,
-				marketParams[2].strikeDate
+				timeToMaturity
 			);
-
-			//await createMarketAndMintMore(sAUDKey, initialStrikePrice / 2, now, creator, timeToMaturity);
 			now = await currentTime();
-			await fastForward(3 * DAY);
+			await fastForward(timeToMaturity + 1);
 			now = await currentTime();
-			// const price = initialStrikePrice.add(toUnit(1));
-			// await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePriceValue + 1, 8), now);
-
-			const price = marketParams[1].strikePrice / 1e18;
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price, 8), now);
 
 			const tx = await manager.resolveMarket(market.address);
 			assert.bnEqual(await market.result(), Side.Up);
 			assert.isTrue(await market.resolved());
-			assert.bnEqual((await market.oracleDetails()).finalPrice, price);
+			assert.bnEqual((await market.oracleDetails()).finalPrice, price * 1e18);
 
 			const receipt = await tx.wait();
 			const log = PositionalMarket.decodeLogs(receipt.events)[0];
 			assert.eventEqual(log, 'MarketResolved', {
 				result: Side.Up,
-				oraclePrice: price,
+				oraclePrice: price * 1e18,
 				deposited: totalDeposited,
 				poolFees: 0,
 				creatorFees: 0,
 			});
 			assert.equal(log.event, 'MarketResolved');
 			assert.bnEqual(log.args.result, Side.Up);
-			assert.bnEqual(log.args.oraclePrice, price);
+			assert.bnEqual(log.args.oraclePrice, price * 1e18);
 		});
 
 		it('Result resolves correctly down.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, initialStrikePrice * 2, now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 2 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			await fastForward(timeToMaturity + 1);
 			now = await currentTime();
-			const price = initialStrikePrice.sub(toUnit(1));
 
-			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePriceValue - 1, 8), now);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price, 8), now);
 
 			const tx = await manager.resolveMarket(market.address);
 			assert.isTrue(await market.resolved());
 			assert.bnEqual(await market.result(), Side.Down);
-			assert.bnEqual((await market.oracleDetails()).finalPrice, price);
+			assert.bnEqual((await market.oracleDetails()).finalPrice, price * 1e18);
 
 			const receipt = await tx.wait();
 			const log = PositionalMarket.decodeLogs(receipt.events)[0];
 			assert.equal(log.event, 'MarketResolved');
 			assert.bnEqual(log.args.result, Side.Down);
-			assert.bnEqual(log.args.oraclePrice, price);
+			assert.bnEqual(log.args.oraclePrice, price * 1e18);
 		});
 
 		it('A result equal to the strike price resolves up.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, initialStrikePrice * 3, now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 6 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			await fastForward(timeToMaturity + 1);
 			now = await currentTime();
-			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePriceValue * 3, 8), now);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price + 6 * strikePriceStep, 8), now);
 
 			await manager.connect(creator).resolveMarket(market.address);
 			assert.isTrue(await market.resolved());
 			assert.bnEqual(await market.result(), Side.Up);
-			assert.bnEqual((await market.oracleDetails()).finalPrice, initialStrikePrice * 3);
+			assert.bnEqual(
+				(await market.oracleDetails()).finalPrice,
+				toUnit(price + 6 * strikePriceStep)
+			);
 		});
 
 		it('Resolution cannot occur before maturity.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, initialStrikePrice * 4, now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 4 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			assert.isFalse(await market.canResolve());
 			await assert.revert(manager.connect(creator).resolveMarket(market.address), 'Not yet mature');
 		});
 
 		it('Resolution can only occur once.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, initialStrikePrice * 5, now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 5 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			await fastForward(timeToMaturity + 1);
 			now = await currentTime();
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePriceValue, 8), now);
@@ -723,11 +782,21 @@ contract('Position', (accounts) => {
 
 		it('Resolution can occur if the price was updated within the maturity window but before maturity.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, initialStrikePrice * 6, now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 6 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			await fastForward(timeToMaturity + 1);
 			now = await currentTime();
 			await aggregator_sAUD.setLatestAnswer(
-				convertToDecimals(initialStrikePriceValue, 8),
+				convertToDecimals(price, 8),
 				now - (maxOraclePriceAge - 60)
 			);
 			assert.isTrue(await market.canResolve());
@@ -736,7 +805,17 @@ contract('Position', (accounts) => {
 
 		it('Empty mints do nothing.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, initialStrikePrice * 7, now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			const tx1 = await market.mint(toUnit(0), {
 				from: dummy,
 			});
@@ -749,7 +828,17 @@ contract('Position', (accounts) => {
 
 		it('Burn options maximum', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, initialStrikePrice * 8, now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 2 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			const options = await market.options();
 			up = await Position.at(options.up);
@@ -769,7 +858,7 @@ contract('Position', (accounts) => {
 			assert.bnEqual(totalSupplies.down, value);
 
 			// burn all
-			const tx = await market.burnOptionsMaximum(initialCreator, { from: initialCreator });
+			const tx = await market.burnOptionsMaximum({ from: initialCreator });
 
 			// after burn
 			let valueZero = toUnit(0);
@@ -788,7 +877,17 @@ contract('Position', (accounts) => {
 
 		it('Burn options some number lower then maximum', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, initialStrikePrice * 9, now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price - strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			const options = await market.options();
 			up = await Position.at(options.up);
@@ -808,7 +907,7 @@ contract('Position', (accounts) => {
 			assert.bnEqual(totalSupplies.down, value);
 
 			// burn only one
-			const tx = await market.burnOptions(initialCreator, toUnit(1), { from: initialCreator });
+			const tx = await market.burnOptions(toUnit(1), { from: initialCreator });
 
 			// after burn
 			let valueTwo = toUnit(2);
@@ -827,7 +926,11 @@ contract('Position', (accounts) => {
 
 		it('Burn options some number more then maximum', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(2), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(sAUDKey, toUnit(price), now, creator, timeToMaturity);
 
 			const options = await market.options();
 			up = await Position.at(options.up);
@@ -848,14 +951,24 @@ contract('Position', (accounts) => {
 
 			// burn 5 but has 3
 			await assert.revert(
-				market.burnOptions(initialCreator, toUnit(5), { from: initialCreator }),
+				market.burnOptions(toUnit(5), { from: initialCreator }),
 				'There is not enough options!'
 			);
 		});
 
 		it('Burn options zero amount', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(3), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 3 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			const options = await market.options();
 			up = await Position.at(options.up);
@@ -876,7 +989,7 @@ contract('Position', (accounts) => {
 
 			// burn 5 but has 3
 			await assert.revert(
-				market.burnOptions(initialCreator, toUnit(0), { from: initialCreator }),
+				market.burnOptions(toUnit(0), { from: initialCreator }),
 				'Can not burn zero amount!'
 			);
 		});
@@ -889,7 +1002,17 @@ contract('Position', (accounts) => {
 	describe('Pauses', () => {
 		it('Resolution cannot occur if the manager is paused', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(4), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price - 4 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			await fastForward(timeToMaturity + 1);
 
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(0.7, 8), await currentTime());
@@ -903,7 +1026,17 @@ contract('Position', (accounts) => {
 		it('Minting fails when the manager is paused.', async () => {
 			await manager.connect(creator).setPaused(false);
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(5), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 10 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			await manager.connect(creator).setPaused(true);
 			await assert.revert(
 				market.mint(toUnit(1), { from: dummy }),
@@ -916,17 +1049,18 @@ contract('Position', (accounts) => {
 		it('Can proceed through the phases properly.', async () => {
 			await manager.connect(creator).setPaused(false);
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(6), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(sAUDKey, toUnit(price), now, creator, timeToMaturity);
 			assert.bnEqual(await market.phase(), Phase.Trading);
 			await fastForward(timeToMaturity + 1);
 			assert.bnEqual(await market.phase(), Phase.Maturity);
 			await fastForward(expiryDuration + 1);
 
 			now = await currentTime();
-			await aggregator_sAUD.setLatestAnswer(
-				convertToDecimals(initialStrikePriceValue, 8),
-				await currentTime()
-			);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price, 8), await currentTime());
 
 			await manager.connect(creator).resolveMarket(market.address);
 
@@ -935,14 +1069,21 @@ contract('Position', (accounts) => {
 
 		it('Market can expire early if everything has been exercised.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(7), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			await fastForward(timeToMaturity + 1);
 
 			now = await currentTime();
-			await aggregator_sAUD.setLatestAnswer(
-				convertToDecimals(initialStrikePriceValue, 8),
-				await currentTime()
-			);
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price, 8), await currentTime());
 			await manager.connect(creator).resolveMarket(market.address);
 
 			assert.bnEqual(await market.phase(), Phase.Maturity);
@@ -954,7 +1095,17 @@ contract('Position', (accounts) => {
 	describe('Exercising Options', () => {
 		it('Exercising options yields the proper balances.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(8), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 3 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			const options = await market.options();
 			up = await Position.at(options.up);
@@ -980,7 +1131,7 @@ contract('Position', (accounts) => {
 			await fastForward(timeToMaturity + 100);
 
 			now = await currentTime();
-			const price = (await market.oracleDetails()).strikePrice;
+			price = (await market.oracleDetails()).strikePrice;
 
 			await aggregator_sAUD.setLatestAnswer(price, await currentTime());
 			await manager.resolveMarket(market.address);
@@ -1011,7 +1162,17 @@ contract('Position', (accounts) => {
 
 		it('Exercising options resolves an unresolved market.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(9), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 4 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			await market.mint(toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			await aggregator_sAUD.setLatestAnswer(
@@ -1027,11 +1188,21 @@ contract('Position', (accounts) => {
 
 		it('Exercising options with none owned reverts.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(10), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price - 3 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			await fastForward(timeToMaturity + 100);
 			now = await currentTime();
-			const price = (await market.oracleDetails()).strikePrice;
-			await aggregator_sAUD.setLatestAnswer(price, await currentTime());
+			price = (await market.oracleDetails()).strikePrice / 1e18;
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(1, 8), await currentTime());
 
 			await manager.resolveMarket(market.address);
 
@@ -1040,7 +1211,17 @@ contract('Position', (accounts) => {
 
 		it('Options cannot be exercised if the manager is paused.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(11), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price - 10 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			await market.mint(toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
@@ -1063,7 +1244,17 @@ contract('Position', (accounts) => {
 		it('Options can be exercised if transferred to another account.', async () => {
 			await manager.connect(creator).setPaused(false);
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(15), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price - 15 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			await market.mint(toUnit(2), { from: exersicer });
 			const options = await market.options();
@@ -1073,8 +1264,8 @@ contract('Position', (accounts) => {
 			await up.transfer(dummy, toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			now = await currentTime();
-			const price = (await market.oracleDetails()).strikePrice;
-			await aggregator_sAUD.setLatestAnswer(price, await currentTime());
+			price = (await market.oracleDetails()).strikePrice / 1e18;
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(price, 8), await currentTime());
 
 			await manager.resolveMarket(market.address);
 
@@ -1104,7 +1295,17 @@ contract('Position', (accounts) => {
 		it('Expired markets destroy themselves and their options.', async () => {
 			await manager.connect(creator).setPaused(false);
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(20), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 4 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			const options = await market.options();
 			up = await Position.at(options.up);
@@ -1115,7 +1316,10 @@ contract('Position', (accounts) => {
 			const downAddress = down.address;
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
-			await aggregator_sAUD.setLatestAnswer(initialStrikePriceValue, await currentTime());
+			await aggregator_sAUD.setLatestAnswer(
+				convertToDecimals(initialStrikePriceValue, 8),
+				await currentTime()
+			);
 
 			await manager.resolveMarket(market.address);
 			await manager.connect(creator).expireMarkets([market.address]);
@@ -1127,7 +1331,17 @@ contract('Position', (accounts) => {
 
 		it('Unresolved markets cannot be expired', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(25), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + 3 * strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 			now = await currentTime();
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
@@ -1140,7 +1354,17 @@ contract('Position', (accounts) => {
 		it('Market cannot be expired before its time', async () => {
 			let now = await currentTime();
 
-			await createMarketAndMintMore(sAUDKey, toUnit(30), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			now = await currentTime();
 
@@ -1157,7 +1381,11 @@ contract('Position', (accounts) => {
 
 		it('Market can be expired early if all options are exercised', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(sAUDKey, toUnit(price), now, creator, timeToMaturity);
 
 			await fastForward(timeToMaturity + 10);
 			await aggregator_sAUD.setLatestAnswer(initialStrikePriceValue, await currentTime());
@@ -1170,7 +1398,17 @@ contract('Position', (accounts) => {
 
 		it('Market cannot be expired except by the manager', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(35), now, creator, timeToMaturity);
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await aggregator_sAUD.setLatestAnswer(initialStrikePriceValue, await currentTime());
@@ -1193,9 +1431,13 @@ contract('Position', (accounts) => {
 			const creatorBalance = await sUSDSynth.balanceOf(secondCreator);
 
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
 			await createMarketAndMintMore(
 				sAUDKey,
-				initialStrikePrice,
+				toUnit(price),
 				now,
 				secondCreatorSigner,
 				timeToMaturity
@@ -1225,7 +1467,18 @@ contract('Position', (accounts) => {
 
 		it('Expired market emits no transfer if there is nothing to remit.', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(40), now, creator, timeToMaturity);
+
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await aggregator_sAUD.setLatestAnswer(initialStrikePriceValue, await currentTime());
@@ -1250,7 +1503,18 @@ contract('Position', (accounts) => {
 
 		it('Market cannot be expired if the manager is paused', async () => {
 			let now = await currentTime();
-			await createMarketAndMintMore(sAUDKey, toUnit(45), now, creator, timeToMaturity);
+
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
+			await createMarketAndMintMore(
+				sAUDKey,
+				toUnit(price + strikePriceStep),
+				now,
+				creator,
+				timeToMaturity
+			);
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await aggregator_sAUD.setLatestAnswer(initialStrikePriceValue, await currentTime());

@@ -40,11 +40,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         uint maxTimeToMaturity;
     }
 
-    struct MarketParams {
-        uint strikePrice;
-        uint strikeDate;
-    }
-
     uint private constant ONE = 1e18;
 
     /* ========== STATE VARIABLES ========== */
@@ -80,11 +75,10 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
     bool public override onlyAMMMintingAndBurning;
 
-    bool[7] public marketCreationDays;
-    uint[7] public marketCreationHours;
-
     uint public marketCreationMonthLimit;
-    uint public marketCreationDaysCount;
+
+    uint public allowedDate1;
+    uint public allowedDate2;
 
     function initialize(
         address _owner,
@@ -336,55 +330,26 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
 
         if (!_checkMarkets(oracleKey, strikePrice, maturity)) {
-            return (false, "A market already exists within that timeframe and price buffer");
+            return (false, "Market already exists");
         }
 
-        uint strikePriceStep = _getStrikePriceStep(oracleKey);
+        uint strikePriceStep = getStrikePriceStep(oracleKey);
         uint currentAssetPrice = priceFeed.rateForCurrency(oracleKey);
 
-        if (strikePrice < currentAssetPrice) {
-            return (false, "Strike price lower than current asset price");
-        }
+        uint priceDiff = strikePrice > currentAssetPrice ? strikePrice - currentAssetPrice : currentAssetPrice - strikePrice;
 
-        uint priceDiff = strikePrice - currentAssetPrice;
-
-        if (priceDiff % strikePriceStep != 0) {
+        if (strikePriceStep != 0 && priceDiff % strikePriceStep != 0) {
             return (false, "Invalid strike price");
         }
 
-        uint priceRatio = priceDiff / strikePriceStep;
+        uint dateDiff1 = (maturity - allowedDate1) % 604800;
+        uint dateDiff2 = (maturity - allowedDate2) % 604800;
 
-        MarketParams[] memory marketParams = getMarketParams(oracleKey);
-
-        // improve!!!
-        if (!(marketParams[priceRatio].strikeDate == maturity && marketParams[priceRatio].strikePrice == strikePrice)) {
-            return (false, "Invalid market params");
+        if (!(dateDiff1 == 0 || dateDiff2 == 0)) {
+            return (false, "Invalid maturity");
         }
 
         return (true, "");
-    }
-
-    /// @notice getMarketParams gets market parameters based on current price and IV
-    /// @param oracleKey market oracle key
-    function getMarketParams(bytes32 oracleKey) public view returns (MarketParams[] memory marketParams) {
-        uint strikePriceStep = _getStrikePriceStep(oracleKey);
-        uint initialStrikePrice = priceFeed.rateForCurrency(oracleKey);
-
-        uint marketParamsLength = ((31 * marketCreationMonthLimit) / 7) * marketCreationDaysCount + 1;
-
-        uint dateLimit;
-        (marketParams, dateLimit) = _getInitialMarketCreationParams(marketParamsLength, initialStrikePrice, strikePriceStep);
-
-        uint iterDate = marketParams[marketCreationDaysCount - 1].strikeDate;
-        uint iterPrice = marketParams[marketCreationDaysCount - 1].strikePrice;
-        uint index = marketCreationDaysCount;
-
-        while (iterDate < dateLimit) {
-            iterPrice += strikePriceStep;
-            iterDate = DateTime.addDays(marketParams[index - marketCreationDaysCount].strikeDate, 7);
-
-            marketParams[index++] = MarketParams(iterPrice, iterDate);
-        }
     }
 
     /// @notice enableWhitelistedAddresses enables option that only whitelisted addresses
@@ -493,71 +458,21 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     }
 
     /// @notice setMarketCreationParameters sets params for market creation
-    /// @param weekDays days of week on which markets can be created
-    /// @param weekHours hours on which markets can be created
-    /// @param monthLimit market creation date limit
-    function setMarketCreationParameters(
-        bool[7] memory weekDays,
-        uint[7] memory weekHours,
-        uint monthLimit
-    ) external onlyOwner {
-        marketCreationMonthLimit = monthLimit;
-        marketCreationDaysCount = 0;
+    /// @param _allowedDate1 timestamp to be compared with strike date
+    /// @param _allowedDate2 timestamp to be compared with strike date
+    function setMarketCreationParameters(uint _allowedDate1, uint _allowedDate2) external onlyOwner {
+        allowedDate1 = _allowedDate1;
+        allowedDate2 = _allowedDate2;
 
-        for (uint i = 0; i < 7; i++) {
-            if (weekDays[i] && (weekHours[i] >= 0 && weekHours[i] <= 23)) {
-                marketCreationDays[i] = true;
-                marketCreationHours[i] = weekHours[i];
-                marketCreationDaysCount++;
-            }
-        }
-
-        emit MarketCreationParametersChanged(weekDays, weekHours, monthLimit);
+        emit MarketCreationParametersChanged(_allowedDate1, _allowedDate2);
     }
 
-    /// @notice _getInitialMarketCreationParams gets initial market parameters
-    /// @param paramsLength lenght of the market params array
-    /// @param assetPrice current price of the asset
-    /// @param strikePriceStep calculatet strike price step
-    function _getInitialMarketCreationParams(
-        uint paramsLength,
-        uint assetPrice,
-        uint strikePriceStep
-    ) internal view returns (MarketParams[] memory marketParams, uint dateLimit) {
-        uint currentTimestamp = block.timestamp;
-        uint date = _getDateFromTimestamp(currentTimestamp);
-        uint dayInWeek = DateTime.getDayOfWeek(date);
-        dateLimit = DateTime.addMonths(date, marketCreationMonthLimit);
-
-        marketParams = new MarketParams[](paramsLength);
-        uint index = 0;
-
-        // improve!!!
-        for (uint i = 0; i < marketCreationDays.length; i++) {
-            if (marketCreationDays[i] && i + 1 > dayInWeek) {
-                marketParams[index++] = MarketParams(
-                    assetPrice,
-                    _calculateDate(i + 1 - dayInWeek, marketCreationHours[i], date)
-                );
-                assetPrice += strikePriceStep;
-            }
-        }
-
-        for (uint i = 0; i < marketCreationDays.length; i++) {
-            if (marketCreationDays[i] && i + 1 <= dayInWeek) {
-                marketParams[index++] = MarketParams(
-                    assetPrice,
-                    _calculateDate(7 - dayInWeek + (i + 1), marketCreationHours[i], date)
-                );
-                assetPrice += strikePriceStep;
-            }
-        }
-    }
-
-    /// @notice _getStrikePriceStep calculates strike price step
+    /// @notice getStrikePriceStep calculates strike price step
     /// @param oracleKey oracle key
-    function _getStrikePriceStep(bytes32 oracleKey) public view returns (uint result) {
+    function getStrikePriceStep(bytes32 oracleKey) public view returns (uint result) {
+        if (_getImpliedVolatility(oracleKey) == 0) return 0;
         uint strikePriceStep = (priceFeed.rateForCurrency(oracleKey) * _getImpliedVolatility(oracleKey)) / (2000 * ONE);
+
         uint exponent = _getExponent(strikePriceStep);
 
         uint8[3] memory indexArray = [1, 2, 3];
@@ -566,10 +481,14 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         for (uint i = 0; i < indexArray.length; i++) {
             result = _calculateStrikePriceStepValue(indexArray[i], tempMultiplier);
 
-            if (strikePriceStep > result && i != indexArray.length - 1) {
+            if (strikePriceStep > result && i != (indexArray.length - 1)) {
                 continue;
-            } else if (strikePriceStep > result && i == indexArray.length - 1) {
-                tempMultiplier = _calculateStrikePriceStepMultiplier(strikePriceStep, exponent + 1, exponent - 1);
+            } else if (strikePriceStep > result && i == (indexArray.length - 1)) {
+                tempMultiplier = _calculateStrikePriceStepMultiplier(
+                    strikePriceStep,
+                    exponent + 1,
+                    exponent == 0 ? exponent : exponent - 1
+                );
                 uint nextResult = _calculateStrikePriceStepValue(indexArray[0], tempMultiplier);
                 if (strikePriceStep - result > nextResult - strikePriceStep) {
                     result = nextResult;
@@ -613,8 +532,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     /// @notice _getExponent helper function for calculating exponent of strike price step
     /// @param strikePriceStep initial strike price step
     function _getExponent(uint strikePriceStep) internal pure returns (uint exponent) {
-        if (strikePriceStep > ONE) {
-            while (strikePriceStep >= ONE) {
+        if (strikePriceStep >= ONE) {
+            while (strikePriceStep > ONE) {
                 strikePriceStep /= 10;
                 exponent += 1;
             }
@@ -625,19 +544,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
                 exponent += 1;
             }
         }
-    }
-
-    /// @notice _calculateDate helper function for calculating date
-    /// @param addDays days to add to currentDate
-    /// @param hour date hour
-    /// @param currentDate current date
-    function _calculateDate(
-        uint addDays,
-        uint hour,
-        uint currentDate
-    ) internal pure returns (uint date) {
-        date = DateTime.addDays(currentDate, addDays);
-        date = DateTime.addHours(date, hour);
     }
 
     /// @notice _isValidKey checks if oracle key is supported by PriceFeed contract
@@ -652,21 +558,13 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         return false;
     }
 
-    /// @notice _checkStrikePrice checks if markets strike prices are between given price values
+    /// @notice _checkStrikePrice checks if markets strike prices matches given strike price
     /// @param markets list of markets to be checked
     /// @param strikePrice market strike price
-    /// @param oracleKey market oracle key
-    /// @return bool - true if there are no markets between given price values, otherwise false
-    function _checkStrikePrice(
-        address[] memory markets,
-        uint strikePrice,
-        bytes32 oracleKey
-    ) internal view returns (bool) {
-        uint buffer = (priceBuffer * _getImpliedVolatility(oracleKey)) / 1e18;
+    /// @return bool - true if there are no markets with given price value, otherwise false
+    function _checkStrikePrice(address[] memory markets, uint strikePrice) internal view returns (bool) {
         for (uint i = 0; i < markets.length; i++) {
-            uint upperPriceLimit = marketsStrikePrice[markets[i]] + (marketsStrikePrice[markets[i]] * buffer) / 1e20;
-            uint lowerPriceLimit = marketsStrikePrice[markets[i]] - (marketsStrikePrice[markets[i]] * buffer) / 1e20;
-            if (strikePrice <= upperPriceLimit && strikePrice >= lowerPriceLimit) {
+            if (strikePrice == marketsStrikePrice[markets[i]]) {
                 return false;
             }
         }
@@ -674,8 +572,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     }
 
     /// @notice _checkMarkets checks if there exists similar market with same oracleKey
-    /// @dev price limits are calculated from given strike price using priceBuffer percentage and
-    /// we're checking lists of markets using timeframeBuffer
     /// @param oracleKey oracle key of the market to be created
     /// @param strikePrice strike price
     /// @param maturity market date maturity
@@ -687,24 +583,9 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     ) internal view returns (bool) {
         uint date = _getDateFromTimestamp(maturity);
 
-        for (uint day = 1; day <= timeframeBuffer; day++) {
-            uint upperDateLimit = DateTime.addDays(date, day);
-            uint lowerDateLimit = DateTime.subDays(date, day);
-
-            address[] memory marketsDateAfter = _getMarketsPerOracleKey(oracleKey, upperDateLimit);
-            address[] memory marketsDateBefore = _getMarketsPerOracleKey(oracleKey, lowerDateLimit);
-
-            if (
-                !(_checkStrikePrice(marketsDateAfter, strikePrice, oracleKey) &&
-                    _checkStrikePrice(marketsDateBefore, strikePrice, oracleKey))
-            ) {
-                return false;
-            }
-        }
-
         address[] memory marketsOnDate = _getMarketsPerOracleKey(oracleKey, date);
 
-        return _checkStrikePrice(marketsOnDate, strikePrice, oracleKey);
+        return _checkStrikePrice(marketsOnDate, strikePrice);
     }
 
     /// @notice _getMarketsPerOracleKey returns list of markets with same oracle key and maturity date
@@ -789,5 +670,5 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     event PriceBufferChanged(uint priceBuffer);
     event TimeframeBufferChanged(uint timeframeBuffer);
     event SetOnlyAMMMintingAndBurning(bool _SetOnlyAMMMintingAndBurning);
-    event MarketCreationParametersChanged(bool[7] weekDays, uint[7] weekHours, uint monthLimit);
+    event MarketCreationParametersChanged(uint _allowedDate1, uint _allowedDate2);
 }

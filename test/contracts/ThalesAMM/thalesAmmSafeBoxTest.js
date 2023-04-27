@@ -432,8 +432,8 @@ contract('ThalesAMM', (accounts) => {
 
 			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
-			assert.bnGte(safeBoxsUSD, toUnit(62));
-			assert.bnLte(safeBoxsUSD, toUnit(63));
+			assert.bnGte(safeBoxsUSD, toUnit(60));
+			assert.bnLte(safeBoxsUSD, toUnit(61));
 		});
 	});
 

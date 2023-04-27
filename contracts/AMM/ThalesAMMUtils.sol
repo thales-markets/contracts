@@ -131,7 +131,7 @@ contract ThalesAMMUtils {
         uint maxPossibleSkew = params.balanceOtherSide + params.availableToBuyFromAMM - params.balancePosition;
         uint skew = params.balanceOtherSideAfter - (params.balancePositionAfter);
         uint newImpact = (params.max_spread * ((skew * ONE) / (maxPossibleSkew))) / ONE;
-        if (params.balancePosition > 0) {
+        if (params.balancePosition > 0 && params.amount > params.balancePosition) {
             uint newPriceForMintedOnes = newImpact / (2);
             uint tempMultiplier = (params.amount - params.balancePosition) * (newPriceForMintedOnes);
             return (tempMultiplier * ONE) / (params.amount) / ONE;
@@ -155,7 +155,7 @@ contract ThalesAMMUtils {
         uint skew = balancePositionAfter - (balanceOtherSideAfter);
         uint newImpact = (max_spread * ((skew * ONE) / (maxPossibleSkew))) / ONE;
 
-        if (balanceOtherSide > 0) {
+        if (balanceOtherSide > 0 && amount > _balancePosition) {
             uint newPriceForMintedOnes = newImpact / (2);
             uint tempMultiplier = (amount - _balancePosition) * (newPriceForMintedOnes);
             _sellImpactReturned = tempMultiplier / (amount);

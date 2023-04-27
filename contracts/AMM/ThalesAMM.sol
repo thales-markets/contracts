@@ -449,7 +449,10 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     function _transferPositions(address market) internal {
-        (uint upBalance, uint downBalance) = ammUtils.getBalanceOfPositionsOnMarket(market, address(liquidityPool));
+        (uint upBalance, uint downBalance) = ammUtils.getBalanceOfPositionsOnMarket(
+            market,
+            liquidityPool.getMarketPool(market)
+        );
 
         liquidityPool.getOptionsForBuy(market, upBalance, IThalesAMM.Position.Up);
         liquidityPool.getOptionsForBuy(market, downBalance, IThalesAMM.Position.Down);

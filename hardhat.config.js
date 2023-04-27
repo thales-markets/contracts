@@ -13,6 +13,7 @@ require('hardhat-abi-exporter');
 require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 require('hardhat-contract-sizer');
+require('@matterlabs/hardhat-zksync-toolbox');
 
 const {
 	constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },

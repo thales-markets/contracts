@@ -7,7 +7,7 @@ task('test')
 	.addFlag('gas', 'Compile gas usage')
 	.addFlag('native', 'Compile with the native solc compiler')
 	.addOptionalParam('gasOutputFile', 'Gas reporter output file')
-	.addOptionalParam('grep', 'Filter tests to only those with given logic')
+	// .addOptionalParam('grep', 'Filter tests to only those with given logic')
 	.setAction(async (taskArguments, hre, runSuper) => {
 		const { gas, grep, native, gasOutputFile } = taskArguments;
 

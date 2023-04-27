@@ -302,7 +302,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "_maxPossibleSkew",
+        "name": "_sellImpactReturned",
         "type": "uint256"
       }
     ],

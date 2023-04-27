@@ -273,6 +273,7 @@ contract('SportsAMM', (accounts) => {
 			second,
 			second,
 			second,
+			second,
 			{ from: owner }
 		);
 

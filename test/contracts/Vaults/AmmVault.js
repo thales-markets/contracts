@@ -461,7 +461,7 @@ contract('Vault', (accounts) => {
 				manager,
 				ETHkey,
 				toUnit(price + 2 * strikePriceStep),
-				now + week + 200,
+				now - 3 * day + week + 200,
 				toUnit(10),
 				creatorSigner
 			);

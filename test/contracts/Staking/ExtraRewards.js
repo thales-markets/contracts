@@ -141,6 +141,7 @@ contract('StakingThales', (accounts) => {
 			PriceFeedInstance.address,
 			dummy,
 			AddressResolverDeployed.address,
+			ZERO_ADDRESS,
 			ZERO_ADDRESS
 		);
 	});

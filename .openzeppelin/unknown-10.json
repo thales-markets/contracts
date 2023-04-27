@@ -399,6 +399,11 @@
       "address": "0x5e2b49c68f1fD68AF1354c377eaceC2f05632D3F",
       "txHash": "0xf1ed393d8094dd75f028dce94f036617c0b6fdfd44bf81a63807536695e2e258",
       "kind": "transparent"
+    },
+    {
+      "address": "0x70164a1ec9D21c4dBA2b4f9B23750F9C7D03286b",
+      "txHash": "0x04aac6d0f186bd06ea7f46876e79367d9fa1165bc5b9f3d4a9dbfd6d46b60936",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -74256,6 +74261,73 @@
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "994137342ada1cb0ad11e532e5bbd8cebae351f0325674a38dfe546e1e93cdfe": {
+      "address": "0xb5BEc32954a3A75FcE4b5b0b38bC6E7CCAD4c4AD",
+      "txHash": "0x18393cbb556f576c3d0e07e7b179feeec0d06081caeda6ef6c9c19b2c04c90e2",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:12"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
           }
         }
       }

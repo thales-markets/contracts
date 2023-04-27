@@ -195,7 +195,12 @@ contract SportsAMMUtils {
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
             odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
-            oddsToReturn = odds[uint(_position)];
+            uint firstTag = ISportPositionalMarket(_market).tags(0);
+            if (sportsAMM.isMarketForSportOnePositional(firstTag) && uint(_position) > 0) {
+                oddsToReturn = 0;
+            } else {
+                oddsToReturn = odds[uint(_position)];
+            }
         }
     }
 

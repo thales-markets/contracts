@@ -80,6 +80,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     uint public allowedDate1;
     uint public allowedDate2;
 
+    mapping(bytes32 => mapping(uint => mapping(uint => address))) public marketExistsByOracleKeyDateAndStrikePrice;
+
     function initialize(
         address _owner,
         IERC20 _sUSD,
@@ -208,8 +210,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
         (IPosition up, IPosition down) = market.getOptions();
 
-        marketsStrikePrice[address(market)] = strikePrice;
-        marketsPerOracleKey[oracleKey][_getDateFromTimestamp(maturity)].push(address(market));
+        marketExistsByOracleKeyDateAndStrikePrice[oracleKey][maturity][strikePrice] = address(market);
 
         emit MarketCreated(
             address(market),
@@ -329,7 +330,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
             return (false, "Maturity cannot be in the past");
         }
 
-        if (!_checkMarkets(oracleKey, strikePrice, maturity)) {
+        if (marketExistsByOracleKeyDateAndStrikePrice[oracleKey][maturity][strikePrice] != address(0)) {
             return (false, "Market already exists");
         }
 
@@ -556,57 +557,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
 
         return false;
-    }
-
-    /// @notice _checkStrikePrice checks if markets strike prices matches given strike price
-    /// @param markets list of markets to be checked
-    /// @param strikePrice market strike price
-    /// @return bool - true if there are no markets with given price value, otherwise false
-    function _checkStrikePrice(address[] memory markets, uint strikePrice) internal view returns (bool) {
-        for (uint i = 0; i < markets.length; i++) {
-            if (strikePrice == marketsStrikePrice[markets[i]]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /// @notice _checkMarkets checks if there exists similar market with same oracleKey
-    /// @param oracleKey oracle key of the market to be created
-    /// @param strikePrice strike price
-    /// @param maturity market date maturity
-    /// @return bool
-    function _checkMarkets(
-        bytes32 oracleKey,
-        uint strikePrice,
-        uint maturity
-    ) internal view returns (bool) {
-        uint date = _getDateFromTimestamp(maturity);
-
-        address[] memory marketsOnDate = _getMarketsPerOracleKey(oracleKey, date);
-
-        return _checkStrikePrice(marketsOnDate, strikePrice);
-    }
-
-    /// @notice _getMarketsPerOracleKey returns list of markets with same oracle key and maturity date
-    /// @param oracleKey oracle key
-    /// @param date maturity date
-    /// @return address[] list of markets
-    function _getMarketsPerOracleKey(bytes32 oracleKey, uint date) internal view returns (address[] memory) {
-        return marketsPerOracleKey[oracleKey][date];
-    }
-
-    /// @notice _getDateFromTimestamp calculates midnight timestamp
-    /// @param timestamp timestamp to strip seconds, minutes and hours
-    /// @return date midnigth timestamp
-    function _getDateFromTimestamp(uint timestamp) internal pure returns (uint date) {
-        uint second = DateTime.getSecond(timestamp);
-        uint minute = DateTime.getMinute(timestamp);
-        uint hour = DateTime.getHour(timestamp);
-
-        date = DateTime.subHours(timestamp, hour);
-        date = DateTime.subMinutes(date, minute);
-        date = DateTime.subSeconds(date, second);
     }
 
     /// @notice _getImpliedVolatility gets implied volatility per asset from ThalesAMM contract

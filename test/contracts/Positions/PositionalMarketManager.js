@@ -389,141 +389,59 @@ contract('PositionalMarketManager', (accounts) => {
 		});
 	});
 
-	// describe('Create market checks', async () => {
-	// 	let maturity, date, strikePrice;
-	// 	beforeEach(async () => {
-	// 		maturity = (await currentTime()) + DAY;
-	// 		let date = new Date(maturity);
-	// 		date.setHours(0, 0, 0, 0);
-	// 		date = Date.parse(date);
-	// 		strikePrice = 2100;
-	// 	});
+	describe('Create market checks', async () => {
+		let now, price, strikePriceStep;
+		beforeEach(async () => {
+			now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+		});
 
-	// 	it('Cannot create duplicate markets price-wise', async () => {
-	// 		const timestamp = await currentTime();
+		it('Cannot create same market', async () => {
+			await createMarket(
+				manager,
+				sAUDKey,
+				toUnit(price - 2 * strikePriceStep),
+				now + 200,
+				toUnit(3),
+				creator
+			);
 
-	// 		await manager.connect(creator).setMaxTimeToMaturity(300 * DAY);
+			await assert.revert(
+				createMarket(
+					manager,
+					sAUDKey,
+					toUnit(price - 2 * strikePriceStep),
+					now + 200,
+					toUnit(3),
+					creator
+				),
+				'Market already exists'
+			);
+		});
 
-	// 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), timestamp);
-	// 		await thalesAMM.setImpliedVolatilityPerAsset(ETHKey, toUnit(58), { from: owner.address });
+		it('Cannot create market with invalid strike price', async () => {
+			await assert.revert(
+				createMarket(manager, sAUDKey, toUnit(123.45), now + 200, toUnit(3), creator),
+				'Invalid strike price'
+			);
+		});
 
-	// 		const impliedVolatility = await thalesAMM.impliedVolatilityPerAsset(ETHKey);
-	// 		const rate = await priceFeed.rateForCurrency(ETHKey);
-
-	// 		console.log('impliedVolatility', impliedVolatility / 1e18);
-	// 		console.log('rateForCurrency', rate / 1e18);
-
-	// 		const weekDays = [false, true, false, true, true, false, false];
-	// 		const weekHours = [0, 8, 0, 8, 10, 0, 0];
-	// 		await manager.setMarketCreationParameters(weekDays, weekHours, 3);
-
-	// 		const result1 = await manager._getStrikePriceStep(ETHKey);
-	// 		console.log(result1 / 1);
-
-	// 		const result = await manager.getMarketParams(ETHKey);
-
-	// 		for (let i = 0; i < result.length; i++) {
-	// 			console.log(i, 'strike price', result[i].strikePrice / 1);
-	// 			console.log(i, 'strike date', result[i].strikeDate / 1);
-
-	// 			if (result[i].strikePrice != 0) {
-	// 				let canCreate = await manager.canCreateMarket(
-	// 					ETHKey,
-	// 					result[i].strikeDate,
-	// 					result[i].strikePrice
-	// 				);
-	// 				assert.equal(canCreate[0], true);
-	// 			}
-	// 		}
-
-	// 		let canCreate = await manager.canCreateMarket(
-	// 			ETHKey,
-	// 			result[2].strikeDate,
-	// 			result[5].strikePrice
-	// 		);
-
-	// 		console.log('canCreate', canCreate);
-	// 		console.log('canCreate', canCreate[2] / 1);
-	// 	});
-
-	// 	it('Cannot create duplicate markets price-wise', async () => {
-	// 		const priceBuffer = await manager.priceBuffer();
-	// 		const impliedVolatility = await thalesAMM.impliedVolatilityPerAsset(ETHKey);
-
-	// 		let strikePriceUpperLimit =
-	// 			strikePrice +
-	// 			(strikePrice * (priceBuffer / Math.pow(10, 18)) * (impliedVolatility / Math.pow(10, 18))) /
-	// 				100;
-	// 		const strikePriceLowerLimit =
-	// 			strikePrice -
-	// 			(strikePrice * (priceBuffer / Math.pow(10, 18)) * (impliedVolatility / Math.pow(10, 18))) /
-	// 				100;
-	// 		await createMarket(manager, ETHKey, toUnit(strikePrice), maturity, toUnit(3), creator);
-
-	// 		await assert.revert(
-	// 			createMarket(manager, ETHKey, toUnit(strikePriceUpperLimit), maturity, toUnit(3), creator),
-	// 			'A market already exists within that timeframe and price buffer'
-	// 		);
-	// 		await assert.revert(
-	// 			createMarket(manager, ETHKey, toUnit(strikePriceLowerLimit), maturity, toUnit(3), creator),
-	// 			'A market already exists within that timeframe and price buffer'
-	// 		);
-	// 	});
-
-	// 	it('Cannot create duplicate markets time-wise', async () => {
-	// 		const timeframe = await manager.timeframeBuffer();
-	// 		await assert.revert(
-	// 			createMarket(
-	// 				manager,
-	// 				ETHKey,
-	// 				toUnit(strikePrice),
-	// 				maturity + timeframe * 60,
-	// 				toUnit(3),
-	// 				creator
-	// 			),
-	// 			'A market already exists within that timeframe and price buffer'
-	// 		);
-	// 		await assert.revert(
-	// 			createMarket(
-	// 				manager,
-	// 				ETHKey,
-	// 				toUnit(strikePrice),
-	// 				maturity - timeframe * 60,
-	// 				toUnit(3),
-	// 				creator
-	// 			),
-	// 			'A market already exists within that timeframe and price buffer'
-	// 		);
-	// 	});
-
-	// 	it('Market creation is disabled on timeframe buffer increase', async () => {
-	// 		await manager.connect(creator).setTimeframeBuffer(3);
-	// 		await assert.revert(
-	// 			createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY * 3, toUnit(3), creator),
-	// 			'A market already exists within that timeframe and price buffer'
-	// 		);
-
-	// 		await assert.revert(
-	// 			createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY * 2, toUnit(3), creator),
-	// 			'A market already exists within that timeframe and price buffer'
-	// 		);
-
-	// 		await assert.revert(
-	// 			createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY, toUnit(3), creator),
-	// 			'A market already exists within that timeframe and price buffer'
-	// 		);
-
-	// 		// on 4 days appart market can be created
-	// 		await createMarket(
-	// 			manager,
-	// 			ETHKey,
-	// 			toUnit(strikePrice),
-	// 			maturity + 4 * DAY,
-	// 			toUnit(3),
-	// 			creator
-	// 		);
-	// 	});
-	// });
+		it('Cannot create market with invalid maturity', async () => {
+			await assert.revert(
+				createMarket(
+					manager,
+					sAUDKey,
+					toUnit(price - 2 * strikePriceStep),
+					now + 400,
+					toUnit(1),
+					creator
+				),
+				'Invalid maturity'
+			);
+		});
+	});
 
 	describe('Manager conducts all sUSD transfers', () => {
 		it('Can not be called by non market address', async () => {

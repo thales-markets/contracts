@@ -222,6 +222,38 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "batchSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "RoundClosingBatchProcessed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "RoundClosingPrepared",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "roundLength",
         "type": "uint256"
       }
@@ -246,6 +278,19 @@
       }
     ],
     "name": "RoundPoolCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "flagToSet",
+        "type": "bool"
+      }
+    ],
+    "name": "SetOnlyWhitelistedStakersAllowed",
     "type": "event"
   },
   {
@@ -750,6 +795,11 @@
             "internalType": "uint256",
             "name": "_maxAllowedUsers",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "_needsTransformingCollateral",
+            "type": "bool"
           }
         ],
         "internalType": "struct SportAMMLiquidityPool.InitParams",
@@ -1125,19 +1175,6 @@
     "inputs": [
       {
         "internalType": "bool",
-        "name": "_needsTransformingCollateral",
-        "type": "bool"
-      }
-    ],
-    "name": "setNeedsTransformingCollateral",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
         "name": "flagToSet",
         "type": "bool"
       }
@@ -1379,67 +1416,6 @@
       }
     ],
     "name": "transferOwnershipAtInit",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "all",
-        "type": "bool"
-      }
-    ],
-    "name": "transferTokens",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "all",
-        "type": "bool"
-      },
-      {
-        "internalType": "address",
-        "name": "pool",
-        "type": "address"
-      }
-    ],
-    "name": "transferTokensFromLiquidityPool",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

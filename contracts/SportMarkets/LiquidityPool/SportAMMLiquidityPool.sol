@@ -28,6 +28,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         uint _maxAllowedDeposit;
         uint _minDepositAmount;
         uint _maxAllowedUsers;
+        bool _needsTransformingCollateral;
     }
 
     /* ========== CONSTANTS ========== */
@@ -92,6 +93,11 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     /* ========== CONSTRUCTOR ========== */
 
+    //    /// @custom:oz-upgrades-unsafe-allow constructor
+    //    constructor() {
+    //        _disableInitializers();
+    //    }
+
     function initialize(InitParams calldata params) external initializer {
         setOwner(params._owner);
         initNonReentrant();
@@ -103,6 +109,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         minDepositAmount = params._minDepositAmount;
         maxAllowedUsers = params._maxAllowedUsers;
 
+        needsTransformingCollateral = params._needsTransformingCollateral;
+
         sUSD.approve(address(sportsAMM), type(uint256).max);
     }
 
@@ -110,8 +118,13 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     function start() external onlyOwner {
         require(!started, "Liquidity pool has already started");
         require(allocationPerRound[1] > 0, "can not start with 0 deposits");
-        round = 1;
+
         firstRoundStartTime = block.timestamp;
+        round = 1;
+
+        address roundPool = _getOrCreateRoundPool(1);
+        SportAMMLiquidityPoolRound(roundPool).updateRoundTimes(firstRoundStartTime, getRoundEndTime(1));
+
         started = true;
         emit PoolStarted();
     }
@@ -125,6 +138,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
         if (!whitelistedDeposits[msg.sender]) {
             require(!onlyWhitelistedStakersAllowed || whitelistedStakers[msg.sender], "Only whitelisted stakers allowed");
+            require(address(stakingThales) != address(0), "Staking Thales not set");
             require(
                 (balancesPerRound[round][msg.sender] + amount + balancesPerRound[nextRound][msg.sender]) <=
                     _transformCollateral((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
@@ -177,7 +191,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
         } else {
             uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
-            if (poolBalance > amountToMint) {
+            if (poolBalance >= amountToMint) {
                 sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
             } else {
                 uint differenceToLPAsDefault = amountToMint - poolBalance;
@@ -244,8 +258,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         }
     }
 
-    /// @notice request withdrawal from the LP
-    /// @param market to check
+    /// @notice Create a round pool by market maturity date if it doesnt already exist
+    /// @param market to use
     /// @return roundPool the pool for the passed market
     function getOrCreateMarketPool(address market)
         external
@@ -267,6 +281,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round");
 
         if (!whitelistedDeposits[msg.sender]) {
+            require(address(stakingThales) != address(0), "Staking Thales not set");
             require(
                 balancesPerRound[round][msg.sender] <
                     _transformCollateral(((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE)),
@@ -305,6 +320,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         }
 
         roundClosingPrepared = true;
+
+        emit RoundClosingPrepared(round);
     }
 
     /// @notice Prepare round closing
@@ -338,6 +355,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             }
             usersProcessedInRound = usersProcessedInRound + 1;
         }
+
+        emit RoundClosingBatchProcessed(round, batchSize);
     }
 
     /// @notice Close current round and begin next round,
@@ -564,7 +583,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         if (roundPool == address(0)) {
             require(poolRoundMastercopy != address(0), "Round pool mastercopy not set");
             SportAMMLiquidityPoolRound newRoundPool = SportAMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
-            newRoundPool.initialize(address(this), sUSD, _round, getRoundEndTime(_round), getRoundEndTime(_round + 1));
+            newRoundPool.initialize(address(this), sUSD, _round, getRoundEndTime(_round - 1), getRoundEndTime(_round));
             roundPool = address(newRoundPool);
             roundPools[_round] = roundPool;
             emit RoundPoolCreated(_round, roundPool);
@@ -581,17 +600,13 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @param flagToSet self explanatory
     function setOnlyWhitelistedStakersAllowed(bool flagToSet) external onlyOwner {
         onlyWhitelistedStakersAllowed = flagToSet;
-    }
-
-    /// @notice setNeedsTransformingCollateral sets needsTransformingCollateral value
-    /// @param _needsTransformingCollateral boolen value to be set
-    function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
-        needsTransformingCollateral = _needsTransformingCollateral;
+        emit SetOnlyWhitelistedStakersAllowed(flagToSet);
     }
 
     /// @notice Set _poolRoundMastercopy
     /// @param _poolRoundMastercopy to clone round pools from
     function setPoolRoundMastercopy(address _poolRoundMastercopy) external onlyOwner {
+        require(_poolRoundMastercopy != address(0), "Can not set a zero address!");
         poolRoundMastercopy = _poolRoundMastercopy;
         emit PoolRoundMastercopyChanged(poolRoundMastercopy);
     }
@@ -606,6 +621,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @notice Set IStakingThales contract
     /// @param _stakingThales IStakingThales address
     function setStakingThales(IStakingThales _stakingThales) external onlyOwner {
+        require(address(_stakingThales) != address(0), "Can not set a zero address!");
         stakingThales = _stakingThales;
         emit StakingThalesChanged(address(_stakingThales));
     }
@@ -634,6 +650,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @notice Set ThalesAMM contract
     /// @param _sportAMM ThalesAMM address
     function setSportAmm(ISportsAMM _sportAMM) external onlyOwner {
+        require(address(_sportAMM) != address(0), "Can not set a zero address!");
         sportsAMM = _sportAMM;
         sUSD.approve(address(sportsAMM), type(uint256).max);
         emit SportAMMChanged(address(_sportAMM));
@@ -642,6 +659,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @notice Set defaultLiquidityProvider wallet
     /// @param _defaultLiquidityProvider default liquidity provider
     function setDefaultLiquidityProvider(address _defaultLiquidityProvider) external onlyOwner {
+        require(_defaultLiquidityProvider != address(0), "Can not set a zero address!");
         defaultLiquidityProvider = _defaultLiquidityProvider;
         emit DefaultLiquidityProviderChanged(_defaultLiquidityProvider);
     }
@@ -652,57 +670,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         require(!started, "Can't change round length after start");
         roundLength = _roundLength;
         emit RoundLengthChanged(_roundLength);
-    }
-
-    /// @notice This method only serves as a failsafe to extract tokens from a pool round contract
-    /// @param tokens to iterate and transfer
-    /// @param account Address where to send the tokens
-    /// @param amount Amount of tokens to be sent
-    /// @param pool where to transfer from
-    /// @param all ignore amount and send whole balance
-    function transferTokensFromLiquidityPool(
-        address[] calldata tokens,
-        address payable account,
-        uint amount,
-        bool all,
-        address pool
-    ) external onlyOwner {
-        require(tokens.length > 0, "tokens array cant be empty");
-        for (uint256 index = 0; index < tokens.length; index++) {
-            if (all) {
-                IERC20Upgradeable(tokens[index]).safeTransferFrom(
-                    pool,
-                    account,
-                    IERC20Upgradeable(tokens[index]).balanceOf(pool)
-                );
-            } else {
-                IERC20Upgradeable(tokens[index]).safeTransferFrom(pool, account, amount);
-            }
-        }
-    }
-
-    /// @notice This method only serves as a failsafe to extract tokens from this contract
-    /// @param tokens to iterate and transfer
-    /// @param account Address where to send the tokens
-    /// @param amount Amount of tokens to be sent
-    /// @param all ignore amount and send whole balance
-    function transferTokens(
-        address[] calldata tokens,
-        address payable account,
-        uint amount,
-        bool all
-    ) external onlyOwner {
-        require(tokens.length > 0, "Whitelisted addresses cannot be empty");
-        for (uint256 index = 0; index < tokens.length; index++) {
-            if (all) {
-                IERC20Upgradeable(tokens[index]).safeTransfer(
-                    account,
-                    IERC20Upgradeable(tokens[index]).balanceOf(address(this))
-                );
-            } else {
-                IERC20Upgradeable(tokens[index]).safeTransfer(account, amount);
-            }
-        }
     }
 
     /// @notice set addresses which can deposit into the AMM bypassing the staking checks
@@ -770,4 +737,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event AddedIntoWhitelistStaker(address _whitelistAddress, bool _flag);
     event RoundLengthChanged(uint roundLength);
+    event SetOnlyWhitelistedStakersAllowed(bool flagToSet);
+    event RoundClosingPrepared(uint round);
+    event RoundClosingBatchProcessed(uint round, uint batchSize);
 }

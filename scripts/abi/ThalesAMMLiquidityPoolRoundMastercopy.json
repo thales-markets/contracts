@@ -5,6 +5,25 @@
     "type": "constructor"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roundStartTime",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roundEndTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "RoundTimesUpdated",
+    "type": "event"
+  },
+  {
     "inputs": [
       {
         "internalType": "contract IPositionalMarket",
@@ -149,6 +168,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roundStartTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_roundEndTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateRoundTimes",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

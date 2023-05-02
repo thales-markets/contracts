@@ -22,7 +22,7 @@ contract ThalesAMMLiquidityPoolRound {
 
     /* ========== CONSTRUCTOR ========== */
 
-    bool public initialized = false;
+    bool public initialized;
 
     function initialize(
         address _liquidityPool,
@@ -39,6 +39,12 @@ contract ThalesAMMLiquidityPoolRound {
         roundStartTime = _roundStartTime;
         roundEndTime = _roundEndTime;
         sUSD.approve(_liquidityPool, type(uint256).max);
+    }
+
+    function updateRoundTimes(uint _roundStartTime, uint _roundEndTime) external onlyLiquidityPool {
+        roundStartTime = _roundStartTime;
+        roundEndTime = _roundEndTime;
+        emit RoundTimesUpdated(_roundStartTime, _roundEndTime);
     }
 
     function exerciseMarketReadyToExercised(IPositionalMarket market) external onlyLiquidityPool {
@@ -62,4 +68,6 @@ contract ThalesAMMLiquidityPoolRound {
         require(msg.sender == address(liquidityPool), "only the Pool manager may perform these methods");
         _;
     }
+
+    event RoundTimesUpdated(uint _roundStartTime, uint _roundEndTime);
 }

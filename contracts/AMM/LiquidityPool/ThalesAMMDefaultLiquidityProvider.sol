@@ -18,6 +18,11 @@ contract ThalesAMMDefaultLiquidityProvider is ProxyOwned, Initializable, ProxyRe
     /// @return the adddress of the AMMLP contract
     address public liquidityPool;
 
+    //    /// @custom:oz-upgrades-unsafe-allow constructor
+    //    constructor() {
+    //        _disableInitializers();
+    //    }
+
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,

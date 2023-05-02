@@ -118,7 +118,12 @@
 		"MarchMadness": "0x3b05d4C58De4E96Ea093032c6D70C7e4212a4c31",
 		"ThalesAMMOld": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
 		"GamesOddsReceiver": "0x1B3Dd18F0A31926A8cc24dF87C69B0ba303A04a1",
-		"GamesOddsReceiverImplementation": "0x9350B6808EB0727929031a79F516094D66E4Ad18"
+		"GamesOddsReceiverImplementation": "0x9350B6808EB0727929031a79F516094D66E4Ad18",
+		"ThalesAMMLiquidityPool": "",
+		"ThalesAMMDefaultLiquidityProvider": "",
+		"ThalesAMMLiquidityPoolImplementation": "",
+		"ThalesAMMLiquidityPoolRoundMastercopy": "",
+		"ThalesAMMDefaultLiquidityProviderImplementation": ""
 	},
 	"arbitrumOne": {
 		"ProxyUSDC": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
@@ -202,7 +207,12 @@
 		"AmmVault": "0x0A29CddbdAAf56342507574820864dAc967D2683",
 		"AmmVaultImplementation": "0x4aD6Bc23486D1e6F8caf9b02E702D801cAc04b3b",
 		"AmmVaultSafu": "0x008A4e30A8b41781F5cb017b197aA9Aa4Cd53b46",
-		"AmmVaultSafuImplementation": "0x4aD6Bc23486D1e6F8caf9b02E702D801cAc04b3b"
+		"AmmVaultSafuImplementation": "0x4aD6Bc23486D1e6F8caf9b02E702D801cAc04b3b",
+		"ThalesAMMLiquidityPool": "",
+		"ThalesAMMDefaultLiquidityProvider": "",
+		"ThalesAMMLiquidityPoolImplementation": "",
+		"ThalesAMMLiquidityPoolRoundMastercopy": "",
+		"ThalesAMMDefaultLiquidityProviderImplementation": ""
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -231,7 +241,12 @@
 		"Vault": "",
 		"VaultImplementation": "",
 		"ThalesAMMUtils": "0xa850ae04a6Efbf60D88Bb8E5F3edd3d38e67e538",
-		"ThalesAMMOld": "0x9b6d76B1C6140FbB0ABc9C4a348BFf4e4e8a1213"
+		"ThalesAMMOld": "0x9b6d76B1C6140FbB0ABc9C4a348BFf4e4e8a1213",
+		"ThalesAMMLiquidityPool": "",
+		"ThalesAMMDefaultLiquidityProvider": "",
+		"ThalesAMMLiquidityPoolImplementation": "",
+		"ThalesAMMLiquidityPoolRoundMastercopy": "",
+		"ThalesAMMDefaultLiquidityProviderImplementation": ""
 	},
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
@@ -257,7 +272,12 @@
 		"RangedMarketMastercopy": "0x3dfE6FAb38D20d189cD7d28b04f8714c289De2AE",
 		"Vault": "",
 		"VaultImplementation": "",
-		"ThalesAMMUtils": "0x2feC450fb878d7bEdd60aB02df029D5f2Db7eC52"
+		"ThalesAMMUtils": "0x2feC450fb878d7bEdd60aB02df029D5f2Db7eC52",
+		"ThalesAMMLiquidityPool": "",
+		"ThalesAMMDefaultLiquidityProvider": "",
+		"ThalesAMMLiquidityPoolImplementation": "",
+		"ThalesAMMLiquidityPoolRoundMastercopy": "",
+		"ThalesAMMDefaultLiquidityProviderImplementation": ""
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",
@@ -553,7 +573,7 @@
 		"SportVault": "0x3051d3a7e619C161B64dCe0B287688012655bA56",
 		"SportVaultImplementation": "0x582FB96EE4ea5b5Eb6f8BFb3ba3fDeAe15d08744",
 		"VaultImplementation": "0x4D3C3D40A6d9f1A0896db3F24DE539858e74543f",
-		"ThalesAMMUtils": "0x5aA87dbA0F1486DB34Cd806eDa32f4d66ca4Ae30",
+		"ThalesAMMUtils": "0xF18b1CA861cB1614550fd8edE15E87E55E915109",
 		"OvertimeWorldCupZebro": "0xD66eE2D0F8810304402F6bE0E57E7C0a261b54A3",
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
 		"GamesOddsObtainerImplementation": "0x0A55DA2317F0A6eE54faadF9e7c46C3Fa74bE2E4",
@@ -563,11 +583,18 @@
 		"SportAMMLiquidityPool": "0xdd0879AB819287637f33A29d1ee91d5a76c890Af",
 		"SportAMMLiquidityPoolImplementation": "0xAb538aB0A62838DC8C95704fF276952dD229faea",
 		"SportAMMLiquidityPoolRoundMastercopy": "0x7FEdfaF6BF9820e280fd5c0DCd0b50AE15a2a7Ee",
-		"StakingThalesImplementation": "0x769666FDD20139327603F702C848edb7e4ff9Be4",
+		"StakingThalesImplementation": "0xAD20Bd5A5764F557A2B9bD5Fd2dE297e2365a335",
 		"DefaultLiquidityProvider": "0x05C191f8Df6bFb72EFfc865550cF23982cafD753",
 		"DefaultLiquidityProviderImplementation": "0x97D6d6bdb457de9EaE2f17f01c4753BC6021b376",
 		"GamesOddsReceiver": "0x07d762943f2501C630cCDb82e3BD81DB4Ee45256",
-		"GamesOddsReceiverImplementation": "0x764A51F3C84158E70d228122c4cE2BC7A605DFdF"
+		"GamesOddsReceiverImplementation": "0x764A51F3C84158E70d228122c4cE2BC7A605DFdF",
+		"ThalesAMMLiquidityPool": "0x7e98D27847e06261bE499E248060DCD6F7B82303",
+		"ThalesAMMDefaultLiquidityProvider": "0xF179465BA0beB8Ea17c8e28CfFda29fFEC737c05",
+		"ThalesAMMLiquidityPoolImplementation": "0x6A602028995C0852B1d8828D896C17EC9a4D6695",
+		"ThalesAMMLiquidityPoolRoundMastercopy": "0x26C6E00406f4B83bF35d80f6Bda4e60dEF0A43A3",
+		"ThalesAMMDefaultLiquidityProviderImplementation": "0xff3b64266F0CfF08138de2C9ceb15E65FddA1fBA",
+		"ThalesAMMNew": "0xCf0f20487d4d5361C104DA48317b0028086Ad503",
+		"ThalesAMMNewImplementation": "0x56948218c8D7E9E7081753904eA9b51f9260084c"
 	},
 	"localhost": {
 		"Airdrop": "",

@@ -93,11 +93,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     /* ========== CONSTRUCTOR ========== */
 
-    //    /// @custom:oz-upgrades-unsafe-allow constructor
-    //    constructor() {
-    //        _disableInitializers();
-    //    }
-
     function initialize(InitParams calldata params) external initializer {
         setOwner(params._owner);
         initNonReentrant();

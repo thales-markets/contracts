@@ -95,20 +95,17 @@ contract ParlayVerifier {
                         (j > 1 && cachedTeams[j].gameId == gameIdAway && cachedTeams[j - 1].gameId != gameIdHome)) &&
                     cachedTeams[j].tag1 == tag1
                 ) {
-                    if (
-                        cachedTeams[j].gameCounter > 0 ||
-                        cachedTeams[j].tag2 == tag2 ||
-                        cachedTeams[j].tag2 == DOUBLE_CHANCE_TAG ||
-                        (cachedTeams[j].tag2 == TAG_NUMBER_SPREAD && tag2 == 0) ||
-                        (cachedTeams[j].tag2 == 0 && tag2 == TAG_NUMBER_SPREAD)
-                    ) {
+                    uint feeToApply = IParlayMarketsAMM(params.parlayAMM).getSgpFeePerCombination(
+                        tag1,
+                        tag2,
+                        cachedTeams[j].tag2
+                    );
+                    if (cachedTeams[j].gameCounter > 0 || feeToApply == 0) {
                         revert("SameTeamOnParlay");
                     }
                     cachedTeams[j].gameCounter += 1;
 
-                    sgpFee = sgpFee > 0
-                        ? (sgpFee * IParlayMarketsAMM(params.parlayAMM).getSgpFeePerSport(tag1)) / ONE
-                        : IParlayMarketsAMM(params.parlayAMM).getSgpFeePerSport(tag1);
+                    sgpFee = sgpFee > 0 ? (sgpFee * feeToApply) / ONE : feeToApply;
                 }
             }
 
@@ -237,6 +234,7 @@ contract ParlayVerifier {
                 ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
                 : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
             buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
+            finalQuotes = _applySkewImpactBatch(finalQuotes, skewImpact, (expectedPayout > totalBuyAmount));
             totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
             _calculateRisk(params.sportMarkets, (totalBuyAmount - params.sUSDAfterFees), params.sportsAmm.parlayAMM());
         } else {

@@ -81,6 +81,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     mapping(uint => uint) public SGPfeePerSport;
 
+    mapping(uint => mapping(uint => mapping(uint => uint))) public SGPFeePerCombination;
+
     function initialize(
         address _owner,
         ISportsAMM _sportsAmm,
@@ -120,8 +122,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         return _knownMarkets.elements.length;
     }
 
-    function getSgpFeePerSport(uint tag1) external view returns (uint sgpFee) {
-        sgpFee = SGPfeePerSport[tag1];
+    function getSgpFeePerCombination(
+        uint tag1,
+        uint tag2_1,
+        uint tag2_2
+    ) external view returns (uint sgpFee) {
+        sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
     }
 
     function buyQuoteFromParlay(
@@ -587,8 +593,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit NewParametersSet(_parlaySize);
     }
 
-    function setSgpFeePerSport(uint tag1, uint fee) external onlyOwner {
-        SGPfeePerSport[tag1] = fee;
+    function setSgpFeePerCombination(
+        uint tag1,
+        uint tag2_1,
+        uint tag2_2,
+        uint fee
+    ) external onlyOwner {
+        SGPFeePerCombination[tag1][tag2_1][tag2_2] = fee;
+        SGPFeePerCombination[tag1][tag2_2][tag2_1] = fee;
     }
 
     /// @notice Updates contract parametars

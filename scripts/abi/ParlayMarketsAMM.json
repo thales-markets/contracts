@@ -423,6 +423,35 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "SGPFeePerCombination",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "name": "SGPfeePerSport",
@@ -846,9 +875,19 @@
         "internalType": "uint256",
         "name": "tag1",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2_1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2_2",
+        "type": "uint256"
       }
     ],
-    "name": "getSgpFeePerSport",
+    "name": "getSgpFeePerCombination",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1705,11 +1744,21 @@
       },
       {
         "internalType": "uint256",
+        "name": "tag2_1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2_2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "fee",
         "type": "uint256"
       }
     ],
-    "name": "setSgpFeePerSport",
+    "name": "setSgpFeePerCombination",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

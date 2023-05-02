@@ -20,7 +20,11 @@ interface IParlayMarketsAMM {
 
     function maxSupportedOdds() external view returns (uint);
 
-    function getSgpFeePerSport(uint tag1) external view returns (uint sgpFee);
+    function getSgpFeePerCombination(
+        uint tag1,
+        uint tag2_1,
+        uint tag2_2
+    ) external view returns (uint sgpFee);
 
     function riskPerCombination(
         address _sportMarkets1,

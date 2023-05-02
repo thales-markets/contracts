@@ -653,10 +653,14 @@ contract('ParlayAMM', (accounts) => {
 		let nfl_sgp_fee = toUnit(0.9);
 		let nhl_sgp_fee = toUnit(0.85);
 
-		await ParlayAMM.setSgpFeePerSport(9004, nba_sgp_fee, { from: owner });
-		await ParlayAMM.setSgpFeePerSport(9016, soccer_sgp_fee, { from: owner });
-		await ParlayAMM.setSgpFeePerSport(9002, nfl_sgp_fee, { from: owner });
-		await ParlayAMM.setSgpFeePerSport(9007, nhl_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9004, 0, 10002, nba_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9004, 10002, 10001, nba_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9016, 0, 10002, soccer_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9016, 10001, 10002, soccer_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9002, 0, 10002, nfl_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9002, 10001, 10002, nfl_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9007, 0, 10002, nhl_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9007, 10001, 10002, nhl_sgp_fee, { from: owner });
 
 		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: first });
 		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: second });

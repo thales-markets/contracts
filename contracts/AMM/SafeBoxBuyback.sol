@@ -44,14 +44,13 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
         require(buybacksEnabled, "Buybacks are not enabled");
         uint ticksFromLastBuyBack = lastBuyback != 0 ? (block.timestamp - lastBuyback) / tickLength : 1;
         require(ticksFromLastBuyBack > 0, "Not enough ticks have passed since last buyback");
-        require(sUSD.balanceOf(address(this)) >= sUSDperTick * ticksFromLastBuyBack, "Not enough sUSD in contract.");
+        require(sUSD.balanceOf(address(this)) >= sUSDperTick, "Not enough sUSD in contract.");
 
         // buy THALES via Uniswap
-        uint256 amountThales =
-            _swapExactInput(sUSDperTick * ticksFromLastBuyBack, address(sUSD), address(thalesToken), 3000);
+        uint256 amountThales = _swapExactInput(sUSDperTick, address(sUSD), address(thalesToken), 3000);
 
         lastBuyback = block.timestamp;
-        emit BuybackExecuted(sUSDperTick * ticksFromLastBuyBack, amountThales);
+        emit BuybackExecuted(sUSDperTick, amountThales);
     }
 
     /// @notice _swapExactInput swaps a fixed amount of tokenIn for a maximum possible amount of tokenOut
@@ -75,14 +74,13 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
 
         // Multiple pool swaps are encoded through bytes called a `path`. A path is a sequence of token addresses and poolFees that define the pools used in the swaps.
         // The format for pool encoding is (tokenIn, fee, tokenOut/tokenIn, fee, tokenOut) where tokenIn/tokenOut parameter is the shared token across the pools.
-        ISwapRouter.ExactInputParams memory params =
-            ISwapRouter.ExactInputParams({
-                path: abi.encodePacked(address(tokenIn), poolFee, WETH9, poolFee, address(tokenOut)),
-                recipient: address(this),
-                deadline: block.timestamp + 15,
-                amountIn: amountIn,
-                amountOutMinimum: (amountIn * ratio * _minAccepted) / (100 * 10**18)
-            });
+        ISwapRouter.ExactInputParams memory params = ISwapRouter.ExactInputParams({
+            path: abi.encodePacked(address(tokenIn), poolFee, WETH9, poolFee, address(tokenOut)),
+            recipient: address(this),
+            deadline: block.timestamp + 15,
+            amountIn: amountIn,
+            amountOutMinimum: (amountIn * ratio * _minAccepted) / (100 * 10**18)
+        });
 
         // The call to `exactInput` executes the swap.
         amountOut = swapRouter.exactInput(params);

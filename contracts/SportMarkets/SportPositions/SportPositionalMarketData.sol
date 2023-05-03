@@ -246,19 +246,26 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                     ISportPositionalMarket(totalsMarket).tags(0),
                     ISportPositionalMarket(totalsMarket).tags(1)
                 ];
-
-                uint numOfOdds = ISportPositionalMarket(_mainMarket).optionsCount() > 2 ? 6 : 4;
-                for (uint j = 0; j < numOfOdds; j++) {
-                    address[] memory markets = new address[](2);
-                    markets[0] = _mainMarket;
-                    markets[1] = totalsMarket;
-                    uint[] memory positions = new uint[](2);
-                    positions[0] = j > 1 ? (j > 3 ? 2 : 1) : 0;
-                    positions[1] = j % 2;
-                    (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
-                        .buyQuoteFromParlay(markets, positions, ONE);
+                if (
+                    IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM()).getSgpFeePerCombination(
+                        newCombinedOdds.tags[0],
+                        0,
+                        newCombinedOdds.tags[1]
+                    ) > 0
+                ) {
+                    uint numOfOdds = ISportPositionalMarket(_mainMarket).optionsCount() > 2 ? 6 : 4;
+                    for (uint j = 0; j < numOfOdds; j++) {
+                        address[] memory markets = new address[](2);
+                        markets[0] = _mainMarket;
+                        markets[1] = totalsMarket;
+                        uint[] memory positions = new uint[](2);
+                        positions[0] = j > 1 ? (j > 3 ? 2 : 1) : 0;
+                        positions[1] = j % 2;
+                        (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
+                            .buyQuoteFromParlay(markets, positions, ONE);
+                    }
+                    totalCombainedOdds[0] = newCombinedOdds;
                 }
-                totalCombainedOdds[0] = newCombinedOdds;
             }
             if (spreadMarket != address(0)) {
                 CombinedOdds memory newCombinedOdds;
@@ -266,17 +273,25 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                     ISportPositionalMarket(spreadMarket).tags(1),
                     ISportPositionalMarket(totalsMarket).tags(1)
                 ];
-                for (uint j = 0; j < 4; j++) {
-                    address[] memory markets = new address[](2);
-                    markets[0] = totalsMarket;
-                    markets[1] = spreadMarket;
-                    uint[] memory positions = new uint[](2);
-                    positions[0] = j > 1 ? 1 : 0;
-                    positions[1] = j % 2;
-                    (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
-                        .buyQuoteFromParlay(markets, positions, ONE);
+                if (
+                    IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM()).getSgpFeePerCombination(
+                        ISportPositionalMarket(totalsMarket).tags(0),
+                        newCombinedOdds.tags[0],
+                        newCombinedOdds.tags[1]
+                    ) > 0
+                ) {
+                    for (uint j = 0; j < 4; j++) {
+                        address[] memory markets = new address[](2);
+                        markets[0] = totalsMarket;
+                        markets[1] = spreadMarket;
+                        uint[] memory positions = new uint[](2);
+                        positions[0] = j > 1 ? 1 : 0;
+                        positions[1] = j % 2;
+                        (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
+                            .buyQuoteFromParlay(markets, positions, ONE);
+                    }
+                    totalCombainedOdds[1] = newCombinedOdds;
                 }
-                totalCombainedOdds[1] = newCombinedOdds;
             }
             sgpMarket.combinedOdds = totalCombainedOdds;
         }

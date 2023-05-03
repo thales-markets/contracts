@@ -29,6 +29,8 @@ Everything about the [THALES token](https://thalesmarket.io/article/token)
 
 ### Audits
 
+- https://github.com/Decurity/audits/blob/master/ThalesMarket/thales-market-liquidity-pool-audit-report-1.1.pdf
+- https://iosiro.com/audits/thales-parlay-market-amm-smart-contract-audit
 - https://iosiro.com/audits/thales-amm-smart-contract-audit
 - https://www.certik.com/projects/thales
 - https://iosiro.com/audits/thales-airdrop-and-staking-smart-contract-audit
@@ -49,6 +51,6 @@ List off all deployed contracts are listed [here](https://contracts.thalesmarket
 
 This repo may be installed via `npm install` to support both node.js scripting applications and Solidity contract development.
 
+## Relevant DAO addresses
 
-## Relevant DAO addresses  
 Arbitrum treasury: 0x2902e381c9caacd17d25a2e008db0a9a4687fdbf

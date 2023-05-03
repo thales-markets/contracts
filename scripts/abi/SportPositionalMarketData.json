@@ -50,11 +50,50 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_consumer",
+        "type": "address"
+      }
+    ],
+    "name": "SetConsumer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_oddsObtainer",
+        "type": "address"
+      }
+    ],
+    "name": "SetOddsObtainer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_sportsAMM",
         "type": "address"
       }
     ],
     "name": "SetSportsAMM",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_voucherEscrow",
+        "type": "address"
+      }
+    ],
+    "name": "SetVoucherEscrow",
     "type": "event"
   },
   {
@@ -79,6 +118,19 @@
   },
   {
     "inputs": [],
+    "name": "consumer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getBaseOddsForAllActiveMarkets",
     "outputs": [
       {
@@ -97,6 +149,158 @@
         "internalType": "struct SportPositionalMarketData.ActiveMarketsOdds[]",
         "name": "",
         "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "getMarketData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "string",
+            "name": "gameLabel",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "firstTag",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "secondTag",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maturity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "resolved",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "finalResult",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "cancelled",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "odds",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "childMarkets",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "doubleChanceMarkets",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint8",
+            "name": "homeScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "awayScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "int16",
+            "name": "spread",
+            "type": "int16"
+          },
+          {
+            "internalType": "uint24",
+            "name": "total",
+            "type": "uint24"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.MarketData",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "getMarketLiquidityAndPriceImpact",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "int256",
+            "name": "homePriceImpact",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "awayPriceImpact",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "drawPriceImpact",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "homeLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "awayLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "drawLiquidity",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.MarketLiquidityAndPriceImpact",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -164,6 +368,62 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      }
+    ],
+    "name": "getPositionDetails",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "int256",
+            "name": "priceImpact",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "liquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "quote",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "quoteDifferentCollateral",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.PositionDetails",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getPriceImpactForAllActiveMarkets",
     "outputs": [
@@ -219,6 +479,57 @@
         "internalType": "struct SportPositionalMarketData.ActiveMarketsPriceImpact[]",
         "name": "",
         "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getVoucherEscrowData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "period",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isWhitelisted",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isClaimed",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "voucherAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isPeriodEnded",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "periodEnd",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.VoucherEscrowData",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -291,6 +602,19 @@
   },
   {
     "inputs": [],
+    "name": "oddsObtainer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -313,6 +637,32 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_consumer",
+        "type": "address"
+      }
+    ],
+    "name": "setConsumer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_oddsObtainer",
+        "type": "address"
+      }
+    ],
+    "name": "setOddsObtainer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -368,6 +718,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_voucherEscrow",
+        "type": "address"
+      }
+    ],
+    "name": "setVoucherEscrow",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "sportsAMM",
     "outputs": [
@@ -391,6 +754,19 @@
     "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "voucherEscrow",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

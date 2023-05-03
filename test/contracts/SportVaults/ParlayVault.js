@@ -736,6 +736,7 @@ contract('Parlay Vault', (accounts) => {
 				_maxAllowedDeposit: toUnit(100000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: false,
 			},
 			{ from: owner }
 		);
@@ -1235,6 +1236,24 @@ contract('Parlay Vault', (accounts) => {
 			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
 
 			await fastForward(day);
+
+			for (let i = 0; i < 3; i++) {
+				let parlayAddress = await vault.tradingParlayMarketsPerRound(1, i);
+				await ParlayAMM.exerciseParlay(parlayAddress);
+			}
+
+			await assert.revert(
+				vault.exerciseMarketsReadyToExercised(0),
+				'batchSize has to be greater than 0'
+			);
+
+			await vault.exerciseMarketsReadyToExercised(100);
+
+			await assert.revert(
+				vault.exerciseMarketsReadyToExercised(100),
+				'All markets already processed'
+			);
+
 			await vault.closeRound();
 
 			round = await vault.round();

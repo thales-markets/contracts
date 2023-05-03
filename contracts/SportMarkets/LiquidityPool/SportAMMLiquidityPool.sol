@@ -28,6 +28,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         uint _maxAllowedDeposit;
         uint _minDepositAmount;
         uint _maxAllowedUsers;
+        bool _needsTransformingCollateral;
     }
 
     /* ========== CONSTANTS ========== */
@@ -86,6 +87,10 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     mapping(uint => mapping(address => bool)) public marketAlreadyExercisedInRound;
 
+    bool public roundClosingPrepared;
+
+    uint public usersProcessedInRound;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
@@ -99,6 +104,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         minDepositAmount = params._minDepositAmount;
         maxAllowedUsers = params._maxAllowedUsers;
 
+        needsTransformingCollateral = params._needsTransformingCollateral;
+
         sUSD.approve(address(sportsAMM), type(uint256).max);
     }
 
@@ -106,21 +113,27 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     function start() external onlyOwner {
         require(!started, "Liquidity pool has already started");
         require(allocationPerRound[1] > 0, "can not start with 0 deposits");
-        round = 1;
+
         firstRoundStartTime = block.timestamp;
+        round = 1;
+
+        address roundPool = _getOrCreateRoundPool(1);
+        SportAMMLiquidityPoolRound(roundPool).updateRoundTimes(firstRoundStartTime, getRoundEndTime(1));
+
         started = true;
         emit PoolStarted();
     }
 
     /// @notice Deposit funds from user into pool for the next round
     /// @param amount Value to be deposited
-    function deposit(uint amount) external canDeposit(amount) nonReentrant whenNotPaused {
+    function deposit(uint amount) external canDeposit(amount) nonReentrant whenNotPaused roundClosingNotPrepared {
         uint nextRound = round + 1;
         address roundPool = _getOrCreateRoundPool(nextRound);
         sUSD.safeTransferFrom(msg.sender, roundPool, amount);
 
         if (!whitelistedDeposits[msg.sender]) {
             require(!onlyWhitelistedStakersAllowed || whitelistedStakers[msg.sender], "Only whitelisted stakers allowed");
+            require(address(stakingThales) != address(0), "Staking Thales not set");
             require(
                 (balancesPerRound[round][msg.sender] + amount + balancesPerRound[nextRound][msg.sender]) <=
                     _transformCollateral((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
@@ -134,7 +147,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         if (balancesPerRound[round][msg.sender] == 0 && balancesPerRound[nextRound][msg.sender] == 0) {
             require(usersCurrentlyInPool < maxAllowedUsers, "Max amount of users reached");
             usersPerRound[nextRound].push(msg.sender);
-            userInRound[nextRound][msg.sender] = true;
             usersCurrentlyInPool = usersCurrentlyInPool + 1;
         }
 
@@ -153,7 +165,13 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @notice get sUSD to mint for buy and store market as trading in the round
     /// @param market to trade
     /// @param amountToMint amount to get for mint
-    function commitTrade(address market, uint amountToMint) external nonReentrant whenNotPaused onlyAMM {
+    function commitTrade(address market, uint amountToMint)
+        external
+        nonReentrant
+        whenNotPaused
+        onlyAMM
+        roundClosingNotPrepared
+    {
         require(started, "Pool has not started");
         require(amountToMint > 0, "Can't commit a zero trade");
 
@@ -168,7 +186,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
         } else {
             uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
-            if (poolBalance > amountToMint) {
+            if (poolBalance >= amountToMint) {
                 sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
             } else {
                 uint differenceToLPAsDefault = amountToMint - poolBalance;
@@ -191,7 +209,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         address market,
         uint optionsAmount,
         ISportsAMM.Position position
-    ) external nonReentrant whenNotPaused onlyAMM {
+    ) external nonReentrant whenNotPaused onlyAMM roundClosingNotPrepared {
         if (optionsAmount > 0) {
             require(started, "Pool has not started");
 
@@ -220,7 +238,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         address market,
         uint optionsAmount,
         address position
-    ) external nonReentrant whenNotPaused onlyAMM {
+    ) external nonReentrant whenNotPaused onlyAMM roundClosingNotPrepared {
         if (optionsAmount > 0) {
             require(started, "Pool has not started");
 
@@ -235,22 +253,30 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         }
     }
 
-    /// @notice request withdrawal from the LP
-    /// @param market to check
+    /// @notice Create a round pool by market maturity date if it doesnt already exist
+    /// @param market to use
     /// @return roundPool the pool for the passed market
-    function getOrCreateMarketPool(address market) external onlyAMM nonReentrant whenNotPaused returns (address roundPool) {
+    function getOrCreateMarketPool(address market)
+        external
+        onlyAMM
+        nonReentrant
+        whenNotPaused
+        roundClosingNotPrepared
+        returns (address roundPool)
+    {
         uint marketRound = getMarketRound(market);
         roundPool = _getOrCreateRoundPool(marketRound);
     }
 
     /// @notice request withdrawal from the LP
-    function withdrawalRequest() external nonReentrant whenNotPaused {
+    function withdrawalRequest() external nonReentrant whenNotPaused roundClosingNotPrepared {
         require(started, "Pool has not started");
         require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
         require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
         require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round");
 
         if (!whitelistedDeposits[msg.sender]) {
+            require(address(stakingThales) != address(0), "Staking Thales not set");
             require(
                 balancesPerRound[round][msg.sender] <
                     _transformCollateral(((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE)),
@@ -269,9 +295,9 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         emit WithdrawalRequested(msg.sender);
     }
 
-    /// @notice Close current round and begin next round,
-    /// excercise options of trading markets and calculate profit and loss
-    function closeRound() external nonReentrant whenNotPaused {
+    /// @notice Prepare round closing
+    /// excercise options of trading markets and ensure there are no markets left unresolved
+    function prepareRoundClosing() external nonReentrant whenNotPaused roundClosingNotPrepared {
         require(canCloseCurrentRound(), "Can't close current round");
         // excercise market options
         exerciseMarketsReadyToExercised();
@@ -288,26 +314,55 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             profitAndLossPerRound[round] = (currentBalance * ONE) / allocationPerRound[round];
         }
 
-        for (uint i = 0; i < usersPerRound[round].length; i++) {
+        roundClosingPrepared = true;
+
+        emit RoundClosingPrepared(round);
+    }
+
+    /// @notice Prepare round closing
+    /// excercise options of trading markets and ensure there are no markets left unresolved
+    function processRoundClosingBatch(uint batchSize) external nonReentrant whenNotPaused {
+        require(roundClosingPrepared, "Round closing not prepared");
+        require(usersProcessedInRound < usersPerRound[round].length, "All users already processed");
+        require(batchSize > 0, "batchSize has to be greater than 0");
+
+        address roundPool = roundPools[round];
+
+        uint endCursor = usersProcessedInRound + batchSize;
+        if (endCursor > usersPerRound[round].length) {
+            endCursor = usersPerRound[round].length;
+        }
+
+        for (uint i = usersProcessedInRound; i < endCursor; i++) {
             address user = usersPerRound[round][i];
             uint balanceAfterCurRound = (balancesPerRound[round][user] * profitAndLossPerRound[round]) / ONE;
-            if (userInRound[round][user]) {
-                if (!withdrawalRequested[user] && (profitAndLossPerRound[round] > 0)) {
-                    balancesPerRound[round + 1][user] = balancesPerRound[round + 1][user] + balanceAfterCurRound;
-                    userInRound[round + 1][user] = true;
-                    usersPerRound[round + 1].push(user);
-                    if (address(stakingThales) != address(0)) {
-                        stakingThales.updateVolume(user, balanceAfterCurRound);
-                    }
-                } else {
-                    balancesPerRound[round + 1][user] = 0;
-                    sUSD.safeTransferFrom(roundPool, user, balanceAfterCurRound);
-                    withdrawalRequested[user] = false;
-                    userInRound[round + 1][user] = false;
-                    emit Claimed(user, balanceAfterCurRound);
+            if (!withdrawalRequested[user] && (profitAndLossPerRound[round] > 0)) {
+                balancesPerRound[round + 1][user] = balancesPerRound[round + 1][user] + balanceAfterCurRound;
+                usersPerRound[round + 1].push(user);
+                if (address(stakingThales) != address(0)) {
+                    stakingThales.updateVolume(user, balanceAfterCurRound);
                 }
+            } else {
+                balancesPerRound[round + 1][user] = 0;
+                sUSD.safeTransferFrom(roundPool, user, balanceAfterCurRound);
+                withdrawalRequested[user] = false;
+                emit Claimed(user, balanceAfterCurRound);
             }
+            usersProcessedInRound = usersProcessedInRound + 1;
         }
+
+        emit RoundClosingBatchProcessed(round, batchSize);
+    }
+
+    /// @notice Close current round and begin next round,
+    /// calculate profit and loss and process withdrawals
+    function closeRound() external nonReentrant whenNotPaused {
+        require(roundClosingPrepared, "Round closing not prepared");
+        require(usersProcessedInRound == usersPerRound[round].length, "Not all users processed yet");
+        // set for next round to false
+        roundClosingPrepared = false;
+
+        address roundPool = roundPools[round];
 
         //always claim for defaultLiquidityProvider
         if (balancesPerRound[round][defaultLiquidityProvider] > 0) {
@@ -335,11 +390,13 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
         sUSD.safeTransferFrom(roundPool, roundPoolNewRound, sUSD.balanceOf(roundPool));
 
+        usersProcessedInRound = 0;
+
         emit RoundClosed(round - 1, profitAndLossPerRound[round - 1]);
     }
 
     /// @notice Iterate all markets in the current round and exercise those ready to be exercised
-    function exerciseMarketsReadyToExercised() public {
+    function exerciseMarketsReadyToExercised() public roundClosingNotPrepared {
         SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
         ISportPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
@@ -477,6 +534,12 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         }
     }
 
+    /// @notice Return the count of users in current round
+    /// @return _the count of users in current round
+    function getUsersCountInCurrentRound() external view returns (uint) {
+        return usersPerRound[round].length;
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _transformCollateral(uint value) internal view returns (uint) {
@@ -515,7 +578,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         if (roundPool == address(0)) {
             require(poolRoundMastercopy != address(0), "Round pool mastercopy not set");
             SportAMMLiquidityPoolRound newRoundPool = SportAMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
-            newRoundPool.initialize(address(this), sUSD, _round, getRoundEndTime(_round), getRoundEndTime(_round + 1));
+            newRoundPool.initialize(address(this), sUSD, _round, getRoundEndTime(_round - 1), getRoundEndTime(_round));
             roundPool = address(newRoundPool);
             roundPools[_round] = roundPool;
             emit RoundPoolCreated(_round, roundPool);
@@ -532,17 +595,13 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @param flagToSet self explanatory
     function setOnlyWhitelistedStakersAllowed(bool flagToSet) external onlyOwner {
         onlyWhitelistedStakersAllowed = flagToSet;
-    }
-
-    /// @notice setNeedsTransformingCollateral sets needsTransformingCollateral value
-    /// @param _needsTransformingCollateral boolen value to be set
-    function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
-        needsTransformingCollateral = _needsTransformingCollateral;
+        emit SetOnlyWhitelistedStakersAllowed(flagToSet);
     }
 
     /// @notice Set _poolRoundMastercopy
     /// @param _poolRoundMastercopy to clone round pools from
     function setPoolRoundMastercopy(address _poolRoundMastercopy) external onlyOwner {
+        require(_poolRoundMastercopy != address(0), "Can not set a zero address!");
         poolRoundMastercopy = _poolRoundMastercopy;
         emit PoolRoundMastercopyChanged(poolRoundMastercopy);
     }
@@ -557,6 +616,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @notice Set IStakingThales contract
     /// @param _stakingThales IStakingThales address
     function setStakingThales(IStakingThales _stakingThales) external onlyOwner {
+        require(address(_stakingThales) != address(0), "Can not set a zero address!");
         stakingThales = _stakingThales;
         emit StakingThalesChanged(address(_stakingThales));
     }
@@ -585,6 +645,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @notice Set ThalesAMM contract
     /// @param _sportAMM ThalesAMM address
     function setSportAmm(ISportsAMM _sportAMM) external onlyOwner {
+        require(address(_sportAMM) != address(0), "Can not set a zero address!");
         sportsAMM = _sportAMM;
         sUSD.approve(address(sportsAMM), type(uint256).max);
         emit SportAMMChanged(address(_sportAMM));
@@ -593,6 +654,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /// @notice Set defaultLiquidityProvider wallet
     /// @param _defaultLiquidityProvider default liquidity provider
     function setDefaultLiquidityProvider(address _defaultLiquidityProvider) external onlyOwner {
+        require(_defaultLiquidityProvider != address(0), "Can not set a zero address!");
         defaultLiquidityProvider = _defaultLiquidityProvider;
         emit DefaultLiquidityProviderChanged(_defaultLiquidityProvider);
     }
@@ -603,57 +665,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         require(!started, "Can't change round length after start");
         roundLength = _roundLength;
         emit RoundLengthChanged(_roundLength);
-    }
-
-    /// @notice This method only serves as a failsafe to extract tokens from a pool round contract
-    /// @param tokens to iterate and transfer
-    /// @param account Address where to send the tokens
-    /// @param amount Amount of tokens to be sent
-    /// @param pool where to transfer from
-    /// @param all ignore amount and send whole balance
-    function transferTokensFromLiquidityPool(
-        address[] calldata tokens,
-        address payable account,
-        uint amount,
-        bool all,
-        address pool
-    ) external onlyOwner {
-        require(tokens.length > 0, "tokens array cant be empty");
-        for (uint256 index = 0; index < tokens.length; index++) {
-            if (all) {
-                IERC20Upgradeable(tokens[index]).safeTransferFrom(
-                    pool,
-                    account,
-                    IERC20Upgradeable(tokens[index]).balanceOf(pool)
-                );
-            } else {
-                IERC20Upgradeable(tokens[index]).safeTransferFrom(pool, account, amount);
-            }
-        }
-    }
-
-    /// @notice This method only serves as a failsafe to extract tokens from this contract
-    /// @param tokens to iterate and transfer
-    /// @param account Address where to send the tokens
-    /// @param amount Amount of tokens to be sent
-    /// @param all ignore amount and send whole balance
-    function transferTokens(
-        address[] calldata tokens,
-        address payable account,
-        uint amount,
-        bool all
-    ) external onlyOwner {
-        require(tokens.length > 0, "Whitelisted addresses cannot be empty");
-        for (uint256 index = 0; index < tokens.length; index++) {
-            if (all) {
-                IERC20Upgradeable(tokens[index]).safeTransfer(
-                    account,
-                    IERC20Upgradeable(tokens[index]).balanceOf(address(this))
-                );
-            } else {
-                IERC20Upgradeable(tokens[index]).safeTransfer(account, amount);
-            }
-        }
     }
 
     /// @notice set addresses which can deposit into the AMM bypassing the staking checks
@@ -698,6 +709,11 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         _;
     }
 
+    modifier roundClosingNotPrepared() {
+        require(!roundClosingPrepared, "Not allowed during roundClosingPrepared");
+        _;
+    }
+
     /* ========== EVENTS ========== */
     event PoolStarted();
     event Deposited(address user, uint amount, uint round);
@@ -716,4 +732,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event AddedIntoWhitelistStaker(address _whitelistAddress, bool _flag);
     event RoundLengthChanged(uint roundLength);
+    event SetOnlyWhitelistedStakersAllowed(bool flagToSet);
+    event RoundClosingPrepared(uint round);
+    event RoundClosingBatchProcessed(uint round, uint batchSize);
 }

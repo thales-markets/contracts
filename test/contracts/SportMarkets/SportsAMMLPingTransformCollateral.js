@@ -451,6 +451,7 @@ contract('SportsAMM', (accounts) => {
 				_maxAllowedDeposit: toUnitSix(1000).toString(),
 				_minDepositAmount: toUnitSix(100).toString(),
 				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: true,
 			},
 			{ from: owner }
 		);
@@ -471,10 +472,6 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.mint(curveSUSD.address, toUnit(100000));
 		await testUSDC.approve(SportsAMM.address, toUnit(100000), { from: first });
 		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
-
-		await SportAMMLiquidityPool.setNeedsTransformingCollateral(true, {
-			from: owner,
-		});
 	});
 
 	describe('Test SportsAMM LPing', () => {
@@ -715,6 +712,12 @@ contract('SportsAMM', (accounts) => {
 			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
 			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
 
+			await expect(SportAMMLiquidityPool.closeRound()).to.be.revertedWith(
+				'Round closing not prepared'
+			);
+
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(20);
 			await SportAMMLiquidityPool.closeRound();
 
 			round = await SportAMMLiquidityPool.round();
@@ -740,6 +743,8 @@ contract('SportsAMM', (accounts) => {
 			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
 			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
 
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(20);
 			await SportAMMLiquidityPool.closeRound();
 
 			balancesPerRoundLP = await SportAMMLiquidityPool.balancesPerRound(
@@ -784,6 +789,8 @@ contract('SportsAMM', (accounts) => {
 			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
 			console.log('canCloseCurrentRound 3 ' + canCloseCurrentRound);
 
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(20);
 			await SportAMMLiquidityPool.closeRound();
 
 			round = await SportAMMLiquidityPool.round();

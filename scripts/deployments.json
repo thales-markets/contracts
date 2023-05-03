@@ -127,7 +127,11 @@
 		"SportVaultDataImplementation": "0x606B55b96c833277e972aA18e4ef7D3f53bc6073",
 		"SportVaultUpsettoor": "0x5e2b49c68f1fD68AF1354c377eaceC2f05632D3F",
 		"SportVaultUpsettoorImplementation": "0x51B774FF4b48e73ef8F9699dA827Ef9E33485abE",
-		"SafeBoxImplementationBuyback": "0x84e964BE3B910e8a8633856b69EBbdDc7bA55006"
+		"SafeBoxImplementationBuyback": "0x84e964BE3B910e8a8633856b69EBbdDc7bA55006",
+		"AmmVaultData": "0x70164a1ec9D21c4dBA2b4f9B23750F9C7D03286b",
+		"AmmVaultDataImplementation": "0xb5BEc32954a3A75FcE4b5b0b38bC6E7CCAD4c4AD",
+		"StakingData": "0xCc134245424fe9E10A011961451D5AD6Cd0C087C",
+		"StakingDataImplementation": "0xAB599B2697D836e665706DC59566363E2FE0995a"
 	},
 	"arbitrumOne": {
 		"ProxyUSDC": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
@@ -220,7 +224,11 @@
 		"SportAMMLiquidityPoolData": "0x230893C24804B89D0ec3FFfFa243CE32C6b6541B",
 		"SportAMMLiquidityPoolDataImplementation": "0xbe425C88aED5f38d8F34d4BaFe43015284892E5d",
 		"SportVaultUpsettoor": "0x31c2947c86412A5e33794105aA034DD9312eb711",
-		"SportVaultUpsettoorImplementation": "0x6485d7093398D3136C3558c55d66CbB80bC99db0"
+		"SportVaultUpsettoorImplementation": "0x6485d7093398D3136C3558c55d66CbB80bC99db0",
+		"AmmVaultData": "0x4A096E1d719A2087F5CAfB0839aa25B6dd6dB324",
+		"AmmVaultDataImplementation": "0xFe3Bf99bc7aBe380459Fbab5f4E0BdC61A040668",
+		"StakingData": "0x0D72F9DB9efD3cbd91Ec4C296A01e3Cd5155Cc31",
+		"StakingDataImplementation": "0xffEC5E2A46B127D786297f3b73c962701566a6E0"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -589,7 +597,9 @@
 		"GamesOddsReceiver": "0x07d762943f2501C630cCDb82e3BD81DB4Ee45256",
 		"GamesOddsReceiverImplementation": "0x764A51F3C84158E70d228122c4cE2BC7A605DFdF",
 		"SportAMMLiquidityPoolData": "0xB0b68F811Eb18E63aD942A7EcAE038715d4026c6",
-		"SportAMMLiquidityPoolDataImplementation": "0xe503039A4ef5279eCB8F961C4870e3a6790a1b88"
+		"SportAMMLiquidityPoolDataImplementation": "0xe503039A4ef5279eCB8F961C4870e3a6790a1b88",
+		"StakingData": "0x87005978e76C7356D1e0a8118DC82eaF52D49FB1",
+		"StakingDataImplementation": "0x836dBB0251FBA7C2651ed2B353c9d4795c73225c"
 	},
 	"localhost": {
 		"Airdrop": "",

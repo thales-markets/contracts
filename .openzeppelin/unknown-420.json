@@ -294,6 +294,11 @@
       "address": "0xAca69fa38a08EeF5b03a576387b85a5BFe8BbC19",
       "txHash": "0x9c1b737b98e17337b6bdae4e7ee132c2068c5854cfe01801772f26bb4bda44c8",
       "kind": "transparent"
+    },
+    {
+      "address": "0x87005978e76C7356D1e0a8118DC82eaF52D49FB1",
+      "txHash": "0x4a2862ddc5c3becd3ada7d48f90a7fc350a3aa8ef1bd89714b37218ed80e53f9",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -45210,6 +45215,94 @@
           },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "4b966c85d14b065a3973945a3b5ecab1479cad444a08665e5333328ccf786420": {
+      "address": "0x836dBB0251FBA7C2651ed2B353c9d4795c73225c",
+      "txHash": "0xff22410be69c0491f7966eaecbfe0971b5ed1e44e94a267c0f7650337f21aab8",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:63"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyPausable.sol:12"
+          },
+          {
+            "contract": "StakingData",
+            "label": "stakingThales",
+            "type": "t_address",
+            "src": "contracts\\EscrowAndStaking\\StakingData.sol:62"
+          },
+          {
+            "contract": "StakingData",
+            "label": "escrowThales",
+            "type": "t_address",
+            "src": "contracts\\EscrowAndStaking\\StakingData.sol:63"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"

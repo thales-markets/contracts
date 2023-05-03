@@ -63,9 +63,7 @@ async function main() {
 	console.log('PositionMastercopy deployed to:', PositionMastercopyDeployed.address);
 	setTargetAddress('PositionMastercopy', network, PositionMastercopyDeployed.address);
 
-	const PositionalMarketMastercopy = await ethers.getContractFactory(
-		'PositionalMarketMastercopy'
-	);
+	const PositionalMarketMastercopy = await ethers.getContractFactory('PositionalMarketMastercopy');
 	const PositionalMarketMastercopyDeployed = await PositionalMarketMastercopy.deploy();
 	await PositionalMarketMastercopyDeployed.deployed();
 
@@ -112,27 +110,27 @@ async function main() {
 	let tx = await PositionalMarketFactoryDeployed.setPositionalMarketMastercopy(
 		PositionalMarketMastercopyDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionalMarketMastercopy');
 	});
 
-	 tx = await PositionalMarketFactoryDeployed.setPositionalMarketManager(
+	tx = await PositionalMarketFactoryDeployed.setPositionalMarketManager(
 		PositionalMarketManagerDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionalMarketManager');
 	});
 	tx = await PositionalMarketManagerDeployed.setPositionalMarketFactory(
 		PositionalMarketFactoryDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketManager: setPositionalMarketFactory');
 	});
 
 	tx = await PositionalMarketFactoryDeployed.setPositionMastercopy(
 		PositionMastercopyDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionMastercopy');
 	});
 
@@ -145,8 +143,7 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: PositionalMarketMastercopyDeployed.address,
 		constructorArguments: [],
-		contract:
-			'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
+		contract: 'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
 	});
 
 	await hre.run('verify:verify', {
@@ -160,18 +157,17 @@ async function main() {
 			creatorCapitalRequirement,
 		],
 	});
-
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

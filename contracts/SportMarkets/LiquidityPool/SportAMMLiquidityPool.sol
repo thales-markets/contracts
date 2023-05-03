@@ -34,6 +34,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     /* ========== CONSTANTS ========== */
     uint private constant HUNDRED = 1e20;
     uint private constant ONE = 1e18;
+    uint private constant ONE_PERCENT = 1e16;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -90,6 +91,8 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     bool public roundClosingPrepared;
 
     uint public usersProcessedInRound;
+
+    mapping(address => uint) public withdrawalShare;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -269,21 +272,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     }
 
     /// @notice request withdrawal from the LP
-    function withdrawalRequest() external nonReentrant whenNotPaused roundClosingNotPrepared {
-        require(started, "Pool has not started");
-        require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
-        require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
-        require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round");
-
-        if (!whitelistedDeposits[msg.sender]) {
-            require(address(stakingThales) != address(0), "Staking Thales not set");
-            require(
-                balancesPerRound[round][msg.sender] <
-                    _transformCollateral(((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE)),
-                "Not enough staked THALES"
-            );
-        }
-
+    function withdrawalRequest() external nonReentrant canWithdraw whenNotPaused roundClosingNotPrepared {
         if (totalDeposited > balancesPerRound[round][msg.sender]) {
             totalDeposited -= balancesPerRound[round][msg.sender];
         } else {
@@ -292,6 +281,23 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
         usersCurrentlyInPool = usersCurrentlyInPool - 1;
         withdrawalRequested[msg.sender] = true;
+        emit WithdrawalRequested(msg.sender);
+    }
+
+    /// @notice request withdrawal from the LP
+    function partialWithdrawalRequest(uint share) external nonReentrant canWithdraw whenNotPaused roundClosingNotPrepared {
+        require(share > ONE_PERCENT && share < ONE, "Share has to be between 1% and 100%");
+
+        uint toWithdraw = (balancesPerRound[round][msg.sender] * share) / ONE;
+        if (totalDeposited > toWithdraw) {
+            totalDeposited -= toWithdraw;
+        } else {
+            totalDeposited = 0;
+        }
+
+        usersCurrentlyInPool = usersCurrentlyInPool - 1;
+        withdrawalRequested[msg.sender] = true;
+        withdrawalShare[msg.sender] = share;
         emit WithdrawalRequested(msg.sender);
     }
 
@@ -343,10 +349,20 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
                     stakingThales.updateVolume(user, balanceAfterCurRound);
                 }
             } else {
-                balancesPerRound[round + 1][user] = 0;
-                sUSD.safeTransferFrom(roundPool, user, balanceAfterCurRound);
-                withdrawalRequested[user] = false;
-                emit Claimed(user, balanceAfterCurRound);
+                if (withdrawalShare[user] > 0) {
+                    uint amountToClaim = (balanceAfterCurRound * withdrawalShare[user]) / ONE;
+                    sUSD.safeTransferFrom(roundPool, user, amountToClaim);
+                    emit Claimed(user, amountToClaim);
+                    withdrawalRequested[user] = false;
+                    withdrawalShare[user] = 0;
+                    usersPerRound[round + 1].push(user);
+                    balancesPerRound[round + 1][user] = balanceAfterCurRound - amountToClaim;
+                } else {
+                    balancesPerRound[round + 1][user] = 0;
+                    sUSD.safeTransferFrom(roundPool, user, balanceAfterCurRound);
+                    withdrawalRequested[user] = false;
+                    emit Claimed(user, balanceAfterCurRound);
+                }
             }
             usersProcessedInRound = usersProcessedInRound + 1;
         }
@@ -699,8 +715,18 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     modifier canDeposit(uint amount) {
         require(!withdrawalRequested[msg.sender], "Withdrawal is requested, cannot deposit");
-        require(amount >= minDepositAmount, "Amount less than minDepositAmount");
         require(totalDeposited + amount <= maxAllowedDeposit, "Deposit amount exceeds AMM LP cap");
+        if (balancesPerRound[round][msg.sender] == 0 && balancesPerRound[round + 1][msg.sender] == 0) {
+            require(amount >= minDepositAmount, "Amount less than minDepositAmount");
+        }
+        _;
+    }
+
+    modifier canWithdraw() {
+        require(started, "Pool has not started");
+        require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
+        require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
+        require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round");
         _;
     }
 

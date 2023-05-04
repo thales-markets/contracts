@@ -56,18 +56,18 @@ async function main() {
 	let tx = await PositionalMarketFactoryDeployed.setPositionalMarketManager(
 		PositionalMarketManagerDeployed
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionalMarketManager');
 	});
 
 	tx = await PositionalMarketFactoryDeployed.setPositionalMarketMastercopy(
 		PositionalMarketMastercopyDeployed
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionalMarketMastercopy');
 	});
 	tx = await PositionalMarketFactoryDeployed.setPositionMastercopy(PositionMastercopyDeployed);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionMastercopy');
 	});
 
@@ -89,7 +89,7 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

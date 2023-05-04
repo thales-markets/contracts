@@ -81,6 +81,15 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         uint strikePrice;
     }
 
+    struct RangedMarketsInfoPerPosition {
+        address market;
+        uint price;
+        uint liquidity;
+        int priceImpact;
+        uint leftPrice;
+        uint rightPrice;
+    }
+
     struct RangedMarketPricesAndLiqudity {
         uint inPrice;
         uint outPrice;
@@ -335,15 +344,17 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     function getRangedActiveMarketsInfoPerPosition(address[] calldata markets, RangedMarket.Position position)
         external
         view
-        returns (ActiveMarketsInfoPerPosition[] memory)
+        returns (RangedMarketsInfoPerPosition[] memory)
     {
-        ActiveMarketsInfoPerPosition[] memory activeMarkets = new ActiveMarketsInfoPerPosition[](markets.length);
+        RangedMarketsInfoPerPosition[] memory activeMarkets = new RangedMarketsInfoPerPosition[](markets.length);
         for (uint i = 0; i < markets.length; i++) {
             activeMarkets[i].market = markets[i];
             IPositionalMarket leftMarket = IPositionalMarket(RangedMarket(markets[i]).leftMarket());
             IPositionalMarket rightMarket = IPositionalMarket(RangedMarket(markets[i]).rightMarket());
-            (bytes32 key, uint strikePrice, ) = leftMarket.getOracleDetails();
-            activeMarkets[i].strikePrice = strikePrice;
+            (bytes32 leftKey, uint leftStrikePrice, ) = leftMarket.getOracleDetails();
+            (bytes32 rightKey, uint rightStrikePrice, ) = rightMarket.getOracleDetails();
+            activeMarkets[i].leftPrice = leftStrikePrice;
+            activeMarkets[i].rightPrice = rightStrikePrice;
 
             activeMarkets[i].liquidity = RangedMarketsAMM(rangedMarketsAMM).availableToBuyFromAMM(
                 RangedMarket(markets[i]),

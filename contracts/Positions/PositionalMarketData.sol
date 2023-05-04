@@ -318,10 +318,11 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     /// @param markets to get info for
     /// @param position asset to get info for
     /// @return market info for a list of markets and position
-    function getActiveMarketsInfoPerPosition(
-        address[] calldata markets,
-        IThalesAMM.Position position
-    ) external view returns (ActiveMarketsInfoPerPosition[] memory) {
+    function getActiveMarketsInfoPerPosition(address[] calldata markets, IThalesAMM.Position position)
+        external
+        view
+        returns (ActiveMarketsInfoPerPosition[] memory)
+    {
         ActiveMarketsInfoPerPosition[] memory activeMarkets = new ActiveMarketsInfoPerPosition[](markets.length);
         for (uint i = 0; i < markets.length; i++) {
             activeMarkets[i].market = markets[i];
@@ -341,10 +342,11 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     /// @param markets to get info for
     /// @param position asset to get info for
     /// @return all available dates per asset
-    function getRangedActiveMarketsInfoPerPosition(
-        address[] calldata markets,
-        RangedMarket.Position position
-    ) external view returns (RangedMarketsInfoPerPosition[] memory) {
+    function getRangedActiveMarketsInfoPerPosition(address[] calldata markets, RangedMarket.Position position)
+        external
+        view
+        returns (RangedMarketsInfoPerPosition[] memory)
+    {
         RangedMarketsInfoPerPosition[] memory activeMarkets = new RangedMarketsInfoPerPosition[](markets.length);
         for (uint i = 0; i < markets.length; i++) {
             activeMarkets[i].market = markets[i];
@@ -371,9 +373,11 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     /// @notice getRangedMarketPricesAndLiquidity returns prices and liquidity for ranged market
     /// @param market RangedMarket
     /// @return RangedMarketPricesAndLiqudity
-    function getRangedMarketPricesAndLiquidity(
-        RangedMarket market
-    ) external view returns (RangedMarketPricesAndLiqudity memory) {
+    function getRangedMarketPricesAndLiquidity(RangedMarket market)
+        external
+        view
+        returns (RangedMarketPricesAndLiqudity memory)
+    {
         uint inPrice = RangedMarketsAMM(rangedMarketsAMM).buyFromAmmQuote(market, RangedMarket.Position.In, ONE);
         uint outPrice = RangedMarketsAMM(rangedMarketsAMM).buyFromAmmQuote(market, RangedMarket.Position.Out, ONE);
         uint inLiquidity = RangedMarketsAMM(rangedMarketsAMM).availableToBuyFromAMM(market, RangedMarket.Position.In);

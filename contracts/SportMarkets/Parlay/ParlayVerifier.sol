@@ -234,7 +234,7 @@ contract ParlayVerifier {
                 ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
                 : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
             buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
-            finalQuotes = _applySkewImpactBatch(finalQuotes, skewImpact, (expectedPayout > totalBuyAmount));
+            // finalQuotes = _applySkewImpactBatch(finalQuotes, (ONE*skewImpact/(4*finalQuotes.length))/ONE, (expectedPayout > totalBuyAmount));
             totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
             _calculateRisk(params.sportMarkets, (totalBuyAmount - params.sUSDAfterFees), params.sportsAmm.parlayAMM());
         } else {

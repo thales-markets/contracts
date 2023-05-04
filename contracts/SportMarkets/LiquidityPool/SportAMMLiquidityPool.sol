@@ -284,9 +284,10 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         emit WithdrawalRequested(msg.sender);
     }
 
-    /// @notice request withdrawal from the LP
+    /// @notice request partial withdrawal from the LP.
+    /// @param share the percentage the user is wihdrawing from his total deposit
     function partialWithdrawalRequest(uint share) external nonReentrant canWithdraw whenNotPaused roundClosingNotPrepared {
-        require(share > ONE_PERCENT && share < ONE, "Share has to be between 1% and 100%");
+        require(share >= ONE_PERCENT * 10 && share <= ONE_PERCENT * 90, "Share has to be between 10% and 90%");
 
         uint toWithdraw = (balancesPerRound[round][msg.sender] * share) / ONE;
         if (totalDeposited > toWithdraw) {
@@ -295,7 +296,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             totalDeposited = 0;
         }
 
-        usersCurrentlyInPool = usersCurrentlyInPool - 1;
         withdrawalRequested[msg.sender] = true;
         withdrawalShare[msg.sender] = share;
         emit WithdrawalRequested(msg.sender);
@@ -435,7 +435,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     function isUserLPing(address user) external view returns (bool isUserInLP) {
         isUserInLP =
             (balancesPerRound[round][user] > 0 || balancesPerRound[round + 1][user] > 0) &&
-            !withdrawalRequested[user];
+            (!withdrawalRequested[user] || withdrawalShare[user] > 0);
     }
 
     /// @notice Return the maximum amount the user can deposit now

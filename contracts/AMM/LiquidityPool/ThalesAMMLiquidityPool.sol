@@ -34,6 +34,7 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     /* ========== CONSTANTS ========== */
     uint private constant HUNDRED = 1e20;
     uint private constant ONE = 1e18;
+    uint private constant ONE_PERCENT = 1e16;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -93,12 +94,9 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     uint public marketsProcessedInRound;
 
-    /* ========== CONSTRUCTOR ========== */
+    mapping(address => uint) public withdrawalShare;
 
-    //    /// @custom:oz-upgrades-unsafe-allow constructor
-    //    constructor() {
-    //        _disableInitializers();
-    //    }
+    /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
         setOwner(params._owner);
@@ -274,21 +272,7 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     }
 
     /// @notice request withdrawal from the LP
-    function withdrawalRequest() external nonReentrant whenNotPaused roundClosingNotPrepared {
-        require(started, "Pool has not started");
-        require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
-        require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
-        require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round");
-
-        if (!whitelistedDeposits[msg.sender]) {
-            require(address(stakingThales) != address(0), "Staking Thales not set");
-            require(
-                balancesPerRound[round][msg.sender] <
-                    _transformCollateral(((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE)),
-                "Not enough staked THALES"
-            );
-        }
-
+    function withdrawalRequest() external nonReentrant canWithdraw whenNotPaused roundClosingNotPrepared {
         if (totalDeposited > balancesPerRound[round][msg.sender]) {
             totalDeposited -= balancesPerRound[round][msg.sender];
         } else {
@@ -297,6 +281,23 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
         usersCurrentlyInPool = usersCurrentlyInPool - 1;
         withdrawalRequested[msg.sender] = true;
+        emit WithdrawalRequested(msg.sender);
+    }
+
+    /// @notice request partial withdrawal from the LP.
+    /// @param share the percentage the user is wihdrawing from his total deposit
+    function partialWithdrawalRequest(uint share) external nonReentrant canWithdraw whenNotPaused roundClosingNotPrepared {
+        require(share >= ONE_PERCENT * 10 && share <= ONE_PERCENT * 90, "Share has to be between 10% and 90%");
+
+        uint toWithdraw = (balancesPerRound[round][msg.sender] * share) / ONE;
+        if (totalDeposited > toWithdraw) {
+            totalDeposited -= toWithdraw;
+        } else {
+            totalDeposited = 0;
+        }
+
+        withdrawalRequested[msg.sender] = true;
+        withdrawalShare[msg.sender] = share;
         emit WithdrawalRequested(msg.sender);
     }
 
@@ -348,10 +349,20 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
                     stakingThales.updateVolume(user, balanceAfterCurRound);
                 }
             } else {
-                balancesPerRound[round + 1][user] = 0;
-                sUSD.safeTransferFrom(roundPool, user, balanceAfterCurRound);
-                withdrawalRequested[user] = false;
-                emit Claimed(user, balanceAfterCurRound);
+                if (withdrawalShare[user] > 0) {
+                    uint amountToClaim = (balanceAfterCurRound * withdrawalShare[user]) / ONE;
+                    sUSD.safeTransferFrom(roundPool, user, amountToClaim);
+                    emit Claimed(user, amountToClaim);
+                    withdrawalRequested[user] = false;
+                    withdrawalShare[user] = 0;
+                    usersPerRound[round + 1].push(user);
+                    balancesPerRound[round + 1][user] = balanceAfterCurRound - amountToClaim;
+                } else {
+                    balancesPerRound[round + 1][user] = 0;
+                    sUSD.safeTransferFrom(roundPool, user, balanceAfterCurRound);
+                    withdrawalRequested[user] = false;
+                    emit Claimed(user, balanceAfterCurRound);
+                }
             }
             usersProcessedInRound = usersProcessedInRound + 1;
         }
@@ -451,7 +462,7 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     function isUserLPing(address user) external view returns (bool isUserInLP) {
         isUserInLP =
             (balancesPerRound[round][user] > 0 || balancesPerRound[round + 1][user] > 0) &&
-            !withdrawalRequested[user];
+            (!withdrawalRequested[user] || withdrawalShare[user] > 0);
     }
 
     /// @notice Return the maximum amount the user can deposit now
@@ -726,6 +737,14 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         require(!withdrawalRequested[msg.sender], "Withdrawal is requested, cannot deposit");
         require(amount >= minDepositAmount, "Amount less than minDepositAmount");
         require(totalDeposited + amount <= maxAllowedDeposit, "Deposit amount exceeds AMM LP cap");
+        _;
+    }
+
+    modifier canWithdraw() {
+        require(started, "Pool has not started");
+        require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
+        require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
+        require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round");
         _;
     }
 

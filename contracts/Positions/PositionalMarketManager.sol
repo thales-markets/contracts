@@ -337,9 +337,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         uint strikePriceStep = getStrikePriceStep(oracleKey);
         uint currentAssetPrice = priceFeed.rateForCurrency(oracleKey);
 
-        uint priceDiff = strikePrice > currentAssetPrice ? strikePrice - currentAssetPrice : currentAssetPrice - strikePrice;
-
-        if (strikePriceStep != 0 && priceDiff % strikePriceStep != 0) {
+        if (strikePriceStep != 0 && strikePrice % strikePriceStep != 0) {
             return (false, "Invalid strike price");
         }
 

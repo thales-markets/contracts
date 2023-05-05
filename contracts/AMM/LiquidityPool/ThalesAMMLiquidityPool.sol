@@ -412,9 +412,8 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
                 if (market.resolved()) {
                     poolRound.exerciseMarketReadyToExercised(market);
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
+                    marketsProcessedInRound += 1;
                 }
-
-                marketsProcessedInRound += 1;
             }
         }
     }
@@ -427,7 +426,6 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         whenNotPaused
         roundClosingNotPrepared
     {
-        require(canCloseCurrentRound(), "Can't close current round");
         require(marketsProcessedInRound < tradingMarketsPerRound[round].length, "All markets already processed");
         require(batchSize > 0, "batchSize has to be greater than 0");
 
@@ -446,9 +444,8 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
                 if (market.resolved()) {
                     poolRound.exerciseMarketReadyToExercised(market);
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
+                    marketsProcessedInRound += 1;
                 }
-
-                marketsProcessedInRound += 1;
             }
         }
     }

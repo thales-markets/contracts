@@ -102,6 +102,12 @@ interface IGamesOddsObtainer {
 
     function pauseUnpauseChildMarkets(address _main, bool _flag) external;
 
+    function pauseUnpauseCurrentActiveChildMarket(
+        bytes32 _gameId,
+        address _main,
+        bool _flag
+    ) external;
+
     function resolveChildMarkets(
         address _market,
         uint _outcome,

@@ -67,8 +67,7 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: '0x57743FDf7a4cc9F47b0cd3aF4507DAA4cE93F76B', //PositionalMarketMastercopyDeployed.address,
 		constructorArguments: [],
-		contract:
-			'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
+		contract: 'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
 	});
 
 	await hre.run('verify:verify', {
@@ -91,13 +90,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

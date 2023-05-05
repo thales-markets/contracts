@@ -565,6 +565,7 @@ contract('ParlayAMM', (accounts) => {
 				_maxAllowedDeposit: toUnit(100000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: false,
 			},
 			{ from: owner }
 		);

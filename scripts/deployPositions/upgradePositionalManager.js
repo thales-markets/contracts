@@ -40,6 +40,11 @@ async function main() {
 		network = 'arbitrumOne';
 	}
 
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
+
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + network);
 

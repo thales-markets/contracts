@@ -2,13 +2,8 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
 
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../../test/utils')();
+const { fastForward, toUnit, currentTime, multiplyDecimalRound, divideDecimalRound } =
+	require('../../../test/utils')();
 
 const { toBN } = web3.utils;
 
@@ -45,14 +40,11 @@ async function main() {
 
 	console.log('PositionMastercopy deployed to:', PositionMastercopyDeployed.address);
 
-	const PositionalMarketMastercopy = await ethers.getContractFactory(
-		'PositionalMarketMastercopy',
-		{
-			libraries: {
-				SafeDecimalMath: safeDecimalMath.address,
-			},
-		}
-	);
+	const PositionalMarketMastercopy = await ethers.getContractFactory('PositionalMarketMastercopy', {
+		libraries: {
+			SafeDecimalMath: safeDecimalMath.address,
+		},
+	});
 	const PositionalMarketMastercopyDeployed = await PositionalMarketMastercopy.deploy();
 	await PositionalMarketMastercopyDeployed.deployed();
 
@@ -102,25 +94,25 @@ async function main() {
 	let tx = await PositionalMarketFactoryDeployed.setPositionalMarketManager(
 		PositionalMarketManagerDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionalMarketManager');
 	});
 	tx = await PositionalMarketFactoryDeployed.setPositionalMarketMastercopy(
 		PositionalMarketMastercopyDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionalMarketMastercopy');
 	});
 	tx = await PositionalMarketFactoryDeployed.setPositionMastercopy(
 		PositionMastercopyDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionMastercopy');
 	});
 	tx = await PositionalMarketManagerDeployed.setPositionalMarketFactory(
 		PositionalMarketFactoryDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketManager: setPositionalMarketFactory');
 	});
 
@@ -130,15 +122,15 @@ async function main() {
 	const initialStrikePrice = w3utils.toWei('1');
 	const now = await currentTime();
 
-	let abi = ["function approve(address _spender, uint256 _value) public returns (bool success)"]
+	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
 	let contract = new ethers.Contract(ProxyERC20sUSD.address, abi, owner);
 	tx = await contract.approve(PositionalMarketManagerDeployed.address, initialStrikePrice, {
 		from: owner.address,
 	});
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('Done approving');
 	});
-	
+
 	tx = await PositionalMarketManagerDeployed.createMarket(
 		JPYkey,
 		initialStrikePrice,
@@ -148,15 +140,14 @@ async function main() {
 		ZERO_ADDRESS,
 		{ gasLimit: 5500000 }
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('Market created');
 	});
-	
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

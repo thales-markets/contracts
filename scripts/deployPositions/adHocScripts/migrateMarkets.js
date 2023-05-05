@@ -24,7 +24,11 @@ const migratePositionalMarkets = async () => {
 	}
 
 	// set PROVIDER_URL and TESTNET_DEPLOY_PRIVATE_KEY in .env
-	const { providerUrl, privateKey: envPrivateKey, etherscanLinkPrefix } = loadConnections({
+	const {
+		providerUrl,
+		privateKey: envPrivateKey,
+		etherscanLinkPrefix,
+	} = loadConnections({
 		network,
 	});
 
@@ -195,7 +199,7 @@ const migratePositionalMarkets = async () => {
 
 migratePositionalMarkets()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

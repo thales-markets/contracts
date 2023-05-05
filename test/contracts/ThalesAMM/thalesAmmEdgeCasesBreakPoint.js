@@ -235,10 +235,12 @@ contract('ThalesAMM', (accounts) => {
 
 			let strike = price - 3 * strikePriceStep;
 
+			console.log('strike', strike);
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(strike),
+				toUnit(44000),
 				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner

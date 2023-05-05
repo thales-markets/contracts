@@ -396,7 +396,6 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         sUSD.safeTransferFrom(roundPool, roundPoolNewRound, sUSD.balanceOf(roundPool));
 
         usersProcessedInRound = 0;
-        marketsProcessedInRound = 0;
 
         emit RoundClosed(round - 1, profitAndLossPerRound[round - 1]);
     }
@@ -405,14 +404,13 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     function exerciseMarketsReadyToExercised() public roundClosingNotPrepared {
         ThalesAMMLiquidityPoolRound poolRound = ThalesAMMLiquidityPoolRound(roundPools[round]);
         IPositionalMarket market;
-        for (uint i = marketsProcessedInRound; i < tradingMarketsPerRound[round].length; i++) {
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
             address marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = IPositionalMarket(marketAddress);
                 if (market.resolved()) {
                     poolRound.exerciseMarketReadyToExercised(market);
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
-                    marketsProcessedInRound += 1;
                 }
             }
         }
@@ -426,25 +424,20 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         whenNotPaused
         roundClosingNotPrepared
     {
-        require(marketsProcessedInRound < tradingMarketsPerRound[round].length, "All markets already processed");
         require(batchSize > 0, "batchSize has to be greater than 0");
 
         ThalesAMMLiquidityPoolRound poolRound = ThalesAMMLiquidityPoolRound(roundPools[round]);
-
-        uint endCursor = marketsProcessedInRound + batchSize;
-        if (endCursor > tradingMarketsPerRound[round].length) {
-            endCursor = tradingMarketsPerRound[round].length;
-        }
-
+        uint count = 0;
         IPositionalMarket market;
-        for (uint i = marketsProcessedInRound; i < endCursor; i++) {
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            if (count == batchSize) break;
             address marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = IPositionalMarket(marketAddress);
                 if (market.resolved()) {
                     poolRound.exerciseMarketReadyToExercised(market);
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
-                    marketsProcessedInRound += 1;
+                    count += 1;
                 }
             }
         }

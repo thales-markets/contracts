@@ -923,6 +923,86 @@ contract('SportsAMM', (accounts) => {
 
 			ammBalance = await Thales.balanceOf(SportsAMM.address);
 			console.log('ammBalance: ' + ammBalance / 1e18);
+
+			totalDeposited = await SportAMMLiquidityPool.totalDeposited();
+			console.log('totalDeposited 5 ' + totalDeposited / 1e18);
+
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(200);
+			await SportAMMLiquidityPool.closeRound();
+
+			totalDeposited = await SportAMMLiquidityPool.totalDeposited();
+			console.log('totalDeposited 5 ' + totalDeposited / 1e18);
+
+			round = await SportAMMLiquidityPool.round();
+			console.log('round ' + round);
+
+			let balanceFirst = await SportAMMLiquidityPool.balancesPerRound(
+				round,
+				firstLiquidityProvider
+			);
+
+			console.log('Balance first: ' + balanceFirst / 1e18);
+
+			let balanceSecond = await SportAMMLiquidityPool.balancesPerRound(
+				round,
+				secondLiquidityProvider
+			);
+			console.log('Balance second: ' + balanceSecond / 1e18);
+
+			let balanceThird = await SportAMMLiquidityPool.balancesPerRound(
+				round,
+				thirdLiquidityProvider
+			);
+			console.log('Balance third: ' + balanceThird / 1e18);
+
+			await SportAMMLiquidityPool.partialWithdrawalRequest(toUnit(0.5), {
+				from: thirdLiquidityProvider,
+			});
+
+			getUsersCountInCurrentRound = await SportAMMLiquidityPool.getUsersCountInCurrentRound(
+				thirdLiquidityProvider
+			);
+
+			console.log('getUsersCountInCurrentRound : ' + getUsersCountInCurrentRound);
+
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(200);
+			await SportAMMLiquidityPool.closeRound();
+
+			totalDeposited = await SportAMMLiquidityPool.totalDeposited();
+			console.log('totalDeposited 5 ' + totalDeposited / 1e18);
+
+			round = await SportAMMLiquidityPool.round();
+			console.log('round ' + round);
+
+			balanceFirst = await SportAMMLiquidityPool.balancesPerRound(round, firstLiquidityProvider);
+
+			console.log('Balance first: ' + balanceFirst / 1e18);
+
+			balanceSecond = await SportAMMLiquidityPool.balancesPerRound(round, secondLiquidityProvider);
+			console.log('Balance second: ' + balanceSecond / 1e18);
+
+			balanceThird = await SportAMMLiquidityPool.balancesPerRound(round, thirdLiquidityProvider);
+			console.log('Balance third: ' + balanceThird / 1e18);
+
+			let isUserLPingFirst = await SportAMMLiquidityPool.isUserLPing(firstLiquidityProvider);
+
+			console.log('isUserLPingFirst : ' + isUserLPingFirst);
+
+			let isUserLPingSEcond = await SportAMMLiquidityPool.isUserLPing(secondLiquidityProvider);
+
+			console.log('isUserLPingSEcond : ' + isUserLPingSEcond);
+
+			let isUserLPingThird = await SportAMMLiquidityPool.isUserLPing(thirdLiquidityProvider);
+
+			console.log('isUserLPingThird : ' + isUserLPingThird);
+
+			getUsersCountInCurrentRound = await SportAMMLiquidityPool.getUsersCountInCurrentRound(
+				thirdLiquidityProvider
+			);
+
+			console.log('getUsersCountInCurrentRound : ' + getUsersCountInCurrentRound);
 		});
 	});
 });

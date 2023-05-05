@@ -460,6 +460,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             : 0;
     }
 
+    //deprecated User can now withdraw at any time
     /// @notice Return how much the user needs to have staked to withdraw
     /// @param user address to check
     /// @return neededStaked how much the user needs to have staked to withdraw

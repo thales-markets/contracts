@@ -628,7 +628,7 @@
 		"StakingData": "0x87005978e76C7356D1e0a8118DC82eaF52D49FB1",
 		"StakingDataImplementation": "0x836dBB0251FBA7C2651ed2B353c9d4795c73225c",
 		"ThalesAMMLiquidityPoolData": "0x265F42a1F5dBEef66C514764766588a549610499",
-		"ThalesAMMLiquidityPoolDataImplementation": "0xF572dA8Fd95Aa00eFD36F1720c45170E52dAD9De"
+		"ThalesAMMLiquidityPoolDataImplementation": "0x7ce099733e08f6e2c18251278D0E195a697d3016"
 	},
 	"localhost": {
 		"Airdrop": "",

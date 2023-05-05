@@ -32,7 +32,7 @@ contract ThalesAMMLiquidityPoolData is Initializable, ProxyOwned, ProxyPausable 
         uint maxDeposit;
         uint availableToDeposit;
         uint stakedThales;
-        uint neededStakedThalesToWithdraw;
+        uint withdrawalShare;
     }
 
     function initialize(address _owner) external initializer {
@@ -85,7 +85,7 @@ contract ThalesAMMLiquidityPoolData is Initializable, ProxyOwned, ProxyPausable 
                 maxDepositForUser,
                 availableToDepositForUser,
                 stakedThalesForUser,
-                liquidityPool.getNeededStakedThalesToWithdrawForUser(user)
+                liquidityPool.withdrawalShare(user)
             );
     }
 }

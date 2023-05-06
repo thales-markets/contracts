@@ -10,8 +10,6 @@ import "../SportPositions/SportPosition.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 
-import "hardhat/console.sol";
-
 contract ParlayMarket is OwnedWithInit {
     using SafeERC20 for IERC20;
 
@@ -292,11 +290,7 @@ contract ParlayMarket is OwnedWithInit {
                 sportMarket[_idx].result = result;
                 sportMarket[_idx].hasWon = result == (sportMarket[_idx].position + 1);
                 if (result == 0) {
-                    // totalResultQuote = ((totalResultQuote * ONE * ONE) / sportMarket[_idx].odd) / ONE;
-                    console.log("--> totalQuote: ", totalResultQuote);
-                    totalResultQuote = ((totalResultQuote * ONE * ONE) / _getCancellationForSportMarketIndex(_idx)) / ONE;
-                    noSkewTotalQuote = ((noSkewTotalQuote * ONE * ONE) / sportMarket[_idx].odd) / ONE;
-                    console.log("--> totalQuoteAfter: ", totalResultQuote);
+                    (totalResultQuote, noSkewTotalQuote) = _getCancellQuotesForMarketIndex(_idx);
                     sportMarket[_idx].isCancelled = true;
                 }
             }
@@ -343,14 +337,11 @@ contract ParlayMarket is OwnedWithInit {
         }
     }
 
-    function _getCancellationForSportMarketIndex(uint _index) internal view returns (uint discount) {
-        uint expectedPayout = ((sUSDPaid * ONE * ONE) / noSkewTotalQuote) / ONE;
-        console.log(">>> expectedPayout: ", expectedPayout);
-        uint discountPayout = ((noSkewTotalQuote * ONE * ONE) / sportMarket[_index].odd) / ONE;
-        discountPayout = ((sUSDPaid * ONE * ONE) / discountPayout) / ONE;
-        console.log(">>> discountPayout: ", discountPayout);
-        discount = ((ONE * discountPayout) / expectedPayout);
-        console.log(">>> discount: ", discount);
+    function _getCancellQuotesForMarketIndex(uint _index) internal view returns (uint discountedQuote, uint newNoSkewQuote) {
+        newNoSkewQuote = ((noSkewTotalQuote * ONE * ONE) / sportMarket[_index].odd) / ONE;
+        discountedQuote =
+            totalResultQuote +
+            (((ONE - totalResultQuote) * (newNoSkewQuote - noSkewTotalQuote)) / (ONE - noSkewTotalQuote));
     }
 
     //============================== ON EXPIRY FUNCTIONS ===================================

@@ -649,6 +649,7 @@ contract('Position', (accounts) => {
 
 		it('Result resolves correctly up.', async () => {
 			let now = await currentTime();
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), now);
 			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
 			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
 			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;

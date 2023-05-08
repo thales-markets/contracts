@@ -579,7 +579,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _pauseOrUnpauseMarketManually(address _market, bool _pause) internal {
         _pauseOrUnpauseMarket(_market, _pause);
-        oddsObtainer.pauseUnpauseChildMarkets(_market, _pause);
+        oddsObtainer.pauseUnpauseCurrentActiveChildMarket(gameIdPerMarket[_market], _market, _pause);
     }
 
     function _pauseOrUnpauseMarket(address _market, bool _pause) internal {

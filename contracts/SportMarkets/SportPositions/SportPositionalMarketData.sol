@@ -243,7 +243,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             if (totalsMarket != address(0)) {
                 CombinedOdds memory newCombinedOdds;
                 newCombinedOdds.tags = [
-                    ISportPositionalMarket(totalsMarket).tags(0),
+                    0,
                     ISportPositionalMarket(totalsMarket).tags(1)
                 ];
                 if (

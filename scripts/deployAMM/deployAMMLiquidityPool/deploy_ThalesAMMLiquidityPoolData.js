@@ -28,7 +28,7 @@ async function main() {
 		ThalesAMMLiquidityPoolData,
 		[owner.address]
 	);
-	await ThalesAMMLiquidityPoolDataDeployed.deployed;
+	await ThalesAMMLiquidityPoolDataDeployed.deployed();
 
 	console.log('ThalesAMMLiquidityPoolData deployed on', ThalesAMMLiquidityPoolDataDeployed.address);
 	setTargetAddress(

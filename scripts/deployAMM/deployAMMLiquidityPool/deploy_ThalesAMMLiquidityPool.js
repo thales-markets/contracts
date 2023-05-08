@@ -72,7 +72,7 @@ async function main() {
 			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
 			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
-			_needsTransformingCollateral: false,
+			_needsTransformingCollateral: true,
 		},
 	]);
 

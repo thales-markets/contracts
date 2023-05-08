@@ -243,7 +243,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             if (totalsMarket != address(0)) {
                 CombinedOdds memory newCombinedOdds;
                 newCombinedOdds.tags = [
-                    0,
+                    ISportPositionalMarket(totalsMarket).tags(0),
                     ISportPositionalMarket(totalsMarket).tags(1)
                 ];
                 if (
@@ -264,6 +264,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                         (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
                             .buyQuoteFromParlay(markets, positions, ONE);
                     }
+                    newCombinedOdds.tags[0] = 0;
                     totalCombainedOdds[0] = newCombinedOdds;
                 }
             }

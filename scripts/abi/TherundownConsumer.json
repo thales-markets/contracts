@@ -366,6 +366,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMaxNumberOfMarketsToResolve",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "contract GamesQueue",
         "name": "_queues",
         "type": "address"
@@ -1585,6 +1598,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "maxNumberOfMarketsToResolve",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1875,6 +1901,19 @@
       }
     ],
     "name": "setGameIdPerChildMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxNumberOfMarketsToResolve",
+        "type": "uint256"
+      }
+    ],
+    "name": "setNewMaxNumberOfMarketsToResolve",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

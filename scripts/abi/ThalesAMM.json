@@ -16,7 +16,7 @@
       },
       {
         "indexed": false,
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -358,7 +358,7 @@
       },
       {
         "indexed": false,
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -405,7 +405,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       }
@@ -429,7 +429,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       }
@@ -453,7 +453,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -492,7 +492,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -541,7 +541,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -585,7 +585,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -614,7 +614,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -653,7 +653,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -669,25 +669,6 @@
         "internalType": "int256",
         "name": "_priceImpact",
         "type": "int256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "canExerciseMaturedMarket",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "_canExercise",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -743,19 +724,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "exerciseMaturedMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -878,6 +846,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "liquidityPool",
+    "outputs": [
+      {
+        "internalType": "contract ThalesAMMLiquidityPool",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1053,7 +1034,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       }
@@ -1192,7 +1173,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -1221,7 +1202,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -1260,7 +1241,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum ThalesAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -1364,6 +1345,19 @@
       }
     ],
     "name": "setImpliedVolatilityPerAsset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract ThalesAMMLiquidityPool",
+        "name": "_liquidityPool",
+        "type": "address"
+      }
+    ],
+    "name": "setLiquidityPool",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1615,6 +1609,34 @@
       }
     ],
     "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "all",
+        "type": "bool"
+      }
+    ],
+    "name": "transferTokens",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

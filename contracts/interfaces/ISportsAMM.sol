@@ -25,6 +25,8 @@ interface ISportsAMM {
 
     function isMarketInAMMTrading(address _market) external view returns (bool);
 
+    function isMarketForSportOnePositional(uint _tag) external view returns (bool);
+
     function availableToBuyFromAMM(address market, Position position) external view returns (uint _available);
 
     function parlayAMM() external view returns (address);

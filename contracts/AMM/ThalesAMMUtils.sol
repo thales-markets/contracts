@@ -3,12 +3,39 @@ pragma solidity ^0.8.0;
 
 import "@prb/math/contracts/PRBMathUD60x18.sol";
 
+import "../interfaces/IThalesAMM.sol";
+import "../interfaces/IPositionalMarket.sol";
+
 /// @title An AMM using BlackScholes odds algorithm to provide liqudidity for traders of UP or DOWN positions
 contract ThalesAMMUtils {
     using PRBMathUD60x18 for uint256;
 
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
+
+    struct PriceImpactParams {
+        uint amount;
+        uint balanceOtherSide;
+        uint balancePosition;
+        uint balanceOtherSideAfter;
+        uint balancePositionAfter;
+        uint availableToBuyFromAMM;
+        uint max_spread;
+    }
+
+    struct DiscountParams {
+        uint balancePosition;
+        uint balanceOtherSide;
+        uint amount;
+        uint availableToBuyFromAMM;
+        uint max_spread;
+    }
+
+    // IThalesAMM public thalesAMM;
+
+    // constructor(address _thalesAMM) {
+    //     thalesAMM = IThalesAMM(_thalesAMM);
+    // }
 
     /// @notice get the algorithmic odds of market being in the money, taken from JS code https://gist.github.com/aasmith/524788/208694a9c74bb7dfcb3295d7b5fa1ecd1d662311
     /// @param _price current price of the asset
@@ -76,5 +103,97 @@ contract ThalesAMMUtils {
         } else if (y != 0) {
             z = 1;
         }
+    }
+
+    function calculateDiscount(DiscountParams memory params) public view returns (int) {
+        uint currentBuyImpactOtherSide = buyPriceImpactImbalancedSkew(
+            PriceImpactParams(
+                params.amount,
+                params.balancePosition,
+                params.balanceOtherSide,
+                params.balanceOtherSide > ONE
+                    ? params.balancePosition
+                    : params.balancePosition + (ONE - params.balanceOtherSide),
+                params.balanceOtherSide > ONE ? params.balanceOtherSide - ONE : 0,
+                params.availableToBuyFromAMM,
+                params.max_spread
+            )
+        );
+
+        uint startDiscount = currentBuyImpactOtherSide / 2;
+        uint tempMultiplier = params.balancePosition - params.amount;
+        uint finalDiscount = ((startDiscount / 2) * ((tempMultiplier * ONE) / params.balancePosition + ONE)) / ONE;
+
+        return -int(finalDiscount);
+    }
+
+    function buyPriceImpactImbalancedSkew(PriceImpactParams memory params) public view returns (uint) {
+        uint maxPossibleSkew = params.balanceOtherSide + params.availableToBuyFromAMM - params.balancePosition;
+        uint skew = params.balanceOtherSideAfter - (params.balancePositionAfter);
+        uint newImpact = (params.max_spread * ((skew * ONE) / (maxPossibleSkew))) / ONE;
+        if (params.balancePosition > 0 && params.amount > params.balancePosition) {
+            uint newPriceForMintedOnes = newImpact / (2);
+            uint tempMultiplier = (params.amount - params.balancePosition) * (newPriceForMintedOnes);
+            return (tempMultiplier * ONE) / (params.amount) / ONE;
+        } else {
+            uint previousSkew = params.balanceOtherSide;
+            uint previousImpact = (params.max_spread * ((previousSkew * ONE) / (maxPossibleSkew))) / ONE;
+            return (newImpact + previousImpact) / (2);
+        }
+    }
+
+    function sellPriceImpactImbalancedSkew(
+        uint amount,
+        uint balanceOtherSide,
+        uint _balancePosition,
+        uint balanceOtherSideAfter,
+        uint balancePositionAfter,
+        uint available,
+        uint max_spread
+    ) public view returns (uint _sellImpactReturned) {
+        uint maxPossibleSkew = _balancePosition + (available) - (balanceOtherSide);
+        uint skew = balancePositionAfter - (balanceOtherSideAfter);
+        uint newImpact = (max_spread * ((skew * ONE) / (maxPossibleSkew))) / ONE;
+
+        if (balanceOtherSide > 0 && amount > _balancePosition) {
+            uint newPriceForMintedOnes = newImpact / (2);
+            uint tempMultiplier = (amount - _balancePosition) * (newPriceForMintedOnes);
+            _sellImpactReturned = tempMultiplier / (amount);
+        } else {
+            uint previousSkew = _balancePosition;
+            uint previousImpact = (max_spread * ((previousSkew * ONE) / (maxPossibleSkew))) / ONE;
+            _sellImpactReturned = (newImpact + previousImpact) / (2);
+        }
+    }
+
+    function balanceOfPositionOnMarket(
+        address market,
+        IThalesAMM.Position position,
+        address addressToCheck
+    ) public view returns (uint balance) {
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        balance = position == IThalesAMM.Position.Up ? up.getBalanceOf(addressToCheck) : down.getBalanceOf(addressToCheck);
+    }
+
+    function balanceOfPositionsOnMarket(
+        address market,
+        IThalesAMM.Position position,
+        address addressToCheck
+    ) public view returns (uint balance, uint balanceOtherSide) {
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        balance = position == IThalesAMM.Position.Up ? up.getBalanceOf(addressToCheck) : down.getBalanceOf(addressToCheck);
+        balanceOtherSide = position == IThalesAMM.Position.Up
+            ? down.getBalanceOf(addressToCheck)
+            : up.getBalanceOf(addressToCheck);
+    }
+
+    function getBalanceOfPositionsOnMarket(address market, address addressToCheck)
+        public
+        view
+        returns (uint upBalance, uint downBalance)
+    {
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        upBalance = up.getBalanceOf(addressToCheck);
+        downBalance = down.getBalanceOf(addressToCheck);
     }
 }

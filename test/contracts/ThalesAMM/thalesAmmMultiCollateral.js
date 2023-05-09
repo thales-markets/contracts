@@ -19,11 +19,22 @@ let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const WEEK = 7 * 24 * 60 * 60;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 contract('ThalesAMM', (accounts) => {
-	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
+	const [
+		initialCreator,
+		managerOwner,
+		minter,
+		dummy,
+		exersicer,
+		secondCreator,
+		safeBox,
+		firstLiquidityProvider,
+		defaultLiquidityProvider,
+	] = accounts;
 	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
 
@@ -127,6 +138,7 @@ contract('ThalesAMM', (accounts) => {
 	let ThalesAMM;
 	let thalesAMM, curveSUSD;
 	let MockPriceFeedDeployed;
+	let ThalesAMMLiquidityPool;
 
 	beforeEach(async () => {
 		priceFeedAddress = owner;
@@ -162,6 +174,53 @@ contract('ThalesAMM', (accounts) => {
 		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
 			from: owner,
 		});
+
+		let ThalesAMMLiquidityPoolContract = artifacts.require('ThalesAMMLiquidityPool');
+		ThalesAMMLiquidityPool = await ThalesAMMLiquidityPoolContract.new();
+
+		await ThalesAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_thalesAMM: thalesAMM.address,
+				_sUSD: sUSDSynth.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(1000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: true,
+			},
+			{ from: owner }
+		);
+
+		await thalesAMM.setLiquidityPool(ThalesAMMLiquidityPool.address, {
+			from: owner,
+		});
+
+		let ThalesAMMLiquidityPoolRoundMastercopy = artifacts.require(
+			'ThalesAMMLiquidityPoolRoundMastercopy'
+		);
+
+		let aMMLiquidityPoolRoundMastercopy = await ThalesAMMLiquidityPoolRoundMastercopy.new();
+		await ThalesAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+		await sUSDSynth.issue(firstLiquidityProvider, toUnit('100000'), { from: owner });
+		await sUSDSynth.approve(ThalesAMMLiquidityPool.address, toUnit('100000'), {
+			from: firstLiquidityProvider,
+		});
+		await ThalesAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await ThalesAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+		await ThalesAMMLiquidityPool.start({ from: owner });
+		await ThalesAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+			from: owner,
+		});
+		await sUSDSynth.issue(defaultLiquidityProvider, toUnit('100000'), { from: owner });
+		await sUSDSynth.approve(ThalesAMMLiquidityPool.address, toUnit('100000'), {
+			from: defaultLiquidityProvider,
+		});
+
 		sUSDSynth.issue(thalesAMM.address, sUSDQty);
 		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 
@@ -205,11 +264,15 @@ contract('ThalesAMM', (accounts) => {
 	describe('Test AMM', () => {
 		it('buying test', async () => {
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(10000),
-				now + day * 10,
+				toUnit(price),
+				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);
@@ -255,7 +318,9 @@ contract('ThalesAMM', (accounts) => {
 
 			let minterUSDC = await testUSDC.balanceOf(minter);
 
-			let ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			let roundPool = await ThalesAMMLiquidityPool.getMarketPool(newMarket.address);
+
+			let ammSusdBalance = await sUSDSynth.balanceOf(roundPool);
 
 			let buyFromAmmQuoteUSDCCollateralObjectSlippagedObject =
 				await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
@@ -321,7 +386,9 @@ contract('ThalesAMM', (accounts) => {
 			minterUSDC = await testUSDC.balanceOf(minter);
 			console.log('minterUSDC post buy decimal is:' + minterUSDC / 1e6);
 
-			ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			roundPool = await ThalesAMMLiquidityPool.getMarketPool(newMarket.address);
+
+			ammSusdBalance = await sUSDSynth.balanceOf(roundPool);
 			console.log('ammSusdBalance post buy decimal is:' + ammSusdBalance / 1e18);
 
 			let options = await newMarket.options();
@@ -375,11 +442,15 @@ contract('ThalesAMM', (accounts) => {
 			);
 
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(10000),
-				now + day * 20,
+				toUnit(price),
+				now + 2 * WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);
@@ -413,7 +484,9 @@ contract('ThalesAMM', (accounts) => {
 
 			let minterUSDC = await testUSDC.balanceOf(minter);
 
-			let ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			let roundPool = await ThalesAMMLiquidityPool.getMarketPool(newMarket.address);
+
+			let ammSusdBalance = await sUSDSynth.balanceOf(roundPool);
 
 			await thalesAMM.buyFromAMMWithDifferentCollateralAndReferrer(
 				newMarket.address,
@@ -436,7 +509,9 @@ contract('ThalesAMM', (accounts) => {
 			minterUSDC = await testUSDC.balanceOf(minter);
 			console.log('minterUSDC post buy decimal is:' + minterUSDC / 1e6);
 
-			ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			roundPool = await ThalesAMMLiquidityPool.getMarketPool(newMarket.address);
+
+			ammSusdBalance = await sUSDSynth.balanceOf(roundPool);
 			console.log('ammSusdBalance post buy decimal is:' + ammSusdBalance / 1e18);
 
 			let options = await newMarket.options();
@@ -467,11 +542,15 @@ contract('ThalesAMM', (accounts) => {
 			);
 
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(10000),
-				now + day * 30,
+				toUnit(price),
+				now + 3 * WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);

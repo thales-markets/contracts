@@ -248,6 +248,7 @@ contract('StakingThales', (accounts) => {
 			ThalesStakingRewardsPoolDeployed.address,
 			AddressResolverDeployed.address,
 			ZERO_ADDRESS,
+			ZERO_ADDRESS,
 			{ from: owner }
 		);
 	});

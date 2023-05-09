@@ -35,6 +35,171 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum IThalesAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address",
+        "name": "addressToCheck",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOfPositionOnMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum IThalesAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address",
+        "name": "addressToCheck",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOfPositionsOnMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "balanceOtherSide",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "balanceOtherSide",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "balancePosition",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "balanceOtherSideAfter",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "balancePositionAfter",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "availableToBuyFromAMM",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max_spread",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ThalesAMMUtils.PriceImpactParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "buyPriceImpactImbalancedSkew",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "balancePosition",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "balanceOtherSide",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "availableToBuyFromAMM",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max_spread",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ThalesAMMUtils.DiscountParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "calculateDiscount",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "",
+        "type": "int256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_price",
         "type": "uint256"
@@ -60,6 +225,84 @@
       {
         "internalType": "uint256",
         "name": "result",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "addressToCheck",
+        "type": "address"
+      }
+    ],
+    "name": "getBalanceOfPositionsOnMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "upBalance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "downBalance",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "balanceOtherSide",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_balancePosition",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "balanceOtherSideAfter",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "balancePositionAfter",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "available",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max_spread",
+        "type": "uint256"
+      }
+    ],
+    "name": "sellPriceImpactImbalancedSkew",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sellImpactReturned",
         "type": "uint256"
       }
     ],

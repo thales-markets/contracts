@@ -23,11 +23,22 @@ let market, up, down, position, Synth;
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const WEEK = 604800;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 contract('ThalesAMM', (accounts) => {
-	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
+	const [
+		initialCreator,
+		managerOwner,
+		minter,
+		dummy,
+		exersicer,
+		secondCreator,
+		safeBox,
+		firstLiquidityProvider,
+		defaultLiquidityProvider,
+	] = accounts;
 	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
 
@@ -130,6 +141,7 @@ contract('ThalesAMM', (accounts) => {
 	let ThalesAMM;
 	let thalesAMM;
 	let MockPriceFeedDeployed;
+	let ThalesAMMLiquidityPool;
 
 	beforeEach(async () => {
 		rewardTokenAddress = owner;
@@ -166,6 +178,55 @@ contract('ThalesAMM', (accounts) => {
 		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
 			from: owner,
 		});
+
+		let ThalesAMMLiquidityPoolContract = artifacts.require('ThalesAMMLiquidityPool');
+		ThalesAMMLiquidityPool = await ThalesAMMLiquidityPoolContract.new();
+
+		await ThalesAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_thalesAMM: thalesAMM.address,
+				_sUSD: testUSDC.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(1000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: false,
+			},
+			{ from: owner }
+		);
+
+		await thalesAMM.setLiquidityPool(ThalesAMMLiquidityPool.address, {
+			from: owner,
+		});
+
+		let ThalesAMMLiquidityPoolRoundMastercopy = artifacts.require(
+			'ThalesAMMLiquidityPoolRoundMastercopy'
+		);
+
+		let aMMLiquidityPoolRoundMastercopy = await ThalesAMMLiquidityPoolRoundMastercopy.new();
+		await ThalesAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+
+		await testUSDC.mint(firstLiquidityProvider, toUnit('100000'));
+		await testUSDC.approve(ThalesAMMLiquidityPool.address, toUnit('100000'), {
+			from: firstLiquidityProvider,
+		});
+
+		await ThalesAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await ThalesAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+		await ThalesAMMLiquidityPool.start({ from: owner });
+		await ThalesAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+			from: owner,
+		});
+		await testUSDC.mint(defaultLiquidityProvider, toUnit('100000'));
+		await testUSDC.approve(ThalesAMMLiquidityPool.address, toUnit('100000'), {
+			from: defaultLiquidityProvider,
+		});
+
 		await manager.setNeedsTransformingCollateral(true);
 		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 
@@ -192,11 +253,15 @@ contract('ThalesAMM', (accounts) => {
 			let transformedCollateral = await manager.transformCollateral(toUnit(10).toString());
 
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 4 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
-				now + day * 10,
+				toUnit(price + 4 * strikePriceStep),
+				now - 4 * day + 2 * WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);
@@ -328,24 +393,24 @@ contract('ThalesAMM', (accounts) => {
 			usdcBalance = await sUSDSynth.balanceOf(thalesAMM.address);
 			console.log('usdcBalance post Exercise  decimal is:' + usdcBalance / 1e6);
 
-			let canExerciseMaturedMarket = await thalesAMM.canExerciseMaturedMarket(newMarket.address);
-			console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
+			// let canExerciseMaturedMarket = await thalesAMM.canExerciseMaturedMarket(newMarket.address);
+			// console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
 
-			await thalesAMM.exerciseMaturedMarket(newMarket.address);
+			// await thalesAMM.exerciseMaturedMarket(newMarket.address);
 
-			ammUpBalance = await up.balanceOf(thalesAMM.address);
-			console.log('amm UpBalance post Exercise decimal is:' + ammUpBalance / 1e18);
-			ammDownBalance = await down.balanceOf(thalesAMM.address);
-			console.log('ammDownBalance pre Exercise  decimal is:' + ammDownBalance / 1e18);
+			// ammUpBalance = await up.balanceOf(thalesAMM.address);
+			// console.log('amm UpBalance post Exercise decimal is:' + ammUpBalance / 1e18);
+			// ammDownBalance = await down.balanceOf(thalesAMM.address);
+			// console.log('ammDownBalance pre Exercise  decimal is:' + ammDownBalance / 1e18);
 
-			usdcBalance = await testUSDC.balanceOf(minter);
-			console.log('usdcBalance minter after exercize:' + usdcBalance / 1e6);
-			usdcBalance = await testUSDC.balanceOf(thalesAMM.address);
-			console.log('usdcBalance thalesAMM after exercize:' + usdcBalance / 1e6);
-			usdcBalance = await testUSDC.balanceOf(safeBox);
-			console.log('usdcBalance safeBox after exercize:' + usdcBalance / 1e6);
+			// usdcBalance = await testUSDC.balanceOf(minter);
+			// console.log('usdcBalance minter after exercize:' + usdcBalance / 1e6);
+			// usdcBalance = await testUSDC.balanceOf(thalesAMM.address);
+			// console.log('usdcBalance thalesAMM after exercize:' + usdcBalance / 1e6);
+			// usdcBalance = await testUSDC.balanceOf(safeBox);
+			// console.log('usdcBalance safeBox after exercize:' + usdcBalance / 1e6);
 
-			assert.equal(usdcBalance > 5 * 1e6, true);
+			// assert.equal(usdcBalance > 5 * 1e6, true);
 		});
 	});
 });

@@ -40,6 +40,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         uint maxTimeToMaturity;
     }
 
+    uint private constant ONE = 1e18;
+
     /* ========== STATE VARIABLES ========== */
 
     Durations public override durations;
@@ -72,6 +74,13 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     mapping(address => uint) public marketsStrikePrice;
 
     bool public override onlyAMMMintingAndBurning;
+
+    uint public marketCreationMonthLimit;
+
+    uint public allowedDate1;
+    uint public allowedDate2;
+
+    mapping(bytes32 => mapping(uint => mapping(uint => address))) public marketExistsByOracleKeyDateAndStrikePrice;
 
     function initialize(
         address _owner,
@@ -201,8 +210,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
         (IPosition up, IPosition down) = market.getOptions();
 
-        marketsStrikePrice[address(market)] = strikePrice;
-        marketsPerOracleKey[oracleKey][_getDateFromTimestamp(maturity)].push(address(market));
+        marketExistsByOracleKeyDateAndStrikePrice[oracleKey][maturity][strikePrice] = address(market);
 
         emit MarketCreated(
             address(market),
@@ -319,11 +327,25 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
 
         if (block.timestamp >= maturity) {
-            return (false, "Maturity too far in the future");
+            return (false, "Maturity cannot be in the past");
         }
 
-        if (!_checkMarkets(oracleKey, strikePrice, maturity)) {
-            return (false, "A market already exists within that timeframe and price buffer");
+        if (marketExistsByOracleKeyDateAndStrikePrice[oracleKey][maturity][strikePrice] != address(0)) {
+            return (false, "Market already exists");
+        }
+
+        uint strikePriceStep = getStrikePriceStep(oracleKey);
+        uint currentAssetPrice = priceFeed.rateForCurrency(oracleKey);
+
+        if (strikePriceStep != 0 && strikePrice % strikePriceStep != 0) {
+            return (false, "Invalid strike price");
+        }
+
+        uint dateDiff1 = (maturity - allowedDate1) % 604800;
+        uint dateDiff2 = (maturity - allowedDate2) % 604800;
+
+        if (!(dateDiff1 == 0 || dateDiff2 == 0)) {
+            return (false, "Invalid maturity");
         }
 
         return (true, "");
@@ -434,6 +456,95 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
     }
 
+    /// @notice setMarketCreationParameters sets params for market creation
+    /// @param _allowedDate1 timestamp to be compared with strike date
+    /// @param _allowedDate2 timestamp to be compared with strike date
+    function setMarketCreationParameters(uint _allowedDate1, uint _allowedDate2) external onlyOwner {
+        allowedDate1 = _allowedDate1;
+        allowedDate2 = _allowedDate2;
+
+        emit MarketCreationParametersChanged(_allowedDate1, _allowedDate2);
+    }
+
+    /// @notice getStrikePriceStep calculates strike price step
+    /// @param oracleKey oracle key
+    function getStrikePriceStep(bytes32 oracleKey) public view returns (uint result) {
+        if (_getImpliedVolatility(oracleKey) == 0) return 0;
+        uint strikePriceStep = (priceFeed.rateForCurrency(oracleKey) * _getImpliedVolatility(oracleKey)) / (2000 * ONE);
+
+        uint exponent = _getExponent(strikePriceStep);
+
+        uint8[3] memory indexArray = [1, 2, 3];
+        uint tempMultiplier = _calculateStrikePriceStepMultiplier(strikePriceStep, exponent, exponent);
+
+        for (uint i = 0; i < indexArray.length; i++) {
+            result = _calculateStrikePriceStepValue(indexArray[i], tempMultiplier);
+
+            if (strikePriceStep > result && i != (indexArray.length - 1)) {
+                continue;
+            } else if (strikePriceStep > result && i == (indexArray.length - 1)) {
+                tempMultiplier = _calculateStrikePriceStepMultiplier(
+                    strikePriceStep,
+                    exponent + 1,
+                    exponent == 0 ? exponent : exponent - 1
+                );
+                uint nextResult = _calculateStrikePriceStepValue(indexArray[0], tempMultiplier);
+                if (strikePriceStep - result > nextResult - strikePriceStep) {
+                    result = nextResult;
+                }
+                break;
+            } else {
+                uint prevResult = 0;
+                if (i == 0) {
+                    tempMultiplier = _calculateStrikePriceStepMultiplier(strikePriceStep, exponent - 1, exponent + 1);
+                    prevResult = _calculateStrikePriceStepValue(indexArray[2], tempMultiplier);
+                } else {
+                    prevResult = _calculateStrikePriceStepValue(indexArray[i - 1], tempMultiplier);
+                }
+                if (result - strikePriceStep > strikePriceStep - prevResult) {
+                    result = prevResult;
+                }
+                break;
+            }
+        }
+    }
+
+    /// @notice _calculateStrikePriceStepValue calculates strike price step via formulae
+    /// @param index index value
+    /// @param multiplier multiplier value
+    function _calculateStrikePriceStepValue(uint index, uint multiplier) internal pure returns (uint value) {
+        value = (2**index - index) * multiplier;
+    }
+
+    /// @notice _calculateStrikePriceStepValue helper function for calculating strike price step
+    /// @param strikePriceStep initial strike price step
+    /// @param exponent1 exponent if strikePriceStep >= 1
+    /// @param exponent2 exponent if strikePriceStep < 1
+    function _calculateStrikePriceStepMultiplier(
+        uint strikePriceStep,
+        uint exponent1,
+        uint exponent2
+    ) internal pure returns (uint value) {
+        value = strikePriceStep >= ONE ? 10**exponent1 * ONE : ONE / (10**exponent2);
+    }
+
+    /// @notice _getExponent helper function for calculating exponent of strike price step
+    /// @param strikePriceStep initial strike price step
+    function _getExponent(uint strikePriceStep) internal pure returns (uint exponent) {
+        if (strikePriceStep >= ONE) {
+            while (strikePriceStep > ONE) {
+                strikePriceStep /= 10;
+                exponent += 1;
+            }
+            exponent -= 1;
+        } else {
+            while (strikePriceStep < ONE) {
+                strikePriceStep *= 10;
+                exponent += 1;
+            }
+        }
+    }
+
     /// @notice _isValidKey checks if oracle key is supported by PriceFeed contract
     /// @param oracleKey oracle key
     /// @return bool
@@ -444,82 +555,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
 
         return false;
-    }
-
-    /// @notice _checkStrikePrice checks if markets strike prices are between given price values
-    /// @param markets list of markets to be checked
-    /// @param strikePrice market strike price
-    /// @param oracleKey market oracle key
-    /// @return bool - true if there are no markets between given price values, otherwise false
-    function _checkStrikePrice(
-        address[] memory markets,
-        uint strikePrice,
-        bytes32 oracleKey
-    ) internal view returns (bool) {
-        uint buffer = (priceBuffer * _getImpliedVolatility(oracleKey)) / 1e18;
-        for (uint i = 0; i < markets.length; i++) {
-            uint upperPriceLimit = marketsStrikePrice[markets[i]] + (marketsStrikePrice[markets[i]] * buffer) / 1e20;
-            uint lowerPriceLimit = marketsStrikePrice[markets[i]] - (marketsStrikePrice[markets[i]] * buffer) / 1e20;
-            if (strikePrice <= upperPriceLimit && strikePrice >= lowerPriceLimit) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /// @notice _checkMarkets checks if there exists similar market with same oracleKey
-    /// @dev price limits are calculated from given strike price using priceBuffer percentage and
-    /// we're checking lists of markets using timeframeBuffer
-    /// @param oracleKey oracle key of the market to be created
-    /// @param strikePrice strike price
-    /// @param maturity market date maturity
-    /// @return bool
-    function _checkMarkets(
-        bytes32 oracleKey,
-        uint strikePrice,
-        uint maturity
-    ) internal view returns (bool) {
-        uint date = _getDateFromTimestamp(maturity);
-
-        for (uint day = 1; day <= timeframeBuffer; day++) {
-            uint upperDateLimit = DateTime.addDays(date, day);
-            uint lowerDateLimit = DateTime.subDays(date, day);
-
-            address[] memory marketsDateAfter = _getMarketsPerOracleKey(oracleKey, upperDateLimit);
-            address[] memory marketsDateBefore = _getMarketsPerOracleKey(oracleKey, lowerDateLimit);
-
-            if (
-                !(_checkStrikePrice(marketsDateAfter, strikePrice, oracleKey) &&
-                    _checkStrikePrice(marketsDateBefore, strikePrice, oracleKey))
-            ) {
-                return false;
-            }
-        }
-
-        address[] memory marketsOnDate = _getMarketsPerOracleKey(oracleKey, date);
-
-        return _checkStrikePrice(marketsOnDate, strikePrice, oracleKey);
-    }
-
-    /// @notice _getMarketsPerOracleKey returns list of markets with same oracle key and maturity date
-    /// @param oracleKey oracle key
-    /// @param date maturity date
-    /// @return address[] list of markets
-    function _getMarketsPerOracleKey(bytes32 oracleKey, uint date) internal view returns (address[] memory) {
-        return marketsPerOracleKey[oracleKey][date];
-    }
-
-    /// @notice _getDateFromTimestamp calculates midnight timestamp
-    /// @param timestamp timestamp to strip seconds, minutes and hours
-    /// @return date midnigth timestamp
-    function _getDateFromTimestamp(uint timestamp) internal pure returns (uint date) {
-        uint second = DateTime.getSecond(timestamp);
-        uint minute = DateTime.getMinute(timestamp);
-        uint hour = DateTime.getHour(timestamp);
-
-        date = DateTime.subHours(timestamp, hour);
-        date = DateTime.subMinutes(date, minute);
-        date = DateTime.subSeconds(date, second);
     }
 
     /// @notice _getImpliedVolatility gets implied volatility per asset from ThalesAMM contract
@@ -583,4 +618,5 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     event PriceBufferChanged(uint priceBuffer);
     event TimeframeBufferChanged(uint timeframeBuffer);
     event SetOnlyAMMMintingAndBurning(bool _SetOnlyAMMMintingAndBurning);
+    event MarketCreationParametersChanged(uint _allowedDate1, uint _allowedDate2);
 }

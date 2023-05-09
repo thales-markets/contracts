@@ -881,11 +881,11 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         (uint upBalance, uint downBalance) = ammUtils.getBalanceOfPositionsOnMarket(market, address(this));
 
         if (upBalance > 0) {
-            IERC20Upgradeable(address(up)).safeTransferFrom(address(this), _liquidityPool, upBalance);
+            IERC20Upgradeable(address(up)).safeTransfer(_liquidityPool, upBalance);
         }
 
         if (downBalance > 0) {
-            IERC20Upgradeable(address(down)).safeTransferFrom(address(this), _liquidityPool, downBalance);
+            IERC20Upgradeable(address(down)).safeTransfer(_liquidityPool, downBalance);
         }
     }
 

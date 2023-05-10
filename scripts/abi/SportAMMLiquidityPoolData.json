@@ -191,7 +191,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "neededStakedThalesToWithdraw",
+            "name": "withdrawalShare",
             "type": "uint256"
           }
         ],

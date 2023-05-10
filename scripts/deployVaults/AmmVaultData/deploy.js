@@ -25,7 +25,7 @@ async function main() {
 	const AmmVaultData = await ethers.getContractFactory('AmmVaultData');
 
 	const AmmVaultDataDeployed = await upgrades.deployProxy(AmmVaultData, [owner.address]);
-	await AmmVaultDataDeployed.deployed;
+	await AmmVaultDataDeployed.deployed();
 
 	console.log('AmmVaultData deployed on', AmmVaultDataDeployed.address);
 	setTargetAddress('AmmVaultData', network, AmmVaultDataDeployed.address);

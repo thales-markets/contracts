@@ -58,7 +58,7 @@ async function main() {
 		owner.address,
 		PaymentToken,
 	]);
-	await SportMarketManagerDeployed.deployed;
+	await SportMarketManagerDeployed.deployed();
 
 	console.log('SportMarketManager Deployed on', SportMarketManagerDeployed.address);
 	setTargetAddress('SportPositionalMarketManager', network, SportMarketManagerDeployed.address);

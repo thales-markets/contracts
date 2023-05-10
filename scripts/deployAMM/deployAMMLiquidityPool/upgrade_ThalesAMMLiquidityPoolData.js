@@ -50,6 +50,8 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: implementation,
+			contract:
+				'contracts/AMM/LiquidityPool/ThalesAMMLiquidityPoolData.sol:ThalesAMMLiquidityPoolData',
 		});
 	} catch (e) {
 		console.log(e);

@@ -27,7 +27,7 @@ async function main() {
 	const EscrowThalesAddress = getTargetAddress('EscrowThales', network);
 
 	const StakingDataDeployed = await upgrades.deployProxy(StakingData, [owner.address]);
-	await StakingDataDeployed.deployed;
+	await StakingDataDeployed.deployed();
 
 	console.log('StakingData deployed on', StakingDataDeployed.address);
 	setTargetAddress('StakingData', network, StakingDataDeployed.address);

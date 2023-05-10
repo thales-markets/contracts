@@ -59,7 +59,7 @@ async function main() {
 	const OvertimeVoucherEscrowAddress = getTargetAddress('OvertimeVoucherEscrow', network);
 
 	const SportMarketDataDeployed = await upgrades.deployProxy(SportMarketData, [owner.address]);
-	await SportMarketDataDeployed.deployed;
+	await SportMarketDataDeployed.deployed();
 
 	console.log('SportMarketData Deployed on', SportMarketDataDeployed.address);
 	setTargetAddress('SportPositionalMarketData', network, SportMarketDataDeployed.address);

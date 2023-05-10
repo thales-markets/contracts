@@ -43,7 +43,7 @@ async function main() {
 	const RangedAMMAddress = getTargetAddress('RangedAMM', network);
 
 	const MarketDataDeployed = await upgrades.deployProxy(MarketData, [owner.address]);
-	await MarketDataDeployed.deployed;
+	await MarketDataDeployed.deployed();
 
 	console.log('PositionalMarketData deployed on', MarketDataDeployed.address);
 	setTargetAddress('PositionalMarketData', network, MarketDataDeployed.address);

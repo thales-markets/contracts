@@ -62,9 +62,6 @@ async function main() {
 
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
 
-	MODIFY_STORAGE_BEFORE_UPGRADING;
-	DELETE; //mapping(uint => uint) public SGPfeePerSport;
-
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 
 	if (networkObj.chainId == 10 || networkObj.chainId == 5 || networkObj.chainId == 42161) {

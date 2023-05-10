@@ -79,8 +79,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     mapping(bytes32 => uint) public riskPerPackedGamesCombination;
 
-    mapping(uint => uint) public SGPfeePerSport;
-
     mapping(uint => mapping(uint => mapping(uint => uint))) public SGPFeePerCombination;
 
     function initialize(

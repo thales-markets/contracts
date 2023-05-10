@@ -102,7 +102,7 @@ async function main() {
 		max_spread,
 		minimalTimeLeftToMaturity,
 	]);
-	await SportsAMMDeployed.deployed;
+	await SportsAMMDeployed.deployed();
 
 	console.log('SportsAMM Deployed on', SportsAMMDeployed.address);
 	setTargetAddress('SportsAMM', network, SportsAMMDeployed.address);

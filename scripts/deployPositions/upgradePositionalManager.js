@@ -45,6 +45,11 @@ async function main() {
 		network = 'bsc';
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
+
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + network);
 

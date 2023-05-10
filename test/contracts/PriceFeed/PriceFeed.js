@@ -18,7 +18,7 @@ const MockAggregator = artifacts.require('MockAggregatorV2V3');
 const MockUniswapV3Factory = artifacts.require('MockUniswapV3Factory');
 let ownerSigner, accountOneSigner, deployerSigner, oracleSigner;
 
-contract('Price Feed', async accounts => {
+contract('Price Feed', async (accounts) => {
 	const [owner] = accounts;
 	const [JPY, XTZ, BNB, AELIN, EUR, ETH, LYRA, fastGasPrice] = [
 		'JPY',
@@ -356,10 +356,7 @@ contract('Price Feed', async accounts => {
 					const observeResult = await pool_LYRA_ETH.observe([1200, 0]);
 					const tickCumulatives = observeResult.tickCumulatives;
 					const ratioAtTick = parseInt(
-						tickCumulatives[1]
-							.sub(tickCumulatives[0])
-							.div(1200)
-							.toString()
+						tickCumulatives[1].sub(tickCumulatives[0]).div(1200).toString()
 					);
 
 					// ratio = 1.0001^tick
@@ -406,10 +403,7 @@ contract('Price Feed', async accounts => {
 					const observeResult = await pool_AELIN_ETH.observe([1200, 0]);
 					const tickCumulatives = observeResult.tickCumulatives;
 					const ratioAtTick = parseInt(
-						tickCumulatives[1]
-							.sub(tickCumulatives[0])
-							.div(1200)
-							.toString()
+						tickCumulatives[1].sub(tickCumulatives[0]).div(1200).toString()
 					);
 
 					// ratio = 1.0001^tick

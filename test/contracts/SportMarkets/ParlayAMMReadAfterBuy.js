@@ -844,7 +844,6 @@ contract('ParlayAMM', (accounts) => {
 			equalParlayMarkets = [deployedMarket_1, deployedMarket_2, deployedMarket_3, deployedMarket_4];
 		});
 
-		
 		it('Read from Parlay after buy', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
@@ -905,9 +904,5 @@ contract('ParlayAMM', (accounts) => {
 			let calculatedAmount = feesApplied / calculatedQuote;
 			assert.approximately(parseFloat(fromUnit(parlayAmount)), calculatedAmount, 0.00000000001);
 		});
-
-		
-
-		
 	});
 });

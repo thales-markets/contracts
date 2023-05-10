@@ -3,13 +3,14 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { toUnit, currentTime } = require('../../utils')();
+const { assert } = require('../../utils/common');
+const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupAllContracts } = require('../../utils/setup');
 
 const { convertToDecimals } = require('../../utils/helpers');
 
-let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
+let factory, manager, addressResolver;
 let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 let market, up, down, position, Synth;
 
@@ -17,16 +18,29 @@ let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
+const WEEK = 604800;
+
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 contract('ThalesAMM', (accounts) => {
-	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
+	const [
+		initialCreator,
+		managerOwner,
+		minter,
+		dummy,
+		exersicer,
+		secondCreator,
+		safeBox,
+		firstLiquidityProvider,
+		defaultLiquidityProvider,
+	] = accounts;
 	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
 
 	const sUSDQty = toUnit(100000);
-	const sUSDQtyAmm = toUnit(10000);
+	const sUSDQtyAmm = toUnit(1000);
 
+	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
 
 	const sAUDKey = toBytes32('sAUD');
@@ -88,6 +102,9 @@ contract('ThalesAMM', (accounts) => {
 			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
+		await manager.connect(creatorSigner).setTimeframeBuffer(0);
+		await manager.connect(creatorSigner).setPriceBuffer(toUnit(0.01).toString());
+
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 		aggregator_sETH = await MockAggregator.new({ from: managerOwner });
 		aggregator_sUSD = await MockAggregator.new({ from: managerOwner });
@@ -122,8 +139,9 @@ contract('ThalesAMM', (accounts) => {
 	let priceFeedAddress;
 	let rewardTokenAddress;
 	let ThalesAMM;
-	let thalesAMM;
+	let thalesAMM, thalesAmmUtils;
 	let MockPriceFeedDeployed;
+	let ThalesAMMLiquidityPool;
 
 	beforeEach(async () => {
 		priceFeedAddress = owner;
@@ -154,11 +172,59 @@ contract('ThalesAMM', (accounts) => {
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
 			from: owner,
 		});
+
 		let ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
-		let thalesAMMUtils = await ThalesAMMUtils.new();
-		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
+		thalesAmmUtils = await ThalesAMMUtils.new();
+		await thalesAMM.setAmmUtils(thalesAmmUtils.address, {
 			from: owner,
 		});
+
+		let ThalesAMMLiquidityPoolContract = artifacts.require('ThalesAMMLiquidityPool');
+		ThalesAMMLiquidityPool = await ThalesAMMLiquidityPoolContract.new();
+
+		await ThalesAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_thalesAMM: thalesAMM.address,
+				_sUSD: sUSDSynth.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(1000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: false,
+			},
+			{ from: owner }
+		);
+
+		await thalesAMM.setLiquidityPool(ThalesAMMLiquidityPool.address, {
+			from: owner,
+		});
+
+		let ThalesAMMLiquidityPoolRoundMastercopy = artifacts.require(
+			'ThalesAMMLiquidityPoolRoundMastercopy'
+		);
+
+		let aMMLiquidityPoolRoundMastercopy = await ThalesAMMLiquidityPoolRoundMastercopy.new();
+		await ThalesAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+		await sUSDSynth.issue(firstLiquidityProvider, toUnit('100000'), { from: owner });
+		await sUSDSynth.approve(ThalesAMMLiquidityPool.address, toUnit('100000'), {
+			from: firstLiquidityProvider,
+		});
+		await ThalesAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await ThalesAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+		await ThalesAMMLiquidityPool.start({ from: owner });
+		await ThalesAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+			from: owner,
+		});
+		await sUSDSynth.issue(defaultLiquidityProvider, toUnit('100000'), { from: owner });
+		await sUSDSynth.approve(ThalesAMMLiquidityPool.address, toUnit('100000'), {
+			from: defaultLiquidityProvider,
+		});
+
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 
 		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
@@ -172,11 +238,15 @@ contract('ThalesAMM', (accounts) => {
 	describe('Test AMM', () => {
 		it('buying test ', async () => {
 			let now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * day + 200);
+			let price = (await priceFeed.rateForCurrency(sETHKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sETHKey)) / 1e18;
+
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(10000),
-				now + day * 10,
+				toUnit(price),
+				now + WEEK + 200,
 				toUnit(10),
 				creatorSigner
 			);
@@ -228,7 +298,8 @@ contract('ThalesAMM', (accounts) => {
 				toUnit(availableToBuyFromAMM / 1e18 - 1)
 			);
 			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
-			console.log('susd contract:', (await sUSDSynth.balanceOf(thalesAMM.address)) / 1e18);
+			let roundPool = await ThalesAMMLiquidityPool.getMarketPool(newMarket.address);
+			console.log('susd contract:', (await sUSDSynth.balanceOf(roundPool)) / 1e18);
 			await thalesAMM.buyFromAMM(
 				newMarket.address,
 				Position.UP,
@@ -287,7 +358,8 @@ contract('ThalesAMM', (accounts) => {
 				toUnit(availableToBuyFromAMM / 1e18 - 1)
 			);
 			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
-			console.log('susd contract:', (await sUSDSynth.balanceOf(thalesAMM.address)) / 1e18);
+			roundPool = await ThalesAMMLiquidityPool.getMarketPool(newMarket.address);
+			console.log('susd contract:', (await sUSDSynth.balanceOf(roundPool)) / 1e18);
 			await thalesAMM.buyFromAMM(
 				newMarket.address,
 				Position.DOWN,
@@ -331,7 +403,8 @@ contract('ThalesAMM', (accounts) => {
 				toUnit(availableToBuyFromAMM / 1e18 - 1)
 			);
 			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
-			console.log('susd contract:', (await sUSDSynth.balanceOf(thalesAMM.address)) / 1e18);
+			roundPool = await ThalesAMMLiquidityPool.getMarketPool(newMarket.address);
+			console.log('susd contract:', (await sUSDSynth.balanceOf(roundPool)) / 1e18);
 			await thalesAMM.buyFromAMM(
 				newMarket.address,
 				Position.DOWN,

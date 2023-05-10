@@ -23,7 +23,7 @@ const MockUniswapV3Factory = artifacts.require('MockUniswapV3Factory');
 
 const approveValue = toUnit(1000000);
 
-contract('SafeBox', async accounts => {
+contract('SafeBox', async (accounts) => {
 	const [owner, initialCreator, dummy] = accounts;
 	let uniswapFactory,
 		thalesToken,
@@ -162,7 +162,7 @@ contract('SafeBox', async accounts => {
 });
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

@@ -313,6 +313,37 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_oldStartTime",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_newStartTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "GameTimeMovedAhead",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bytes32",
         "name": "_requestId",
         "type": "bytes32"

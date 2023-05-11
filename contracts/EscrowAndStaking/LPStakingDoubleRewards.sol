@@ -36,7 +36,6 @@ contract LPStakingDoubleRewards is Initializable, ProxyOwned, ProxyReentrancyGua
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
 
-
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(

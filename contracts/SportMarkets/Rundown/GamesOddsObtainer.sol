@@ -270,12 +270,25 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice function which retrievers all markert addresses for given parent market
     /// @param _parent parent market
     /// @return address[] child addresses
-    function getAllChildMarketsFromParent(address _parent) public view returns (address[] memory) {
+    function getAllChildMarketsFromParent(address _parent) external view returns (address[] memory) {
         address[] memory allMarkets = new address[](numberOfChildMarkets[_parent]);
         for (uint i = 0; i < numberOfChildMarkets[_parent]; i++) {
             allMarkets[i] = mainMarketChildMarketIndex[_parent][i];
         }
         return allMarkets;
+    }
+
+    /// @notice function which retrievers all markert addresses for given parent market
+    /// @param _parent parent market
+    /// @return totalsMarket totals child address
+    /// @return spreadsMarket spread child address
+    function getActiveChildMarketsFromParent(address _parent)
+        external
+        view
+        returns (address totalsMarket, address spreadsMarket)
+    {
+        totalsMarket = currentActiveTotalChildMarket[_parent];
+        spreadsMarket = currentActiveSpreadChildMarket[_parent];
     }
 
     /// @notice are odds valid or not

@@ -114,9 +114,7 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         if (lastPeriodAddedReward[account] == currentVestingPeriod) {
             vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = vestingEntries[account][
                 currentVestingPeriod.mod(NUM_PERIODS)
-            ]
-                .amount
-                .add(amount);
+            ].amount.add(amount);
         } else {
             vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
         }

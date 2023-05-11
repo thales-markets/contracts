@@ -161,6 +161,15 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         return isDoubleChance ? parentMarket.paused() : paused;
     }
 
+    function getTags() external view override returns (uint tag1, uint tag2) {
+        if (tags.length > 1) {
+            tag1 = tags[0];
+            tag2 = tags[1];
+        } else {
+            tag1 = tags[0];
+        }
+    }
+
     function phase() external view override returns (Phase) {
         if (!_matured()) {
             return Phase.Trading;

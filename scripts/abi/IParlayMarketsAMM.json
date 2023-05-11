@@ -183,6 +183,35 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2_1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2_2",
+        "type": "uint256"
+      }
+    ],
+    "name": "getSgpFeePerCombination",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "sgpFee",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_parlayMarket",
         "type": "address"
@@ -408,6 +437,25 @@
       }
     ],
     "name": "riskPerGameCombination",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gamesPacked",
+        "type": "bytes32"
+      }
+    ],
+    "name": "riskPerPackedGamesCombination",
     "outputs": [
       {
         "internalType": "uint256",

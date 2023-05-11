@@ -951,6 +951,30 @@
         "type": "address"
       }
     ],
+    "name": "getActiveChildMarketsFromParent",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "totalsMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spreadsMarket",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parent",
+        "type": "address"
+      }
+    ],
     "name": "getAllChildMarketsFromParent",
     "outputs": [
       {

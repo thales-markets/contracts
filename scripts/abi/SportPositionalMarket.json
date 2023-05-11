@@ -525,6 +525,24 @@
   },
   {
     "inputs": [],
+    "name": "getTags",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "homeOddsOnCancellation",
     "outputs": [
       {

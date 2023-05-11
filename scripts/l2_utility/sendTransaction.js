@@ -1,8 +1,5 @@
-const path = require('path');
-const { ethers, upgrades } = require('hardhat');
-const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-
-const { getTargetAddress, setTargetAddress } = require('../../helpers');
+const { ethers } = require('hardhat');
+const { getTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -11,6 +8,8 @@ async function main() {
 	let network = networkObj.name;
 	let mainnetNetwork = 'mainnet';
 	let PaymentToken;
+	const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+	let SafeBox;
 
 	if (network == 'homestead') {
 		console.log(
@@ -26,12 +25,14 @@ async function main() {
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
+		mainnetNetwork = 'kovan';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 		PaymentToken = getTargetAddress('ProxysUSD', network);
+		SafeBox = getTargetAddress('SafeBox', network);
 	}
 	if (networkObj.chainId == 5) {
 		networkObj.name = 'goerli';
@@ -42,6 +43,7 @@ async function main() {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
+		SafeBox = owner.address;
 	}
 
 	if (networkObj.chainId == 42161) {
@@ -50,35 +52,17 @@ async function main() {
 		PaymentToken = getTargetAddress('ProxyUSDC', network);
 	}
 
-	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
-	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
-	const ParlayAMMDeployed = await ParlayAMM.attach(ParlayAMMAddress);
+	const toAddress = '0x2D725cAf80B5abb3F1aE8e980d0b6Ab7e5dCb1CF';
+	const valueOfETH = '0.1';
+	console.log('\nSending ', valueOfETH, ' ETH transaction to address ', toAddress);
 
-	const ParlayMarket = await ethers.getContractFactory('ParlayMarketMastercopy');
-
-	const ParlayMarketDeployed = await ParlayMarket.deploy();
-	await ParlayMarketDeployed.deployed();
-
-	console.log('ParlayMarketDeployed Deployed on', ParlayMarketDeployed.address);
-	setTargetAddress('ParlayMarketMastercopy', network, ParlayMarketDeployed.address);
-
-	if (networkObj.chainId == 5 || networkObj.chainId == 42 || networkObj.chainId == 420) {
-		await delay(5000);
-		await ParlayAMMDeployed.setParlayMarketMastercopies(ParlayMarketDeployed.address, {
-			from: owner.address,
-		});
-		console.log('ParlayMarketMastercopy set in Parlay AMM');
-	}
-
-	await delay(65000);
-	try {
-		await hre.run('verify:verify', {
-			address: ParlayMarketDeployed.address,
-			contract: 'contracts/SportMarkets/Parlay/ParlayMarketMastercopy.sol:ParlayMarketMastercopy',
-		});
-	} catch (e) {
-		console.log(e);
-	}
+	const tx = await owner.sendTransaction({
+		to: toAddress,
+		value: ethers.utils.parseEther(valueOfETH),
+	});
+	await tx.wait().then((e) => {
+		console.log('Done transfer! $$$$ >');
+	});
 }
 
 main()
@@ -87,9 +71,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function (resolve) {
-		setTimeout(resolve, time);
-	});
-}

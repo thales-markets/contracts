@@ -3,6 +3,11 @@ pragma solidity ^0.8.0;
 
 // Inheritance
 import "../../interfaces/ISportsAMM.sol";
+import "../../interfaces/ISportPositionalMarket.sol";
+import "../../interfaces/ISportPositionalMarketManager.sol";
+import "../../interfaces/IGamesOddsObtainer.sol";
+
+import "../../interfaces/IParlayMarketsAMM.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -13,6 +18,9 @@ import "../Rundown/TherundownConsumer.sol";
 import "../Voucher/OvertimeVoucherEscrow.sol";
 
 contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
+    uint private constant TAG_NUMBER_SPREAD = 10001;
+    uint private constant TAG_NUMBER_TOTAL = 10002;
+    uint private constant DOUBLE_CHANCE_TAG = 10003;
     struct ActiveMarketsOdds {
         address market;
         uint[] odds;
@@ -65,6 +73,14 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         uint voucherAmount;
         bool isPeriodEnded;
         uint periodEnd;
+    }
+    struct CombinedOdds {
+        uint[2] tags;
+        uint[6] odds;
+    }
+    struct SameGameParlayMarket {
+        address mainMarket;
+        CombinedOdds[] combinedOdds;
     }
 
     uint private constant ONE = 1e18;
@@ -200,6 +216,86 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             }
         }
         return marketPriceImpact;
+    }
+
+    function getCombinedOddsForBatchOfMarkets(address[] memory _marketBatch)
+        external
+        view
+        returns (SameGameParlayMarket[] memory sgpMarkets)
+    {
+        sgpMarkets = new SameGameParlayMarket[](_marketBatch.length);
+        for (uint i = 0; i < _marketBatch.length; i++) {
+            sgpMarkets[i] = _getCombinedOddsForMarket(_marketBatch[i]);
+        }
+    }
+
+    function getCombinedOddsForMarket(address _mainMarket) external view returns (SameGameParlayMarket memory sgpMarket) {
+        sgpMarket = _getCombinedOddsForMarket(_mainMarket);
+    }
+
+    function _getCombinedOddsForMarket(address _mainMarket) internal view returns (SameGameParlayMarket memory sgpMarket) {
+        if (ISportPositionalMarketManager(manager).isActiveMarket(_mainMarket)) {
+            sgpMarket.mainMarket = _mainMarket;
+            (address totalsMarket, address spreadMarket) = IGamesOddsObtainer(
+                ISportPositionalMarketManager(manager).getOddsObtainer()
+            ).getActiveChildMarketsFromParent(_mainMarket);
+            CombinedOdds[] memory totalCombainedOdds = new CombinedOdds[](2);
+            if (totalsMarket != address(0)) {
+                CombinedOdds memory newCombinedOdds;
+                newCombinedOdds.tags = [
+                    ISportPositionalMarket(totalsMarket).tags(0),
+                    ISportPositionalMarket(totalsMarket).tags(1)
+                ];
+                if (
+                    IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM()).getSgpFeePerCombination(
+                        newCombinedOdds.tags[0],
+                        0,
+                        newCombinedOdds.tags[1]
+                    ) > 0
+                ) {
+                    uint numOfOdds = ISportPositionalMarket(_mainMarket).optionsCount() > 2 ? 6 : 4;
+                    for (uint j = 0; j < numOfOdds; j++) {
+                        address[] memory markets = new address[](2);
+                        markets[0] = _mainMarket;
+                        markets[1] = totalsMarket;
+                        uint[] memory positions = new uint[](2);
+                        positions[0] = j > 1 ? (j > 3 ? 2 : 1) : 0;
+                        positions[1] = j % 2;
+                        (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
+                            .buyQuoteFromParlay(markets, positions, ONE);
+                    }
+                    newCombinedOdds.tags[0] = 0;
+                    totalCombainedOdds[0] = newCombinedOdds;
+                }
+            }
+            if (spreadMarket != address(0)) {
+                CombinedOdds memory newCombinedOdds;
+                newCombinedOdds.tags = [
+                    ISportPositionalMarket(spreadMarket).tags(1),
+                    ISportPositionalMarket(totalsMarket).tags(1)
+                ];
+                if (
+                    IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM()).getSgpFeePerCombination(
+                        ISportPositionalMarket(totalsMarket).tags(0),
+                        newCombinedOdds.tags[0],
+                        newCombinedOdds.tags[1]
+                    ) > 0
+                ) {
+                    for (uint j = 0; j < 4; j++) {
+                        address[] memory markets = new address[](2);
+                        markets[0] = totalsMarket;
+                        markets[1] = spreadMarket;
+                        uint[] memory positions = new uint[](2);
+                        positions[0] = j > 1 ? 1 : 0;
+                        positions[1] = j % 2;
+                        (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
+                            .buyQuoteFromParlay(markets, positions, ONE);
+                    }
+                    totalCombainedOdds[1] = newCombinedOdds;
+                }
+            }
+            sgpMarket.combinedOdds = totalCombainedOdds;
+        }
     }
 
     function getMarketData(address market) external view returns (MarketData memory) {

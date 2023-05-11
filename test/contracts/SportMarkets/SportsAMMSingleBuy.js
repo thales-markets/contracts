@@ -550,6 +550,49 @@ contract('SportsAMM', (accounts) => {
 			);
 		});
 
+		it('Resolove manually, and claim', async () => {
+			await fastForward(await currentTime());
+
+			assert.equal(true, await deployedMarket.canResolve());
+
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolveFoodball,
+				gamesResolvedFootball,
+				sportId_16,
+				{ from: wrapper }
+			);
+
+			let gameR = await TherundownConsumerDeployed.gameResolved(gameFootballid1);
+			// resolve markets
+			// const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+			const tx_resolve = await SportPositionalMarketManager.resolveMarketWithResult(
+				marketAdd,
+				2,
+				1,
+				2,
+				TherundownConsumerDeployed.address,
+				false,
+				{
+					from: second,
+				}
+			);
+			answer = await deployedMarket.result();
+			console.log('Result resolved: ', answer.toString());
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(1));
+			answer = await Thales.balanceOf(first);
+			let before_balance = answer;
+			console.log('acc balance: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			await expect(
+				SportsAMM.buyFromAMM(deployedMarket.address, 1, toUnit(1), MAX_NUMBER, additionalSlippage, {
+					from: first,
+				})
+			).to.be.revertedWith('Not trading');
+		});
+
 		it('Sport Data coverage', async () => {
 			let availableToBuy = await SportPositionalMarketData.getOddsForAllActiveMarkets();
 			availableToBuy = await SportPositionalMarketData.getOddsForAllActiveMarketsInBatches(0, 10);

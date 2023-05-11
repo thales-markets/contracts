@@ -14,7 +14,13 @@ import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IThalesStakingRewardsPool.sol";
 
-contract ThalesStakingRewardsPool is IThalesStakingRewardsPool, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
+contract ThalesStakingRewardsPool is
+    IThalesStakingRewardsPool,
+    Initializable,
+    ProxyOwned,
+    ProxyReentrancyGuard,
+    ProxyPausable
+{
     /* ========== LIBRARIES ========== */
     using SafeMath for uint;
     using SafeERC20 for IERC20;
@@ -22,7 +28,7 @@ contract ThalesStakingRewardsPool is IThalesStakingRewardsPool, Initializable, P
     IStakingThales public iStakingThales;
     IEscrowThales public iEscrowThales;
     IERC20 public rewardToken;
-    
+
     uint public lifetimeClaimedRewards;
 
     function initialize(
@@ -64,7 +70,6 @@ contract ThalesStakingRewardsPool is IThalesStakingRewardsPool, Initializable, P
         emit RewardTokenChanged(_rewardToken);
     }
 
-
     function addToEscrow(address account, uint amount) external {
         require(account != address(0), "Invalid address");
         require(amount > 0, "Amount is 0");
@@ -75,11 +80,9 @@ contract ThalesStakingRewardsPool is IThalesStakingRewardsPool, Initializable, P
 
         iEscrowThales.addToEscrow(account, amount);
         lifetimeClaimedRewards = lifetimeClaimedRewards.add(amount);
-
     }
 
     event StakingThalesChanged(address stakingThales);
     event EscrowThalesChanged(address escrowThalesContract);
     event RewardTokenChanged(address rewardToken);
-
 }

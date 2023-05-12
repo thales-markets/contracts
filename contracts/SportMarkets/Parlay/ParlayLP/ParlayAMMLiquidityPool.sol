@@ -14,7 +14,7 @@ import "../../../interfaces/ISportsAMM.sol";
 import "../../../interfaces/ISportPositionalMarket.sol";
 import "../../../interfaces/IStakingThales.sol";
 
-import "./SportAMMLiquidityPoolRound.sol";
+import "./ParlayAMMLiquidityPoolRound.sol";
 
 contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     /* ========== LIBRARIES ========== */

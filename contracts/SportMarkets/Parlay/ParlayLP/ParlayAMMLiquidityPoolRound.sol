@@ -13,7 +13,7 @@ contract ParlayAMMLiquidityPoolRound {
 
     /* ========== STATE VARIABLES ========== */
 
-    SportAMMLiquidityPool public liquidityPool;
+    ParlayAMMLiquidityPool public liquidityPool;
     IERC20Upgradeable public sUSD;
 
     uint public round;
@@ -33,7 +33,7 @@ contract ParlayAMMLiquidityPoolRound {
     ) external {
         require(!initialized, "Already initialized");
         initialized = true;
-        liquidityPool = SportAMMLiquidityPool(_liquidityPool);
+        liquidityPool = ParlayAMMLiquidityPool(_liquidityPool);
         sUSD = _sUSD;
         round = _round;
         roundStartTime = _roundStartTime;

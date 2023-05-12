@@ -51752,6 +51752,91 @@
           }
         }
       }
+    },
+    "fb8dbecd0fbc35ec0104082abfd5e081ed94551e2ea881c74992505cb23bd950": {
+      "address": "0xABD3cF065911054201DC162cD4f6a25d42eE4681",
+      "txHash": "0xc9bf41f70d7a4a62a243897095cc389d15561224c72bcb9dbe4f9aeb2510039e",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:12"
+          },
+          {
+            "contract": "PositionalMarketData",
+            "label": "manager",
+            "type": "t_address",
+            "src": "contracts\\Positions\\PositionalMarketData.sol:102"
+          },
+          {
+            "contract": "PositionalMarketData",
+            "label": "thalesAMM",
+            "type": "t_address",
+            "src": "contracts\\Positions\\PositionalMarketData.sol:103"
+          },
+          {
+            "contract": "PositionalMarketData",
+            "label": "rangedMarketsAMM",
+            "type": "t_address",
+            "src": "contracts\\Positions\\PositionalMarketData.sol:104"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
     }
   }
 }

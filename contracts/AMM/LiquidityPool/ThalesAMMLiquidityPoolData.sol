@@ -2,12 +2,12 @@
 pragma solidity ^0.8.0;
 
 // Inheritance
-import "./SportAMMLiquidityPool.sol";
+import "./ThalesAMMLiquidityPool.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract SportAMMLiquidityPoolData is Initializable, ProxyOwned, ProxyPausable {
+contract ThalesAMMLiquidityPoolData is Initializable, ProxyOwned, ProxyPausable {
     struct LiquidityPoolData {
         bool started;
         uint maxAllowedDeposit;
@@ -40,9 +40,9 @@ contract SportAMMLiquidityPoolData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     /// @notice getLiquidityPoolData returns liquidity pool data
-    /// @param liquidityPool SportAMMLiquidityPool
+    /// @param liquidityPool ThalesAMMLiquidityPool
     /// @return LiquidityPoolData
-    function getLiquidityPoolData(SportAMMLiquidityPool liquidityPool) external view returns (LiquidityPoolData memory) {
+    function getLiquidityPoolData(ThalesAMMLiquidityPool liquidityPool) external view returns (LiquidityPoolData memory) {
         uint round = liquidityPool.round();
 
         return
@@ -65,10 +65,10 @@ contract SportAMMLiquidityPoolData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     /// @notice getUserLiquidityPoolData returns user liquidity pool data
-    /// @param liquidityPool SportAMMLiquidityPool
+    /// @param liquidityPool ThalesAMMLiquidityPool
     /// @param user address of the user
     /// @return UserLiquidityPoolData
-    function getUserLiquidityPoolData(SportAMMLiquidityPool liquidityPool, address user)
+    function getUserLiquidityPoolData(ThalesAMMLiquidityPool liquidityPool, address user)
         external
         view
         returns (UserLiquidityPoolData memory)

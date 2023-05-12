@@ -53,6 +53,7 @@ contract ParlayMarket is OwnedWithInit {
 
     mapping(uint => SportMarkets) public sportMarket;
     mapping(address => uint) private _sportMarketIndex;
+    uint private noSkewTotalQuote;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -63,7 +64,9 @@ contract ParlayMarket is OwnedWithInit {
         uint _sUSDPaid,
         uint _expiryDuration,
         address _parlayMarketsAMM,
-        address _parlayOwner
+        address _parlayOwner,
+        uint _totalQuote,
+        uint[] calldata _marketQuotes
     ) external {
         require(!initialized, "Parlay Market already initialized");
         initialized = true;
@@ -74,12 +77,15 @@ contract ParlayMarket is OwnedWithInit {
         for (uint i = 0; i < numOfSportMarkets; i++) {
             sportMarket[i].sportAddress = _sportMarkets[i];
             sportMarket[i].position = _positionPerMarket[i];
+            sportMarket[i].odd = _marketQuotes[i];
             _sportMarketIndex[_sportMarkets[i]] = i + 1;
+            noSkewTotalQuote = (i == 0) ? _marketQuotes[i] : (noSkewTotalQuote * _marketQuotes[i]) / ONE;
         }
         amount = _amount;
         expiry = _expiryDuration;
         sUSDPaid = _sUSDPaid;
         parlayOwner = _parlayOwner;
+        totalResultQuote = _totalQuote;
     }
 
     function isAnySportMarketExercisable() external view returns (bool isExercisable, address[] memory exercisableMarkets) {
@@ -180,13 +186,6 @@ contract ParlayMarket is OwnedWithInit {
     }
 
     //============================== UPDATE PARAMETERS ===========================
-
-    function updateQuotes(uint[] calldata _marketQuotes, uint _totalResultQuote) external onlyAMM {
-        for (uint i = 0; i < numOfSportMarkets; i++) {
-            sportMarket[i].odd = _marketQuotes[i];
-        }
-        totalResultQuote = _totalResultQuote;
-    }
 
     function setPaused(bool _paused) external onlyAMM {
         require(paused != _paused, "State not changed");
@@ -291,7 +290,7 @@ contract ParlayMarket is OwnedWithInit {
                 sportMarket[_idx].result = result;
                 sportMarket[_idx].hasWon = result == (sportMarket[_idx].position + 1);
                 if (result == 0) {
-                    totalResultQuote = ((totalResultQuote * ONE * ONE) / sportMarket[_idx].odd) / ONE;
+                    (totalResultQuote, noSkewTotalQuote) = _getCancellQuotesForMarketIndex(_idx);
                     sportMarket[_idx].isCancelled = true;
                 }
             }
@@ -336,6 +335,13 @@ contract ParlayMarket is OwnedWithInit {
         ) {
             isWinning = true;
         }
+    }
+
+    function _getCancellQuotesForMarketIndex(uint _index) internal view returns (uint discountedQuote, uint newNoSkewQuote) {
+        newNoSkewQuote = ((noSkewTotalQuote * ONE * ONE) / sportMarket[_index].odd) / ONE;
+        discountedQuote =
+            totalResultQuote +
+            (((ONE - totalResultQuote) * (newNoSkewQuote - noSkewTotalQuote)) / (ONE - noSkewTotalQuote));
     }
 
     //============================== ON EXPIRY FUNCTIONS ===================================

@@ -3,17 +3,17 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
-import "../../interfaces/ISportPositionalMarket.sol";
+import "../../interfaces/IPositionalMarket.sol";
 
-import "./SportAMMLiquidityPool.sol";
+import "./ThalesAMMLiquidityPool.sol";
 
-contract SportAMMLiquidityPoolRound {
+contract ThalesAMMLiquidityPoolRound {
     /* ========== LIBRARIES ========== */
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /* ========== STATE VARIABLES ========== */
 
-    SportAMMLiquidityPool public liquidityPool;
+    ThalesAMMLiquidityPool public liquidityPool;
     IERC20Upgradeable public sUSD;
 
     uint public round;
@@ -33,7 +33,7 @@ contract SportAMMLiquidityPoolRound {
     ) external {
         require(!initialized, "Already initialized");
         initialized = true;
-        liquidityPool = SportAMMLiquidityPool(_liquidityPool);
+        liquidityPool = ThalesAMMLiquidityPool(_liquidityPool);
         sUSD = _sUSD;
         round = _round;
         roundStartTime = _roundStartTime;
@@ -47,10 +47,10 @@ contract SportAMMLiquidityPoolRound {
         emit RoundTimesUpdated(_roundStartTime, _roundEndTime);
     }
 
-    function exerciseMarketReadyToExercised(ISportPositionalMarket market) external onlyLiquidityPool {
+    function exerciseMarketReadyToExercised(IPositionalMarket market) external onlyLiquidityPool {
         if (market.resolved()) {
-            (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(this));
-            if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+            (uint upBalance, uint downBalance) = market.balancesOf(address(this));
+            if (upBalance > 0 || downBalance > 0) {
                 market.exerciseOptions();
             }
         }

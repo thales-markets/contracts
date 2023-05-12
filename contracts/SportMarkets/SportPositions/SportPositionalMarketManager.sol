@@ -85,6 +85,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit SetObtainerAddress(_oddsObtainer);
     }
 
+    function getOddsObtainer() external view override returns (address obtainer) {
+        obtainer = oddsObtainer;
+    }
+
     /// @notice setNeedsTransformingCollateral sets needsTransformingCollateral value
     /// @param _needsTransformingCollateral boolen value to be set
     function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
@@ -453,6 +457,25 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
                 _awayScore,
                 _useBackupOdds
             );
+        }
+    }
+
+    function overrideResolveWithCancel(address market, uint _outcome) external {
+        require(msg.sender == owner || whitelistedCancelAddresses[msg.sender], "Invalid resolver");
+        require(_outcome == 0, "Can only set 0 outcome");
+        require(SportPositionalMarket(market).resolved(), "Market not resolved");
+        require(!_activeMarkets.contains(market), "Active market");
+        require(!isDoubleChance[market], "Not supported for double chance markets");
+        // unpause if paused
+        if (ISportPositionalMarket(market).paused()) {
+            ISportPositionalMarket(market).setPaused(false);
+        }
+        SportPositionalMarket(market).resolve(_outcome);
+
+        if (doubleChanceMarketsByParent[market].length > 0) {
+            SportPositionalMarket(doubleChanceMarketsByParent[market][0]).resolve(0);
+            SportPositionalMarket(doubleChanceMarketsByParent[market][1]).resolve(0);
+            SportPositionalMarket(doubleChanceMarketsByParent[market][2]).resolve(0);
         }
     }
 

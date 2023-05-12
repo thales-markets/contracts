@@ -281,6 +281,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			second,
 			second,
 			second,
+			second,
 			{ from: owner }
 		);
 
@@ -450,6 +451,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				_maxAllowedDeposit: toUnit(10000000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: false,
 			},
 			{ from: owner }
 		);
@@ -1146,6 +1148,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 					1,
 					2,
 					TherundownConsumerDeployed.address,
+					false,
 					{
 						from: second,
 					}

@@ -15,7 +15,7 @@ const TOTAL_AMOUNT = web3.utils.toWei('15000000');
 const { testRecipients } = require('./testRecipients');
 const { numberExponentToLarge } = require('../../../scripts/helpers');
 
-contract('VestingEscrow', accounts => {
+contract('VestingEscrow', (accounts) => {
 	const WEEK = 604800;
 	const YEAR = 31556926;
 	let admin, beneficiary, revoker;
@@ -109,15 +109,8 @@ contract('VestingEscrow', accounts => {
 	describe('Fund', () => {
 		let amounts, recipients, fundAdmin2, fundAdmin3, fundAdmin4, notAdmin;
 		beforeEach(async () => {
-			[
-				admin,
-				beneficiary,
-				revoker,
-				fundAdmin2,
-				fundAdmin3,
-				fundAdmin4,
-				notAdmin,
-			] = await ethers.getSigners();
+			[admin, beneficiary, revoker, fundAdmin2, fundAdmin3, fundAdmin4, notAdmin] =
+				await ethers.getSigners();
 			let now = await currentTime();
 
 			Thales = await deployContract('Thales');
@@ -158,15 +151,13 @@ contract('VestingEscrow', accounts => {
 			}
 			assert.equal(
 				await VestingEscrow.unallocatedSupply(),
-				toBN(TOTAL_AMOUNT)
-					.sub(toBN(amountsSum))
-					.toString()
+				toBN(TOTAL_AMOUNT).sub(toBN(amountsSum)).toString()
 			);
 		});
 
 		it('should get inital locked for each account', async () => {
 			await VestingEscrow.fund(recipients, amounts, { from: admin.address });
-			const data = amounts.reduce(function(data, field, index) {
+			const data = amounts.reduce(function (data, field, index) {
 				data[recipients[index]] = field;
 				return data;
 			}, {});

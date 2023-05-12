@@ -53,8 +53,6 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         gamesCreateQueue[lastCreated] = data;
 
         existingGamesInCreatedQueue[data] = true;
-        unproccessedGames.push(data);
-        unproccessedGamesIndex[data] = unproccessedGames.length - 1;
         gameStartPerGameId[data] = startTime;
 
         emit EnqueueGamesCreated(data, sportsId, lastCreated);
@@ -96,20 +94,6 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit DequeueGamesResolved(data, firstResolved - 1);
     }
 
-    /// @notice removing game from array of unprocessed games
-    /// @param index index in array
-    function removeItemUnproccessedGames(uint index) public canExecuteFunction {
-        require(index < unproccessedGames.length, "No such index in array");
-
-        bytes32 dataProccessed = unproccessedGames[index];
-
-        unproccessedGames[index] = unproccessedGames[unproccessedGames.length - 1];
-        unproccessedGamesIndex[unproccessedGames[index]] = index;
-        unproccessedGames.pop();
-
-        emit GameProcessed(dataProccessed, index);
-    }
-
     /// @notice update a game start date
     /// @param _gameId gameId which start date is updated
     /// @param _date date
@@ -118,12 +102,6 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         require(gameStartPerGameId[_gameId] != 0, "Game not existing");
         gameStartPerGameId[_gameId] = _date;
         emit NewStartDateOnGame(_gameId, _date);
-    }
-
-    /// @notice public function which will return length of unprocessed array
-    /// @return index index in array
-    function getLengthUnproccessedGames() public view returns (uint) {
-        return unproccessedGames.length;
     }
 
     /// @notice sets the consumer contract address, which only owner can execute
@@ -152,7 +130,6 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     event EnqueueGamesResolved(bytes32 _gameId, uint _index);
     event DequeueGamesCreated(bytes32 _gameId, uint _index);
     event DequeueGamesResolved(bytes32 _gameId, uint _index);
-    event GameProcessed(bytes32 _gameId, uint _index);
     event NewConsumerAddress(address _consumer);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event NewStartDateOnGame(bytes32 _gameId, uint _date);

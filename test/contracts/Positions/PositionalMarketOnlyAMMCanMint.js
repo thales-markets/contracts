@@ -27,6 +27,8 @@ let market, up, down, Position, Synth, addressResolver;
 let aggregator_sAUD, aggregator_iAUD, aggregator_sUSD, aggregator_nonRate;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const DAY = 24 * 60 * 60;
+const WEEK = 7 * DAY;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
@@ -206,9 +208,18 @@ contract('Position', (accounts) => {
 
 			let now = await currentTime();
 
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(sAUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(sAUDKey)) / 1e18;
+
 			const result = await manager
 				.connect(creator)
-				.createMarket(sAUDKey, toUnit(4).toString(), now + timeToMaturity, toUnit(0).toString());
+				.createMarket(
+					sAUDKey,
+					toUnit(price + strikePriceStep).toString(),
+					now + timeToMaturity,
+					toUnit(0).toString()
+				);
 
 			console.log('Created market');
 

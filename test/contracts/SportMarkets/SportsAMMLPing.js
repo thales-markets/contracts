@@ -278,6 +278,7 @@ contract('SportsAMM', (accounts) => {
 			second,
 			second,
 			second,
+			second,
 			{ from: owner }
 		);
 
@@ -443,6 +444,7 @@ contract('SportsAMM', (accounts) => {
 				_maxAllowedDeposit: toUnit(1000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: false,
 			},
 			{ from: owner }
 		);
@@ -854,8 +856,8 @@ contract('SportsAMM', (accounts) => {
 			totalDeposited = await SportAMMLiquidityPool.totalDeposited();
 			console.log('totalDeposited 4 ' + totalDeposited / 1e18);
 
-			await Thales.transfer(secondLiquidityProvider, toUnit('1000'), { from: owner });
-			await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000'), {
+			await Thales.transfer(secondLiquidityProvider, toUnit('10000'), { from: owner });
+			await Thales.approve(SportAMMLiquidityPool.address, toUnit('10000'), {
 				from: secondLiquidityProvider,
 			});
 
@@ -922,6 +924,113 @@ contract('SportsAMM', (accounts) => {
 
 			ammBalance = await Thales.balanceOf(SportsAMM.address);
 			console.log('ammBalance: ' + ammBalance / 1e18);
+
+			totalDeposited = await SportAMMLiquidityPool.totalDeposited();
+			console.log('totalDeposited 5 ' + totalDeposited / 1e18);
+
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(200);
+			await SportAMMLiquidityPool.closeRound();
+
+			totalDeposited = await SportAMMLiquidityPool.totalDeposited();
+			console.log('totalDeposited 5 ' + totalDeposited / 1e18);
+
+			round = await SportAMMLiquidityPool.round();
+			console.log('round ' + round);
+
+			let balanceFirst = await SportAMMLiquidityPool.balancesPerRound(
+				round,
+				firstLiquidityProvider
+			);
+
+			console.log('Balance first: ' + balanceFirst / 1e18);
+
+			let balanceSecond = await SportAMMLiquidityPool.balancesPerRound(
+				round,
+				secondLiquidityProvider
+			);
+			console.log('Balance second: ' + balanceSecond / 1e18);
+
+			let balanceThird = await SportAMMLiquidityPool.balancesPerRound(
+				round,
+				thirdLiquidityProvider
+			);
+			console.log('Balance third: ' + balanceThird / 1e18);
+
+			await SportAMMLiquidityPool.partialWithdrawalRequest(toUnit(0.5), {
+				from: thirdLiquidityProvider,
+			});
+
+			getUsersCountInCurrentRound = await SportAMMLiquidityPool.getUsersCountInCurrentRound();
+
+			console.log('getUsersCountInCurrentRound : ' + getUsersCountInCurrentRound);
+
+			await fastForward(month * 2);
+
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(200);
+			await SportAMMLiquidityPool.closeRound();
+
+			totalDeposited = await SportAMMLiquidityPool.totalDeposited();
+			console.log('totalDeposited 5 ' + totalDeposited / 1e18);
+
+			round = await SportAMMLiquidityPool.round();
+			console.log('round ' + round);
+
+			balanceFirst = await SportAMMLiquidityPool.balancesPerRound(round, firstLiquidityProvider);
+
+			console.log('Balance first: ' + balanceFirst / 1e18);
+
+			balanceSecond = await SportAMMLiquidityPool.balancesPerRound(round, secondLiquidityProvider);
+			console.log('Balance second: ' + balanceSecond / 1e18);
+
+			balanceThird = await SportAMMLiquidityPool.balancesPerRound(round, thirdLiquidityProvider);
+			console.log('Balance third: ' + balanceThird / 1e18);
+
+			let isUserLPingFirst = await SportAMMLiquidityPool.isUserLPing(firstLiquidityProvider);
+
+			console.log('isUserLPingFirst : ' + isUserLPingFirst);
+
+			let isUserLPingSEcond = await SportAMMLiquidityPool.isUserLPing(secondLiquidityProvider);
+
+			console.log('isUserLPingSEcond : ' + isUserLPingSEcond);
+
+			let isUserLPingThird = await SportAMMLiquidityPool.isUserLPing(thirdLiquidityProvider);
+
+			console.log('isUserLPingThird : ' + isUserLPingThird);
+
+			getUsersCountInCurrentRound = await SportAMMLiquidityPool.getUsersCountInCurrentRound();
+
+			console.log('getUsersCountInCurrentRound : ' + getUsersCountInCurrentRound);
+
+			await expect(
+				SportAMMLiquidityPool.partialWithdrawalRequest(toUnit(0.91), {
+					from: thirdLiquidityProvider,
+				})
+			).to.be.revertedWith('Share has to be between 10% and 90%');
+
+			await SportAMMLiquidityPool.partialWithdrawalRequest(toUnit(0.5), {
+				from: thirdLiquidityProvider,
+			});
+
+			await expect(
+				SportAMMLiquidityPool.partialWithdrawalRequest(toUnit(0.2), {
+					from: thirdLiquidityProvider,
+				})
+			).to.be.revertedWith('Withdrawal already requested');
+
+			await expect(
+				SportAMMLiquidityPool.partialWithdrawalRequest(toUnit(0.2), {
+					from: firstLiquidityProvider,
+				})
+			).to.be.revertedWith('Nothing to withdraw');
+
+			await mockStakingThales.stake(toUnit(1000), { from: secondLiquidityProvider });
+			await SportAMMLiquidityPool.deposit(toUnit(1), { from: secondLiquidityProvider });
+
+			await expect(
+				SportAMMLiquidityPool.deposit(toUnit(1), { from: firstLiquidityProvider })
+			).to.be.revertedWith('Amount less than minDepositAmount');
 		});
 	});
 });

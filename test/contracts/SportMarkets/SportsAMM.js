@@ -273,6 +273,7 @@ contract('SportsAMM', (accounts) => {
 			second,
 			second,
 			second,
+			second,
 			{ from: owner }
 		);
 
@@ -449,6 +450,7 @@ contract('SportsAMM', (accounts) => {
 				_maxAllowedDeposit: toUnit(1000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: false,
 			},
 			{ from: owner }
 		);
@@ -464,6 +466,8 @@ contract('SportsAMM', (accounts) => {
 			SportAMMLiquidityPool.address,
 			{ from: owner }
 		);
+
+		await SportsAMM.setSportOnePositional(9455, true, { from: owner });
 
 		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
@@ -509,6 +513,9 @@ contract('SportsAMM', (accounts) => {
 
 			assert.equal(false, await TherundownConsumerDeployed.cancelGameStatuses(8));
 			assert.equal(true, await TherundownConsumerDeployed.cancelGameStatuses(1));
+
+			assert.equal(true, await SportsAMM.isMarketForSportOnePositional(9455));
+			assert.equal(false, await SportsAMM.isMarketForSportOnePositional(9456));
 		});
 
 		it('Check init Master copies', async () => {
@@ -581,11 +588,6 @@ contract('SportsAMM', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
-			// assert.equal(sportId_4, await gamesQueue.sportPerGameId(gameid1));
-			// assert.equal(sportId_4, await gamesQueue.sportPerGameId(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
 
@@ -661,10 +663,6 @@ contract('SportsAMM', (accounts) => {
 				_id: gameid1,
 				_outcome: 2,
 			});
-
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 	});
 

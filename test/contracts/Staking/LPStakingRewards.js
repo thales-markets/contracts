@@ -9,7 +9,7 @@ const { fastForward, toUnit, currentTime } = require('../../utils')();
 
 const { onlyGivenAddressCanInvoke, encodeCall } = require('../../utils/helpers');
 
-contract('LPStakingDoubleRewards', accounts => {
+contract('LPStakingDoubleRewards', (accounts) => {
 	const [owner, initialCreator, mockRewardsDistributionAddress] = accounts;
 	let rewardsToken,
 		secondRewardsToken,

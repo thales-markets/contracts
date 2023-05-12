@@ -50,6 +50,8 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: implementation,
+			contract:
+				'contracts/SportMarkets/LiquidityPool/SportAMMLiquidityPoolData.sol:SportAMMLiquidityPoolData',
 		});
 	} catch (e) {
 		console.log(e);

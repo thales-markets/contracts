@@ -203,10 +203,6 @@ contract('Parlay Vault', (accounts) => {
 		assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 		assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-		assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-		assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
-
 		let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 		let game_2 = await TherundownConsumerDeployed.gameCreated(gameid2);
 
@@ -476,6 +472,7 @@ contract('Parlay Vault', (accounts) => {
 			second,
 			second,
 			second,
+			second,
 			{ from: owner }
 		);
 
@@ -735,6 +732,7 @@ contract('Parlay Vault', (accounts) => {
 				_maxAllowedDeposit: toUnit(100000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: false,
 			},
 			{ from: owner }
 		);

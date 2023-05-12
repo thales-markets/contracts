@@ -285,6 +285,7 @@ contract('SportsAMM', (accounts) => {
 			second,
 			second,
 			second,
+			second,
 			{ from: owner }
 		);
 
@@ -450,6 +451,7 @@ contract('SportsAMM', (accounts) => {
 				_maxAllowedDeposit: toUnitSix(1000).toString(),
 				_minDepositAmount: toUnitSix(100).toString(),
 				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: true,
 			},
 			{ from: owner }
 		);
@@ -470,10 +472,6 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.mint(curveSUSD.address, toUnit(100000));
 		await testUSDC.approve(SportsAMM.address, toUnit(100000), { from: first });
 		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
-
-		await SportAMMLiquidityPool.setNeedsTransformingCollateral(true, {
-			from: owner,
-		});
 	});
 
 	describe('Test SportsAMM LPing', () => {

@@ -25,6 +25,7 @@ let market, up, down, Position, Synth, addressResolver;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const DAY = 24 * 60 * 60;
+const WEEK = 7 * DAY;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
@@ -126,8 +127,19 @@ contract('Position', (accounts) => {
 
 	describe('Transfers', () => {
 		it('Can transfer tokens.', async () => {
-			let now = await currentTime();
-			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), creator);
+			const now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(AUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(AUDKey)) / 1e18;
+
+			market = await createMarket(
+				manager,
+				AUDKey,
+				toUnit(price + strikePriceStep),
+				now + 200,
+				toUnit(2),
+				creator
+			);
 			await fastForward(100);
 
 			const options = await market.options();
@@ -239,8 +251,19 @@ contract('Position', (accounts) => {
 		});
 
 		it('Can transferFrom tokens.', async () => {
-			let now = await currentTime();
-			market = await createMarket(manager, AUDKey, toUnit(1), now + 2 * DAY, toUnit(2), creator);
+			const now = await currentTime();
+			await manager.setMarketCreationParameters(now - WEEK + 200, now - 3 * DAY + 200);
+			let price = (await priceFeed.rateForCurrency(AUDKey)) / 1e18;
+			let strikePriceStep = (await manager.getStrikePriceStep(AUDKey)) / 1e18;
+
+			market = await createMarket(
+				manager,
+				AUDKey,
+				toUnit(price + 2 * strikePriceStep),
+				now + 200,
+				toUnit(2),
+				creator
+			);
 			await fastForward(100);
 
 			const options = await market.options();
@@ -284,7 +307,7 @@ contract('Position', (accounts) => {
 	describe('Exercising Options', () => {
 		it('Exercising options updates balances properly', async () => {
 			const totalSupply = await down.totalSupply();
-			await fastForward(2 * DAY);
+			await fastForward(12 * DAY);
 			await market.exerciseOptions({ from: minter });
 			await assertAllBnEqual([down.balanceOf(minter), down.totalSupply()], [toBN(0), toUnit(1)]);
 		});

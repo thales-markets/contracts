@@ -103,7 +103,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 if (invalidOdds[_main] || consumer.isPausedByCanceledStatus(_main)) {
                     invalidOdds[_main] = false;
                     consumer.setPausedByCanceledStatus(_main, false);
-                    _pauseAllMarkets(_game, _main, false, true);
+                    _pauseOrUnpauseMarkets(_game, _main, false, true);
                 }
             } else if (
                 //if market is not paused but odd are not in threshold, pause parket
@@ -115,7 +115,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                     consumer.isSportTwoPositionsSport(_sportId)
                 )
             ) {
-                _pauseAllMarkets(_game, _main, true, true);
+                _pauseOrUnpauseMarkets(_game, _main, true, true);
                 backupOdds[_game.gameId] = currentOddsBeforeSave;
                 emit OddsCircuitBreaker(_main, _game.gameId);
             }
@@ -124,7 +124,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             address _main = consumer.marketPerGameId(_game.gameId);
             if (!sportsManager.isMarketPaused(_main)) {
                 invalidOdds[_main] = true;
-                _pauseAllMarkets(_game, _main, true, true);
+                _pauseOrUnpauseMarkets(_game, _main, true, true);
             }
 
             emit InvalidOddsForMarket(requestId, _main, _game.gameId, _game);
@@ -175,6 +175,18 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         for (uint i = 0; i < numberOfChildMarkets[_main]; i++) {
             consumer.pauseOrUnpauseMarket(mainMarketChildMarketIndex[_main][i], _flag);
         }
+    }
+
+    /// @notice pause/unpause current active child markets
+    /// @param _gameId game id for spread and totals checking
+    /// @param _main parent market for which we are pause/unpause child markets
+    /// @param _flag pause -> true, unpause -> false
+    function pauseUnpauseCurrentActiveChildMarket(
+        bytes32 _gameId,
+        address _main,
+        bool _flag
+    ) external onlyConsumer {
+        _pauseOrUnpauseMarkets(gameOdds[_gameId], _main, _flag, true);
     }
 
     function setChildMarketGameId(bytes32 gameId, address market) external onlyManager {
@@ -258,12 +270,25 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice function which retrievers all markert addresses for given parent market
     /// @param _parent parent market
     /// @return address[] child addresses
-    function getAllChildMarketsFromParent(address _parent) public view returns (address[] memory) {
+    function getAllChildMarketsFromParent(address _parent) external view returns (address[] memory) {
         address[] memory allMarkets = new address[](numberOfChildMarkets[_parent]);
         for (uint i = 0; i < numberOfChildMarkets[_parent]; i++) {
             allMarkets[i] = mainMarketChildMarketIndex[_parent][i];
         }
         return allMarkets;
+    }
+
+    /// @notice function which retrievers all markert addresses for given parent market
+    /// @param _parent parent market
+    /// @return totalsMarket totals child address
+    /// @return spreadsMarket spread child address
+    function getActiveChildMarketsFromParent(address _parent)
+        external
+        view
+        returns (address totalsMarket, address spreadsMarket)
+    {
+        totalsMarket = currentActiveTotalChildMarket[_parent];
+        spreadsMarket = currentActiveSpreadChildMarket[_parent];
     }
 
     /// @notice are odds valid or not
@@ -490,7 +515,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 : string(abi.encodePacked("-", Strings.toString(uint16(_spreadHome * (-1)))));
     }
 
-    function _pauseAllMarkets(
+    function _pauseOrUnpauseMarkets(
         IGamesOddsObtainer.GameOdds memory _game,
         address _main,
         bool _flag,

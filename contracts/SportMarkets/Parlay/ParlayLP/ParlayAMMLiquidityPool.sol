@@ -11,6 +11,7 @@ import "../../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 
 import "../../../interfaces/ISportsAMM.sol";
+import "../../../interfaces/IParlayMarketsAMM.sol";
 import "../../../interfaces/ISportPositionalMarket.sol";
 import "../../../interfaces/IStakingThales.sol";
 
@@ -22,7 +23,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     struct InitParams {
         address _owner;
-        ISportsAMM _sportsAmm;
+        IParlayMarketsAMM _parlayAMM;
         IERC20Upgradeable _sUSD;
         uint _roundLength;
         uint _maxAllowedDeposit;
@@ -38,7 +39,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     /* ========== STATE VARIABLES ========== */
 
-    ISportsAMM public sportsAMM;
+    IParlayMarketsAMM public parlayAMM;
     IERC20Upgradeable public sUSD;
 
     bool public started;
@@ -99,7 +100,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     function initialize(InitParams calldata params) external initializer {
         setOwner(params._owner);
         initNonReentrant();
-        sportsAMM = ISportsAMM(params._sportsAmm);
+        parlayAMM = IParlayMarketsAMM(params._parlayAMM);
 
         sUSD = params._sUSD;
         roundLength = params._roundLength;
@@ -109,7 +110,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
         needsTransformingCollateral = params._needsTransformingCollateral;
 
-        sUSD.approve(address(sportsAMM), type(uint256).max);
+        sUSD.approve(params._parlayAMM, type(uint256).max);
     }
 
     /// @notice Start pool and begin round #1
@@ -121,7 +122,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         round = 1;
 
         address roundPool = _getOrCreateRoundPool(1);
-        SportAMMLiquidityPoolRound(roundPool).updateRoundTimes(firstRoundStartTime, getRoundEndTime(1));
+        ParlayAMMLiquidityPoolRound(roundPool).updateRoundTimes(firstRoundStartTime, getRoundEndTime(1));
 
         started = true;
         emit PoolStarted();
@@ -186,15 +187,15 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
         if (marketRound == round) {
-            sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
+            sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
         } else {
             uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
             if (poolBalance >= amountToMint) {
-                sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
+                sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
             } else {
                 uint differenceToLPAsDefault = amountToMint - poolBalance;
                 _depositAsDefault(differenceToLPAsDefault, liquidityPoolRound, marketRound);
-                sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
+                sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
             }
         }
 
@@ -225,10 +226,10 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
                 target = position == ISportsAMM.Position.Away ? away : draw;
             }
 
-            SportAMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
+            ParlayAMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
                 IERC20Upgradeable(address(target)),
                 optionsAmount,
-                address(sportsAMM)
+                address(parlayAMM)
             );
         }
     }
@@ -251,7 +252,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             SportAMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
                 IERC20Upgradeable(position),
                 optionsAmount,
-                address(sportsAMM)
+                address(parlayAMM)
             );
         }
     }
@@ -663,8 +664,8 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     /// @param _sportAMM ThalesAMM address
     function setSportAmm(ISportsAMM _sportAMM) external onlyOwner {
         require(address(_sportAMM) != address(0), "Can not set a zero address!");
-        sportsAMM = _sportAMM;
-        sUSD.approve(address(sportsAMM), type(uint256).max);
+        parlayAMM = _sportAMM;
+        sUSD.approve(address(parlayAMM), type(uint256).max);
         emit SportAMMChanged(address(_sportAMM));
     }
 
@@ -732,7 +733,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     }
 
     modifier onlyAMM() {
-        require(msg.sender == address(sportsAMM), "only the AMM may perform these methods");
+        require(msg.sender == address(parlayAMM), "only the AMM may perform these methods");
         _;
     }
 

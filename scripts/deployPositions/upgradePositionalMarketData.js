@@ -44,7 +44,7 @@ async function main() {
 	}
 
 	// upgrade if test networks
-	if (networkObj.chainId == 420) {
+	if (networkObj.chainId == 420 || networkObj.chainId == 56) {
 		await upgrades.upgradeProxy(MarketDataAddress, MarketData);
 
 		implementation = await getImplementationAddress(ethers.provider, MarketDataAddress);

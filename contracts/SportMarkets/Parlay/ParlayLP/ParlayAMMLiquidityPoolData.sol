@@ -40,9 +40,9 @@ contract ParlayAMMLiquidityPoolData is Initializable, ProxyOwned, ProxyPausable 
     }
 
     /// @notice getLiquidityPoolData returns liquidity pool data
-    /// @param liquidityPool SportAMMLiquidityPool
+    /// @param liquidityPool ParlayAMMLiquidityPool
     /// @return LiquidityPoolData
-    function getLiquidityPoolData(SportAMMLiquidityPool liquidityPool) external view returns (LiquidityPoolData memory) {
+    function getLiquidityPoolData(ParlayAMMLiquidityPool liquidityPool) external view returns (LiquidityPoolData memory) {
         uint round = liquidityPool.round();
 
         return
@@ -65,10 +65,10 @@ contract ParlayAMMLiquidityPoolData is Initializable, ProxyOwned, ProxyPausable 
     }
 
     /// @notice getUserLiquidityPoolData returns user liquidity pool data
-    /// @param liquidityPool SportAMMLiquidityPool
+    /// @param liquidityPool ParlayAMMLiquidityPool
     /// @param user address of the user
     /// @return UserLiquidityPoolData
-    function getUserLiquidityPoolData(SportAMMLiquidityPool liquidityPool, address user)
+    function getUserLiquidityPoolData(ParlayAMMLiquidityPool liquidityPool, address user)
         external
         view
         returns (UserLiquidityPoolData memory)

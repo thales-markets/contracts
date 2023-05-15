@@ -389,6 +389,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
 
         if (_sendSUSD) {
+            // todo send to LP
             sUSD.safeTransferFrom(msg.sender, address(this), _sUSDPaid);
         }
         sUSD.safeTransfer(safeBox, safeBoxAmount);
@@ -412,6 +413,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         _knownMarkets.add(address(parlayMarket));
         sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
+
+        // todo:
+        // parlayLP.commitTrade(address(parlayMarket), totalAmount-sUSDAfterFees);
+
         // buy the positions
         _buyPositionsFromSportAMM(
             _sportMarkets,

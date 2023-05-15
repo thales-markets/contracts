@@ -23,7 +23,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     struct InitParams {
         address _owner;
-        IParlayMarketsAMM _parlayAMM;
+        address _parlayAMM;
         IERC20Upgradeable _sUSD;
         uint _roundLength;
         uint _maxAllowedDeposit;
@@ -116,10 +116,10 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     /// @notice Start pool and begin round #1
     function start() external onlyOwner {
         require(!started, "Liquidity pool has already started");
-        require(allocationPerRound[1] > 0, "can not start with 0 deposits");
+        require(allocationPerRound[2] > 0, "can not start with 0 deposits");
 
         firstRoundStartTime = block.timestamp;
-        round = 1;
+        round = 2;
 
         address roundPool = _getOrCreateRoundPool(1);
         ParlayAMMLiquidityPoolRound(roundPool).updateRoundTimes(firstRoundStartTime, getRoundEndTime(1));
@@ -199,6 +199,10 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             }
         }
 
+        // todo
+        // if all markets on parlay are traded in a single round use the userLP
+        // if markets have different rounds use the defaultLP
+
         if (!isTradingMarketInARound[marketRound][market]) {
             tradingMarketsPerRound[marketRound].push(market);
             isTradingMarketInARound[marketRound][market] = true;
@@ -249,11 +253,11 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             uint marketRound = getMarketRound(market);
             address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
-            SportAMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
-                IERC20Upgradeable(position),
-                optionsAmount,
-                address(parlayAMM)
-            );
+            // SportAMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
+            //     IERC20Upgradeable(position),
+            //     optionsAmount,
+            //     address(parlayAMM)
+            // );
         }
     }
 
@@ -414,18 +418,20 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     /// @notice Iterate all markets in the current round and exercise those ready to be exercised
     function exerciseMarketsReadyToExercised() public roundClosingNotPrepared {
-        SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
-        ISportPositionalMarket market;
-        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            address marketAddress = tradingMarketsPerRound[round][i];
-            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
-                market = ISportPositionalMarket(marketAddress);
-                if (market.resolved()) {
-                    poolRound.exerciseMarketReadyToExercised(market);
-                    marketAlreadyExercisedInRound[round][marketAddress] = true;
-                }
-            }
-        }
+        // todo
+        // only matured alreadyLost parlays
+        // SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
+        // ISportPositionalMarket market;
+        // for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+        //     address marketAddress = tradingMarketsPerRound[round][i];
+        //     if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+        //         market = ISportPositionalMarket(marketAddress);
+        //         if (market.resolved()) {
+        //             poolRound.exerciseMarketReadyToExercised(market);
+        //             marketAlreadyExercisedInRound[round][marketAddress] = true;
+        //         }
+        //     }
+        // }
     }
 
     /* ========== VIEWS ========== */
@@ -500,20 +506,23 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     /// @notice Iterate all markets in the current round and return true if at least one can be exercised
     function hasMarketsReadyToBeExercised() public view returns (bool) {
-        SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
-        ISportPositionalMarket market;
-        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            address marketAddress = tradingMarketsPerRound[round][i];
-            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
-                market = ISportPositionalMarket(marketAddress);
-                if (market.resolved()) {
-                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(poolRound));
-                    if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
-                        return true;
-                    }
-                }
-            }
-        }
+        // todo:
+        // getMaturedMarkets
+
+        // SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
+        // ISportPositionalMarket market;
+        // for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+        //     address marketAddress = tradingMarketsPerRound[round][i];
+        //     if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+        //         market = ISportPositionalMarket(marketAddress);
+        //         if (market.resolved()) {
+        //             (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(poolRound));
+        //             if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+        //                 return true;
+        //             }
+        //         }
+        //     }
+        // }
         return false;
     }
 
@@ -541,14 +550,27 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     /// @notice Return the round to which a market belongs to
     /// @param market to get the round for
-    /// @return _round the round which the market belongs to
+    /// @return _round the min round which the market belongs to
     function getMarketRound(address market) public view returns (uint _round) {
-        ISportPositionalMarket marketContract = ISportPositionalMarket(market);
-        (uint maturity, ) = marketContract.times();
-        if (maturity > firstRoundStartTime) {
-            _round = (maturity - firstRoundStartTime) / roundLength + 1;
-        } else {
-            _round = 1;
+        ParlayMarket parlayMarket = ParlayMarket(market);
+        uint tempRound;
+        address sportMarket;
+        for (uint i = 0; i < parlayMarket.numOfSportMarkets(); i++) {
+            (sportMarket, , , , , , , ) = parlayMarket.sportMarket(i);
+            ISportPositionalMarket marketContract = ISportPositionalMarket(sportMarket);
+            (uint maturity, ) = marketContract.times();
+            if (maturity > firstRoundStartTime) {
+                if (i == 0) {
+                    _round = (maturity - firstRoundStartTime) / roundLength + 2;
+                } else {
+                    if (((maturity - firstRoundStartTime) / roundLength + 2) != _round) {
+                        _round = 1;
+                        break;
+                    }
+                }
+            } else {
+                _round = 2;
+            }
         }
     }
 
@@ -595,7 +617,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         roundPool = roundPools[_round];
         if (roundPool == address(0)) {
             require(poolRoundMastercopy != address(0), "Round pool mastercopy not set");
-            SportAMMLiquidityPoolRound newRoundPool = SportAMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
+            ParlayAMMLiquidityPoolRound newRoundPool = ParlayAMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
             newRoundPool.initialize(address(this), sUSD, _round, getRoundEndTime(_round - 1), getRoundEndTime(_round));
             roundPool = address(newRoundPool);
             roundPools[_round] = roundPool;
@@ -662,7 +684,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     /// @notice Set ThalesAMM contract
     /// @param _sportAMM ThalesAMM address
-    function setSportAmm(ISportsAMM _sportAMM) external onlyOwner {
+    function setSportAmm(IParlayMarketsAMM _sportAMM) external onlyOwner {
         require(address(_sportAMM) != address(0), "Can not set a zero address!");
         parlayAMM = _sportAMM;
         sUSD.approve(address(parlayAMM), type(uint256).max);

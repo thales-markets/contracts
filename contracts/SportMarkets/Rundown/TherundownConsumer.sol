@@ -201,6 +201,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                         ) {
                             _pauseOrUnpauseMarket(marketPerGameId[gameForProcessing.gameId], true);
                             oddsObtainer.pauseUnpauseChildMarkets(marketPerGameId[gameForProcessing.gameId], true);
+                            emit GameTimeMovedAhead(
+                                marketPerGameId[gameForProcessing.gameId],
+                                gameForProcessing.gameId,
+                                currentGameValues.startTime,
+                                gameForProcessing.startTime
+                            );
                         }
                     }
                 }
@@ -806,4 +812,5 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event OddsCircuitBreaker(address _marketAddress, bytes32 _id); // deprecated see GamesOddsObtainer
     event NewMaxNumberOfMarketsToResolve(uint _maxNumber);
+    event GameTimeMovedAhead(address _market, bytes32 _gameId, uint _oldStartTime, uint _newStartTime);
 }

@@ -27,7 +27,7 @@ async function main() {
 	const SportAMMLiquidityPoolDataDeployed = await upgrades.deployProxy(SportAMMLiquidityPoolData, [
 		owner.address,
 	]);
-	await SportAMMLiquidityPoolDataDeployed.deployed;
+	await SportAMMLiquidityPoolDataDeployed.deployed();
 
 	console.log('SportAMMLiquidityPoolData deployed on', SportAMMLiquidityPoolDataDeployed.address);
 	setTargetAddress('SportAMMLiquidityPoolData', network, SportAMMLiquidityPoolDataDeployed.address);

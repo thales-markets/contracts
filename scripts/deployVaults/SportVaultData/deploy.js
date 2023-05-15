@@ -25,7 +25,7 @@ async function main() {
 	const SportVaultData = await ethers.getContractFactory('SportVaultData');
 
 	const SportVaultDataDeployed = await upgrades.deployProxy(SportVaultData, [owner.address]);
-	await SportVaultDataDeployed.deployed;
+	await SportVaultDataDeployed.deployed();
 
 	console.log('SportVaultData deployed on', SportVaultDataDeployed.address);
 	setTargetAddress('SportVaultData', network, SportVaultDataDeployed.address);

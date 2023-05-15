@@ -84,7 +84,7 @@ async function main() {
 		SafeBox,
 		safeBoxImpact,
 	]);
-	await ParlayAMMDeployed.deployed;
+	await ParlayAMMDeployed.deployed();
 
 	await delay(10000);
 	console.log('ParlayAMM Deployed on', ParlayAMMDeployed.address);

@@ -59,7 +59,7 @@ async function main() {
 	const SportMarketFactoryDeployed = await upgrades.deployProxy(SportMarketFactory, [
 		owner.address,
 	]);
-	await SportMarketFactoryDeployed.deployed;
+	await SportMarketFactoryDeployed.deployed();
 
 	console.log('SportMarketFactory Deployed on', SportMarketFactoryDeployed.address);
 	setTargetAddress('SportPositionalMarketFactory', network, SportMarketFactoryDeployed.address);

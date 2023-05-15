@@ -3,8 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
-import "../../../interfaces/ISportPositionalMarket.sol";
-
+import "../ParlayMarket.sol";
 import "./ParlayAMMLiquidityPool.sol";
 
 contract ParlayAMMLiquidityPoolRound {
@@ -47,12 +46,12 @@ contract ParlayAMMLiquidityPoolRound {
         emit RoundTimesUpdated(_roundStartTime, _roundEndTime);
     }
 
-    function exerciseMarketReadyToExercised(ISportPositionalMarket market) external onlyLiquidityPool {
-        if (market.resolved()) {
-            (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(this));
-            if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
-                market.exerciseOptions();
-            }
+    function exerciseMarketReadyToExercised(address market) external onlyLiquidityPool {
+        ParlayMarket parlay = ParlayMarket(market);
+        (bool exercisable, ) = parlay.isParlayExercisable();
+        if (exercisable) {
+            // todo: exercise markets
+            // IParlayAMM()
         }
     }
 

@@ -26,7 +26,7 @@
   {
     "inputs": [
       {
-        "internalType": "contract ISportPositionalMarket",
+        "internalType": "address",
         "name": "market",
         "type": "address"
       }

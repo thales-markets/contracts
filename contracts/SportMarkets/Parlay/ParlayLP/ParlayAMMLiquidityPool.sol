@@ -121,7 +121,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         firstRoundStartTime = block.timestamp;
         round = 2;
 
-        address roundPool = _getOrCreateRoundPool(1);
+        address roundPool = _getOrCreateRoundPool(2);
         ParlayAMMLiquidityPoolRound(roundPool).updateRoundTimes(firstRoundStartTime, getRoundEndTime(1));
 
         started = true;
@@ -186,79 +186,22 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         uint marketRound = getMarketRound(market);
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
-        if (marketRound == round) {
-            sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
-        } else {
-            uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
-            if (poolBalance >= amountToMint) {
-                sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
-            } else {
-                uint differenceToLPAsDefault = amountToMint - poolBalance;
-                _depositAsDefault(differenceToLPAsDefault, liquidityPoolRound, marketRound);
-                sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
-            }
-        }
-
         // todo
         // if all markets on parlay are traded in a single round use the userLP
         // if markets have different rounds use the defaultLP
-
-        if (!isTradingMarketInARound[marketRound][market]) {
-            tradingMarketsPerRound[marketRound].push(market);
-            isTradingMarketInARound[marketRound][market] = true;
-        }
-    }
-
-    /// @notice get options that are in the LP into the AMM for the buy tx
-    /// @param market to get options for
-    /// @param optionsAmount to get options for
-    /// @param position to get options for
-    function getOptionsForBuy(
-        address market,
-        uint optionsAmount,
-        ISportsAMM.Position position
-    ) external nonReentrant whenNotPaused onlyAMM roundClosingNotPrepared {
-        if (optionsAmount > 0) {
-            require(started, "Pool has not started");
-
-            uint marketRound = getMarketRound(market);
-            address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
-
-            (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-            IPosition target = position == ISportsAMM.Position.Home ? home : away;
-            if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
-                target = position == ISportsAMM.Position.Away ? away : draw;
+        if (marketRound == round) {
+            sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
+        } else {
+            if (marketRound == 1) {
+                _depositAsDefault(amountToMint, liquidityPoolRound, marketRound);
+                sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
+            } else {
+                revert();
             }
-
-            ParlayAMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
-                IERC20Upgradeable(address(target)),
-                optionsAmount,
-                address(parlayAMM)
-            );
         }
-    }
 
-    /// @notice get options that are in the LP into the AMM for the buy tx
-    /// @param market to get options for
-    /// @param optionsAmount to get options for
-    /// @param position to get options for
-    function getOptionsForBuyByAddress(
-        address market,
-        uint optionsAmount,
-        address position
-    ) external nonReentrant whenNotPaused onlyAMM roundClosingNotPrepared {
-        if (optionsAmount > 0) {
-            require(started, "Pool has not started");
-
-            uint marketRound = getMarketRound(market);
-            address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
-
-            // SportAMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
-            //     IERC20Upgradeable(position),
-            //     optionsAmount,
-            //     address(parlayAMM)
-            // );
-        }
+        tradingMarketsPerRound[marketRound].push(market);
+        isTradingMarketInARound[marketRound][market] = true;
     }
 
     /// @notice Create a round pool by market maturity date if it doesnt already exist

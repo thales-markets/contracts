@@ -1057,6 +1057,16 @@ contract('ParlayAMM', (accounts) => {
 				sUSDPaid: totalSUSDToPay,
 			});
 		});
+		it('Read data', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await ParlayMarketData.getAllSGPFees();
+			// console.log("All SGPFees: ", answer);
+			assert.equal(answer.length, 4);
+			answer = await ParlayMarketData.getAllSGPFeesForBatch([9004, 9006]);
+			// console.log("All SGPFees for batch: ", answer);
+			assert.equal(answer.length, 2);
+		});
 
 		it('Create/Buy Parlay same game parlay | final result + totals', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);

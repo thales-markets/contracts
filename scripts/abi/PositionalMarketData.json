@@ -134,8 +134,195 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "markets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "enum IThalesAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      }
+    ],
+    "name": "getActiveMarketsInfoPerPosition",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "liquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "priceImpact",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PositionalMarketData.ActiveMarketsInfoPerPosition[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAvailableAssets",
+    "outputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "",
+        "type": "bytes32[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getBasePricesForAllActiveMarkets",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "upPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "downPrice",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PositionalMarketData.ActiveMarketsPrices[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "start",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "end",
+        "type": "uint256"
+      }
+    ],
+    "name": "getBatchBasePricesForAllActiveMarkets",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "upPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "downPrice",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PositionalMarketData.ActiveMarketsPrices[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "start",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "end",
+        "type": "uint256"
+      }
+    ],
+    "name": "getBatchPriceImpactForAllActiveMarkets",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "int256",
+            "name": "upPriceImpact",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "downPriceImpact",
+            "type": "int256"
+          }
+        ],
+        "internalType": "struct PositionalMarketData.ActiveMarketsPriceImpact[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "start",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "end",
+        "type": "uint256"
+      }
+    ],
+    "name": "getBatchPricesForAllActiveMarkets",
     "outputs": [
       {
         "components": [
@@ -397,6 +584,49 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "strikeDateParam",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMarketsForAssetAndStrikeDate",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getMaturityDates",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getPriceImpactForAllActiveMarkets",
     "outputs": [
@@ -449,6 +679,62 @@
           }
         ],
         "internalType": "struct PositionalMarketData.ActiveMarketsPrices[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "markets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "enum RangedMarket.Position",
+        "name": "position",
+        "type": "uint8"
+      }
+    ],
+    "name": "getRangedActiveMarketsInfoPerPosition",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "liquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "priceImpact",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "leftPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rightPrice",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PositionalMarketData.RangedMarketsInfoPerPosition[]",
         "name": "",
         "type": "tuple[]"
       }

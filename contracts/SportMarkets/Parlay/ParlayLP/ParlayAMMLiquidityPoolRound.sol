@@ -56,7 +56,6 @@ contract ParlayAMMLiquidityPoolRound {
     }
 
     modifier onlyLiquidityPool() {
-        
         require(msg.sender == address(liquidityPool), "only the Pool manager may perform these methods");
         _;
     }

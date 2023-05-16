@@ -99,52 +99,40 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function createRangedMarket(address leftMarket, address rightMarket) external nonReentrant notPaused {
-        require(canCreateRangedMarket(leftMarket, rightMarket), "Can't create such a ranged market!");
-
-        RangedMarket rm = RangedMarket(Clones.clone(rangedMarketMastercopy));
-        createdRangedMarkets[leftMarket][rightMarket] = address(rm);
-
-        RangedPosition inp = RangedPosition(Clones.clone(rangedPositionMastercopy));
-        inp.initialize(address(rm), "Position IN", "IN", address(this));
-
-        RangedPosition outp = RangedPosition(Clones.clone(rangedPositionMastercopy));
-        outp.initialize(address(rm), "Position OUT", "OUT", address(this));
-
-        rm.initialize(leftMarket, rightMarket, address(inp), address(outp), address(this));
-
-        _knownMarkets.add(address(rm));
-
-        emit RangedMarketCreated(address(rm), leftMarket, rightMarket);
+        _createRangedMarket(leftMarket, rightMarket);
     }
 
-    function canCreateRangedMarket(address leftMarket, address rightMarket) public view returns (bool) {
-        if (!thalesAmm.isMarketInAMMTrading(leftMarket) || !thalesAmm.isMarketInAMMTrading(rightMarket)) {
-            return false;
+    function createRangedMarkets(address[] calldata leftMarkets, address[] calldata rightMarkets)
+        external
+        nonReentrant
+        notPaused
+    {
+        require(
+            leftMarkets.length > 0 && rightMarkets.length == leftMarkets.length,
+            "Both arrays have to be non-empty and same size"
+        );
+        for (uint i = 0; i < leftMarkets.length; i++) {
+            _createRangedMarket(leftMarkets[i], rightMarkets[i]);
         }
-        (uint maturityLeft, ) = IPositionalMarket(leftMarket).times();
-        (uint maturityRight, ) = IPositionalMarket(rightMarket).times();
-        if (maturityLeft != maturityRight) {
-            return false;
-        }
+    }
 
-        (bytes32 leftkey, uint leftstrikePrice, ) = IPositionalMarket(leftMarket).getOracleDetails();
-        (bytes32 rightkey, uint rightstrikePrice, ) = IPositionalMarket(rightMarket).getOracleDetails();
-        if (leftkey != rightkey) {
-            return false;
-        }
-        if (leftstrikePrice >= rightstrikePrice) {
-            return false;
-        }
+    function canCreateRangedMarket(address leftMarket, address rightMarket) public view returns (bool toReturn) {
+        if (thalesAmm.isMarketInAMMTrading(leftMarket) && thalesAmm.isMarketInAMMTrading(rightMarket)) {
+            (uint maturityLeft, ) = IPositionalMarket(leftMarket).times();
+            (uint maturityRight, ) = IPositionalMarket(rightMarket).times();
+            (bytes32 leftkey, uint leftstrikePrice, ) = IPositionalMarket(leftMarket).getOracleDetails();
+            (bytes32 rightkey, uint rightstrikePrice, ) = IPositionalMarket(rightMarket).getOracleDetails();
 
-        if (!(((ONE + minimalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE < rightstrikePrice)) {
-            return false;
+            if (leftkey == rightkey && leftstrikePrice < rightstrikePrice && maturityLeft == maturityRight) {
+                if (!(((ONE + minimalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE < rightstrikePrice)) {
+                    toReturn = false;
+                } else if (!(((ONE + maximalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE > rightstrikePrice)) {
+                    toReturn = false;
+                } else {
+                    toReturn = createdRangedMarkets[leftMarket][rightMarket] == address(0);
+                }
+            }
         }
-
-        if (!(((ONE + maximalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE > rightstrikePrice)) {
-            return false;
-        }
-
-        return createdRangedMarkets[leftMarket][rightMarket] == address(0);
     }
 
     function availableToBuyFromAMM(RangedMarket rangedMarket, RangedMarket.Position position)
@@ -618,6 +606,25 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             safeBoxShare = ((sUSDPaid * ONE) / (ONE - safeBoxImpact)) - sUSDPaid;
             sUSD.transfer(safeBox, safeBoxShare);
         }
+    }
+
+    function _createRangedMarket(address leftMarket, address rightMarket) internal {
+        require(canCreateRangedMarket(leftMarket, rightMarket), "Can't create such a ranged market!");
+
+        RangedMarket rm = RangedMarket(Clones.clone(rangedMarketMastercopy));
+        createdRangedMarkets[leftMarket][rightMarket] = address(rm);
+
+        RangedPosition inp = RangedPosition(Clones.clone(rangedPositionMastercopy));
+        inp.initialize(address(rm), "Position IN", "IN", address(this));
+
+        RangedPosition outp = RangedPosition(Clones.clone(rangedPositionMastercopy));
+        outp.initialize(address(rm), "Position OUT", "OUT", address(this));
+
+        rm.initialize(leftMarket, rightMarket, address(inp), address(outp), address(this));
+
+        _knownMarkets.add(address(rm));
+
+        emit RangedMarketCreated(address(rm), leftMarket, rightMarket);
     }
 
     function _transformCollateral(uint collateral, bool reverse) internal view returns (uint transformed) {

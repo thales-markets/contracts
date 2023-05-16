@@ -592,7 +592,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "toReturn",
         "type": "bool"
       }
     ],
@@ -626,6 +626,24 @@
       }
     ],
     "name": "createRangedMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "leftMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "rightMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "createRangedMarkets",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

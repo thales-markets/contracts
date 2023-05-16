@@ -517,7 +517,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         if (skipCheck || basePrice < maxSupportedPrice) {
             basePrice = basePrice + min_spread;
             if (basePrice < ONE) {
-                uint discountedPrice = (basePrice * (ONE - max_spread / 4)) / ONE;
+                uint discountedPrice = (basePrice * (ONE - max_spread / 2)) / ONE;
                 uint balance = ammUtils.balanceOfPositionOnMarket(market, position, liquidityPool.getMarketPool(market));
                 uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
 

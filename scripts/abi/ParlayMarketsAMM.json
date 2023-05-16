@@ -218,6 +218,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "parlayLP",
+        "type": "address"
+      }
+    ],
+    "name": "ParlayLPSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "market",
         "type": "address"
       },
@@ -1141,6 +1154,19 @@
   },
   {
     "inputs": [],
+    "name": "parlayLP",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "parlayMarketData",
     "outputs": [
       {
@@ -1650,6 +1676,19 @@
       }
     ],
     "name": "setParlayAmmFeePerAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayLP",
+        "type": "address"
+      }
+    ],
+    "name": "setParlayLP",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -23,6 +23,7 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
+import "../../interfaces/IParlayAMMLiquidityPool.sol";
 
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -80,6 +81,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     mapping(bytes32 => uint) public riskPerPackedGamesCombination;
 
     mapping(uint => mapping(uint => mapping(uint => uint))) public SGPFeePerCombination;
+
+    address public parlayLP;
 
     function initialize(
         address _owner,
@@ -415,8 +418,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
 
         // todo:
-        // parlayLP.commitTrade(address(parlayMarket), totalAmount-sUSDAfterFees);
-
+        IParlayAMMLiquidityPool(parlayLP).commitTrade(address(parlayMarket), totalAmount - sUSDAfterFees);
         // buy the positions
         _buyPositionsFromSportAMM(
             _sportMarkets,
@@ -694,6 +696,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit CurveParametersUpdated(_curveSUSD, _dai, _usdc, _usdt, _curveOnrampEnabled, _maxAllowedPegSlippagePercentage);
     }
 
+    function setParlayLP(address _parlayLP) external onlyOwner {
+        if (parlayLP != address(0)) {
+            sUSD.approve(parlayLP, 0);
+        }
+        parlayLP = _parlayLP;
+        sUSD.approve(_parlayLP, type(uint256).max);
+        emit ParlayLPSet(_parlayLP);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyKnownMarkets(address _parlayMarket) {
@@ -745,4 +756,5 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         bool curveOnrampEnabled,
         uint maxAllowedPegSlippagePercentage
     );
+    event ParlayLPSet(address parlayLP);
 }

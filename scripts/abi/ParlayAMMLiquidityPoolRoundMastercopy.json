@@ -96,29 +96,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "contract IERC20Upgradeable",
-        "name": "option",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "optionsAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "destination",
-        "type": "address"
-      }
-    ],
-    "name": "moveOptions",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "round",
     "outputs": [

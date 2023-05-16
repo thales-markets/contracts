@@ -192,12 +192,9 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         if (marketRound == round) {
             sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
         } else {
-            if (marketRound == 1) {
-                _depositAsDefault(amountToMint, liquidityPoolRound, marketRound);
-                sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
-            } else {
-                revert();
-            }
+            require(marketRound == 1, "InvalidRound");
+            _depositAsDefault(amountToMint);
+            // sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
         }
 
         tradingMarketsPerRound[marketRound].push(market);
@@ -336,14 +333,14 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             emit Claimed(defaultLiquidityProvider, balanceAfterCurRound);
         }
 
-        if (round == 1) {
+        if (round == 2) {
             cumulativeProfitAndLoss[round] = profitAndLossPerRound[round];
         } else {
             cumulativeProfitAndLoss[round] = (cumulativeProfitAndLoss[round - 1] * profitAndLossPerRound[round]) / ONE;
         }
 
         // start next round
-        round += 1;
+        ++round;
 
         //add all carried over sUSD
         allocationPerRound[round] += sUSD.balanceOf(roundPool);
@@ -502,6 +499,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             (sportMarket, , , , , , , ) = parlayMarket.sportMarket(i);
             ISportPositionalMarket marketContract = ISportPositionalMarket(sportMarket);
             (uint maturity, ) = marketContract.times();
+            //todo check the round values in uint tests
             if (maturity > firstRoundStartTime) {
                 if (i == 0) {
                     _round = (maturity - firstRoundStartTime) / roundLength + 2;
@@ -541,24 +539,20 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         }
     }
 
-    function _depositAsDefault(
-        uint amount,
-        address roundPool,
-        uint _round
-    ) internal {
+    function _depositAsDefault(uint amount) internal {
         require(defaultLiquidityProvider != address(0), "default liquidity provider not set");
 
-        sUSD.safeTransferFrom(defaultLiquidityProvider, roundPool, amount);
+        sUSD.safeTransferFrom(defaultLiquidityProvider, address(parlayAMM), amount);
 
-        balancesPerRound[_round][defaultLiquidityProvider] += amount;
-        allocationPerRound[_round] += amount;
+        balancesPerRound[1][defaultLiquidityProvider] += amount;
+        allocationPerRound[1] += amount;
 
-        emit Deposited(defaultLiquidityProvider, amount, _round);
+        emit Deposited(defaultLiquidityProvider, amount, 1);
     }
 
     function _getOrCreateRoundPool(uint _round) internal returns (address roundPool) {
         roundPool = roundPools[_round];
-        if (roundPool == address(0)) {
+        if (roundPool == address(0) && round > 1) {
             require(poolRoundMastercopy != address(0), "Round pool mastercopy not set");
             ParlayAMMLiquidityPoolRound newRoundPool = ParlayAMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
             newRoundPool.initialize(address(this), sUSD, _round, getRoundEndTime(_round - 1), getRoundEndTime(_round));

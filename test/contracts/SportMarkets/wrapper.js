@@ -133,6 +133,10 @@ contract('TherundownConsumerWrapper', (accounts) => {
 				from: owner,
 			}
 		);
+
+		await verifier.setBookmakerIdsBySportId(4, [3], {
+			from: owner,
+		});
 	});
 
 	describe('Wrapper tests', () => {
@@ -287,21 +291,55 @@ contract('TherundownConsumerWrapper', (accounts) => {
 		it('Test requests', async () => {
 			let emptyArray = [];
 			await expect(
-				wrapper.requestGames(toBytes32('RSX'), 'create', 4, 1655215501, {
-					from: second,
-				})
+				wrapper.requestGamesCreationWithFilters(
+					toBytes32('RSX'),
+					'create',
+					4,
+					1655215501,
+					emptyArray,
+					{
+						from: second,
+					}
+				)
 			).to.be.revertedWith('SafeMath: subtraction overflow');
 
 			await expect(
-				wrapper.requestGames(toBytes32('RSX'), 'create1', 4, 1655215501, {
-					from: second,
-				})
+				wrapper.requestGamesCreationWithFilters(
+					toBytes32('RSX'),
+					'resolve',
+					4,
+					1655215501,
+					emptyArray,
+					{
+						from: second,
+					}
+				)
+			).to.be.revertedWith('Only for creation');
+
+			await expect(
+				wrapper.requestGamesCreationWithFilters(
+					toBytes32('RSX'),
+					'create1',
+					4,
+					1655215501,
+					emptyArray,
+					{
+						from: second,
+					}
+				)
 			).to.be.revertedWith('Market is not supported');
 
 			await expect(
-				wrapper.requestGames(toBytes32('RSX'), 'create', 5, 1655215501, {
-					from: second,
-				})
+				wrapper.requestGamesCreationWithFilters(
+					toBytes32('RSX'),
+					'create',
+					5,
+					1655215501,
+					emptyArray,
+					{
+						from: second,
+					}
+				)
 			).to.be.revertedWith('SportId is not supported');
 
 			await expect(
@@ -311,38 +349,36 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			).to.be.revertedWith('SportId is not supported');
 
 			await expect(
-				wrapper.requestGamesResolveWithFilters(
-					toBytes32('RSX'),
-					'create1',
-					4,
-					1655215501,
-					emptyArray,
-					emptyArray,
-					{
-						from: second,
-					}
-				)
+				wrapper.requestGamesResolveWithFilters(toBytes32('RSX'), 'create1', emptyArray, {
+					from: second,
+				})
 			).to.be.revertedWith('Market is not supported');
 
 			await expect(
-				wrapper.requestGamesResolveWithFilters(
-					toBytes32('RSX'),
-					'create',
-					5,
-					1655215501,
-					emptyArray,
-					emptyArray,
-					{
-						from: second,
-					}
-				)
-			).to.be.revertedWith('SportId is not supported');
+				wrapper.requestGamesResolveWithFilters(toBytes32('RSX'), 'create', emptyArray, {
+					from: second,
+				})
+			).to.be.revertedWith('Only for resolve');
+
+			await expect(
+				wrapper.requestGamesResolveWithFilters(toBytes32('RSX'), 'resolve', emptyArray, {
+					from: second,
+				})
+			).to.be.revertedWith('Must provide games!');
 
 			await expect(
 				wrapper.callUpdateOddsForSpecificGame(dummyAddress, {
 					from: second,
 				})
 			).to.be.revertedWith('Only Sports AMM can call this function');
+		});
+
+		it('Test views', async () => {
+			let bookmakerIdsBySportId = await verifier.getBookmakerIdsBySportId(4);
+			assert.bnEqual(1, bookmakerIdsBySportId.length);
+
+			let result = await wrapper.getBookmakerIdsBySportId(4);
+			assert.bnEqual(bookmakerIdsBySportId[0].toNumber(), result[0].toNumber());
 		});
 	});
 });

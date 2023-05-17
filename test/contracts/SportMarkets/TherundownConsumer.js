@@ -70,6 +70,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 	let consumer;
 	let verifier;
+	let wrapperTesting;
 	let TherundownConsumerVerifier;
 	let TherundownConsumerVerifierDeployed;
 	let TherundownConsumer;
@@ -110,6 +111,8 @@ contract('TheRundownConsumer', (accounts) => {
 	let oddsResult_1;
 	let oddsResultArray_1;
 	let reqIdOdds_1;
+	let ThalesDeployed;
+	let ThalesDeployedT;
 	let oddsid_2;
 	let oddsResult_2;
 	let oddsResultArray_2;
@@ -186,7 +189,9 @@ contract('TheRundownConsumer', (accounts) => {
 		SportPositionalMarket,
 		SportPositionalMarketMastercopy,
 		SportPositionMastercopy,
-		SportsAMM;
+		SportsAMM,
+		TherundownConsumerWrapperTesting,
+		TherundownConsumerWrapperDeployedTesting;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -659,6 +664,34 @@ contract('TheRundownConsumer', (accounts) => {
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 		await verifier.setObtainer(GamesOddsObtainerDeployed.address, { from: owner });
 		await verifier.setSportsManager(SportPositionalMarketManager.address, { from: owner });
+
+		let paymentCreate = toUnit(1);
+		let paymentResolve = toUnit(2);
+		let paymentOdds = toUnit(3);
+
+		let ThalesT = artifacts.require('Thales');
+		ThalesDeployedT = await ThalesT.new({ from: owner });
+		TherundownConsumerWrapperTesting = artifacts.require('TherundownConsumerWrapper');
+		TherundownConsumerWrapperDeployedTesting = await TherundownConsumerWrapperTesting.new(
+			ThalesDeployedT.address,
+			ThalesDeployedT.address,
+			TherundownConsumerDeployed.address,
+			paymentCreate,
+			paymentResolve,
+			paymentOdds,
+			'0x3465326264623338336437393962343662653663656562336463366465306363',
+			third,
+			verifier.address,
+			{ from: owner }
+		);
+
+		wrapperTesting = await TherundownConsumerWrapperTesting.at(
+			TherundownConsumerWrapperDeployedTesting.address
+		);
+
+		await verifier.setBookmakerIdsBySportId(4, [3, 2], {
+			from: owner,
+		});
 	});
 
 	describe('Init', () => {
@@ -936,6 +969,24 @@ contract('TheRundownConsumer', (accounts) => {
 				game1NBATime,
 				{ from: wrapper }
 			);
+
+			let result = await wrapperTesting.getSportIdAndDatePerGame(gameid1);
+			assert.equal(sportId_4, result[0].toNumber());
+			assert.equal(game1NBATime, result[1].toNumber());
+
+			let resultArray = await wrapperTesting.getSportIdsAndDatesPerGames([gameid1]);
+			let first = resultArray[0];
+			assert.equal(sportId_4, first[0].toNumber());
+			let second = resultArray[1];
+			assert.equal(game1NBATime, second[0].toNumber());
+
+			resultArray = await wrapperTesting.getSportIdsAndDatesPerGames([gameid1, gameid2]);
+			first = resultArray[0];
+			assert.equal(sportId_4, first[0].toNumber());
+			assert.equal(sportId_4, first[1].toNumber());
+			second = resultArray[1];
+			assert.equal(game1NBATime, second[0].toNumber());
+			assert.equal(game1NBATime, second[1].toNumber());
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
@@ -5201,6 +5252,14 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(3, await gamesQueue.firstResolved());
 			assert.equal(2, await gamesQueue.lastResolved());
+		});
+
+		it('Test view wrapper', async () => {
+			let bookmakerIdsBySportId = await verifier.getBookmakerIdsBySportId(4);
+			assert.bnEqual(2, bookmakerIdsBySportId.length);
+
+			let result = await wrapperTesting.getBookmakerIdsBySportId(4);
+			assert.bnEqual(bookmakerIdsBySportId[0].toNumber(), result[0].toNumber());
 		});
 	});
 });

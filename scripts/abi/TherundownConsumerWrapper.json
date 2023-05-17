@@ -386,11 +386,6 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
-        "name": "_remainder",
-        "type": "uint256"
-      },
-      {
         "internalType": "bytes[]",
         "name": "_games",
         "type": "bytes[]"
@@ -409,11 +404,6 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
-        "name": "_remainder",
-        "type": "uint256"
-      },
-      {
         "internalType": "bytes[]",
         "name": "_games",
         "type": "bytes[]"
@@ -430,11 +420,6 @@
         "internalType": "bytes32",
         "name": "_requestId",
         "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_remainder",
-        "type": "uint256"
       },
       {
         "internalType": "bytes[]",
@@ -474,6 +459,54 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getSportIdAndDatePerGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "_gameIds",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "getSportIdsAndDatesPerGames",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",
@@ -611,9 +644,14 @@
         "internalType": "uint256",
         "name": "_date",
         "type": "uint256"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_gameIds",
+        "type": "string[]"
       }
     ],
-    "name": "requestGames",
+    "name": "requestGamesCreationWithFilters",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -629,21 +667,6 @@
         "internalType": "string",
         "name": "_market",
         "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_sportId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_date",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string[]",
-        "name": "_statusIds",
-        "type": "string[]"
       },
       {
         "internalType": "string[]",

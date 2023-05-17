@@ -32,7 +32,6 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     mapping(bytes32 => bytes[]) public requestIdGamesCreated;
     mapping(bytes32 => bytes[]) public requestIdGamesResolved;
     mapping(bytes32 => bytes[]) public requestIdGamesOdds;
-    mapping(bytes32 => uint256) private requestIdRemainder;
 
     mapping(bytes32 => bool) public requestIdGamesCreatedFulFilled;
     mapping(bytes32 => bool) public requestIdGamesResolvedFulFilled;
@@ -65,76 +64,56 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /* ========== CONSUMER REQUEST FUNCTIONS ========== */
 
-    /// @notice request of create/resolve games on a specific date with specific sport with optional filters
+    /// @notice request for creation games on a specific date with specific sport with optional filters
     /// @param _specId specification id which is provided by CL
-    /// @param _market string which can be "create" or "resolve"
+    /// @param _market string which can be "create"
     /// @param _sportId sports id which is provided from CL (Example: NBA = 4)
     /// @param _date date on which game/games are played
-    /// @param _statusIds optional param, grap only for specific statusess
     /// @param _gameIds optional param, grap only for specific games
-    function requestGamesResolveWithFilters(
+    function requestGamesCreationWithFilters(
         bytes32 _specId,
         string memory _market,
         uint256 _sportId,
         uint256 _date,
-        string[] memory _statusIds,
         string[] memory _gameIds
     ) public whenNotPaused isValidRequest(_market, _sportId) {
-        Chainlink.Request memory req;
-        uint payment;
+        require(keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create")), "Only for creation");
 
-        if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
-            req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesCreated.selector);
-            payment = paymentCreate;
-        } else {
-            req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesResolved.selector);
-            payment = paymentResolve;
-        }
+        Chainlink.Request memory req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesCreated.selector);
 
         req.addUint("date", _date);
         req.add("market", _market);
         req.addUint("sportId", _sportId);
-        req.addStringArray("statusIds", _statusIds);
         req.addStringArray("gameIds", _gameIds);
 
-        _putLink(msg.sender, payment);
+        _putLink(msg.sender, paymentCreate);
 
-        bytes32 requestId = sendChainlinkRequest(req, payment);
+        bytes32 requestId = sendChainlinkRequest(req, paymentCreate);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
     }
 
-    /// @notice request of create/resolve games on a specific date with specific sport without filters
+    /// @notice request for resolve of a games
     /// @param _specId specification id which is provided by CL
-    /// @param _market string which can be "create" or "resolve"
-    /// @param _sportId sports id which is provided from CL (Example: NBA = 4)
-    /// @param _date date on which game/games are played
-    function requestGames(
+    /// @param _market string which can be "resolve"
+    /// @param _gameIds not an optional param, grap only for specific games
+    function requestGamesResolveWithFilters(
         bytes32 _specId,
         string memory _market,
-        uint256 _sportId,
-        uint256 _date
-    ) public whenNotPaused isValidRequest(_market, _sportId) {
-        Chainlink.Request memory req;
-        uint payment;
+        string[] memory _gameIds
+    ) public whenNotPaused {
+        require(verifier.isSupportedMarketType(_market), "Market is not supported");
+        require(keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("resolve")), "Only for resolve");
+        require(_gameIds.length > 0, "Must provide games!");
 
-        if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
-            req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesCreated.selector);
-            payment = paymentCreate;
-        } else {
-            req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesResolved.selector);
-            payment = paymentResolve;
-        }
+        Chainlink.Request memory req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesResolved.selector);
 
-        req.addUint("date", _date);
         req.add("market", _market);
-        req.addUint("sportId", _sportId);
+        req.addStringArray("gameIds", _gameIds);
 
-        _putLink(msg.sender, payment);
+        _putLink(msg.sender, paymentResolve);
 
-        bytes32 requestId = sendChainlinkRequest(req, payment);
-        sportIdPerRequestId[requestId] = _sportId;
-        datePerRequest[requestId] = _date;
+        bytes32 requestId = sendChainlinkRequest(req, paymentResolve);
     }
 
     /// @notice request for odds in games on a specific date with specific sport with filters
@@ -187,48 +166,62 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         return verifier.getBookmakerIdsBySportId(_sportId);
     }
 
+    /// @notice getting sports id and on which date game is playing
+    /// @param _gameId id of a game
+    function getSportIdAndDatePerGame(bytes32 _gameId) external view returns (uint, uint) {
+        return (consumer.sportsIdPerGame(_gameId), consumer.gameOnADate(_gameId));
+    }
+
+    /// @notice getting sports id and on which date game is playing for multiple game IDs
+    /// @param _gameIds array of game IDs
+    function getSportIdsAndDatesPerGames(bytes32[] memory _gameIds) external view returns (uint[] memory, uint[] memory) {
+        uint[] memory sportIds = new uint[](_gameIds.length);
+        uint[] memory gameDates = new uint[](_gameIds.length);
+
+        for (uint i = 0; i < _gameIds.length; i++) {
+            sportIds[i] = consumer.sportsIdPerGame(_gameIds[i]);
+            gameDates[i] = consumer.gameOnADate(_gameIds[i]);
+        }
+
+        return (sportIds, gameDates);
+    }
+
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
 
     /// @notice proxy all retrieved data for created games from CL to consumer
     /// @param _requestId request id autogenerated from CL
     /// @param _games array of a games
-    function fulfillGamesCreated(
-        bytes32 _requestId,
-        uint256 _remainder,
-        bytes[] memory _games
-    ) external recordChainlinkFulfillment(_requestId) {
-        requestIdGamesCreated[_requestId] = _games;
-        requestIdGamesCreatedFulFilled[_requestId] = true;
-        requestIdRemainder[_requestId] = _remainder;
-        consumer.fulfillGamesCreated(_requestId, _games, sportIdPerRequestId[_requestId], datePerRequest[_requestId]);
+    function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games) external recordChainlinkFulfillment(_requestId) {
+        if (_games.length > 0) {
+            requestIdGamesCreated[_requestId] = _games;
+            requestIdGamesCreatedFulFilled[_requestId] = true;
+            consumer.fulfillGamesCreated(_requestId, _games, sportIdPerRequestId[_requestId], datePerRequest[_requestId]);
+        }
     }
 
     /// @notice proxy all retrieved data for resolved games from CL to consumer
     /// @param _requestId request id autogenerated from CL
     /// @param _games array of a games
-    function fulfillGamesResolved(
-        bytes32 _requestId,
-        uint256 _remainder,
-        bytes[] memory _games
-    ) external recordChainlinkFulfillment(_requestId) {
-        requestIdGamesResolved[_requestId] = _games;
-        requestIdGamesResolvedFulFilled[_requestId] = true;
-        requestIdRemainder[_requestId] = _remainder;
-        consumer.fulfillGamesResolved(_requestId, _games, sportIdPerRequestId[_requestId]);
+    function fulfillGamesResolved(bytes32 _requestId, bytes[] memory _games)
+        external
+        recordChainlinkFulfillment(_requestId)
+    {
+        if (_games.length > 0) {
+            requestIdGamesResolved[_requestId] = _games;
+            requestIdGamesResolvedFulFilled[_requestId] = true;
+            consumer.fulfillGamesResolved(_requestId, _games, sportIdPerRequestId[_requestId]);
+        }
     }
 
     /// @notice proxy all retrieved data for odds in games from CL to consumer
     /// @param _requestId request id autogenerated from CL
     /// @param _games array of a games
-    function fulfillGamesOdds(
-        bytes32 _requestId,
-        uint256 _remainder,
-        bytes[] memory _games
-    ) external recordChainlinkFulfillment(_requestId) {
-        requestIdGamesOdds[_requestId] = _games;
-        requestIdRemainder[_requestId] = _remainder;
-        requestIdGamesOddsFulFilled[_requestId] = true;
-        consumer.fulfillGamesOdds(_requestId, _games);
+    function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external recordChainlinkFulfillment(_requestId) {
+        if (_games.length > 0) {
+            requestIdGamesOdds[_requestId] = _games;
+            requestIdGamesOddsFulFilled[_requestId] = true;
+            consumer.fulfillGamesOdds(_requestId, _games);
+        }
     }
 
     /* ========== VIEWS ========== */

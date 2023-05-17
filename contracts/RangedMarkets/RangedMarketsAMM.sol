@@ -708,7 +708,30 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         referrerFee = _referrerFee;
     }
 
-    function setCurveSUSD(bool _curveOnrampEnabled, uint _maxAllowedPegSlippagePercentage) external onlyOwner {
+    /// @notice Updates contract parametars
+    /// @param _curveSUSD curve sUSD pool exchanger contract
+    /// @param _dai DAI address
+    /// @param _usdc USDC address
+    /// @param _usdt USDT addresss
+    /// @param _curveOnrampEnabled whether AMM supports curve onramp
+    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
+    function setCurveSUSD(
+        address _curveSUSD,
+        address _dai,
+        address _usdc,
+        address _usdt,
+        bool _curveOnrampEnabled,
+        uint _maxAllowedPegSlippagePercentage
+    ) external onlyOwner {
+        curveSUSD = ICurveSUSD(_curveSUSD);
+        dai = _dai;
+        usdc = _usdc;
+        usdt = _usdt;
+        IERC20Upgradeable(dai).approve(_curveSUSD, type(uint256).max);
+        IERC20Upgradeable(usdc).approve(_curveSUSD, type(uint256).max);
+        IERC20Upgradeable(usdt).approve(_curveSUSD, type(uint256).max);
+        // not needed unless selling into different collateral is enabled
+        //sUSD.approve(_curveSUSD, type(uint256).max);
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }

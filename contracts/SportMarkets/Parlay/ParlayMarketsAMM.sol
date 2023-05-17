@@ -467,6 +467,25 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
     }
 
+    function calculateSkewImpact(
+        address[] memory _sportMarkets,
+        uint[] memory _positions,
+        uint _sUSDPaid
+    ) external view returns (uint resultSkew) {
+        uint[] memory marketQuotes;
+        uint sUSDAfterFees;
+        uint totalQuote;
+        (sUSDAfterFees, , totalQuote, , , marketQuotes, ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid);
+        resultSkew = parlayVerifier.getSkewImpact(
+            _sportMarkets,
+            sUSDAfterFees,
+            sportsAmm,
+            address(this),
+            totalQuote,
+            marketQuotes
+        );
+    }
+
     function _buyPositionsFromSportAMM(
         address[] memory _sportMarkets,
         uint[] memory _positions,

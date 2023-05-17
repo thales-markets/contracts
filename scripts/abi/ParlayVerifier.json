@@ -131,6 +131,50 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sUSDAfterFees",
+        "type": "uint256"
+      },
+      {
+        "internalType": "contract ISportsAMM",
+        "name": "_sportsAMM",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayAMM",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_quotes",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "getSkewImpact",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "resultSkewImpact",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_position",
         "type": "uint256"

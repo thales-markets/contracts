@@ -13,6 +13,8 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 
+import "hardhat/console.sol";
+
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
 
@@ -234,7 +236,6 @@ contract ParlayVerifier {
                 ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
                 : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
             buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
-            // finalQuotes = _applySkewImpactBatch(finalQuotes, (ONE*skewImpact/(4*finalQuotes.length))/ONE, (expectedPayout > totalBuyAmount));
             totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
             _calculateRisk(params.sportMarkets, (totalBuyAmount - params.sUSDAfterFees), params.sportsAmm.parlayAMM());
         } else {
@@ -274,6 +275,39 @@ contract ParlayVerifier {
         address[] memory sortedAddresses = new address[](_sportMarkets.length);
         sortedAddresses = _sort(_sportMarkets);
         return keccak256(abi.encodePacked(sortedAddresses));
+    }
+
+    function getSkewImpact(
+        address[] memory _sportMarkets,
+        uint _sUSDAfterFees,
+        ISportsAMM _sportsAMM,
+        address _parlayAMM,
+        uint _totalQuote,
+        uint[] memory _quotes
+    ) external view returns (uint resultSkewImpact) {
+        uint totalNoSkewQuote = 1;
+        (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, ISportsAMM(_sportsAMM), _parlayAMM));
+        console.log(">>> in:SGPFee: ", sgpFee);
+        for (uint i = 0; i < _quotes.length; i++) {
+            totalNoSkewQuote = (i == 0) ? _quotes[i] : (totalNoSkewQuote * _quotes[i]) / ONE;
+        }
+        console.log("0 total  :", _totalQuote);
+        console.log("0 totalNo:", totalNoSkewQuote);
+        if (sgpFee > 0) {
+            _totalQuote = (_totalQuote * sgpFee) / ONE;
+            console.log("1 total  :", _totalQuote);
+            console.log("1 totalNo:", totalNoSkewQuote);
+            _totalQuote = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
+        } else {
+            _totalQuote = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
+        }
+        totalNoSkewQuote = ((_sUSDAfterFees * ONE * ONE) / (totalNoSkewQuote)) / ONE;
+        console.log("2 total  :", _totalQuote);
+        console.log("2 totalNo:", totalNoSkewQuote);
+        resultSkewImpact = _totalQuote > totalNoSkewQuote
+            ? (((ONE * _totalQuote) - (ONE * totalNoSkewQuote)) / (totalNoSkewQuote))
+            : (((ONE * totalNoSkewQuote) - (ONE * _totalQuote)) / (totalNoSkewQuote));
+        // resultSkewImpact = ONE - resultSkewImpact;
     }
 
     function _checkRisk(

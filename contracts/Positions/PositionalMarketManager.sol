@@ -197,7 +197,10 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
             "All arrays have to be non-empty and same size"
         );
         for (uint i = 0; i < oracleKeys.length; i++) {
-            _createMarket(oracleKeys[i], strikePrices[i], maturities[i], 0);
+            (bool canCreate, string memory message) = canCreateMarket(oracleKeys[i], maturities[i], strikePrices[i]);
+            if (canCreate) {
+                _createMarket(oracleKeys[i], strikePrices[i], maturities[i], 0);
+            }
         }
     }
 

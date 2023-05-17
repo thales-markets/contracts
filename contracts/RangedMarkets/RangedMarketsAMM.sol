@@ -112,7 +112,9 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             "Both arrays have to be non-empty and same size"
         );
         for (uint i = 0; i < leftMarkets.length; i++) {
-            _createRangedMarket(leftMarkets[i], rightMarkets[i]);
+            if (canCreateRangedMarket(leftMarkets[i], rightMarkets[i])) {
+                _createRangedMarket(leftMarkets[i], rightMarkets[i]);
+            }
         }
     }
 

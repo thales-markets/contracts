@@ -322,8 +322,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {
+        uint amountBefore = sUSD.balanceOf(address(this));
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseWiningSportMarkets();
+        uint amount = sUSD.balanceOf(address(this)) - amountBefore;
+        if (amount > 0) {
+            IParlayAMMLiquidityPool(parlayLP).transferToPool(_parlayMarket, amount);
+            //todo
+            // send to AMM Liquidity
+        }
     }
 
     function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket)

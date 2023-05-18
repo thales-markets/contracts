@@ -27,19 +27,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "exerciseMarketReadyToExercised",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_liquidityPool",
         "type": "address"
       },

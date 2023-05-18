@@ -186,6 +186,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "hasMarketLostButHasExercisableWinningPositions",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "itHasLostButHasExercisableWinningPositions",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address[]",

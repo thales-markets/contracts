@@ -192,14 +192,30 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         // if markets have different rounds use the defaultLP
         if (marketRound == round) {
             sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
+        } else if (marketRound > round) {
+            uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
+            if (poolBalance >= amountToMint) {
+                sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
+            } else {
+                uint differenceToLPAsDefault = amountToMint - poolBalance;
+                _depositAsDefault(differenceToLPAsDefault, liquidityPoolRound, marketRound);
+                sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
+            }
         } else {
             require(marketRound == 1, "InvalidRound");
-            _depositAsDefault(amountToMint);
-            // sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
+            _provideAsDefault(amountToMint);
         }
 
         tradingMarketsPerRound[marketRound].push(market);
         isTradingMarketInARound[marketRound][market] = true;
+    }
+
+    function transferToPool(address _market, uint _amount) external nonReentrant whenNotPaused roundClosingNotPrepared {
+        uint marketRound = getMarketRound(_market);
+        require(marketRound > 0, "FatalRoundZero");
+        address liquidityPoolRound = marketRound == 1 ? defaultLiquidityProvider : _getOrCreateRoundPool(marketRound);
+        sUSD.transferFrom(address(parlayAMM), liquidityPoolRound, _amount);
+        marketAlreadyExercisedInRound[round][_market] = true;
     }
 
     /// @notice Create a round pool by market maturity date if it doesnt already exist
@@ -361,18 +377,20 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     function exerciseMarketsReadyToExercised() public roundClosingNotPrepared {
         // todo
         // only matured alreadyLost parlays
-        // SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
-        // ISportPositionalMarket market;
-        // for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-        //     address marketAddress = tradingMarketsPerRound[round][i];
-        //     if (!marketAlreadyExercisedInRound[round][marketAddress]) {
-        //         market = ISportPositionalMarket(marketAddress);
-        //         if (market.resolved()) {
-        //             poolRound.exerciseMarketReadyToExercised(market);
-        //             marketAlreadyExercisedInRound[round][marketAddress] = true;
-        //         }
-        //     }
-        // }
+        ParlayAMMLiquidityPoolRound poolRound = ParlayAMMLiquidityPoolRound(roundPools[round]);
+        ParlayMarket market;
+        address marketAddress;
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            marketAddress = tradingMarketsPerRound[round][i];
+            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+                market = ParlayMarket(marketAddress);
+                if (market.hasMarketLostButHasExercisableWinningPositions()) {
+                    // poolRound.exerciseMarketReadyToExercised(marketAddress);
+
+                    marketAlreadyExercisedInRound[round][marketAddress] = true;
+                }
+            }
+        }
     }
 
     /* ========== VIEWS ========== */
@@ -494,7 +512,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     /// @return _round the min round which the market belongs to
     function getMarketRound(address market) public view returns (uint _round) {
         ParlayMarket parlayMarket = ParlayMarket(market);
-        uint tempRound;
         address sportMarket;
         for (uint i = 0; i < parlayMarket.numOfSportMarkets(); i++) {
             (sportMarket, , , , , , , ) = parlayMarket.sportMarket(i);
@@ -540,7 +557,22 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         }
     }
 
-    function _depositAsDefault(uint amount) internal {
+    function _depositAsDefault(
+        uint amount,
+        address roundPool,
+        uint _round
+    ) internal {
+        require(defaultLiquidityProvider != address(0), "default liquidity provider not set");
+
+        sUSD.safeTransferFrom(defaultLiquidityProvider, roundPool, amount);
+
+        balancesPerRound[_round][defaultLiquidityProvider] += amount;
+        allocationPerRound[_round] += amount;
+
+        emit Deposited(defaultLiquidityProvider, amount, _round);
+    }
+
+    function _provideAsDefault(uint amount) internal {
         require(defaultLiquidityProvider != address(0), "default liquidity provider not set");
 
         sUSD.safeTransferFrom(defaultLiquidityProvider, address(parlayAMM), amount);

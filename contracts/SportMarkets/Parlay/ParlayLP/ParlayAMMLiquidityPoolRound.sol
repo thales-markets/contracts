@@ -46,15 +46,6 @@ contract ParlayAMMLiquidityPoolRound {
         emit RoundTimesUpdated(_roundStartTime, _roundEndTime);
     }
 
-    function exerciseMarketReadyToExercised(address market) external onlyLiquidityPool {
-        ParlayMarket parlay = ParlayMarket(market);
-        (bool exercisable, ) = parlay.isParlayExercisable();
-        if (exercisable) {
-            // todo: exercise markets
-            // IParlayAMM()
-        }
-    }
-
     modifier onlyLiquidityPool() {
         require(msg.sender == address(liquidityPool), "only the Pool manager may perform these methods");
         _;

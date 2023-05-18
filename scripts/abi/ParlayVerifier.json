@@ -152,13 +152,18 @@
       },
       {
         "internalType": "uint256",
+        "name": "_totalBuyAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_totalQuote",
         "type": "uint256"
       },
       {
-        "internalType": "uint256[]",
-        "name": "_quotes",
-        "type": "uint256[]"
+        "internalType": "uint256",
+        "name": "_oldSkew",
+        "type": "uint256"
       }
     ],
     "name": "getSkewImpact",

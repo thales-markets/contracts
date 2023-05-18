@@ -472,17 +472,24 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint[] memory _positions,
         uint _sUSDPaid
     ) external view returns (uint resultSkew) {
-        uint[] memory marketQuotes;
+        // uint[] memory marketQuotes;
         uint sUSDAfterFees;
         uint totalQuote;
-        (sUSDAfterFees, , totalQuote, , , marketQuotes, ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid);
+        uint totalBuyAmount;
+        uint oldSkewImpact;
+        (sUSDAfterFees, totalBuyAmount, totalQuote, , oldSkewImpact, , ) = _buyQuoteFromParlay(
+            _sportMarkets,
+            _positions,
+            _sUSDPaid
+        );
         resultSkew = parlayVerifier.getSkewImpact(
             _sportMarkets,
             sUSDAfterFees,
             sportsAmm,
             address(this),
+            totalBuyAmount,
             totalQuote,
-            marketQuotes
+            oldSkewImpact
         );
     }
 

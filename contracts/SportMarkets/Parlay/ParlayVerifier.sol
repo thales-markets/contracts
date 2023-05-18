@@ -13,8 +13,6 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 
-import "hardhat/console.sol";
-
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
 
@@ -282,32 +280,22 @@ contract ParlayVerifier {
         uint _sUSDAfterFees,
         ISportsAMM _sportsAMM,
         address _parlayAMM,
+        uint _totalBuyAmount,
         uint _totalQuote,
-        uint[] memory _quotes
+        uint _oldSkew
     ) external view returns (uint resultSkewImpact) {
-        uint totalNoSkewQuote = 1;
+        uint newBuyAmount;
         (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, ISportsAMM(_sportsAMM), _parlayAMM));
-        console.log(">>> in:SGPFee: ", sgpFee);
-        for (uint i = 0; i < _quotes.length; i++) {
-            totalNoSkewQuote = (i == 0) ? _quotes[i] : (totalNoSkewQuote * _quotes[i]) / ONE;
-        }
-        console.log("0 total  :", _totalQuote);
-        console.log("0 totalNo:", totalNoSkewQuote);
         if (sgpFee > 0) {
             _totalQuote = (_totalQuote * sgpFee) / ONE;
-            console.log("1 total  :", _totalQuote);
-            console.log("1 totalNo:", totalNoSkewQuote);
-            _totalQuote = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
+            newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
         } else {
-            _totalQuote = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
+            newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
         }
-        totalNoSkewQuote = ((_sUSDAfterFees * ONE * ONE) / (totalNoSkewQuote)) / ONE;
-        console.log("2 total  :", _totalQuote);
-        console.log("2 totalNo:", totalNoSkewQuote);
-        resultSkewImpact = _totalQuote > totalNoSkewQuote
-            ? (((ONE * _totalQuote) - (ONE * totalNoSkewQuote)) / (totalNoSkewQuote))
-            : (((ONE * totalNoSkewQuote) - (ONE * _totalQuote)) / (totalNoSkewQuote));
-        // resultSkewImpact = ONE - resultSkewImpact;
+        resultSkewImpact = newBuyAmount > _totalBuyAmount
+            ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
+            : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
+        resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : resultSkewImpact - _oldSkew;
     }
 
     function _checkRisk(

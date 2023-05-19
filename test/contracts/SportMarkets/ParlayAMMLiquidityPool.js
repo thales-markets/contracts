@@ -47,6 +47,8 @@ contract('ParlayAMM', (accounts) => {
 		wrapper,
 		firstLiquidityProvider,
 		defaultLiquidityProvider,
+		firstParlayAMMLiquidityProvider,
+		defaultParlayAMMLiquidityProvider,
 	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -76,6 +78,12 @@ contract('ParlayAMM', (accounts) => {
 	const ParlayMarketContract = artifacts.require('ParlayMarketMastercopy');
 	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
 	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
+
+	const ParlayAMMLiquidityPoolContract = artifacts.require('ParlayAMMLiquidityPool');
+	const ParlayAMMLiquidityPoolRoundMastercopy = artifacts.require(
+		'ParlayAMMLiquidityPoolRoundMastercopy'
+	);
+
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
 	let ParlayAMM;
@@ -703,6 +711,21 @@ contract('ParlayAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		ParlayAMMLiquidityPool = await ParlayAMMLiquidityPoolContract.new({ from: manager });
+
+		await ParlayAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_parlayAMM: SportsAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(100000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -719,21 +742,46 @@ contract('ParlayAMM', (accounts) => {
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
 			from: owner,
 		});
+
+		let parlayAMMLiquidityPoolRoundMastercopy = await ParlayAMMLiquidityPoolRoundMastercopy.new();
+		await ParlayAMMLiquidityPool.setPoolRoundMastercopy(
+			parlayAMMLiquidityPoolRoundMastercopy.address,
+			{
+				from: owner,
+			}
+		);
+
 		await Thales.transfer(firstLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.transfer(firstParlayAMMLiquidityProvider, toUnit('10000000'), { from: owner });
 		await Thales.approve(SportAMMLiquidityPool.address, toUnit('10000000'), {
 			from: firstLiquidityProvider,
+		});
+		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
+			from: firstParlayAMMLiquidityProvider,
 		});
 		await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
 			from: owner,
 		});
+		await ParlayAMMLiquidityPool.setWhitelistedAddresses([firstParlayAMMLiquidityProvider], true, {
+			from: owner,
+		});
 		await SportAMMLiquidityPool.deposit(toUnit(100000), { from: firstLiquidityProvider });
+		await ParlayAMMLiquidityPool.deposit(toUnit(100000), { from: firstParlayAMMLiquidityProvider });
 		await SportAMMLiquidityPool.start({ from: owner });
+		await ParlayAMMLiquidityPool.start({ from: owner });
 		await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
 			from: owner,
 		});
+		await ParlayAMMLiquidityPool.setDefaultLiquidityProvider(defaultParlayAMMLiquidityProvider, {
+			from: owner,
+		});
 		await Thales.transfer(defaultLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.transfer(defaultParlayAMMLiquidityProvider, toUnit('10000000'), { from: owner });
 		await Thales.approve(SportAMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultLiquidityProvider,
+		});
+		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
+			from: defaultParlayAMMLiquidityProvider,
 		});
 
 		await ParlayAMM.setCurveSUSD(

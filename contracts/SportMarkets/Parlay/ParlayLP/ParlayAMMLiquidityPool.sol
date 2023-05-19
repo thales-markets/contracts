@@ -112,6 +112,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         needsTransformingCollateral = params._needsTransformingCollateral;
 
         sUSD.approve(params._parlayAMM, type(uint256).max);
+        round = 1;
     }
 
     /// @notice Start pool and begin round #1
@@ -212,8 +213,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     function transferToPool(address _market, uint _amount) external nonReentrant whenNotPaused roundClosingNotPrepared {
         uint marketRound = getMarketRound(_market);
-        require(marketRound > 0, "FatalRoundZero");
-        address liquidityPoolRound = marketRound == 1 ? defaultLiquidityProvider : _getOrCreateRoundPool(marketRound);
+        address liquidityPoolRound = marketRound <= 1 ? defaultLiquidityProvider : _getOrCreateRoundPool(marketRound);
         sUSD.transferFrom(address(parlayAMM), liquidityPoolRound, _amount);
         marketAlreadyExercisedInRound[round][_market] = true;
     }
@@ -585,7 +585,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     function _getOrCreateRoundPool(uint _round) internal returns (address roundPool) {
         roundPool = roundPools[_round];
-        if (roundPool == address(0) && round > 1) {
+        if (roundPool == address(0) && _round > 1) {
             require(poolRoundMastercopy != address(0), "Round pool mastercopy not set");
             ParlayAMMLiquidityPoolRound newRoundPool = ParlayAMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
             newRoundPool.initialize(address(this), sUSD, _round, getRoundEndTime(_round - 1), getRoundEndTime(_round));

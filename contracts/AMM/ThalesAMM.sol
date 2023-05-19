@@ -433,7 +433,10 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             safeBoxShare = 0;
         }
 
-        liquidityPool.commitTrade(market, pricePaid + safeBoxShare);
+        liquidityPool.commitTrade(
+            market,
+            IPositionalMarketManager(manager).reverseTransformCollateral(pricePaid + safeBoxShare)
+        );
         sUSD.safeTransfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {

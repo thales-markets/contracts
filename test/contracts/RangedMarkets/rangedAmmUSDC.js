@@ -654,7 +654,7 @@ contract('RangedAMM', (accounts) => {
 					additionalSlippage,
 					{ from: minter }
 				)
-			).to.be.revertedWith('Insufficient liquidity');
+			).to.be.revertedWith('ID4');
 
 			console.log('BUY MAXIMUM IN!!!!!!!!!');
 			availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(

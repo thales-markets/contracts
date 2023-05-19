@@ -120,7 +120,7 @@ contract ThalesAMMUtils {
             )
         );
 
-        uint startDiscount = currentBuyImpactOtherSide / 2;
+        uint startDiscount = currentBuyImpactOtherSide;
         uint tempMultiplier = params.balancePosition - params.amount;
         uint finalDiscount = ((startDiscount / 2) * ((tempMultiplier * ONE) / params.balancePosition + ONE)) / ONE;
 

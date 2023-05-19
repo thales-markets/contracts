@@ -180,51 +180,28 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
             IPositionalMarket // no support for returning PositionalMarket polymorphically given the interface
         )
     {
-        if (onlyWhitelistedAddressesCanCreateMarkets) {
-            require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
+        return _createMarket(oracleKey, strikePrice, maturity, initialMint);
+    }
+
+    /// @notice createMarkest creates multiple markets
+    /// @param oracleKeys market oracle key
+    /// @param strikePrices market strike price
+    /// @param maturities  market maturity date
+    function createMarkets(
+        bytes32[] calldata oracleKeys,
+        uint[] calldata strikePrices,
+        uint[] calldata maturities
+    ) external notPaused {
+        require(
+            oracleKeys.length > 0 && oracleKeys.length == strikePrices.length && oracleKeys.length == maturities.length,
+            "All arrays have to be non-empty and same size"
+        );
+        for (uint i = 0; i < oracleKeys.length; i++) {
+            (bool canCreate, string memory message) = canCreateMarket(oracleKeys[i], maturities[i], strikePrices[i]);
+            if (canCreate) {
+                _createMarket(oracleKeys[i], strikePrices[i], maturities[i], 0);
+            }
         }
-
-        (bool canCreate, string memory message) = canCreateMarket(oracleKey, maturity, strikePrice);
-        require(canCreate, message);
-
-        uint expiry = maturity.add(durations.expiryDuration);
-
-        PositionalMarket market = PositionalMarketFactory(positionalMarketFactory).createMarket(
-            PositionalMarketFactory.PositionCreationMarketParameters(
-                msg.sender,
-                sUSD,
-                priceFeed,
-                oracleKey,
-                strikePrice,
-                [maturity, expiry],
-                initialMint
-            )
-        );
-
-        _activeMarkets.add(address(market));
-
-        // The debt can't be incremented in the new market's constructor because until construction is complete,
-        // the manager doesn't know its address in order to grant it permission.
-        totalDeposited = totalDeposited.add(initialMint);
-        sUSD.transferFrom(msg.sender, address(market), _transformCollateral(initialMint));
-
-        (IPosition up, IPosition down) = market.getOptions();
-
-        marketExistsByOracleKeyDateAndStrikePrice[oracleKey][maturity][strikePrice] = address(market);
-
-        emit MarketCreated(
-            address(market),
-            msg.sender,
-            oracleKey,
-            strikePrice,
-            maturity,
-            expiry,
-            address(up),
-            address(down),
-            false,
-            address(0)
-        );
-        return market;
     }
 
     /// @notice transferSusdTo transfers sUSD from market to receiver
@@ -507,6 +484,64 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
                 break;
             }
         }
+    }
+
+    function _createMarket(
+        bytes32 oracleKey,
+        uint strikePrice,
+        uint maturity,
+        uint initialMint
+    )
+        internal
+        returns (
+            IPositionalMarket // no support for returning PositionalMarket polymorphically given the interface
+        )
+    {
+        if (onlyWhitelistedAddressesCanCreateMarkets) {
+            require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
+        }
+
+        (bool canCreate, string memory message) = canCreateMarket(oracleKey, maturity, strikePrice);
+        require(canCreate, message);
+
+        uint expiry = maturity.add(durations.expiryDuration);
+
+        PositionalMarket market = PositionalMarketFactory(positionalMarketFactory).createMarket(
+            PositionalMarketFactory.PositionCreationMarketParameters(
+                msg.sender,
+                sUSD,
+                priceFeed,
+                oracleKey,
+                strikePrice,
+                [maturity, expiry],
+                initialMint
+            )
+        );
+
+        _activeMarkets.add(address(market));
+
+        // The debt can't be incremented in the new market's constructor because until construction is complete,
+        // the manager doesn't know its address in order to grant it permission.
+        totalDeposited = totalDeposited.add(initialMint);
+        sUSD.transferFrom(msg.sender, address(market), _transformCollateral(initialMint));
+
+        (IPosition up, IPosition down) = market.getOptions();
+
+        marketExistsByOracleKeyDateAndStrikePrice[oracleKey][maturity][strikePrice] = address(market);
+
+        emit MarketCreated(
+            address(market),
+            msg.sender,
+            oracleKey,
+            strikePrice,
+            maturity,
+            expiry,
+            address(up),
+            address(down),
+            false,
+            address(0)
+        );
+        return market;
     }
 
     /// @notice _calculateStrikePriceStepValue calculates strike price step via formulae

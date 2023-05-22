@@ -653,12 +653,12 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     }
 
     /// @notice Set ThalesAMM contract
-    /// @param _sportAMM ThalesAMM address
-    function setSportAmm(IParlayMarketsAMM _sportAMM) external onlyOwner {
-        require(address(_sportAMM) != address(0), "Can not set a zero address!");
-        parlayAMM = _sportAMM;
+    /// @param _parlayAMM ThalesAMM address
+    function setParlayAmm(IParlayMarketsAMM _parlayAMM) external onlyOwner {
+        require(address(_parlayAMM) != address(0), "Can not set a zero address!");
+        parlayAMM = _parlayAMM;
         sUSD.approve(address(parlayAMM), type(uint256).max);
-        emit SportAMMChanged(address(_sportAMM));
+        emit SportAMMChanged(address(_parlayAMM));
     }
 
     /// @notice Set defaultLiquidityProvider wallet

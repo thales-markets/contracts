@@ -1180,6 +1180,19 @@
   {
     "inputs": [
       {
+        "internalType": "contract IParlayMarketsAMM",
+        "name": "_parlayAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setParlayAmm",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bool",
         "name": "_setPausing",
         "type": "bool"
@@ -1212,19 +1225,6 @@
       }
     ],
     "name": "setRoundLength",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IParlayMarketsAMM",
-        "name": "_sportAMM",
-        "type": "address"
-      }
-    ],
-    "name": "setSportAmm",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

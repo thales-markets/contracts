@@ -46,6 +46,8 @@ contract('ParlayAMM', (accounts) => {
 		wrapper,
 		firstLiquidityProvider,
 		defaultLiquidityProvider,
+		firstParlayAMMLiquidityProvider,
+		defaultParlayAMMLiquidityProvider,
 	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -176,7 +178,8 @@ contract('ParlayAMM', (accounts) => {
 		Referrals,
 		ParlayVerifier,
 		SportsAMM,
-		SportAMMLiquidityPool;
+		SportAMMLiquidityPool,
+		ParlayAMMLiquidityPool;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -619,6 +622,51 @@ contract('ParlayAMM', (accounts) => {
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(ParlayAMM.address, toUnit(1000), { from: first });
+		// Parlay LP initializers:
+		const ParlayAMMLiquidityPoolContract = artifacts.require('ParlayAMMLiquidityPool');
+		const ParlayAMMLiquidityPoolRoundMastercopy = artifacts.require(
+			'ParlayAMMLiquidityPoolRoundMastercopy'
+		);
+
+		ParlayAMMLiquidityPool = await ParlayAMMLiquidityPoolContract.new({ from: manager });
+
+		await ParlayAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_parlayAMM: ParlayAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(100000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+		await ParlayAMM.setParlayLP(ParlayAMMLiquidityPool.address, { from: owner });
+
+		let parlayAMMLiquidityPoolRoundMastercopy = await ParlayAMMLiquidityPoolRoundMastercopy.new();
+		await ParlayAMMLiquidityPool.setPoolRoundMastercopy(
+			parlayAMMLiquidityPoolRoundMastercopy.address,
+			{
+				from: owner,
+			}
+		);
+		await Thales.transfer(firstParlayAMMLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
+			from: firstParlayAMMLiquidityProvider,
+		});
+		await ParlayAMMLiquidityPool.setWhitelistedAddresses([firstParlayAMMLiquidityProvider], true, {
+			from: owner,
+		});
+		await ParlayAMMLiquidityPool.deposit(toUnit(100000), { from: firstParlayAMMLiquidityProvider });
+		await ParlayAMMLiquidityPool.start({ from: owner });
+		await ParlayAMMLiquidityPool.setDefaultLiquidityProvider(defaultParlayAMMLiquidityProvider, {
+			from: owner,
+		});
+		await Thales.transfer(defaultParlayAMMLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
+			from: defaultParlayAMMLiquidityProvider,
+		});
 	});
 
 	describe('Parlay AMM setters', () => {

@@ -527,8 +527,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             (uint _outcome, uint8 _homeScore, uint8 _awayScore) = _calculateOutcome(game);
 
-            // if result is draw and game is UFC or NFL, cancel market
-            if (_outcome == RESULT_DRAW && _isDrawForCancelationBySport(sportsIdPerGame[game.gameId])) {
+            // if result is draw and game is two positional
+            if (_outcome == RESULT_DRAW && twoPositionSport[sportsIdPerGame[game.gameId]]) {
                 _cancelMarket(game.gameId, !_resolveMarketWithoutQueue);
             } else {
                 // if market is paused only remove from queue
@@ -631,11 +631,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint[] memory result = new uint[](1);
         result[0] = MIN_TAG_NUMBER + _sportsId;
         return result;
-    }
-
-    function _isDrawForCancelationBySport(uint _sportsId) internal pure returns (bool) {
-        // UFC or NFL
-        return _sportsId == 7 || _sportsId == 2;
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal view returns (bool) {

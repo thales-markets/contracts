@@ -124,7 +124,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         round = 2;
 
         address roundPool = _getOrCreateRoundPool(2);
-        ParlayAMMLiquidityPoolRound(roundPool).updateRoundTimes(firstRoundStartTime, getRoundEndTime(1));
+        ParlayAMMLiquidityPoolRound(roundPool).updateRoundTimes(firstRoundStartTime, getRoundEndTime(2));
 
         started = true;
         emit PoolStarted();

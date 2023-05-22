@@ -444,6 +444,8 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         returns (RangedMarketsInfoPerPosition[] memory)
     {
         RangedMarketsInfoPerPosition[] memory activeMarkets = new RangedMarketsInfoPerPosition[](markets.length);
+        RangedMarketsAMM rangedAMMContract = RangedMarketsAMM(rangedMarketsAMM);
+
         for (uint i = 0; i < markets.length; i++) {
             activeMarkets[i].market = markets[i];
             IPositionalMarket leftMarket = IPositionalMarket(RangedMarket(markets[i]).leftMarket());
@@ -453,15 +455,10 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             activeMarkets[i].leftPrice = leftStrikePrice;
             activeMarkets[i].rightPrice = rightStrikePrice;
 
-            activeMarkets[i].liquidity = RangedMarketsAMM(rangedMarketsAMM).availableToBuyFromAMM(
-                RangedMarket(markets[i]),
-                position
-            );
-            activeMarkets[i].price = RangedMarketsAMM(rangedMarketsAMM).buyFromAmmQuote(
-                RangedMarket(markets[i]),
-                position,
-                ONE
-            );
+            activeMarkets[i].liquidity = rangedAMMContract.availableToBuyFromAMM(RangedMarket(markets[i]), position);
+            activeMarkets[i].price = rangedAMMContract.buyFromAmmQuote(RangedMarket(markets[i]), position, ONE);
+
+            activeMarkets[i].priceImpact = rangedAMMContract.getPriceImpact(RangedMarket(markets[i]), position);
         }
         return activeMarkets;
     }

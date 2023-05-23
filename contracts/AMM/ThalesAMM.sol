@@ -428,14 +428,15 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             IPositionalMarket(market).burnOptionsMaximum();
         }
 
-        uint safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - (pricePaid);
+        uint safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - pricePaid;
+        uint referrerShare = (pricePaid * ONE) / (ONE - (referrerFee)) - pricePaid;
         if (safeBoxImpact == 0) {
             safeBoxShare = 0;
         }
 
         liquidityPool.commitTrade(
             market,
-            IPositionalMarketManager(manager).reverseTransformCollateral(pricePaid + safeBoxShare)
+            IPositionalMarketManager(manager).reverseTransformCollateral(pricePaid + safeBoxShare + referrerShare)
         );
         sUSD.safeTransfer(msg.sender, pricePaid);
 

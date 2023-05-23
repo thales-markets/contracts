@@ -17,6 +17,8 @@ import "../../../interfaces/IStakingThales.sol";
 
 import "./ParlayAMMLiquidityPoolRound.sol";
 
+import "hardhat/console.sol";
+
 contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     /* ========== LIBRARIES ========== */
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -513,22 +515,28 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     function getMarketRound(address market) public view returns (uint _round) {
         ParlayMarket parlayMarket = ParlayMarket(market);
         address sportMarket;
+        console.log(">>> firstRoundStartTime", firstRoundStartTime);
         for (uint i = 0; i < parlayMarket.numOfSportMarkets(); i++) {
             (sportMarket, , , , , , , ) = parlayMarket.sportMarket(i);
             ISportPositionalMarket marketContract = ISportPositionalMarket(sportMarket);
             (uint maturity, ) = marketContract.times();
+            console.log(i, " mrkt maturity ", maturity);
             //todo check the round values in uint tests
             if (maturity > firstRoundStartTime) {
                 if (i == 0) {
+                    console.log(">>> entered == 0");
                     _round = (maturity - firstRoundStartTime) / roundLength + 2;
+                    console.log(">>> _round:", _round);
                 } else {
                     if (((maturity - firstRoundStartTime) / roundLength + 2) != _round) {
+                    console.log(">>> entered != _round");
                         _round = 1;
+                        console.log(">>> _round:", _round);
                         break;
                     }
                 }
             } else {
-                _round = 2;
+                _round = 1;
             }
         }
     }

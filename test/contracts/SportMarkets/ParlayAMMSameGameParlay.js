@@ -921,13 +921,13 @@ contract('ParlayAMM', (accounts) => {
 				_game: game_4,
 			});
 
-			console.log('4. game:');
-			console.log('==> home: ', game_4.homeTeam);
-			console.log('==> away: ', game_4.awayTeam);
+			// console.log('4. game:');
+			// console.log('==> home: ', game_4.homeTeam);
+			// console.log('==> away: ', game_4.awayTeam);
 
-			console.log('5. game:');
-			console.log('==> home: ', game_5.homeTeam);
-			console.log('==> away: ', game_5.awayTeam);
+			// console.log('5. game:');
+			// console.log('==> home: ', game_5.homeTeam);
+			// console.log('==> away: ', game_5.awayTeam);
 
 			// create markets
 			const tx_create_4 = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
@@ -959,17 +959,17 @@ contract('ParlayAMM', (accounts) => {
 			});
 
 			let allMarkets = await SportPositionalMarketManager.activeMarkets('0', '100');
-			console.log(allMarkets);
-			for (let i = 0; i < allMarkets.length; i++) {
-				let market = await SportPositionalMarketContract.at(allMarkets[i]);
-				let tags = await market.getTags();
-				let gameDetails = await market.getGameDetails();
-				console.log('market ', i, ' : ', market.address);
-				console.log('  tag1: ', parseInt(tags[0]));
-				console.log('  tag2: ', parseInt(tags[1]));
-				console.log('  gameDetails: ', gameDetails[1].toString());
-				console.log('  \n');
-			}
+			// console.log(allMarkets);
+			// for (let i = 0; i < allMarkets.length; i++) {
+			// 	let market = await SportPositionalMarketContract.at(allMarkets[i]);
+			// 	let tags = await market.getTags();
+			// 	let gameDetails = await market.getGameDetails();
+			// 	console.log('market ', i, ' : ', market.address);
+			// 	console.log('  tag1: ', parseInt(tags[0]));
+			// 	console.log('  tag2: ', parseInt(tags[1]));
+			// 	console.log('  gameDetails: ', gameDetails[1].toString());
+			// 	console.log('  \n');
+			// }
 			// console.log(mainMarketSpreadChildMarket);
 			// console.log(mainMarketTotalChildMarket);
 
@@ -1041,6 +1041,15 @@ contract('ParlayAMM', (accounts) => {
 				parlayPositions,
 				totalSUSDToPay
 			);
+			let calculateSkew = await ParlayAMM.calculateSkewImpact(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+
+			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
+			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
+
 			let buyParlayTX = await ParlayAMM.buyFromParlay(
 				parlayMarketsAddress,
 				parlayPositions,
@@ -1082,13 +1091,22 @@ contract('ParlayAMM', (accounts) => {
 				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
 			}
 			let slippage = toUnit('0.01');
-			console.log('buyQuote --->');
+			// console.log('buyQuote --->');
 			let result = await ParlayAMM.buyQuoteFromParlay(
 				parlayMarketsAddress,
 				parlayPositions,
 				totalSUSDToPay
 			);
-			console.log('buyTX --->');
+
+			let calculateSkew = await ParlayAMM.calculateSkewImpact(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+
+			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
+			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
+			// console.log('buyTX --->');
 			let buyParlayTX = await ParlayAMM.buyFromParlay(
 				parlayMarketsAddress,
 				parlayPositions,
@@ -1177,7 +1195,7 @@ contract('ParlayAMM', (accounts) => {
 				parlayMarketsAddress[i] = parlayMarkets3[i].address.toString().replace('0X', '0x');
 			}
 			let slippage = toUnit('0.01');
-			console.log('buyQuote --->');
+			// console.log('buyQuote --->');
 			await expect(
 				ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
 			).to.be.revertedWith('SameTeamOnParlay');
@@ -1196,13 +1214,21 @@ contract('ParlayAMM', (accounts) => {
 				parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().replace('0X', '0x');
 			}
 			let slippage = toUnit('0.01');
-			console.log('buyQuote --->');
+			// console.log('buyQuote --->');
 			let result = await ParlayAMM.buyQuoteFromParlay(
 				parlayMarketsAddress,
 				parlayPositions,
 				totalSUSDToPay
 			);
-			console.log('buyTX --->');
+			let calculateSkew = await ParlayAMM.calculateSkewImpact(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+
+			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
+			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
+			// console.log('buyTX --->');
 			let buyParlayTX = await ParlayAMM.buyFromParlay(
 				parlayMarketsAddress,
 				parlayPositions,
@@ -1957,98 +1983,5 @@ contract('ParlayAMM', (accounts) => {
 				// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
 			});
 		});
-
-		// describe('Exercise whole parlay with single cancellation | 2x same games', () => {
-		// 	beforeEach(async () => {
-		// 		await fastForward(game1NBATime - (await currentTime()) - SECOND);
-		// 		// await fastForward((await currentTime()) - SECOND);
-		// 		answer = await SportPositionalMarketManager.numActiveMarkets();
-		// 		assert.equal(answer.toString(), '15');
-		// 		let totalSUSDToPay = toUnit('10');
-		// 		parlayPositions = ['1', '1', '1', '1', '1'];
-		// 		let parlayPositions2 = ['1', '1', '1', '1'];
-		// 		let parlayMarketsAddress = [];
-		// 		for (let i = 0; i < parlayMarkets4.length; i++) {
-		// 			parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().toUpperCase();
-		// 			parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().replace('0X', '0x');
-		// 		}
-		// 		let slippage = toUnit('0.01');
-		// 		console.log('buyQuote --->');
-		// 		let result = await ParlayAMM.buyQuoteFromParlay(
-		// 			parlayMarketsAddress,
-		// 			parlayPositions,
-		// 			totalSUSDToPay
-		// 		);
-		// 		console.log('buyTX --->');
-		// 		let buyParlayTX = await ParlayAMM.buyFromParlay(
-		// 			parlayMarketsAddress,
-		// 			parlayPositions,
-		// 			totalSUSDToPay,
-		// 			slippage,
-		// 			result[1],
-		// 			ZERO_ADDRESS,
-		// 			{ from: first }
-		// 		);
-		// 		console.log("Times:");
-		// 		console.log(fightTime);
-		// 		console.log(await currentTime());
-		// 		console.log(game1NBATime);
-		// 		console.log(gameFootballTime);
-		// 		await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-		// 		let resolveMatrix = ['2', '1', '0', '2', '1'];
-		// 		console.log('Games resolved: ', resolveMatrix, '\n');
-		// 		// parlayPositions = ['0', '0', '0', '0'];
-		// 		let gameId;
-		// 		let homeResult = '0';
-		// 		let awayResult = '0';
-		// 		for (let i = 0; i < parlayMarkets4.length; i++) {
-		// 			homeResult = '0';
-		// 			awayResult = '0';
-		// 			gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets4[i].address);
-		// 			if (resolveMatrix[i] == '1') {
-		// 				homeResult = '1';
-		// 			} else if (resolveMatrix[i] == '2') {
-		// 				awayResult = '1';
-		// 			} else if (resolveMatrix[i] == '3') {
-		// 				homeResult = '1';
-		// 				awayResult = '1';
-		// 			}
-		// 			// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-		// 			const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
-		// 				parlayMarkets4[i].address,
-		// 				resolveMatrix[i],
-		// 				homeResult,
-		// 				awayResult,
-		// 				false,
-		// 				{ from: owner }
-		// 			);
-		// 		}
-		// 	});
-		// 	it('Parlay exercised (balances checked)', async () => {
-		// 		let userBalanceBefore = toUnit('1000');
-		// 		let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
-		// 		await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
-		// 		let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
-		// 		let userBalanceAfter = await Thales.balanceOf(first);
-		// 		console.log(
-		// 			'\n\nAMM Balance before: ',
-		// 			fromUnit(balanceBefore),
-		// 			'\nAMM Balance after: ',
-		// 			fromUnit(balanceAfter),
-		// 			'\nAMM change: ',
-		// 			fromUnit(balanceAfter.sub(toUnit(20000)))
-		// 		);
-		// 		console.log(
-		// 			'User balance before: ',
-		// 			fromUnit(userBalanceBefore),
-		// 			'\nUser balance after: ',
-		// 			fromUnit(userBalanceAfter),
-		// 			'\nUser won: ',
-		// 			fromUnit(userBalanceAfter.sub(userBalanceBefore))
-		// 		);
-
-		// 		// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
-		// 	});
-		// });
 	});
 });

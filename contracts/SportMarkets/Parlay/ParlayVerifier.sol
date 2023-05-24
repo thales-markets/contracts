@@ -286,18 +286,16 @@ contract ParlayVerifier {
     ) external view returns (uint resultSkewImpact) {
         uint newBuyAmount;
         (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, ISportsAMM(_sportsAMM), _parlayAMM));
-        if (_oldSkew != (ONE - sgpFee)) {
-            if (sgpFee > 0) {
-                _totalQuote = (_totalQuote * sgpFee) / ONE;
-                newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
-            } else {
-                newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
-            }
-            resultSkewImpact = newBuyAmount > _totalBuyAmount
-                ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
-                : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
-            resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : resultSkewImpact - _oldSkew;
+        if (sgpFee > 0) {
+            _totalQuote = (_totalQuote * sgpFee) / ONE;
+            newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
+        } else {
+            newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
         }
+        resultSkewImpact = newBuyAmount > _totalBuyAmount
+            ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
+            : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
+        resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : 0;
     }
 
     function _checkRisk(

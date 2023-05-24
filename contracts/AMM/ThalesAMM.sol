@@ -428,12 +428,16 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             IPositionalMarket(market).burnOptionsMaximum();
         }
 
-        uint safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - (pricePaid);
+        uint safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - pricePaid;
+        uint referrerShare = (pricePaid * ONE) / (ONE - (referrerFee)) - pricePaid;
         if (safeBoxImpact == 0) {
             safeBoxShare = 0;
         }
 
-        liquidityPool.commitTrade(market, pricePaid + safeBoxShare);
+        liquidityPool.commitTrade(
+            market,
+            IPositionalMarketManager(manager).reverseTransformCollateral(pricePaid + safeBoxShare + referrerShare)
+        );
         sUSD.safeTransfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
@@ -517,7 +521,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         if (skipCheck || basePrice < maxSupportedPrice) {
             basePrice = basePrice + min_spread;
             if (basePrice < ONE) {
-                uint discountedPrice = (basePrice * (ONE - max_spread / 4)) / ONE;
+                uint discountedPrice = (basePrice * (ONE - max_spread / 2)) / ONE;
                 uint balance = ammUtils.balanceOfPositionOnMarket(market, position, liquidityPool.getMarketPool(market));
                 uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
 

@@ -262,7 +262,11 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                         positions[0] = j > 1 ? (j > 3 ? 2 : 1) : 0;
                         positions[1] = j % 2;
                         (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
-                            .buyQuoteFromParlay(markets, positions, ONE);
+                            .buyQuoteFromParlay(
+                                markets,
+                                positions,
+                                ISportPositionalMarketManager(manager).transformCollateral(ONE)
+                            );
                     }
                     newCombinedOdds.tags[0] = 0;
                     totalCombainedOdds[0] = newCombinedOdds;
@@ -289,7 +293,11 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                         positions[0] = j > 1 ? 1 : 0;
                         positions[1] = j % 2;
                         (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
-                            .buyQuoteFromParlay(markets, positions, ONE);
+                            .buyQuoteFromParlay(
+                                markets,
+                                positions,
+                                ISportPositionalMarketManager(manager).transformCollateral(ONE)
+                            );
                     }
                     totalCombainedOdds[1] = newCombinedOdds;
                 }

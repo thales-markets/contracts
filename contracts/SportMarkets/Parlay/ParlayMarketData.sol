@@ -19,6 +19,13 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         uint sUSDPaid;
     }
 
+    struct SGPFees {
+        uint tag;
+        uint sgpMoneylineTotals;
+        uint sgpMoneylineSpreads;
+        uint sgpSpreadsTotals;
+    }
+
     mapping(address => mapping(uint => AddressSetLib.AddressSet)) internal _parlaysInGamePosition;
 
     mapping(address => mapping(uint => mapping(uint => address))) public gameAddressPositionParlay;
@@ -299,6 +306,52 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         address _parlay
     ) public view returns (bool containsParlay) {
         containsParlay = _parlaysInGamePosition[_game][_position].contains(_parlay);
+    }
+
+    function getAllSGPFees() external view returns (SGPFees[] memory sgpFees) {
+        uint numberOfFeesSet;
+        uint[] memory indexes = new uint[](100);
+        for (uint i = 9001; i < 9999; i++) {
+            if (
+                IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 0, 10002) > 0 ||
+                IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 0, 10001) > 0 ||
+                IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 10001, 10002) > 0
+            ) {
+                indexes[numberOfFeesSet] = i;
+                ++numberOfFeesSet;
+            }
+        }
+        if (numberOfFeesSet > 0) {
+            sgpFees = new SGPFees[](numberOfFeesSet);
+            for (uint i = 0; i < numberOfFeesSet; i++) {
+                sgpFees[i].tag = indexes[i];
+                sgpFees[i].sgpMoneylineTotals = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(
+                    indexes[i],
+                    0,
+                    10002
+                );
+                sgpFees[i].sgpMoneylineSpreads = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(
+                    indexes[i],
+                    0,
+                    10001
+                );
+                sgpFees[i].sgpSpreadsTotals = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(
+                    indexes[i],
+                    10001,
+                    10002
+                );
+            }
+        }
+    }
+
+    function getAllSGPFeesForBatch(uint[] calldata tags) external view returns (SGPFees[] memory sgpFees) {
+        sgpFees = new SGPFees[](tags.length);
+        for (uint i = 0; i < tags.length; i++) {
+            sgpFees[i].tag = tags[i];
+            sgpFees[i].sgpMoneylineTotals = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(tags[i], 0, 10002);
+            sgpFees[i].sgpMoneylineSpreads = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(tags[i], 0, 10001);
+            sgpFees[i].sgpSpreadsTotals = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(tags[i], 10001, 10002);
+        }
     }
 
     function _getAllParlaysForGamePosition(address _sportMarket, uint _position)

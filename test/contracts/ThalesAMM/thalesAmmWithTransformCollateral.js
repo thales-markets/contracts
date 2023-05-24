@@ -343,7 +343,7 @@ contract('ThalesAMM', (accounts) => {
 			ammUpBalance = await up.balanceOf(minter);
 			console.log('up balance minter sell:' + ammUpBalance / 1e18);
 
-			const minterQuantity = toBN(1000 * 1e6); //1000 USDC
+			const minterQuantity = toBN(1001 * 1e6); //1000 USDC
 			await testUSDC.mint(minter, minterQuantity);
 			await testUSDC.approve(manager.address, minterQuantity, { from: minter });
 			await newMarket.mint(toUnit(1000), {

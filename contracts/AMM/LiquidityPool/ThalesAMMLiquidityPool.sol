@@ -577,6 +577,12 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         }
     }
 
+    /// @notice Return the count of users in current round
+    /// @return _the count of users in current round
+    function getUsersCountInCurrentRound() external view returns (uint) {
+        return usersPerRound[round].length;
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _transformCollateral(uint value) internal view returns (uint) {

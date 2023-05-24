@@ -412,7 +412,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     }
 
     /// @notice Iterate all markets in the current round and exercise those ready to be exercised
-    function exerciseMarketsReadyToExercised() public roundClosingNotPrepared {
+    function exerciseMarketsReadyToExercised() public whenNotPaused roundClosingNotPrepared {
         SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
         ISportPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
@@ -422,6 +422,33 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
                 if (market.resolved()) {
                     poolRound.exerciseMarketReadyToExercised(market);
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
+                }
+            }
+        }
+    }
+
+    /// @notice Exercises markets in a round
+    /// @param batchSize number of markets to be processed
+    function exerciseMarketsReadyToExercisedBatch(uint batchSize)
+        external
+        nonReentrant
+        whenNotPaused
+        roundClosingNotPrepared
+    {
+        require(batchSize > 0, "batchSize has to be greater than 0");
+
+        SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
+        uint count = 0;
+        ISportPositionalMarket market;
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            if (count == batchSize) break;
+            address marketAddress = tradingMarketsPerRound[round][i];
+            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+                market = ISportPositionalMarket(marketAddress);
+                if (market.resolved()) {
+                    poolRound.exerciseMarketReadyToExercised(market);
+                    marketAlreadyExercisedInRound[round][marketAddress] = true;
+                    count += 1;
                 }
             }
         }

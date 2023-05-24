@@ -268,6 +268,82 @@
   },
   {
     "inputs": [],
+    "name": "getAllSGPFees",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "tag",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sgpMoneylineTotals",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sgpMoneylineSpreads",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sgpSpreadsTotals",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ParlayMarketData.SGPFees[]",
+        "name": "sgpFees",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "tags",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "getAllSGPFeesForBatch",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "tag",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sgpMoneylineTotals",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sgpMoneylineSpreads",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sgpSpreadsTotals",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ParlayMarketData.SGPFees[]",
+        "name": "sgpFees",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getParlayAMMParameters",
     "outputs": [
       {

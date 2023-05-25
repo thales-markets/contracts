@@ -1239,6 +1239,8 @@ contract('ParlayAMM', (accounts) => {
 					totalSUSDToPay
 				);
 				console.log('result quote: ', fromUnit(result.totalBuyAmount));
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
 				let buyParlayTX = await ParlayAMM.buyFromParlay(
 					parlayMarketsAddress,
 					parlayPositions,
@@ -1248,6 +1250,16 @@ contract('ParlayAMM', (accounts) => {
 					ZERO_ADDRESS,
 					{ from: first }
 				);
+				let roundBalanceAfter = await Thales.balanceOf(roundPool_2_Address);
+				console.log(
+					'\n\nRound Balance before: ',
+					fromUnit(roundBalanceBefore),
+					'\nRound Balance after: ',
+					fromUnit(roundBalanceAfter),
+					'\nRound change: ',
+					fromUnit(roundBalanceAfter.sub(roundBalanceBefore))
+				);
+
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
 				parlaySingleMarketAddress = activeParlays[0];
 				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
@@ -1296,11 +1308,22 @@ contract('ParlayAMM', (accounts) => {
 				}
 			});
 			it('Parlay exercised (balances checked)', async () => {
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
 				let userBalanceBefore = toUnit('1000');
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
 				let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+				let roundBalanceAfter = await Thales.balanceOf(roundPool_2_Address);
 				let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
 				let userBalanceAfter = await Thales.balanceOf(first);
+				console.log(
+					'\n\nRound Balance before: ',
+					fromUnit(roundBalanceBefore),
+					'\nRound Balance after: ',
+					fromUnit(roundBalanceAfter),
+					'\nRound change: ',
+					fromUnit(roundBalanceAfter.sub(roundBalanceBefore))
+				);
 				console.log(
 					'\n\nAMM Balance before: ',
 					fromUnit(balanceBefore),

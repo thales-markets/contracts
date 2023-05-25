@@ -215,10 +215,10 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     function transferToPool(address _market, uint _amount) external nonReentrant whenNotPaused roundClosingNotPrepared {
         uint marketRound = getMarketRound(_market);
-        console.log(">>> sending ",_amount);
-        console.log(">>> to round ",marketRound);
+        console.log(">>> sending ", _amount);
+        console.log(">>> to round ", marketRound);
         address liquidityPoolRound = marketRound <= 1 ? defaultLiquidityProvider : _getOrCreateRoundPool(marketRound);
-        console.log(">>> with address ",liquidityPoolRound);
+        console.log(">>> with address ", liquidityPoolRound);
         sUSD.transferFrom(address(parlayAMM), liquidityPoolRound, _amount);
         marketAlreadyExercisedInRound[round][_market] = true;
     }
@@ -452,15 +452,19 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     /// @notice Checks if all conditions are met to close the round
     /// @return bool
     function canCloseCurrentRound() public view returns (bool) {
+        console.log(">>> timestamp: ", block.timestamp);
         if (!started || block.timestamp < getRoundEndTime(round)) {
+            console.log(">>> entered in false");
             return false;
         }
-        ISportPositionalMarket market;
+        ParlayMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
             address marketAddress = tradingMarketsPerRound[round][i];
+            console.log(">>> market address: ", marketAddress);
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
-                market = ISportPositionalMarket(marketAddress);
-                if (!market.resolved()) {
+                market = ParlayMarket(marketAddress);
+                console.log(">>> not exercised");
+                if (!market.parlayAlreadyLost() && !market.fundsIssued()) {
                     return false;
                 }
             }
@@ -532,7 +536,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
                     console.log(">>> _round:", _round);
                 } else {
                     if (((maturity - firstRoundStartTime) / roundLength + 2) != _round) {
-                    console.log(">>> entered != _round");
+                        console.log(">>> entered != _round");
                         _round = 1;
                         console.log(">>> _round:", _round);
                         break;

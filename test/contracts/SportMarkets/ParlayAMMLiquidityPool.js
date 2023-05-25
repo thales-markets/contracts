@@ -1307,7 +1307,7 @@ contract('ParlayAMM', (accounts) => {
 					}
 				}
 			});
-			it('Parlay exercised (balances checked)', async () => {
+			it('Parlay exercised, amounts per round checked', async () => {
 				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
 				let userBalanceBefore = toUnit('1000');
 				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
@@ -1360,6 +1360,38 @@ contract('ParlayAMM', (accounts) => {
 				calculatedQuote = calculatedQuote / 0.95;
 				console.log('calculatedQuote: ', calculatedQuote);
 				let calculatedAmount = feesApplied / calculatedQuote;
+			});
+
+			it('Close round', async () => {
+				let thisRound = await ParlayAMMLiquidityPool.round();
+				let roundClosure = await ParlayAMMLiquidityPool.getRoundEndTime(thisRound);
+				console.log('Current round:', thisRound.toString());
+				console.log('Closing time:', roundClosure.toString());
+				console.log('Current time:', await currentTime());
+				let canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, false);
+				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+				await fastForward(await currentTime());
+				console.log('Current time:', await currentTime());
+				canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, true);
+
+				await ParlayAMMLiquidityPool.prepareRoundClosing();
+				let roundClosingPrepared = await ParlayAMMLiquidityPool.roundClosingPrepared();
+				console.log('Round closing prepared: ', roundClosingPrepared);
+				assert.equal(roundClosingPrepared, true);
+
+				await ParlayAMMLiquidityPool.processRoundClosingBatch(20);
+				let usersProcessedInRound = await ParlayAMMLiquidityPool.usersProcessedInRound();
+				console.log('UsersProcessed: ', usersProcessedInRound.toString());
+				assert.equal(usersProcessedInRound.toString(), '1');
+
+				await ParlayAMMLiquidityPool.closeRound();
+				thisRound = await ParlayAMMLiquidityPool.round();
+				console.log('Current round:', thisRound.toString());
+				assert.equal(thisRound.toString(), '3');
 			});
 		});
 

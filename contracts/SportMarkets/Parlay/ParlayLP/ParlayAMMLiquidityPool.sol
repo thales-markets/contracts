@@ -555,6 +555,10 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         return usersPerRound[round].length;
     }
 
+    function getTradingMarketsPerRound(uint _round) external view returns (uint numOfMarkets) {
+        numOfMarkets = tradingMarketsPerRound[_round].length;
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _transformCollateral(uint value) internal view returns (uint) {

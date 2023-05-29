@@ -1551,6 +1551,11 @@ contract('ParlayAMM', (accounts) => {
 				// await fastForward(await currentTime());
 				// console.log('Current time:', await currentTime());
 				// canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+
+				let tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
+				console.log('Trading Markets: ', tradingMarketsPerRound.toString());
 				console.log('Can close round: ', canClose);
 				assert.equal(canClose, true);
 
@@ -1567,7 +1572,18 @@ contract('ParlayAMM', (accounts) => {
 				await ParlayAMMLiquidityPool.closeRound();
 				thisRound = await ParlayAMMLiquidityPool.round();
 				console.log('Current round:', thisRound.toString());
+
 				assert.equal(thisRound.toString(), '3');
+				let profitPerRound = await ParlayAMMLiquidityPool.profitAndLossPerRound(2);
+				let cummulativeBetweenRounds = await ParlayAMMLiquidityPool.cumulativePnLBetweenRounds(
+					2,
+					3
+				);
+				console.log('PnL in Round 2: ', fromUnit(profitPerRound));
+				console.log('cummulative PnL between Round 2 & 3: ', fromUnit(cummulativeBetweenRounds));
+				assert.equal(fromUnit(cummulativeBetweenRounds), '0');
+				console.log('Previous balance Round 2: ', fromUnit(roundBalanceBefore));
+				assert.equal(fromUnit(profitPerRound), '1');
 			});
 		});
 

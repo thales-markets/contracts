@@ -679,6 +679,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_round",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTradingMarketsPerRound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "numOfMarkets",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getUsersCountInCurrentRound",
     "outputs": [

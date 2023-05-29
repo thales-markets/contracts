@@ -103,7 +103,19 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 if (invalidOdds[_main] || consumer.isPausedByCanceledStatus(_main)) {
                     invalidOdds[_main] = false;
                     consumer.setPausedByCanceledStatus(_main, false);
-                    _pauseOrUnpauseMarkets(_game, _main, false, true);
+                    if (
+                        !verifier.areOddsArrayInThreshold(
+                            _sportId,
+                            currentNormalizedOdd,
+                            normalizedOddsForMarket[_main],
+                            consumer.isSportTwoPositionsSport(_sportId)
+                        )
+                    ) {
+                        backupOdds[_game.gameId] = currentOddsBeforeSave;
+                        emit OddsCircuitBreaker(_main, _game.gameId);
+                    } else {
+                        _pauseOrUnpauseMarkets(_game, _main, false, true);
+                    }
                 }
             } else if (
                 //if market is not paused but odd are not in threshold, pause parket

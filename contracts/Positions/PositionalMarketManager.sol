@@ -216,6 +216,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     ) external override {
         //only to be called by markets themselves
         require(isKnownMarket(address(msg.sender)), "Market unknown.");
+        amount = needsTransformingCollateral ? amount + 1 : amount;
         bool success = sUSD.transferFrom(sender, receiver, amount);
         if (!success) {
             revert("TransferFrom function failed");

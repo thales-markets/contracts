@@ -234,7 +234,6 @@ contract ParlayVerifier {
                 ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
                 : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
             buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
-            // finalQuotes = _applySkewImpactBatch(finalQuotes, (ONE*skewImpact/(4*finalQuotes.length))/ONE, (expectedPayout > totalBuyAmount));
             totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
             _calculateRisk(params.sportMarkets, (totalBuyAmount - params.sUSDAfterFees), params.sportsAmm.parlayAMM());
         } else {
@@ -274,6 +273,29 @@ contract ParlayVerifier {
         address[] memory sortedAddresses = new address[](_sportMarkets.length);
         sortedAddresses = _sort(_sportMarkets);
         return keccak256(abi.encodePacked(sortedAddresses));
+    }
+
+    function getSkewImpact(
+        address[] memory _sportMarkets,
+        uint _sUSDAfterFees,
+        ISportsAMM _sportsAMM,
+        address _parlayAMM,
+        uint _totalBuyAmount,
+        uint _totalQuote,
+        uint _oldSkew
+    ) external view returns (uint resultSkewImpact) {
+        uint newBuyAmount;
+        (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, ISportsAMM(_sportsAMM), _parlayAMM));
+        if (sgpFee > 0) {
+            _totalQuote = (_totalQuote * sgpFee) / ONE;
+            newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
+        } else {
+            newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
+        }
+        resultSkewImpact = newBuyAmount > _totalBuyAmount
+            ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
+            : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
+        resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : 0;
     }
 
     function _checkRisk(

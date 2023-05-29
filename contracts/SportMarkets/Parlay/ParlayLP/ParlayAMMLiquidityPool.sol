@@ -190,7 +190,8 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         uint marketRound = getMarketRound(market);
         console.log(">>> commitTrade::mrktRound: ", marketRound);
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
-
+        console.log(">>> commitTrade::roundCurrent ", round);
+        console.log(">>> commitTrade::liqPoolAddr: ", liquidityPoolRound);
         // todo
         // if all markets on parlay are traded in a single round use the userLP
         // if markets have different rounds use the defaultLP
@@ -198,10 +199,12 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
         } else if (marketRound > round) {
             uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
+            console.log(">>> commitTrade::poolBalance: ", poolBalance);
             if (poolBalance >= amountToMint) {
                 sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
             } else {
                 uint differenceToLPAsDefault = amountToMint - poolBalance;
+                console.log(">>> commitTrade::deposit: ", differenceToLPAsDefault);
                 _depositAsDefault(differenceToLPAsDefault, liquidityPoolRound, marketRound);
                 sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
             }

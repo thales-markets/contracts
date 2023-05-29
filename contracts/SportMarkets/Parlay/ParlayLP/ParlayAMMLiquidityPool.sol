@@ -188,6 +188,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         amountToMint = needsTransformingCollateral ? amountToMint + 1 : amountToMint;
 
         uint marketRound = getMarketRound(market);
+        console.log(">>> commitTrade::mrktRound: ", marketRound);
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
         // todo

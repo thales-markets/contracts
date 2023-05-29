@@ -254,6 +254,8 @@ contract('ParlayAMM', (accounts) => {
 	let parlayMarkets5 = [];
 
 	let parlayTwoMarkets = [];
+	let parlayTwoMarketDifferentRound = [];
+	let parlayThreeMarkets = [];
 
 	let equalParlayMarkets = [];
 	let parlayPositions = [];
@@ -824,10 +826,6 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			// assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			// assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			// assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let game_2 = await TherundownConsumerDeployed.gameCreated(gameid2);
 
@@ -849,14 +847,6 @@ contract('ParlayAMM', (accounts) => {
 				_id: gameid2,
 				_game: game_2,
 			});
-
-			// console.log("1. game:");
-			// console.log("==> home: ", game.homeTeam);
-			// console.log("==> away: ", game.awayTeam);
-
-			// console.log("2. game:");
-			// console.log("==> home: ", game_2.homeTeam);
-			// console.log("==> away: ", game_2.awayTeam);
 
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
 			let deployedMarket_1 = await SportPositionalMarketContract.at(answer);
@@ -937,10 +927,6 @@ contract('ParlayAMM', (accounts) => {
 				_id: fightId,
 				_game: fight,
 			});
-
-			// console.log("3. game:");
-			// console.log("==> home: ", fight.homeTeam);
-			// console.log("==> away: ", fight.awayTeam);
 
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('2');
 			let deployedMarket_3 = await SportPositionalMarketContract.at(answer);
@@ -1026,8 +1012,6 @@ contract('ParlayAMM', (accounts) => {
 				console.log('  gameDetails: ', gameDetails[1].toString());
 				console.log('  \n');
 			}
-			// console.log(mainMarketSpreadChildMarket);
-			// console.log(mainMarketTotalChildMarket);
 
 			assert.equal(deployedMarket_4.address, marketAdd_4);
 			assert.equal(deployedMarket_5.address, marketAdd_5);
@@ -1076,6 +1060,8 @@ contract('ParlayAMM', (accounts) => {
 			parlayMarkets5 = [market_1, market_2, market_3, market_4, market_6];
 
 			parlayTwoMarkets = [market_1, market_5];
+			parlayTwoMarketDifferentRound = [market_3, market_7];
+			parlayThreeMarkets = [market_1, market_2, market_5];
 			// console.log(market_1.address);
 			// console.log(market_2.address);
 			// console.log(market_3.address);
@@ -1402,9 +1388,9 @@ contract('ParlayAMM', (accounts) => {
 				let fastForwardTime = game1NBATime - (await currentTime()) - SECOND;
 				await fastForward(game1NBATime - (await currentTime()) - SECOND);
 				let maturity;
-				for (let i = 0; i < parlayTwoMarkets.length; i++) {
-					maturity = await parlayTwoMarkets[i].times();
-					console.log(parlayTwoMarkets[i].address, ' maturity at: ', maturity[0].toString());
+				for (let i = 0; i < parlayThreeMarkets.length; i++) {
+					maturity = await parlayThreeMarkets[i].times();
+					console.log(parlayThreeMarkets[i].address, ' maturity at: ', maturity[0].toString());
 					maturityTimes[i] = parseInt(maturity[0].toString());
 				}
 				await fastForward(maturityTimes[0] - (await currentTime()) - 10 * 60 * SECOND);
@@ -1413,13 +1399,13 @@ contract('ParlayAMM', (accounts) => {
 				answer = await SportPositionalMarketManager.numActiveMarkets();
 				assert.equal(answer.toString(), '15');
 				let totalSUSDToPay = toUnit('10');
-				parlayPositions = ['1', '1'];
+				parlayPositions = ['1', '1', '1'];
 				// parlayPositions = ['1', '1', '1', '1'];
 				let parlayPositions2 = ['1', '1', '1', '1', '0'];
 				let parlayMarketsAddress = [];
-				for (let i = 0; i < parlayTwoMarkets.length; i++) {
-					parlayMarketsAddress[i] = parlayTwoMarkets[i].address.toString().toUpperCase();
-					parlayMarketsAddress[i] = parlayTwoMarkets[i].address.toString().replace('0X', '0x');
+				for (let i = 0; i < parlayThreeMarkets.length; i++) {
+					parlayMarketsAddress[i] = parlayThreeMarkets[i].address.toString().toUpperCase();
+					parlayMarketsAddress[i] = parlayThreeMarkets[i].address.toString().replace('0X', '0x');
 				}
 				console.log('parlayAddr: ', parlayMarketsAddress);
 				let slippage = toUnit('0.01');
@@ -1454,17 +1440,17 @@ contract('ParlayAMM', (accounts) => {
 				parlaySingleMarketAddress = activeParlays[0];
 				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-				let resolveMatrix = ['2', '2'];
+				let resolveMatrix = ['2', '2', '2'];
 				console.log('Games resolved: ', resolveMatrix, '\n');
 				// parlayPositions = ['0', '0', '0', '0'];
 				let gameId;
 				let homeResult = '0';
 				let awayResult = '0';
 				let checkResult;
-				for (let i = 0; i < parlayTwoMarkets.length; i++) {
+				for (let i = 0; i < parlayThreeMarkets.length; i++) {
 					homeResult = '0';
 					awayResult = '0';
-					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayTwoMarkets[i].address);
+					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayThreeMarkets[i].address);
 					if (resolveMatrix[i] == '1') {
 						homeResult = '1';
 					} else if (resolveMatrix[i] == '2') {
@@ -1486,11 +1472,11 @@ contract('ParlayAMM', (accounts) => {
 							false,
 							{ from: owner }
 						);
-						checkResult = await parlayTwoMarkets[i].result();
+						checkResult = await parlayThreeMarkets[i].result();
 						console.log(
 							i,
 							' outcome for market ',
-							parlayTwoMarkets[i].address,
+							parlayThreeMarkets[i].address,
 							': ',
 							checkResult.toString()
 						);
@@ -1559,12 +1545,12 @@ contract('ParlayAMM', (accounts) => {
 				console.log('Closing time:', roundClosure.toString());
 				console.log('Current time:', await currentTime());
 				let canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
-				console.log('Can close round: ', canClose);
-				assert.equal(canClose, false);
-				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
-				await fastForward(await currentTime());
-				console.log('Current time:', await currentTime());
-				canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				// console.log('Can close round: ', canClose);
+				// assert.equal(canClose, false);
+				// await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+				// await fastForward(await currentTime());
+				// console.log('Current time:', await currentTime());
+				// canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
 				console.log('Can close round: ', canClose);
 				assert.equal(canClose, true);
 

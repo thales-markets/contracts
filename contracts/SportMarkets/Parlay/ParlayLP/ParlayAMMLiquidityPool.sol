@@ -382,8 +382,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     /// @notice Iterate all markets in the current round and exercise those ready to be exercised
     function exerciseMarketsReadyToExercised() public roundClosingNotPrepared {
-        // todo
-        // only matured alreadyLost parlays
         ParlayAMMLiquidityPoolRound poolRound = ParlayAMMLiquidityPoolRound(roundPools[round]);
         ParlayMarket market;
         address marketAddress;
@@ -392,9 +390,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
                 if (market.hasMarketLostButHasExercisableWinningPositions()) {
-                    // poolRound.exerciseMarketReadyToExercised(marketAddress);
-
-                    marketAlreadyExercisedInRound[round][marketAddress] = true;
+                    parlayAMM.exerciseParlay(marketAddress);
                 }
             }
         }
@@ -476,23 +472,18 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     /// @notice Iterate all markets in the current round and return true if at least one can be exercised
     function hasMarketsReadyToBeExercised() public view returns (bool) {
-        // todo:
-        // getMaturedMarkets
-
-        // SportAMMLiquidityPoolRound poolRound = SportAMMLiquidityPoolRound(roundPools[round]);
-        // ISportPositionalMarket market;
-        // for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-        //     address marketAddress = tradingMarketsPerRound[round][i];
-        //     if (!marketAlreadyExercisedInRound[round][marketAddress]) {
-        //         market = ISportPositionalMarket(marketAddress);
-        //         if (market.resolved()) {
-        //             (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(poolRound));
-        //             if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
-        //                 return true;
-        //             }
-        //         }
-        //     }
-        // }
+        ParlayMarket market;
+        address marketAddress;
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            marketAddress = tradingMarketsPerRound[round][i];
+            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+                market = ParlayMarket(marketAddress);
+                console.log(">>> market: ", marketAddress);
+                if (market.hasMarketLostButHasExercisableWinningPositions()) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 

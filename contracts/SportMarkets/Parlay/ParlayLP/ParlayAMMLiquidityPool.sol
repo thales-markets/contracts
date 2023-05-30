@@ -192,9 +192,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
         console.log(">>> commitTrade::roundCurrent ", round);
         console.log(">>> commitTrade::liqPoolAddr: ", liquidityPoolRound);
-        // todo
-        // if all markets on parlay are traded in a single round use the userLP
-        // if markets have different rounds use the defaultLP
         if (marketRound == round) {
             sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
         } else if (marketRound > round) {
@@ -533,7 +530,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             ISportPositionalMarket marketContract = ISportPositionalMarket(sportMarket);
             (uint maturity, ) = marketContract.times();
             console.log(i, " mrkt maturity ", maturity);
-            //todo check the round values in uint tests
             if (maturity > firstRoundStartTime) {
                 if (i == 0) {
                     console.log(">>> entered == 0");

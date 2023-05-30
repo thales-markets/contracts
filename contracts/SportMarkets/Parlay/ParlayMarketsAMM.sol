@@ -328,8 +328,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint amount = sUSD.balanceOf(address(this)) - amountBefore;
         if (amount > 0) {
             IParlayAMMLiquidityPool(parlayLP).transferToPool(_parlayMarket, amount);
-            //todo
-            // send to AMM Liquidity
         }
     }
 

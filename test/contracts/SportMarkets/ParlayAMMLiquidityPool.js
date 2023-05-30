@@ -1860,47 +1860,93 @@ contract('ParlayAMM', (accounts) => {
 				);
 			});
 
-			// it('Close round', async () => {
-			// 	let thisRound = await ParlayAMMLiquidityPool.round();
-			// 	let roundClosure = await ParlayAMMLiquidityPool.getRoundEndTime(thisRound);
-			// 	console.log('Current round:', thisRound.toString());
-			// 	console.log('Closing time:', roundClosure.toString());
-			// 	console.log('Current time:', await currentTime());
-			// 	let canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
-			// 	let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
-			// 	let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+			it('Close round', async () => {
+				let thisRound = await ParlayAMMLiquidityPool.round();
+				let roundClosure = await ParlayAMMLiquidityPool.getRoundEndTime(thisRound);
+				console.log('Current round:', thisRound.toString());
+				console.log('Closing time:', roundClosure.toString());
+				console.log('Current time:', await currentTime());
+				let canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
 
-			// 	let tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
-			// 	console.log('Trading Markets: ', tradingMarketsPerRound.toString());
-			// 	console.log('Can close round: ', canClose);
-			// 	assert.equal(canClose, true);
+				let tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
+				console.log('Trading Markets: ', tradingMarketsPerRound.toString());
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, false);
+				console.log('Exercising: ', parlaySingleMarket.address);
+				console.log('Exercising: ', parlaySingleMarket2.address);
+				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+				await ParlayAMM.exerciseParlay(parlaySingleMarket2.address);
+				console.log('-> both markets exercised');
 
-			// 	await ParlayAMMLiquidityPool.prepareRoundClosing();
-			// 	let roundClosingPrepared = await ParlayAMMLiquidityPool.roundClosingPrepared();
-			// 	console.log('Round closing prepared: ', roundClosingPrepared);
-			// 	assert.equal(roundClosingPrepared, true);
+				canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, true);
 
-			// 	await ParlayAMMLiquidityPool.processRoundClosingBatch(20);
-			// 	let usersProcessedInRound = await ParlayAMMLiquidityPool.usersProcessedInRound();
-			// 	console.log('UsersProcessed: ', usersProcessedInRound.toString());
-			// 	assert.equal(usersProcessedInRound.toString(), '1');
+				await ParlayAMMLiquidityPool.prepareRoundClosing();
+				let roundClosingPrepared = await ParlayAMMLiquidityPool.roundClosingPrepared();
+				console.log('Round closing prepared: ', roundClosingPrepared);
+				assert.equal(roundClosingPrepared, true);
 
-			// 	await ParlayAMMLiquidityPool.closeRound();
-			// 	thisRound = await ParlayAMMLiquidityPool.round();
-			// 	console.log('Current round:', thisRound.toString());
+				await ParlayAMMLiquidityPool.processRoundClosingBatch(20);
+				let usersProcessedInRound = await ParlayAMMLiquidityPool.usersProcessedInRound();
+				console.log('UsersProcessed: ', usersProcessedInRound.toString());
+				assert.equal(usersProcessedInRound.toString(), '1');
 
-			// 	assert.equal(thisRound.toString(), '3');
-			// 	let profitPerRound = await ParlayAMMLiquidityPool.profitAndLossPerRound(2);
-			// 	let cummulativeBetweenRounds = await ParlayAMMLiquidityPool.cumulativePnLBetweenRounds(
-			// 		2,
-			// 		3
-			// 	);
-			// 	console.log('PnL in Round 2: ', fromUnit(profitPerRound));
-			// 	console.log('cummulative PnL between Round 2 & 3: ', fromUnit(cummulativeBetweenRounds));
-			// 	assert.equal(fromUnit(cummulativeBetweenRounds), '0');
-			// 	console.log('Previous balance Round 2: ', fromUnit(roundBalanceBefore));
-			// 	assert.equal(fromUnit(profitPerRound), '1');
-			// });
+				await ParlayAMMLiquidityPool.closeRound();
+				thisRound = await ParlayAMMLiquidityPool.round();
+				console.log('Current round:', thisRound.toString());
+
+				assert.equal(thisRound.toString(), '3');
+				let profitPerRound = await ParlayAMMLiquidityPool.profitAndLossPerRound(2);
+				let cummulativeBetweenRounds = await ParlayAMMLiquidityPool.cumulativePnLBetweenRounds(
+					2,
+					3
+				);
+				console.log('PnL in Round 2: ', fromUnit(profitPerRound));
+				console.log('cummulative PnL between Round 2 & 3: ', fromUnit(cummulativeBetweenRounds));
+				assert.equal(fromUnit(cummulativeBetweenRounds), '0');
+				console.log('Previous balance Round 2: ', fromUnit(roundBalanceBefore));
+
+				console.log('Round 2 closed, closing Round 3 ===> ');
+				// assert.equal(fromUnit(profitPerRound), '1');
+				thisRound = await ParlayAMMLiquidityPool.round();
+				roundClosure = await ParlayAMMLiquidityPool.getRoundEndTime(thisRound);
+				console.log('Current round:', thisRound.toString());
+				console.log('Closing time:', roundClosure.toString());
+				console.log('Current time:', await currentTime());
+				canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+
+				tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
+				console.log('Trading Markets: ', tradingMarketsPerRound.toString());
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, true);
+
+				await ParlayAMMLiquidityPool.prepareRoundClosing();
+				roundClosingPrepared = await ParlayAMMLiquidityPool.roundClosingPrepared();
+				console.log('Round closing prepared: ', roundClosingPrepared);
+				assert.equal(roundClosingPrepared, true);
+
+				await ParlayAMMLiquidityPool.processRoundClosingBatch(20);
+				usersProcessedInRound = await ParlayAMMLiquidityPool.usersProcessedInRound();
+				console.log('UsersProcessed: ', usersProcessedInRound.toString());
+				assert.equal(usersProcessedInRound.toString(), '1');
+
+				await ParlayAMMLiquidityPool.closeRound();
+				thisRound = await ParlayAMMLiquidityPool.round();
+				console.log('Current round:', thisRound.toString());
+
+				assert.equal(thisRound.toString(), '4');
+				profitPerRound = await ParlayAMMLiquidityPool.profitAndLossPerRound(3);
+				cummulativeBetweenRounds = await ParlayAMMLiquidityPool.cumulativePnLBetweenRounds(3, 4);
+				console.log('PnL in Round 3: ', fromUnit(profitPerRound));
+				console.log('cummulative PnL between Round 3 & 4: ', fromUnit(cummulativeBetweenRounds));
+				// assert.equal(fromUnit(cummulativeBetweenRounds), '0');
+				console.log('Previous balance Round 2: ', fromUnit(roundBalanceBefore));
+			});
 		});
 
 		// it('Create/Buy Parlay same game parlay | final result + totals', async () => {

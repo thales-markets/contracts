@@ -50,6 +50,7 @@ contract('ParlayAMM', (accounts) => {
 		defaultLiquidityProvider,
 		firstParlayAMMLiquidityProvider,
 		defaultParlayAMMLiquidityProvider,
+		secondParlayAMMLiquidityProvider,
 	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -778,7 +779,7 @@ contract('ParlayAMM', (accounts) => {
 				_parlayAMM: ParlayAMM.address,
 				_sUSD: Thales.address,
 				_roundLength: WEEK,
-				_maxAllowedDeposit: toUnit(100000).toString(),
+				_maxAllowedDeposit: toUnit(1000000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
 			},
@@ -1192,6 +1193,75 @@ contract('ParlayAMM', (accounts) => {
 			let marketRound = await ParlayAMMLiquidityPool.getMarketRound(parlayMarketCreated);
 			console.log(parlayMarketCreated, ' market in round: ', marketRound.toString());
 			assert.equal(marketRound.toString(), '2');
+		});
+
+		it('Stake and deposit', async () => {
+			let fastForwardTime = game1NBATime - (await currentTime()) - SECOND;
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			let maturity;
+			for (let i = 0; i < parlayTwoMarkets.length; i++) {
+				maturity = await parlayTwoMarkets[i].times();
+				console.log(parlayTwoMarkets[i].address, ' maturity at: ', maturity[0].toString());
+				maturityTimes[i] = parseInt(maturity[0].toString());
+			}
+			await fastForward(maturityTimes[0] - (await currentTime()) - 10 * 60 * SECOND);
+			await ParlayAMMLiquidityPool.start({ from: owner });
+			await Thales.transfer(secondParlayAMMLiquidityProvider, toUnit('1000'), { from: owner });
+			const MockStakingThales = artifacts.require('MockStakingThales');
+			let mockStakingThales = await MockStakingThales.new({ from: owner });
+
+			await Thales.approve(mockStakingThales.address, toUnit(1000), {
+				from: secondParlayAMMLiquidityProvider,
+			});
+
+			await Thales.approve(ParlayAMMLiquidityPool.address, toUnit(1000), {
+				from: secondParlayAMMLiquidityProvider,
+			});
+			await mockStakingThales.stake(toUnit(100), { from: secondParlayAMMLiquidityProvider });
+
+			await ParlayAMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
+				from: owner,
+			});
+
+			await ParlayAMMLiquidityPool.setStakingThales(mockStakingThales.address, {
+				from: owner,
+			});
+
+			await expect(
+				ParlayAMMLiquidityPool.deposit(toUnit(100000000), {
+					from: secondParlayAMMLiquidityProvider,
+				})
+			).to.be.revertedWith('Deposit amount exceeds AMM LP cap');
+			let totalDeposited = await ParlayAMMLiquidityPool.totalDeposited();
+			console.log('Total deposited', fromUnit(totalDeposited));
+			await expect(
+				ParlayAMMLiquidityPool.deposit(toUnit(101), { from: secondParlayAMMLiquidityProvider })
+			).to.be.revertedWith('Not enough staked THALES');
+
+			await expect(
+				ParlayAMMLiquidityPool.deposit(toUnit(1), { from: secondParlayAMMLiquidityProvider })
+			).to.be.revertedWith('Amount less than minDepositAmount');
+
+			await ParlayAMMLiquidityPool.setOnlyWhitelistedStakersAllowed(true, {
+				from: owner,
+			});
+			await expect(
+				ParlayAMMLiquidityPool.deposit(toUnit(101), { from: secondParlayAMMLiquidityProvider })
+			).to.be.revertedWith('Only whitelisted stakers allowed');
+
+			let getMaxAvailableDepositForUser =
+				await ParlayAMMLiquidityPool.getMaxAvailableDepositForUser(
+					secondParlayAMMLiquidityProvider
+				);
+			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
+
+			let getNeededStakedThalesToWithdrawForUser =
+				await ParlayAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(
+					secondParlayAMMLiquidityProvider
+				);
+			console.log(
+				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
+			);
 		});
 
 		describe('Exercise whole parlay cancellation of totals market', () => {

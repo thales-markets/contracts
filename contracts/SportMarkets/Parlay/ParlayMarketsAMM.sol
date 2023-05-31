@@ -256,10 +256,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
         balance = sUSD.balanceOf(address(this)) - balance;
         console.log(">>> finalGain AMM: ", balance);
-        sUSD.transfer(
-            IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
-            balance
-        );
+        if (balance > 0) {
+            sUSD.transfer(
+                IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
+                balance
+            );
+        }
     }
 
     function buyFromParlayWithReferrer(
@@ -291,10 +293,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _handleReferrer(_differentRecipient, _sUSDPaid);
         }
         balance = sUSD.balanceOf(address(this)) - balance;
-        sUSD.transfer(
-            IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
-            balance
-        );
+        if (balance > 0) {
+            sUSD.transfer(
+                IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
+                balance
+            );
+        }
     }
 
     function buyFromParlayWithDifferentCollateralAndReferrer(
@@ -338,10 +342,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _handleReferrer(msg.sender, _sUSDPaid);
         }
         balance = sUSD.balanceOf(address(this)) - balance;
-        sUSD.transfer(
-            IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
-            balance
-        );
+        if (balance > 0) {
+            sUSD.transfer(
+                IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
+                balance
+            );
+        }
     }
 
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {

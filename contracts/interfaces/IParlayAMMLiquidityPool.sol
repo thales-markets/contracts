@@ -6,5 +6,7 @@ interface IParlayAMMLiquidityPool {
 
     function getMarketRound(address market) external view returns (uint _round);
 
+    function getMarketPool(address market) external view returns (address roundPool);
+
     function transferToPool(address market, uint amount) external;
 }

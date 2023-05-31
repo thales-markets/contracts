@@ -25,6 +25,8 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/IParlayAMMLiquidityPool.sol";
 
+import "hardhat/console.sol";
+
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -235,6 +237,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _expectedPayout,
         address _differentRecipient
     ) external nonReentrant notPaused {
+        uint balance = sUSD.balanceOf(address(this));
+        console.log(">>> initBalance AMM: ", balance);
         if (_differentRecipient == address(0)) {
             _differentRecipient = msg.sender;
         }
@@ -250,6 +254,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(_differentRecipient, _sUSDPaid);
         }
+        balance = sUSD.balanceOf(address(this)) - balance;
+        console.log(">>> finalGain AMM: ", balance);
+        sUSD.transfer(
+            IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
+            balance
+        );
     }
 
     function buyFromParlayWithReferrer(
@@ -261,6 +271,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address _differentRecipient,
         address _referrer
     ) external nonReentrant notPaused {
+        uint balance = sUSD.balanceOf(address(this));
         if (_differentRecipient == address(0)) {
             _differentRecipient = msg.sender;
         }
@@ -279,6 +290,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(_differentRecipient, _sUSDPaid);
         }
+        balance = sUSD.balanceOf(address(this)) - balance;
+        sUSD.transfer(
+            IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
+            balance
+        );
     }
 
     function buyFromParlayWithDifferentCollateralAndReferrer(
@@ -293,6 +309,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
+        uint balance = sUSD.balanceOf(address(this));
+
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
@@ -319,6 +337,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(msg.sender, _sUSDPaid);
         }
+        balance = sUSD.balanceOf(address(this)) - balance;
+        sUSD.transfer(
+            IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
+            balance
+        );
     }
 
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {
@@ -422,8 +445,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         _knownMarkets.add(address(parlayMarket));
         sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
 
-        // todo:
-        IParlayAMMLiquidityPool(parlayLP).commitTrade(address(parlayMarket), totalAmount - sUSDAfterFees);
+        IParlayAMMLiquidityPool(parlayLP).commitTrade(
+            address(parlayMarket),
+            totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)
+        );
         // buy the positions
         _buyPositionsFromSportAMM(
             _sportMarkets,

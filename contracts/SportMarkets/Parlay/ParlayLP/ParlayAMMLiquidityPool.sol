@@ -97,6 +97,8 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     mapping(address => uint) public withdrawalShare;
 
+    mapping(address => uint) public parlayMarketRound;
+
     /* ========== CONSTRUCTOR ========== */
     // check git
 
@@ -188,6 +190,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         amountToMint = needsTransformingCollateral ? amountToMint + 1 : amountToMint;
 
         uint marketRound = getMarketRound(market);
+        parlayMarketRound[market] = marketRound;
         console.log(">>> commitTrade::mrktRound: ", marketRound);
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
         console.log(">>> commitTrade::roundCurrent ", round);
@@ -513,29 +516,32 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     /// @param market to get the round for
     /// @return _round the min round which the market belongs to
     function getMarketRound(address market) public view returns (uint _round) {
-        ParlayMarket parlayMarket = ParlayMarket(market);
-        address sportMarket;
-        console.log(">>> firstRoundStartTime", firstRoundStartTime);
-        for (uint i = 0; i < parlayMarket.numOfSportMarkets(); i++) {
-            (sportMarket, , , , , , , ) = parlayMarket.sportMarket(i);
-            ISportPositionalMarket marketContract = ISportPositionalMarket(sportMarket);
-            (uint maturity, ) = marketContract.times();
-            console.log(i, " mrkt maturity ", maturity);
-            if (maturity > firstRoundStartTime) {
-                if (i == 0) {
-                    console.log(">>> entered == 0");
-                    _round = (maturity - firstRoundStartTime) / roundLength + 2;
-                    console.log(">>> _round:", _round);
-                } else {
-                    if (((maturity - firstRoundStartTime) / roundLength + 2) != _round) {
-                        console.log(">>> entered != _round");
-                        _round = 1;
+        _round = parlayMarketRound[market];
+        if (_round == 0) {
+            ParlayMarket parlayMarket = ParlayMarket(market);
+            address sportMarket;
+            console.log(">>> firstRoundStartTime", firstRoundStartTime);
+            for (uint i = 0; i < parlayMarket.numOfSportMarkets(); i++) {
+                (sportMarket, , , , , , , ) = parlayMarket.sportMarket(i);
+                ISportPositionalMarket marketContract = ISportPositionalMarket(sportMarket);
+                (uint maturity, ) = marketContract.times();
+                console.log(i, " mrkt maturity ", maturity);
+                if (maturity > firstRoundStartTime) {
+                    if (i == 0) {
+                        console.log(">>> entered == 0");
+                        _round = (maturity - firstRoundStartTime) / roundLength + 2;
                         console.log(">>> _round:", _round);
-                        break;
+                    } else {
+                        if (((maturity - firstRoundStartTime) / roundLength + 2) != _round) {
+                            console.log(">>> entered != _round");
+                            _round = 1;
+                            console.log(">>> _round:", _round);
+                            break;
+                        }
                     }
+                } else {
+                    _round = 1;
                 }
-            } else {
-                _round = 1;
             }
         }
     }
@@ -596,13 +602,18 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     function _getOrCreateRoundPool(uint _round) internal returns (address roundPool) {
         roundPool = roundPools[_round];
-        if (roundPool == address(0) && _round > 1) {
-            require(poolRoundMastercopy != address(0), "Round pool mastercopy not set");
-            ParlayAMMLiquidityPoolRound newRoundPool = ParlayAMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
-            newRoundPool.initialize(address(this), sUSD, _round, getRoundEndTime(_round - 1), getRoundEndTime(_round));
-            roundPool = address(newRoundPool);
-            roundPools[_round] = roundPool;
-            emit RoundPoolCreated(_round, roundPool);
+        if (roundPool == address(0)) {
+            if (_round == 1) {
+                roundPools[_round] = defaultLiquidityProvider;
+                roundPool = defaultLiquidityProvider;
+            } else {
+                require(poolRoundMastercopy != address(0), "Round pool mastercopy not set");
+                ParlayAMMLiquidityPoolRound newRoundPool = ParlayAMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
+                newRoundPool.initialize(address(this), sUSD, _round, getRoundEndTime(_round - 1), getRoundEndTime(_round));
+                roundPool = address(newRoundPool);
+                roundPools[_round] = roundPool;
+                emit RoundPoolCreated(_round, roundPool);
+            }
         }
     }
 

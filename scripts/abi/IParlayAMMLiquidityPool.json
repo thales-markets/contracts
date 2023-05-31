@@ -25,6 +25,25 @@
         "type": "address"
       }
     ],
+    "name": "getMarketPool",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "roundPool",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
     "name": "getMarketRound",
     "outputs": [
       {

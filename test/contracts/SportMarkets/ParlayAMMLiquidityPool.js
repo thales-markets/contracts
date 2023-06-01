@@ -85,6 +85,7 @@ contract('ParlayAMM', (accounts) => {
 	const ParlayAMMLiquidityPoolRoundMastercopy = artifacts.require(
 		'ParlayAMMLiquidityPoolRoundMastercopy'
 	);
+	const ParlayAMMLiquidityPoolDataContract = artifacts.require('ParlayAMMLiquidityPoolData');
 
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
@@ -227,7 +228,8 @@ contract('ParlayAMM', (accounts) => {
 		ParlayVerifier,
 		SportsAMM,
 		SportAMMLiquidityPool,
-		ParlayAMMLiquidityPool;
+		ParlayAMMLiquidityPool,
+		ParlayAMMLiquidityPoolData;
 
 	let verifier;
 
@@ -810,6 +812,8 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultParlayAMMLiquidityProvider,
 		});
+
+		ParlayAMMLiquidityPoolData = await ParlayAMMLiquidityPoolDataContract.new({ from: manager });
 	});
 
 	describe('Parlay AMM setters', () => {
@@ -1998,6 +2002,74 @@ contract('ParlayAMM', (accounts) => {
 				console.log('cummulative PnL between Round 3 & 4: ', fromUnit(cummulativeBetweenRounds));
 				// assert.equal(fromUnit(cummulativeBetweenRounds), '0');
 				console.log('Previous balance Round 2: ', fromUnit(roundBalanceBefore));
+			});
+
+			it('Read from data contract', async () => {
+				await Thales.transfer(secondParlayAMMLiquidityProvider, toUnit('1000'), { from: owner });
+				const MockStakingThales = artifacts.require('MockStakingThales');
+				let mockStakingThales = await MockStakingThales.new({ from: owner });
+
+				await Thales.approve(mockStakingThales.address, toUnit(1000), {
+					from: secondParlayAMMLiquidityProvider,
+				});
+
+				await Thales.approve(ParlayAMMLiquidityPool.address, toUnit(1000), {
+					from: secondParlayAMMLiquidityProvider,
+				});
+				await mockStakingThales.stake(toUnit(100), { from: secondParlayAMMLiquidityProvider });
+
+				await ParlayAMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
+					from: owner,
+				});
+
+				await ParlayAMMLiquidityPool.setStakingThales(mockStakingThales.address, {
+					from: owner,
+				});
+
+				let thisRound = await ParlayAMMLiquidityPool.round();
+				let roundClosure = await ParlayAMMLiquidityPool.getRoundEndTime(thisRound);
+				let canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+
+				let tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
+				assert.equal(canClose, false);
+				let readyToBeExercised = await ParlayAMMLiquidityPool.hasMarketsReadyToBeExercised();
+				await ParlayAMMLiquidityPool.exerciseMarketsReadyToExercised();
+				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+				await ParlayAMM.exerciseParlay(parlaySingleMarket2.address);
+
+				canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				assert.equal(canClose, true);
+
+				await ParlayAMMLiquidityPool.prepareRoundClosing();
+				let roundClosingPrepared = await ParlayAMMLiquidityPool.roundClosingPrepared();
+				assert.equal(roundClosingPrepared, true);
+
+				await ParlayAMMLiquidityPool.processRoundClosingBatch(20);
+				let usersProcessedInRound = await ParlayAMMLiquidityPool.usersProcessedInRound();
+				assert.equal(usersProcessedInRound.toString(), '1');
+
+				await ParlayAMMLiquidityPool.closeRound();
+				thisRound = await ParlayAMMLiquidityPool.round();
+				console.log('Current round:', thisRound.toString());
+
+				assert.equal(thisRound.toString(), '3');
+				let profitPerRound = await ParlayAMMLiquidityPool.profitAndLossPerRound(2);
+				let cummulativeBetweenRounds = await ParlayAMMLiquidityPool.cumulativePnLBetweenRounds(
+					2,
+					3
+				);
+
+				let LPData = await ParlayAMMLiquidityPoolData.getLiquidityPoolData(
+					ParlayAMMLiquidityPool.address
+				);
+				console.log('LP DATA:\n', LPData);
+				let userLPData = await ParlayAMMLiquidityPoolData.getUserLiquidityPoolData(
+					ParlayAMMLiquidityPool.address,
+					secondParlayAMMLiquidityProvider
+				);
+				console.log('User LP DATA:\n', userLPData);
 			});
 		});
 	});

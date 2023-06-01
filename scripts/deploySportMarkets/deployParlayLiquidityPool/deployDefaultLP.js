@@ -81,7 +81,11 @@ async function main() {
 
 	console.log('Implementation DefaultLiquidityProvider: ', DefaultLiquidityProviderImplementation);
 
-	setTargetAddress('ParlayDefaultLiquidityProvider', network, DefaultLiquidityProviderDeployed.address);
+	setTargetAddress(
+		'ParlayDefaultLiquidityProvider',
+		network,
+		DefaultLiquidityProviderDeployed.address
+	);
 	setTargetAddress(
 		'ParlayDefaultLiquidityProviderImplementation',
 		network,

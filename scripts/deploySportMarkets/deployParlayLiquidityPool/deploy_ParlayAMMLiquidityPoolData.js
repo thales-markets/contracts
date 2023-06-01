@@ -24,13 +24,18 @@ async function main() {
 
 	const ParlayAMMLiquidityPoolData = await ethers.getContractFactory('ParlayAMMLiquidityPoolData');
 
-	const ParlayAMMLiquidityPoolDataDeployed = await upgrades.deployProxy(ParlayAMMLiquidityPoolData, [
-		owner.address,
-	]);
+	const ParlayAMMLiquidityPoolDataDeployed = await upgrades.deployProxy(
+		ParlayAMMLiquidityPoolData,
+		[owner.address]
+	);
 	await ParlayAMMLiquidityPoolDataDeployed.deployed();
 
 	console.log('ParlayAMMLiquidityPoolData deployed on', ParlayAMMLiquidityPoolDataDeployed.address);
-	setTargetAddress('ParlayAMMLiquidityPoolData', network, ParlayAMMLiquidityPoolDataDeployed.address);
+	setTargetAddress(
+		'ParlayAMMLiquidityPoolData',
+		network,
+		ParlayAMMLiquidityPoolDataDeployed.address
+	);
 
 	await delay(5000);
 	const ParlayAMMLiquidityPoolDataImplementation = await getImplementationAddress(

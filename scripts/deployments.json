@@ -612,8 +612,8 @@
 		"MarchMadness": "0x81FB5DAb46Ba7fb5b85D7fcBbF019a400a2000FD",
 		"ParlayVault": "0x7e415D74eb5B01531B2059D1901aCe751c6B26B3",
 		"ParlayVaultImplementation": "0xf932D24Eb62fEFfe7A929E7Fc206B6EBB4B2A22a",
-		"SportAMMLiquidityPool": "0xdd0879AB819287637f33A29d1ee91d5a76c890Af",
-		"SportAMMLiquidityPoolImplementation": "0xAb538aB0A62838DC8C95704fF276952dD229faea",
+		"SportAMMLiquidityPool": "0xA5D52005df7C457B014A54b3cF9812c861Ea9dF9",
+		"SportAMMLiquidityPoolImplementation": "0x6d11AAFA41144EC3420B0d515A88186ddFfFbD11",
 		"SportAMMLiquidityPoolRoundMastercopy": "0x7FEdfaF6BF9820e280fd5c0DCd0b50AE15a2a7Ee",
 		"StakingThalesImplementation": "0xAD20Bd5A5764F557A2B9bD5Fd2dE297e2365a335",
 		"DefaultLiquidityProvider": "0x05C191f8Df6bFb72EFfc865550cF23982cafD753",
@@ -632,7 +632,10 @@
 		"StakingData": "0x87005978e76C7356D1e0a8118DC82eaF52D49FB1",
 		"StakingDataImplementation": "0x836dBB0251FBA7C2651ed2B353c9d4795c73225c",
 		"ThalesAMMLiquidityPoolData": "0x265F42a1F5dBEef66C514764766588a549610499",
-		"ThalesAMMLiquidityPoolDataImplementation": "0x7ce099733e08f6e2c18251278D0E195a697d3016"
+		"ThalesAMMLiquidityPoolDataImplementation": "0x7ce099733e08f6e2c18251278D0E195a697d3016",
+		"ParlayAMMLiquidityPoolRoundMastercopy": "0x7503061D266100D2CA3a1605b1C8ff7DEAFf1bEe",
+		"ParlayAMMLiquidityPoolData": "0xb25A2e739D9f10E346c5de5a46520Bf23df769E9",
+		"ParlayAMMLiquidityPoolDataImplementation": "0x7ce099733e08f6e2c18251278D0E195a697d3016"
 	},
 	"localhost": {
 		"Airdrop": "",

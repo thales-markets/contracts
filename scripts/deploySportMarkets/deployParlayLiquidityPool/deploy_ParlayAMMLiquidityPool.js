@@ -56,7 +56,7 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	let sportsAMM = getTargetAddress('SportsAMM', network);
+	let parlayAMM = getTargetAddress('ParlayAMM', network);
 
 	console.log('Found ProxyERC20sUSD at:' + proxySUSD);
 
@@ -66,7 +66,7 @@ async function main() {
 	const parlayAMMLiquidityPool = await upgrades.deployProxy(ParlayAMMLiquidityPool, [
 		{
 			_owner: owner.address,
-			_sportsAmm: sportsAMM,
+			_parlayAMM: parlayAMM,
 			_sUSD: proxySUSD,
 			_roundLength: week,
 			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
@@ -116,6 +116,8 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: ParlayAMMLiquidityPoolRoundMastercopyDeployed.address,
+			contract:
+				'contracts/SportMarkets/Parlay/ParlayLP/ParlayAMMLiquidityPoolRoundMastercopy.sol:ParlayAMMLiquidityPoolRoundMastercopy',
 		});
 	} catch (e) {
 		console.log(e);

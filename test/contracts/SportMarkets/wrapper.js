@@ -129,6 +129,7 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			MockPriceFeedDeployed.address,
 			verifier.address,
 			GamesOddsObtainerDeployed.address,
+			GamesOddsObtainerDeployed.address, // dummy address
 			{
 				from: owner,
 			}

@@ -58,6 +58,8 @@ interface IGamesOddsObtainer {
 
     function isSpreadChildMarket(address _child) external view returns (bool);
 
+    function childMarketCreated(address _child) external view returns (bool);
+
     function getOddsForGame(bytes32 _gameId)
         external
         view

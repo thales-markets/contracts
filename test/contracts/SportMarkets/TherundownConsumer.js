@@ -640,6 +640,17 @@ contract('TheRundownConsumer', (accounts) => {
 			[4, 16],
 			{ from: owner }
 		);
+		let GamesPlayerProps = artifacts.require('GamesPlayerProps');
+		let GamesPlayerPropsDeployed = await GamesPlayerProps.new({ from: owner });
+		await GamesPlayerPropsDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			fourth, // dummy at beggining
+			[4, 16],
+			{ from: owner }
+		);
 
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
@@ -647,7 +658,10 @@ contract('TheRundownConsumer', (accounts) => {
 			SportPositionalMarketManager.address,
 			verifier.address,
 			GamesOddsObtainerDeployed.address,
-			{ from: owner }
+			GamesPlayerPropsDeployed.address,
+			{
+				from: owner,
+			}
 		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
@@ -4360,15 +4374,24 @@ contract('TheRundownConsumer', (accounts) => {
 				wrapper,
 				wrapper,
 				wrapper,
+				wrapper,
 				{
 					from: owner,
 				}
 			);
 
 			await expect(
-				TherundownConsumerDeployed.setSportContracts(wrapper, wrapper, wrapper, wrapper, wrapper, {
-					from: wrapper,
-				})
+				TherundownConsumerDeployed.setSportContracts(
+					wrapper,
+					wrapper,
+					wrapper,
+					wrapper,
+					wrapper,
+					wrapper,
+					{
+						from: wrapper,
+					}
+				)
 			).to.be.revertedWith('Only the contract owner may perform this action');
 
 			// check if event is emited
@@ -4378,6 +4401,7 @@ contract('TheRundownConsumer', (accounts) => {
 				_sportsManager: wrapper,
 				_verifier: wrapper,
 				_oddsObtainer: wrapper,
+				_playerProps: wrapper,
 			});
 		});
 	});

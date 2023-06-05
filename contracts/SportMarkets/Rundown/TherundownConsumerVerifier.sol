@@ -159,6 +159,14 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         return totalOver == totalUnder && totalOver > 0 && totalUnder > 0 && totalOverOdds != 0 && totalUnderOdds != 0;
     }
 
+    function areOddsAndLinesValidForPlayer(
+        uint16 _line,
+        int24 _overOdds,
+        int24 _underOdds
+    ) external pure returns (bool) {
+        return _line > 0 && _overOdds != 0 && _underOdds != 0;
+    }
+
     /// @notice view function which returns if outcome of a game is valid
     /// @param _isTwoPositionalSport if two positional sport  draw now vallid
     /// @param _outcome home - 1, away - 2, draw - 3 (if not two positional), and cancel - 0 are valid outomes

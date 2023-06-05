@@ -349,6 +349,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			SportPositionalMarketManager.address,
 			verifier.address,
 			GamesOddsObtainerDeployed.address,
+			GamesOddsObtainerDeployed.address, // dummy
 			{ from: manager }
 		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: manager });

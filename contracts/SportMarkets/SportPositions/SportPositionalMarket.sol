@@ -116,11 +116,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         // consider naming the option: sUpBTC>50@2021.12.31
         if (_parameters.isChild) {
             isChild = true;
-            require(tags.length > 1, "Child markets must have two tags");
+            require(tags.length > 1, "Child markets must have more then one tag");
             if (tags[1] == 10001) {
                 options.home.initialize(gameDetails.gameLabel, "HOME", _parameters.sportsAMM);
                 options.away.initialize(gameDetails.gameLabel, "AWAY", _parameters.sportsAMM);
-            } else if (tags[1] == 10002) {
+            } else if (tags[1] == 10002 || tags[1] == 10010) {
                 options.home.initialize(gameDetails.gameLabel, "OVER", _parameters.sportsAMM);
                 options.away.initialize(gameDetails.gameLabel, "UNDER", _parameters.sportsAMM);
             }

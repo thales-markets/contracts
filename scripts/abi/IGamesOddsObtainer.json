@@ -27,6 +27,25 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_child",
+        "type": "address"
+      }
+    ],
+    "name": "childMarketCreated",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_market",
         "type": "address"
       }

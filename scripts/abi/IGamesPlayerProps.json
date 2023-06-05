@@ -1,0 +1,142 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      }
+    ],
+    "name": "cancelPlayerPropsMarketForMain",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "getNormalizedChildOdds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "playerId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "option",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "playerName",
+            "type": "string"
+          },
+          {
+            "internalType": "uint16",
+            "name": "line",
+            "type": "uint16"
+          },
+          {
+            "internalType": "int24",
+            "name": "overOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "underOdds",
+            "type": "int24"
+          }
+        ],
+        "internalType": "struct IGamesPlayerProps.PlayerProps",
+        "name": "_player",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      }
+    ],
+    "name": "obtainPlayerProps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      }
+    ],
+    "name": "pauseAllPlayerPropsMarketForMain",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "playerId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint8[]",
+            "name": "options",
+            "type": "uint8[]"
+          },
+          {
+            "internalType": "uint16[]",
+            "name": "scores",
+            "type": "uint16[]"
+          }
+        ],
+        "internalType": "struct IGamesPlayerProps.PlayerPropsResolver",
+        "name": "_result",
+        "type": "tuple"
+      }
+    ],
+    "name": "resolvePlayerProps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

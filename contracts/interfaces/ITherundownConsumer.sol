@@ -16,6 +16,10 @@ interface ITherundownConsumer {
     // view functions
     function supportedSport(uint _sportId) external view returns (bool);
 
+    function gameOnADate(bytes32 _gameId) external view returns (uint);
+
+    function isGameResolvedOrCanceled(bytes32 _gameId) external view returns (bool);
+
     function getNormalizedOdds(bytes32 _gameId) external view returns (uint[] memory);
 
     function getNormalizedOddsForMarket(address _market) external view returns (uint[] memory);

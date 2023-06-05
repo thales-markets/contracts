@@ -114,6 +114,25 @@
         "type": "bytes32"
       }
     ],
+    "name": "gameOnADate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
     "name": "getGameCreatedById",
     "outputs": [
       {
@@ -367,6 +386,25 @@
       }
     ],
     "name": "isChildMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "isGameResolvedOrCanceled",
     "outputs": [
       {
         "internalType": "bool",

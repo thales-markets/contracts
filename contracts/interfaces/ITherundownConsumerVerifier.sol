@@ -38,6 +38,12 @@ interface ITherundownConsumerVerifier {
         int24 totalUnderOdds
     ) external view returns (bool);
 
+    function areOddsAndLinesValidForPlayer(
+        uint16 _line,
+        int24 _overOdds,
+        int24 _underOdds
+    ) external pure returns (bool);
+
     function isValidOutcomeForGame(bool _isTwoPositionalSport, uint _outcome) external view returns (bool);
 
     function isValidOutcomeWithResult(

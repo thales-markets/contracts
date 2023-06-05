@@ -450,6 +450,12 @@
         "internalType": "address",
         "name": "_oddsObtainer",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_playerProps",
+        "type": "address"
       }
     ],
     "name": "NewSportContracts",
@@ -1763,6 +1769,19 @@
   },
   {
     "inputs": [],
+    "name": "playerProps",
+    "outputs": [
+      {
+        "internalType": "contract IGamesPlayerProps",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "queues",
     "outputs": [
       {
@@ -2018,6 +2037,11 @@
       {
         "internalType": "address",
         "name": "_oddsObtainer",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_playerProps",
         "type": "address"
       }
     ],

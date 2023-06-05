@@ -97,6 +97,8 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: DefaultLiquidityProviderImplementation,
+			contract:
+				'contracts/SportMarkets/Parlay/ParlayLP/DefaultLiquidityProvider.sol:DefaultLiquidityProvider',
 		});
 	} catch (e) {
 		console.log(e);

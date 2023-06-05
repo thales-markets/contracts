@@ -17,8 +17,6 @@ import "../../../interfaces/IStakingThales.sol";
 
 import "./ParlayAMMLiquidityPoolRound.sol";
 
-import "hardhat/console.sol";
-
 contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     /* ========== LIBRARIES ========== */
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -191,20 +189,15 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
         uint marketRound = getMarketRound(market);
         parlayMarketRound[market] = marketRound;
-        console.log(">>> commitTrade::mrktRound: ", marketRound);
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
-        console.log(">>> commitTrade::roundCurrent ", round);
-        console.log(">>> commitTrade::liqPoolAddr: ", liquidityPoolRound);
         if (marketRound == round) {
             sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
         } else if (marketRound > round) {
             uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
-            console.log(">>> commitTrade::poolBalance: ", poolBalance);
             if (poolBalance >= amountToMint) {
                 sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
             } else {
                 uint differenceToLPAsDefault = amountToMint - poolBalance;
-                console.log(">>> commitTrade::deposit: ", differenceToLPAsDefault);
                 _depositAsDefault(differenceToLPAsDefault, liquidityPoolRound, marketRound);
                 sUSD.safeTransferFrom(liquidityPoolRound, address(parlayAMM), amountToMint);
             }
@@ -219,11 +212,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     function transferToPool(address _market, uint _amount) external nonReentrant whenNotPaused roundClosingNotPrepared {
         uint marketRound = getMarketRound(_market);
-        console.log(">>> exercised market: ", _market);
-        console.log(">>> sending ", _amount);
-        console.log(">>> to round ", marketRound);
         address liquidityPoolRound = marketRound <= 1 ? defaultLiquidityProvider : _getOrCreateRoundPool(marketRound);
-        console.log(">>> with address ", liquidityPoolRound);
         sUSD.transferFrom(address(parlayAMM), liquidityPoolRound, _amount);
         marketAlreadyExercisedInRound[marketRound][_market] = true;
     }
@@ -453,18 +442,14 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     /// @notice Checks if all conditions are met to close the round
     /// @return bool
     function canCloseCurrentRound() public view returns (bool) {
-        console.log(">>> timestamp: ", block.timestamp);
         if (!started || block.timestamp < getRoundEndTime(round)) {
-            console.log(">>> entered in false");
             return false;
         }
         ParlayMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
             address marketAddress = tradingMarketsPerRound[round][i];
-            console.log(">>> market address: ", marketAddress);
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                console.log(">>> not exercised");
                 if (!market.parlayAlreadyLost() && !market.fundsIssued()) {
                     return false;
                 }
@@ -481,7 +466,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                console.log(">>> market: ", marketAddress);
                 if (market.hasMarketLostButHasExercisableWinningPositions()) {
                     return true;
                 }
@@ -520,22 +504,16 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         if (_round == 0) {
             ParlayMarket parlayMarket = ParlayMarket(market);
             address sportMarket;
-            console.log(">>> firstRoundStartTime", firstRoundStartTime);
             for (uint i = 0; i < parlayMarket.numOfSportMarkets(); i++) {
                 (sportMarket, , , , , , , ) = parlayMarket.sportMarket(i);
                 ISportPositionalMarket marketContract = ISportPositionalMarket(sportMarket);
                 (uint maturity, ) = marketContract.times();
-                console.log(i, " mrkt maturity ", maturity);
                 if (maturity > firstRoundStartTime) {
                     if (i == 0) {
-                        console.log(">>> entered == 0");
                         _round = (maturity - firstRoundStartTime) / roundLength + 2;
-                        console.log(">>> _round:", _round);
                     } else {
                         if (((maturity - firstRoundStartTime) / roundLength + 2) != _round) {
-                            console.log(">>> entered != _round");
                             _round = 1;
-                            console.log(">>> _round:", _round);
                             break;
                         }
                     }

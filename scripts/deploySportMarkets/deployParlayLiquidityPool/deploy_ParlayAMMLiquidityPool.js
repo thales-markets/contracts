@@ -77,15 +77,15 @@ async function main() {
 
 	await parlayAMMLiquidityPool.deployed();
 
-	console.log('SportAMMLiquidityPool deployed to:', parlayAMMLiquidityPool.address);
-	setTargetAddress('SportAMMLiquidityPool', network, parlayAMMLiquidityPool.address);
+	console.log('ParlayAMMLiquidityPool deployed to:', parlayAMMLiquidityPool.address);
+	setTargetAddress('ParlayAMMLiquidityPool', network, parlayAMMLiquidityPool.address);
 
 	const implementation = await getImplementationAddress(
 		ethers.provider,
 		parlayAMMLiquidityPool.address
 	);
-	console.log('SportAMMLiquidityPoolImplementation: ', implementation);
-	setTargetAddress('SportAMMLiquidityPoolImplementation', network, implementation);
+	console.log('ParlayAMMLiquidityPoolImplementation: ', implementation);
+	setTargetAddress('ParlayAMMLiquidityPoolImplementation', network, implementation);
 
 	const ParlayAMMLiquidityPoolRoundMastercopy = await ethers.getContractFactory(
 		'ParlayAMMLiquidityPoolRoundMastercopy'

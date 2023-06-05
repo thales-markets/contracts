@@ -357,6 +357,7 @@ contract('ParlayAMM', (accounts) => {
 			second,
 			second,
 			second,
+			second,
 			{ from: owner }
 		);
 

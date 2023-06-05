@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity >=0.5.16;
 
 interface IParlayAMMLiquidityPool {
     function commitTrade(address market, uint amountToMint) external;
@@ -9,4 +9,6 @@ interface IParlayAMMLiquidityPool {
     function getMarketPool(address market) external view returns (address roundPool);
 
     function transferToPool(address market, uint amount) external;
+
+    function isUserLPing(address user) external view returns (bool isUserInLP);
 }

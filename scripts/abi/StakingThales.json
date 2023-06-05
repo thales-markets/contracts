@@ -111,6 +111,12 @@
         "internalType": "address",
         "name": "thalesAMMLiquidityPool",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "parlayAMMLiquidityPool",
+        "type": "address"
       }
     ],
     "name": "AddressesChanged",
@@ -1592,6 +1598,21 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "parlayAMMLiquidityPool",
+    "outputs": [
+      {
+        "internalType": "contract IParlayAMMLiquidityPool",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -1705,6 +1726,11 @@
       {
         "internalType": "address",
         "name": "_thalesAMMLiquidityPool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayAMMLiquidityPool",
         "type": "address"
       }
     ],

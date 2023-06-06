@@ -29,4 +29,8 @@ interface IGamesPlayerProps {
     function cancelPlayerPropsMarketForMain(address _main) external;
 
     function getNormalizedChildOdds(address _market) external view returns (uint[] memory);
+
+    function mainMarketChildMarketIndex(address _main, uint _index) external view returns (address);
+
+    function numberOfChildMarkets(address _main) external view returns (uint);
 }

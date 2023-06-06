@@ -20,6 +20,7 @@ import "../../interfaces/ITherundownConsumer.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
+import "../../interfaces/IGamesPlayerProps.sol";
 
 contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, ISportPositionalMarketManager {
     /* ========== LIBRARIES ========== */
@@ -55,6 +56,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     bool public override isDoubleChanceSupported;
     mapping(address => address[]) public doubleChanceMarketsByParent;
     mapping(uint => bool) public doesSportSupportDoubleChance;
+    address public playerProps;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -83,6 +85,11 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setOddsObtainer(address _oddsObtainer) external onlyOwner {
         oddsObtainer = _oddsObtainer;
         emit SetObtainerAddress(_oddsObtainer);
+    }
+
+    function setPlayerProps(address _playerProps) external onlyOwner {
+        playerProps = _playerProps;
+        emit SetPlayerPropsAddress(_playerProps);
     }
 
     function getOddsObtainer() external view override returns (address obtainer) {
@@ -176,6 +183,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             msg.sender == owner ||
                 msg.sender == theRundownConsumer ||
                 msg.sender == oddsObtainer ||
+                msg.sender == playerProps ||
                 whitelistedAddresses[msg.sender],
             "Invalid caller"
         );
@@ -184,7 +192,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function updateDatesForMarket(address _market, uint256 _newStartTime) external override {
-        require(msg.sender == owner || msg.sender == theRundownConsumer || msg.sender == oddsObtainer, "Invalid caller");
+        require(msg.sender == owner || msg.sender == theRundownConsumer, "Invalid caller");
 
         uint expiry = _newStartTime.add(expiryDuration);
 
@@ -196,6 +204,14 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
         for (uint i = 0; i < numberOfChildMarkets; i++) {
             address child = IGamesOddsObtainer(oddsObtainer).mainMarketChildMarketIndex(_market, i);
+            _updateDatesForMarket(child, _newStartTime, expiry);
+        }
+
+        // number of player props
+        uint numberOfPlayerPropsMarkets = IGamesPlayerProps(playerProps).numberOfChildMarkets(_market);
+
+        for (uint i = 0; i < numberOfPlayerPropsMarkets; i++) {
+            address child = IGamesPlayerProps(playerProps).mainMarketChildMarketIndex(_market, i);
             _updateDatesForMarket(child, _newStartTime, expiry);
         }
     }
@@ -251,7 +267,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-        require(msg.sender == theRundownConsumer || msg.sender == oddsObtainer, "Invalid creator");
+        require(
+            msg.sender == theRundownConsumer || msg.sender == oddsObtainer || msg.sender == playerProps,
+            "Invalid creator"
+        );
 
         uint expiry = maturity.add(expiryDuration);
 
@@ -392,6 +411,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             msg.sender == theRundownConsumer ||
                 msg.sender == owner ||
                 msg.sender == oddsObtainer ||
+                msg.sender == playerProps ||
                 whitelistedCancelAddresses[msg.sender],
             "Invalid resolver"
         );
@@ -613,6 +633,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event SetsUSD(address _address);
     event SetTherundownConsumer(address theRundownConsumer);
     event SetObtainerAddress(address _obratiner);
+    event SetPlayerPropsAddress(address _playerProps);
     event OddsForMarketRestored(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event DatesUpdatedForMarket(address _market, uint256 _newStartTime, uint256 _expiry);

@@ -167,7 +167,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             else if (gameFulfilledCreated[gameForProcessing.gameId]) {
                 GameCreate memory currentGameValues = getGameCreatedById(gameForProcessing.gameId);
 
-                // if name of fighter (away or home) is not the same
+                // if name (away or home) not the same
                 if (
                     (!verifier.areTeamsEqual(gameForProcessing.homeTeam, currentGameValues.homeTeam) ||
                         !verifier.areTeamsEqual(gameForProcessing.awayTeam, currentGameValues.awayTeam))
@@ -326,21 +326,21 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice setting isPausedByCanceledStatus from obtainer see @GamesOddsObtainer
     /// @param _market market address
     /// @param _flag flag true/false
-    function setPausedByCanceledStatus(address _market, bool _flag) external onlyObtainer {
+    function setPausedByCanceledStatus(address _market, bool _flag) external canExecute {
         isPausedByCanceledStatus[_market] = _flag;
     }
 
     /// @notice pause market from obtainer see @GamesOddsObtainer
     /// @param _market market address
     /// @param _pause flag true/false
-    function pauseOrUnpauseMarket(address _market, bool _pause) external onlyObtainer {
+    function pauseOrUnpauseMarket(address _market, bool _pause) external canExecute {
         _pauseOrUnpauseMarket(_market, _pause);
     }
 
     /// @notice setting gameid per market
     /// @param _gameId game id
     /// @param _child child market address
-    function setGameIdPerChildMarket(bytes32 _gameId, address _child) external onlyObtainer {
+    function setGameIdPerChildMarket(bytes32 _gameId, address _child) external canExecute {
         gameIdPerMarket[_child] = _gameId;
     }
 
@@ -763,8 +763,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         _;
     }
 
-    modifier onlyObtainer() {
-        require(msg.sender == address(oddsObtainer), "ID16");
+    modifier canExecute() {
+        require(msg.sender == address(oddsObtainer) || msg.sender == address(playerProps), "ID18");
         _;
     }
 

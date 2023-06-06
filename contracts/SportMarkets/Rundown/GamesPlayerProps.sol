@@ -125,10 +125,15 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
             uint numberOfChildsPerOptions = numberOfChildMarketsPerPlayerAndOption[_main][_result.playerId][
                 _result.options[i]
             ];
-            // resolve all per option
-            for (uint j = 0; j < numberOfChildsPerOptions; j++) {
-                address child = mainMarketChildMarketPerPlayerAndOptionIndex[_main][_result.playerId][_result.options[i]][j];
-                _resolveMarketForPlayer(child, _result.scores[i]);
+            // if it is resolved skip it
+            if (!resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.options[i]]) {
+                // resolve all per option
+                for (uint j = 0; j < numberOfChildsPerOptions; j++) {
+                    address child = mainMarketChildMarketPerPlayerAndOptionIndex[_main][_result.playerId][
+                        _result.options[i]
+                    ][j];
+                    _resolveMarketForPlayer(child, _result.scores[i]);
+                }
                 resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.options[i]] = true;
             }
         }
@@ -222,6 +227,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         uint8 _option
     ) internal {
         normalizedOddsForMarket[_market] = getNormalizedOddsForPlayerProps(_gameId, _playerId, _option);
+        normalizedOddsForMarketFulfilled[_market] = true;
     }
 
     function _createMarketForPlayerProps(IGamesPlayerProps.PlayerProps memory _player, address _mainMarket)
@@ -256,7 +262,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _append(IGamesPlayerProps.PlayerProps memory _player) internal view returns (string memory) {
-        return string(abi.encodePacked(_player.playerName, " ", Strings.toString(_player.line)));
+        return string(abi.encodePacked(_player.playerName, " - ", Strings.toString(_player.line)));
     }
 
     function _calculateTags(uint _sportsId, uint8 _option) internal pure returns (uint[] memory) {
@@ -384,11 +390,6 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
 
     modifier onlyConsumer() {
         require(msg.sender == address(consumer), "Only consumer");
-        _;
-    }
-
-    modifier onlyManager() {
-        require(msg.sender == address(sportsManager), "Only manager");
         _;
     }
 

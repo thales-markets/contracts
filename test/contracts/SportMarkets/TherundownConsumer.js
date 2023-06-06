@@ -4296,7 +4296,7 @@ contract('TheRundownConsumer', (accounts) => {
 				TherundownConsumerDeployed.setPausedByCanceledStatus(dummyAddress, true, {
 					from: wrapper,
 				})
-			).to.be.revertedWith('ID16');
+			).to.be.revertedWith('ID18');
 
 			const tx_SupportedSport = await TherundownConsumerDeployed.setSupportedSport(15, true, {
 				from: owner,

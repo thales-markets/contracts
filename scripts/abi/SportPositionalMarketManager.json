@@ -372,6 +372,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_playerProps",
+        "type": "address"
+      }
+    ],
+    "name": "SetPlayerPropsAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_sportPositionalMarketFactory",
         "type": "address"
       }
@@ -1025,6 +1038,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "playerProps",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1258,6 +1284,19 @@
       }
     ],
     "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_playerProps",
+        "type": "address"
+      }
+    ],
+    "name": "setPlayerProps",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

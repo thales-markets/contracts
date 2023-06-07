@@ -201,7 +201,7 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             : end;
         ActiveMarketsPriceImpact[] memory marketPriceImpact = new ActiveMarketsPriceImpact[](endIndex - start);
         for (uint i = start; i < endIndex; i++) {
-            marketPriceImpact[i].market = activeMarkets[i];
+            marketPriceImpact[i - start].market = activeMarkets[i];
 
             if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
                 marketPriceImpact[i - start].upPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(

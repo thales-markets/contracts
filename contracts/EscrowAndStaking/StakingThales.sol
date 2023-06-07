@@ -760,6 +760,14 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             "Cannot merge, cancel unstaking on both accounts before merging"
         );
 
+        if (address(sportsAMMLiquidityPool) != address(0)) {
+            require(!sportsAMMLiquidityPool.isUserLPing(msg.sender), "Cannot merge while LPing");
+        }
+
+        if (address(thalesAMMLiquidityPool) != address(0)) {
+            require(!thalesAMMLiquidityPool.isUserLPing(msg.sender), "Cannot merge while LPing");
+        }
+
         iEscrowThales.mergeAccount(msg.sender, destAccount);
 
         _stakedBalances[destAccount] = _stakedBalances[destAccount].add(_stakedBalances[msg.sender]);

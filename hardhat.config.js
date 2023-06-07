@@ -204,7 +204,7 @@ module.exports = {
 			accounts: [PRIVATE_KEY],
 		},
 		arbitrumOne: {
-			url: 'https://arbitrum-mainnet.infura.io/v3/' + INFURA,
+			url: 'https://arb-mainnet.g.alchemy.com/v2/XwkQhaWJQ9nP4mTROjqwU_0XIzbMIyNJ',
 			chainId: 42161,
 			//gasPrice: 5000000000,
 			accounts: [PRIVATE_KEY],

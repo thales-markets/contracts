@@ -168,11 +168,10 @@ contract('StakingThales', (accounts) => {
 			dummy,
 			dummy,
 			dummy,
-			dummy,
-			dummy,
 			PriceFeedInstance.address,
 			ThalesStakingRewardsPoolDeployed.address,
 			AddressResolverDeployed.address,
+			ZERO_ADDRESS,
 			ZERO_ADDRESS,
 			ZERO_ADDRESS,
 			{ from: owner }

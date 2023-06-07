@@ -79,7 +79,7 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
             totalTradingBasePointsPerRound[round] += basePoints;
             multiplierToUse = tradingMultiplier;
         }
-        uint newBonusPoints = ((ONE + getStakingMultiplier(user)) * (basePoints * tradingMultiplier)) / ONE;
+        uint newBonusPoints = ((ONE + getStakingMultiplier(user)) * ((basePoints * multiplierToUse) / ONE)) / ONE;
         userRoundBonusPoints[user][round] += newBonusPoints;
         totalRoundBonusPoints[round] += newBonusPoints;
         emit PointsStored(user, origin, basePoints, round);

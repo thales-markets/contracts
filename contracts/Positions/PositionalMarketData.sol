@@ -204,12 +204,12 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             marketPriceImpact[i].market = activeMarkets[i];
 
             if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                marketPriceImpact[i].upPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
+                marketPriceImpact[i - start].upPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
                     activeMarkets[i],
                     IThalesAMM.Position.Up,
                     ONE
                 );
-                marketPriceImpact[i].downPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
+                marketPriceImpact[i - start].downPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
                     activeMarkets[i],
                     IThalesAMM.Position.Down,
                     ONE
@@ -344,8 +344,8 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             marketPrices[i].market = activeMarkets[i];
 
             if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                marketPrices[i].upPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Up);
-                marketPrices[i].downPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Down);
+                marketPrices[i - start].upPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Up);
+                marketPrices[i - start].downPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Down);
             }
         }
         return marketPrices;

@@ -16,6 +16,8 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
 
     uint public stakingBaseDivider;
 
+    uint public maxStakingMultiplier;
+
     uint public vaultsMultiplier;
     uint public lpMultiplier;
     uint public tradingMultiplier;
@@ -65,24 +67,26 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
             knownVaults[origin] || knownLiquidityPools[origin] || knownTradingAMMs[origin],
             "Only allowed for known origin"
         );
-        uint multiplierToUse;
-        if (knownVaults[origin]) {
-            userVaultBasePointsPerRound[user][round] += basePoints;
-            totalVaultBasePointsPerRound[round] += basePoints;
-            multiplierToUse = vaultsMultiplier;
-        } else if (knownLiquidityPools[origin]) {
-            userLPBasePointsPerRound[user][round] += basePoints;
-            totalLPBasePointsPerRound[round] += basePoints;
-            multiplierToUse = lpMultiplier;
-        } else if (knownTradingAMMs[origin]) {
-            userTradingBasePointsPerRound[user][round] += basePoints;
-            totalTradingBasePointsPerRound[round] += basePoints;
-            multiplierToUse = tradingMultiplier;
+        if (IStakingThales(stakingThales).stakedBalanceOf(user) > 0) {
+            uint multiplierToUse;
+            if (knownVaults[origin]) {
+                userVaultBasePointsPerRound[user][round] += basePoints;
+                totalVaultBasePointsPerRound[round] += basePoints;
+                multiplierToUse = vaultsMultiplier;
+            } else if (knownLiquidityPools[origin]) {
+                userLPBasePointsPerRound[user][round] += basePoints;
+                totalLPBasePointsPerRound[round] += basePoints;
+                multiplierToUse = lpMultiplier;
+            } else if (knownTradingAMMs[origin]) {
+                userTradingBasePointsPerRound[user][round] += basePoints;
+                totalTradingBasePointsPerRound[round] += basePoints;
+                multiplierToUse = tradingMultiplier;
+            }
+            uint newBonusPoints = ((ONE + getStakingMultiplier(user)) * ((basePoints * multiplierToUse) / ONE)) / ONE;
+            userRoundBonusPoints[user][round] += newBonusPoints;
+            totalRoundBonusPoints[round] += newBonusPoints;
+            emit PointsStored(user, origin, basePoints, round);
         }
-        uint newBonusPoints = ((ONE + getStakingMultiplier(user)) * ((basePoints * multiplierToUse) / ONE)) / ONE;
-        userRoundBonusPoints[user][round] += newBonusPoints;
-        totalRoundBonusPoints[round] += newBonusPoints;
-        emit PointsStored(user, origin, basePoints, round);
     }
 
     /// @notice Register or unregister a known vault to accept vault points from
@@ -109,6 +113,12 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
         emit SetStakingBaseDivider(value);
     }
 
+    /// @notice Maximum value of Staking Multiplier
+    function setMaxStakingMultiplier(uint value) external onlyOwner {
+        maxStakingMultiplier = value;
+        emit SetMaxStakingMultiplier(value);
+    }
+
     /// @notice set multiplers for each category
     function setMultipliers(
         uint _vaultsMultiplier,
@@ -127,14 +137,19 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
         emit SetUseNewModel(value);
     }
 
+    //***********************VIEWS***********************
+
     /// @notice return the share of bonus rewards per user per round.
-    function getUserRoundBonusShare(address user, uint round) public view returns (uint) {
-        return (userRoundBonusPoints[user][round] * ONE) / totalRoundBonusPoints[round];
+    function getUserRoundBonusShare(address user, uint round) public view returns (uint userShare) {
+        if (totalRoundBonusPoints[round] > 0) {
+            userShare = (userRoundBonusPoints[user][round] * ONE) / totalRoundBonusPoints[round];
+        }
     }
 
     /// @notice return the staking multipler per user
     function getStakingMultiplier(address user) public view returns (uint) {
-        return IStakingThales(stakingThales).stakedBalanceOf(user) / stakingBaseDivider;
+        uint calculatedMultiplier = IStakingThales(stakingThales).stakedBalanceOf(user) / stakingBaseDivider;
+        return calculatedMultiplier < maxStakingMultiplier ? calculatedMultiplier : maxStakingMultiplier;
     }
 
     event SetStakingThales(address _stakingThales);
@@ -144,5 +159,6 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
     event SetKnownTradingAMM(address amm, bool value);
     event SetMultipliers(uint _vaultsMultiplier, uint _lpMultiplier, uint _tradingMultiplier);
     event SetStakingBaseDivider(uint value);
+    event SetMaxStakingMultiplier(uint value);
     event SetUseNewModel(bool value);
 }

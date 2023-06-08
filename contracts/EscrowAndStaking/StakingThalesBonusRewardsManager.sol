@@ -11,6 +11,15 @@ import "../interfaces/IStakingThales.sol";
 contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyReentrancyGuard {
     uint private constant ONE = 1e18;
 
+    struct LeaderboardStakerData {
+        uint share;
+        uint stakingMultiplier;
+        uint userVaultBasePointsPerRound;
+        uint userLPBasePointsPerRound;
+        uint userTradingBasePointsPerRound;
+        uint userRoundBonusPoints;
+    }
+
     /// @return the adddress of the staking contract
     address public stakingThales;
 
@@ -150,6 +159,24 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
     function getStakingMultiplier(address user) public view returns (uint) {
         uint calculatedMultiplier = IStakingThales(stakingThales).stakedBalanceOf(user) / stakingBaseDivider;
         return calculatedMultiplier < maxStakingMultiplier ? calculatedMultiplier : maxStakingMultiplier;
+    }
+
+    function getStakersLeaderboardData(address[] calldata stakers, uint round)
+        external
+        view
+        returns (LeaderboardStakerData[] memory)
+    {
+        LeaderboardStakerData[] memory stakersArray = new LeaderboardStakerData[](stakers.length);
+
+        for (uint i = 0; i < stakers.length; i++) {
+            stakersArray[i].share = getUserRoundBonusShare(stakers[i], round);
+            stakersArray[i].stakingMultiplier = getStakingMultiplier(stakers[i]);
+            stakersArray[i].userVaultBasePointsPerRound = userVaultBasePointsPerRound[stakers[i]][round];
+            stakersArray[i].userLPBasePointsPerRound = userLPBasePointsPerRound[stakers[i]][round];
+            stakersArray[i].userTradingBasePointsPerRound = userTradingBasePointsPerRound[stakers[i]][round];
+            stakersArray[i].userRoundBonusPoints = userRoundBonusPoints[stakers[i]][round];
+        }
+        return stakersArray;
     }
 
     event SetStakingThales(address _stakingThales);

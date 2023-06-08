@@ -206,6 +206,62 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "stakers",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "getStakersLeaderboardData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "share",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "stakingMultiplier",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userVaultBasePointsPerRound",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userLPBasePointsPerRound",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userTradingBasePointsPerRound",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userRoundBonusPoints",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct StakingThalesBonusRewardsManager.LeaderboardStakerData[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "user",
         "type": "address"

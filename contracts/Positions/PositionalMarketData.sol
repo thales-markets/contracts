@@ -201,15 +201,15 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             : end;
         ActiveMarketsPriceImpact[] memory marketPriceImpact = new ActiveMarketsPriceImpact[](endIndex - start);
         for (uint i = start; i < endIndex; i++) {
-            marketPriceImpact[i].market = activeMarkets[i];
+            marketPriceImpact[i - start].market = activeMarkets[i];
 
             if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                marketPriceImpact[i].upPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
+                marketPriceImpact[i - start].upPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
                     activeMarkets[i],
                     IThalesAMM.Position.Up,
                     ONE
                 );
-                marketPriceImpact[i].downPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
+                marketPriceImpact[i - start].downPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
                     activeMarkets[i],
                     IThalesAMM.Position.Down,
                     ONE
@@ -288,12 +288,12 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             marketPrices[i].market = activeMarkets[i];
 
             if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                marketPrices[i].upPrice = IThalesAMM(thalesAMM).buyFromAmmQuote(
+                marketPrices[i - start].upPrice = IThalesAMM(thalesAMM).buyFromAmmQuote(
                     activeMarkets[i],
                     IThalesAMM.Position.Up,
                     ONE
                 );
-                marketPrices[i].downPrice = IThalesAMM(thalesAMM).buyFromAmmQuote(
+                marketPrices[i - start].downPrice = IThalesAMM(thalesAMM).buyFromAmmQuote(
                     activeMarkets[i],
                     IThalesAMM.Position.Down,
                     ONE
@@ -341,11 +341,11 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             : end;
         ActiveMarketsPrices[] memory marketPrices = new ActiveMarketsPrices[](endIndex - start);
         for (uint i = start; i < endIndex; i++) {
-            marketPrices[i].market = activeMarkets[i];
+            marketPrices[i - start].market = activeMarkets[i];
 
             if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                marketPrices[i].upPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Up);
-                marketPrices[i].downPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Down);
+                marketPrices[i - start].upPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Up);
+                marketPrices[i - start].downPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Down);
             }
         }
         return marketPrices;

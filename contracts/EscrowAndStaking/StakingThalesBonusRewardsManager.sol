@@ -161,6 +161,7 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
         return calculatedMultiplier < maxStakingMultiplier ? calculatedMultiplier : maxStakingMultiplier;
     }
 
+    /// @notice return leaderboard data
     function getStakersLeaderboardData(address[] calldata stakers, uint round)
         external
         view

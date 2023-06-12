@@ -53,13 +53,6 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
         stakingThales = _stakingThales;
     }
 
-    /// @notice Setting the SportAMMLiquidityPool
-    /// @param _stakingThales Address of Staking contract
-    function setStakingThales(address _stakingThales) external onlyOwner {
-        stakingThales = _stakingThales;
-        emit SetStakingThales(_stakingThales);
-    }
-
     /// @notice Save gamified staking bonus points
     /// @param user to save points for
     /// @param origin where the points originated from (vaults, lp or trading)
@@ -96,6 +89,13 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
             totalRoundBonusPoints[round] += newBonusPoints;
             emit PointsStored(user, origin, basePoints, round);
         }
+    }
+
+    /// @notice Setting the SportAMMLiquidityPool
+    /// @param _stakingThales Address of Staking contract
+    function setStakingThales(address _stakingThales) external onlyOwner {
+        stakingThales = _stakingThales;
+        emit SetStakingThales(_stakingThales);
     }
 
     /// @notice Register or unregister a known vault to accept vault points from

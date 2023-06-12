@@ -239,14 +239,13 @@ contract('SportsVauchers', (accounts) => {
 			SNXRewards.address,
 			second,
 			second,
-			second,
-			second,
 			SportsAMM.address,
 			second,
 			second,
 			second,
 			second,
 			second,
+			ZERO_ADDRESS,
 			{ from: owner }
 		);
 

@@ -55,12 +55,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "thalesRoyale",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "thalesAMM",
         "type": "address"
       },
@@ -68,12 +62,6 @@
         "indexed": false,
         "internalType": "address",
         "name": "thalesRangedAMM",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "exoticBonds",
         "type": "address"
       },
       {
@@ -110,6 +98,12 @@
         "indexed": false,
         "internalType": "address",
         "name": "thalesAMMLiquidityPool",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "stakingThalesBonusRewardsManager",
         "type": "address"
       }
     ],
@@ -1659,22 +1653,12 @@
       },
       {
         "internalType": "address",
-        "name": "_royale",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
         "name": "_thalesAMM",
         "type": "address"
       },
       {
         "internalType": "address",
         "name": "_thalesRangedAMM",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_exoticBonds",
         "type": "address"
       },
       {
@@ -1705,6 +1689,11 @@
       {
         "internalType": "address",
         "name": "_thalesAMMLiquidityPool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_stakingThalesBonusRewardsManager",
         "type": "address"
       }
     ],
@@ -2006,6 +1995,21 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "stakingThalesBonusRewardsManager",
+    "outputs": [
+      {
+        "internalType": "contract IStakingThalesBonusRewardsManager",
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,

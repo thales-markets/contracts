@@ -23,7 +23,7 @@
 		"SNXIssuer": "0xA2412e0654CdD40F5677Aaad1a0c572e75dF246C",
 		"StakingThales": "0xC392133eEa695603B51a5d5de73655d571c2CE51",
 		"EscrowThales": "0xa25816b9605009aa446d4d597F0AA46FD828f056",
-		"StakingThalesImplementation": "0x0886e6Bea150ED770b2EE3341332339C5c08d9cd",
+		"StakingThalesImplementation": "0xeD8519750EB90Cbe9BA8573324a5C4102b97a85E",
 		"EscrowThalesImplementation": "0x566d358f3386abAc32CBE750489306C73CAaC9c2",
 		"ThalesStakingRewardsPool": "0xc44DfC6ffaf195E2535fc13D75a79D9238459782",
 		"ThalesStakingRewardsPoolImplementation": "0x0AbC94987F6b98bFE6fD40F749e445a2857a4Ee3",
@@ -123,7 +123,7 @@
 		"ThalesAMMOld": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
 		"GamesOddsReceiver": "0x1B3Dd18F0A31926A8cc24dF87C69B0ba303A04a1",
 		"GamesOddsReceiverImplementation": "0x9350B6808EB0727929031a79F516094D66E4Ad18",
-		"ThalesAMMLiquidityPoolImplementation": "0x092e6B8DFdDb4B732C89dEB4A700868cC5D58B70",
+		"ThalesAMMLiquidityPoolImplementation": "0x33425d42926283bc19c273110284035980bDdC01",
 		"ThalesAMMLiquidityPoolRoundMastercopy": "0x8F8Cc357Aaa401cB6f7e01D56C59AA8Cb2132018",
 		"ThalesAMMDefaultLiquidityProviderImplementation": "0xB47fb03FFaCEFa464AA0B1e575dDD42760A2d6FE",
 		"SportAMMLiquidityPoolData": "0x23823f1C7C4AE2Acef3bCCFCD5F282AE078150C2",
@@ -138,7 +138,9 @@
 		"StakingData": "0xCc134245424fe9E10A011961451D5AD6Cd0C087C",
 		"StakingDataImplementation": "0xAB599B2697D836e665706DC59566363E2FE0995a",
 		"ThalesAMMLiquidityPoolData": "0x1E95fAcA5F99dCC8e517fEA193a3C3B0AAc1E0a1",
-		"ThalesAMMLiquidityPoolDataImplementation": "0xB23Ea6561953B406f4806cD177377D6940420608"
+		"ThalesAMMLiquidityPoolDataImplementation": "0xB23Ea6561953B406f4806cD177377D6940420608",
+		"ThalesAMMStakingThalesBonusRewardsManager": "0xc07520843239C2CAA28101D8241D9132669B4271",
+		"ThalesAMMStakingThalesBonusRewardsManagerImplementation": "0x5830e9E30B55Cb5FD6102805fEa2cF951F6afB49"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -203,7 +205,7 @@
 		"ThalesToken": "0xe85b662fe97e8562f4099d8a1d5a92d4b453bf30",
 		"StakingThales": "0x160Ca569999601bca06109D42d561D85D6Bb4b57",
 		"EscrowThales": "0x391a45F31c1837E3d837c23e05F42A098329D50d",
-		"StakingThalesImplementation": "0xE7d1D7e2641aB86dEb5A09293b5E4c6fe657db33",
+		"StakingThalesImplementation": "0xc6CcA907A475a70B2052582A0d52674d997a2c67",
 		"EscrowThalesImplementation": "0x4c848a4A53954B9A925Cf857248Abf95Ab2A893C",
 		"ThalesStakingRewardsPool": "0x739d25922010A727B1fc842C483494d4D7a4C90e",
 		"ThalesStakingRewardsPoolImplementation": "0x94B417458AF11c991B413C03e79f76bda330AF77",
@@ -227,7 +229,7 @@
 		"AmmVaultImplementation": "0x4aD6Bc23486D1e6F8caf9b02E702D801cAc04b3b",
 		"AmmVaultSafu": "0x008A4e30A8b41781F5cb017b197aA9Aa4Cd53b46",
 		"AmmVaultSafuImplementation": "0x4aD6Bc23486D1e6F8caf9b02E702D801cAc04b3b",
-		"ThalesAMMLiquidityPoolImplementation": "0xDE609c3deC84dCd4e6A1b9Ab30068143d23F2819",
+		"ThalesAMMLiquidityPoolImplementation": "0x40b6F43383ebA86D1884a566CE267923698cABB4",
 		"ThalesAMMLiquidityPoolRoundMastercopy": "0xE69D18243c158A00F6B70Da2d2b2FaCDC8071CEb",
 		"ThalesAMMDefaultLiquidityProviderImplementation": "0x71eA1aa0823F7062BCec2B6FC82E14892046FB49",
 		"TaleOfThalesNFTs": "0xe42517a1Bf3E6Bd088Bf26ead8d8754e0e2BeBA3",
@@ -242,7 +244,9 @@
 		"StakingData": "0x0D72F9DB9efD3cbd91Ec4C296A01e3Cd5155Cc31",
 		"StakingDataImplementation": "0xffEC5E2A46B127D786297f3b73c962701566a6E0",
 		"ThalesAMMLiquidityPoolData": "0xc7909cdc3B54bA28c2bAcc096ac6D7e83d9fd00c",
-		"ThalesAMMLiquidityPoolDataImplementation": "0xade53971B171f61d474754d9Cad9Ca20564347Bf"
+		"ThalesAMMLiquidityPoolDataImplementation": "0xade53971B171f61d474754d9Cad9Ca20564347Bf",
+		"ThalesAMMStakingThalesBonusRewardsManager": "0x6535F4cCC70E0CCb192a8A224d5eBA420DDF9e3f",
+		"ThalesAMMStakingThalesBonusRewardsManagerImplementation": "0x1f09E08b503B06633992a9b847281675e8895202"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

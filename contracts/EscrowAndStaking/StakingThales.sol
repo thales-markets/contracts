@@ -296,7 +296,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address _addressResolver,
         address _sportsAMMLiquidityPool,
         address _thalesAMMLiquidityPool,
-        address _parlayAMMLiquidityPool
+        address _parlayAMMLiquidityPool,
+        address _stakingThalesBonusRewardsManager
     ) external onlyOwner {
         SNXRewards = ISNXRewards(_snxRewards);
         thalesAMM = _thalesAMM;

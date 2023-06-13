@@ -105,6 +105,12 @@
         "internalType": "address",
         "name": "parlayAMMLiquidityPool",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "stakingThalesBonusRewardsManager",
+        "type": "address"
       }
     ],
     "name": "AddressesChanged",

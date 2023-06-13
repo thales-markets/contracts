@@ -1593,7 +1593,7 @@ contract('ParlayAMM', (accounts) => {
 					fromUnit(userBalanceAfter.sub(userBalanceBefore))
 				);
 
-				assert.equal(fromUnit(balanceAfter.sub(toUnit(20000))), 0);
+				assert.equal(balanceAfter, 0);
 
 				let parlayData = await ParlayMarketData.getParlayDetails(parlaySingleMarket.address);
 

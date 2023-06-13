@@ -296,7 +296,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address _addressResolver,
         address _sportsAMMLiquidityPool,
         address _thalesAMMLiquidityPool,
+<<<<<<< HEAD
         address _parlayAMMLiquidityPool
+=======
+        address _stakingThalesBonusRewardsManager
+>>>>>>> origin/main
     ) external onlyOwner {
         SNXRewards = ISNXRewards(_snxRewards);
         thalesAMM = _thalesAMM;
@@ -307,8 +311,12 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         addressResolver = IAddressResolver(_addressResolver);
         sportsAMMLiquidityPool = ISportsAMMLiquidityPool(_sportsAMMLiquidityPool);
         thalesAMMLiquidityPool = IThalesAMMLiquidityPool(_thalesAMMLiquidityPool);
+<<<<<<< HEAD
         parlayAMMLiquidityPool = IParlayAMMLiquidityPool(_parlayAMMLiquidityPool);
+
+=======
         stakingThalesBonusRewardsManager = IStakingThalesBonusRewardsManager(_stakingThalesBonusRewardsManager);
+>>>>>>> origin/main
         emit AddressesChanged(
             _snxRewards,
             _thalesAMM,
@@ -319,8 +327,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             _addressResolver,
             _sportsAMMLiquidityPool,
             _thalesAMMLiquidityPool,
-            _parlayAMMLiquidityPool,
+<<<<<<< HEAD
+            _parlayAMMLiquidityPool
+=======
             _stakingThalesBonusRewardsManager
+>>>>>>> origin/main
         );
     }
 
@@ -992,8 +1003,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address addressResolver,
         address sportsAMMLiquidityPool,
         address thalesAMMLiquidityPool,
-        address parlayAMMLiquidityPool,
+<<<<<<< HEAD
+        address parlayAMMLiquidityPool
+=======
         address stakingThalesBonusRewardsManager
+>>>>>>> origin/main
     );
     event EscrowChanged(address newEscrow);
     event StakingPeriodStarted();

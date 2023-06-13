@@ -103,7 +103,11 @@
       {
         "indexed": false,
         "internalType": "address",
+<<<<<<< HEAD
         "name": "parlayAMMLiquidityPool",
+=======
+        "name": "stakingThalesBonusRewardsManager",
+>>>>>>> origin/main
         "type": "address"
       }
     ],
@@ -1708,12 +1712,11 @@
       },
       {
         "internalType": "address",
+<<<<<<< HEAD
         "name": "_parlayAMMLiquidityPool",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
+=======
         "name": "_stakingThalesBonusRewardsManager",
+>>>>>>> origin/main
         "type": "address"
       }
     ],

@@ -302,8 +302,6 @@ contract('ParlayAMM', (accounts) => {
 			SNXRewards.address,
 			second,
 			second,
-			second,
-			second,
 			SportsAMM.address,
 			second,
 			second,
@@ -311,6 +309,7 @@ contract('ParlayAMM', (accounts) => {
 			second,
 			second,
 			second,
+			ZERO_ADDRESS,
 			{ from: owner }
 		);
 

@@ -33,6 +33,10 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
+const { toWei } = require('web3-utils');
+
+const toUnitSix = (amount) => toBN(toWei(amount.toString(), 'ether') / 1e12);
+
 contract('SportsVauchers', (accounts) => {
 	const [
 		manager,
@@ -76,7 +80,6 @@ contract('SportsVauchers', (accounts) => {
 	let sportsAMMUtils;
 	let Thales;
 	let voucher;
-	let voucherEscrow;
 	let consumer;
 	let TherundownConsumer;
 	let TherundownConsumerImplementation;
@@ -167,6 +170,7 @@ contract('SportsVauchers', (accounts) => {
 		await SportPositionalMarketFactory.initialize(manager, { from: manager });
 
 		await SportPositionalMarketManager.setExpiryDuration(5 * DAY, { from: manager });
+		await SportPositionalMarketManager.setNeedsTransformingCollateral(true, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
@@ -200,7 +204,7 @@ contract('SportsVauchers', (accounts) => {
 
 		await SportsAMM.setParameters(
 			DAY,
-			toUnit('0.01'),
+			toUnit('0.04'), //_minSpread
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
@@ -241,19 +245,22 @@ contract('SportsVauchers', (accounts) => {
 			second,
 			second,
 			second,
+<<<<<<< HEAD
 			second,
+=======
 			ZERO_ADDRESS,
+>>>>>>> origin/main
 			{ from: owner }
 		);
 
-		await Thales.transfer(first, toUnit('1000'), { from: owner });
-		await Thales.transfer(minter, toUnit('1000'), { from: owner });
-		await Thales.transfer(third, toUnit('1000'), { from: owner });
+		await Thales.transfer(first, toUnitSix('1000'), { from: owner });
+		await Thales.transfer(minter, toUnitSix('1000'), { from: owner });
+		await Thales.transfer(third, toUnitSix('1000'), { from: owner });
 		await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
 
-		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: first });
-		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: second });
-		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: third });
+		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: first });
+		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: second });
+		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: third });
 
 		// ids
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';
@@ -407,6 +414,7 @@ contract('SportsVauchers', (accounts) => {
 				_maxAllowedDeposit: toUnit(1000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
+				_needsTransformingCollateral: false,
 			},
 			{ from: owner }
 		);
@@ -471,7 +479,6 @@ contract('SportsVauchers', (accounts) => {
 			deployedMarket = await SportPositionalMarketContract.at(answer.toString());
 
 			let OvertimeVoucher = artifacts.require('OvertimeVoucher');
-			let OvertimeVoucherEscrow = artifacts.require('OvertimeVoucherEscrow');
 
 			voucher = await OvertimeVoucher.new(
 				Thales.address,
@@ -487,151 +494,61 @@ contract('SportsVauchers', (accounts) => {
 				SportsAMM.address
 			);
 
-			voucherEscrow = await OvertimeVoucherEscrow.new({ from: manager });
-
-			const now = await currentTime();
-
-			voucherEscrow.initialize(
-				owner,
-				Thales.address,
-				voucher.address,
-				[second, third, fourth],
-				toUnit(5),
-				now + WEEK,
-				{ from: owner }
-			);
-
 			await voucher.setSportsAMM(SportsAMM.address);
 			await voucher.setPause(false);
 			await voucher.setTokenUris('', '', '', '', '', '', '', '');
-			await voucher.setMultiplier(toUnit(1));
+			await voucher.setMultiplier(toUnitSix(1));
 
 			position = artifacts.require('SportPosition');
 		});
 		let position = 0;
 		let value = 100;
 
-		it('Cannot claim voucher if address is not whitelisted', async () => {
-			const REVERT = 'Invalid address';
-			await assert.revert(voucherEscrow.claimVoucher({ from: first }), REVERT);
-		});
-
-		it('Cannot claim voucher if contract has no susd', async () => {
-			const REVERT = 'Not enough sUSD in the contract';
-			await assert.revert(voucherEscrow.claimVoucher({ from: second }), REVERT);
-		});
-
-		it('Cannot claim voucher if address already claimed', async () => {
-			await Thales.transfer(voucherEscrow.address, toUnit('1000'), { from: owner });
-			const REVERT = 'Address has already claimed voucher';
-
-			await voucherEscrow.claimVoucher({ from: second });
-			await assert.revert(voucherEscrow.claimVoucher({ from: second }), REVERT);
-		});
-
-		it('Cannot claim voucher if period closed', async () => {
-			await Thales.transfer(voucherEscrow.address, toUnit('1000'), { from: owner });
-			await voucherEscrow.claimVoucher({ from: second });
-			await voucherEscrow.claimVoucher({ from: third });
-
-			assert.equal(await voucherEscrow.period(), 1);
-
-			fastForward(2 * WEEK);
-
-			const REVERT = 'Claiming period ended';
-			assert.equal(await voucherEscrow.period(), 1);
-
-			await assert.revert(voucherEscrow.claimVoucher({ from: fourth }), REVERT);
-			await assert.revert(voucherEscrow.claimVoucher({ from: third }), REVERT);
-			await assert.revert(voucherEscrow.claimVoucher({ from: second }), REVERT);
-
-			assert.equal(await voucherEscrow.isWhitelistedAddress(second), true);
-			assert.equal(await voucherEscrow.isWhitelistedAddress(third), true);
-			assert.equal(await voucherEscrow.isWhitelistedAddress(fourth), true);
-		});
-
-		it('Reset addresses on new period start', async () => {
-			await Thales.transfer(voucherEscrow.address, toUnit('1000'), { from: owner });
-			await voucherEscrow.claimVoucher({ from: second });
-			await voucherEscrow.claimVoucher({ from: third });
-
-			await assert.revert(
-				voucherEscrow.claimVoucher({ from: second }),
-				'Address has already claimed voucher'
+		it('Mint voucher', async () => {
+			let odds = [];
+			odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
+			odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
+			odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
+			console.log(
+				'Game odds: 0=',
+				fromUnit(odds[0]),
+				', 1=',
+				fromUnit(odds[1]),
+				' 2=',
+				fromUnit(odds[2])
 			);
 
-			assert.equal(await voucherEscrow.isWhitelistedAddress(second), true);
-			assert.equal(await voucherEscrow.isWhitelistedAddress(third), true);
-			assert.equal(await voucherEscrow.isWhitelistedAddress(fourth), true);
+			console.log(toUnitSix(20) / 1e6);
+			Thales.approve(voucher.address, toUnitSix(20), { from: minter });
 
-			assert.equal(await voucherEscrow.period(), 1);
-			let now = await currentTime();
+			let balanceOfMinter = await Thales.balanceOf(minter);
+			console.log('sUSD balance of minter = ' + balanceOfMinter / 1e6);
+			const id = 1;
 
-			await assert.revert(
-				voucherEscrow.setPeriodEndTimestamp(now, true, { from: owner }),
-				'Invalid timestamp'
+			const fifteenSUSD = toUnitSix(15);
+			await expect(voucher.mint(first, fifteenSUSD, { from: minter })).to.be.revertedWith(
+				'Invalid amount'
 			);
 
-			fastForward(2 * WEEK);
-
-			await voucherEscrow.setPeriodEndTimestamp(now + 3 * WEEK, true, { from: owner });
-
-			assert.equal(await voucherEscrow.period(), 2);
-			const REVERT = 'Invalid address';
-
-			await assert.revert(voucherEscrow.claimVoucher({ from: second }), REVERT);
-			await assert.revert(voucherEscrow.claimVoucher({ from: third }), REVERT);
-			await assert.revert(voucherEscrow.claimVoucher({ from: fourth }), REVERT);
-
-			assert.equal(await voucherEscrow.isWhitelistedAddress(second), false);
-			assert.equal(await voucherEscrow.isWhitelistedAddress(third), false);
-			assert.equal(await voucherEscrow.isWhitelistedAddress(fourth), false);
-
-			await assert.revert(
-				voucherEscrow.setWhitelistedAddresses([], true, { from: owner }),
-				'Whitelisted addresses cannot be empty'
-			);
-
-			await voucherEscrow.setWhitelistedAddresses([first, second], true, { from: owner });
-
-			assert.equal(await voucherEscrow.isWhitelistedAddress(first), true);
-			assert.equal(await voucherEscrow.isWhitelistedAddress(second), true);
-			assert.equal(await voucherEscrow.isWhitelistedAddress(third), false);
-
-			await voucherEscrow.setPeriodEndTimestamp(now + 4 * WEEK, false, { from: owner });
-
-			assert.equal(await voucherEscrow.period(), 2);
-
-			await voucherEscrow.claimVoucher({ from: first });
-
-			await assert.revert(
-				voucherEscrow.claimVoucher({ from: first }),
-				'Address has already claimed voucher'
-			);
-		});
-
-		it('Mints viable vouchers', async () => {
-			await Thales.transfer(voucherEscrow.address, toUnit('1000'), { from: owner });
-			await voucherEscrow.claimVoucher({ from: second });
-			await voucherEscrow.claimVoucher({ from: third });
-
-			let balanceOfEscrow = await Thales.balanceOf(voucherEscrow.address);
-			console.log('balanceOfEscrow', balanceOfEscrow);
+			const twentysUSD = toUnitSix(20);
+			await voucher.mint(first, twentysUSD, { from: minter });
+			balanceOfMinter = await Thales.balanceOf(minter);
+			console.log('sUSD balance of minter = ' + balanceOfMinter / 1e6);
 
 			let balanceOfVoucher = await Thales.balanceOf(voucher.address);
-			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
+			console.log('sUSD balance of voucher = ' + balanceOfVoucher / 1e6);
 
-			assert.bnEqual(1, await voucher.balanceOf(second));
-			assert.equal(second, await voucher.ownerOf(1));
-			assert.bnEqual(1, await voucher.balanceOf(third));
-			assert.equal(third, await voucher.ownerOf(2));
-			assert.bnEqual(toUnit(5), await voucher.amountInVoucher(1));
-			assert.bnEqual(toUnit(5), await voucher.amountInVoucher(2));
+			assert.bnEqual(1, await voucher.balanceOf(first));
+			assert.equal(first, await voucher.ownerOf(id));
+			assert.bnEqual(toUnitSix(20), await voucher.amountInVoucher(id));
 
-			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(5));
-			console.log('Quote is ' + buyFromAmmQuote / 1e18);
+			await voucher.safeTransferFrom(first, second, id, { from: first });
+			assert.equal(second, await voucher.ownerOf(id));
 
-			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(5), 1, {
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(20));
+			console.log('Quote is ' + buyFromAmmQuote / 1e6);
+
+			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(20), id, {
 				from: second,
 			});
 
@@ -648,23 +565,73 @@ contract('SportsVauchers', (accounts) => {
 			balanceOfVoucher = await Thales.balanceOf(voucher.address);
 			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
 
-			let amountInVoucher = await voucher.amountInVoucher(1);
-			console.log('Amount in voucher is ' + amountInVoucher / 1e18);
+			let amountInVoucher = await voucher.amountInVoucher(id);
+			console.log('Amount in voucher is ' + amountInVoucher / 1e6);
 
 			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
-			console.log('100 Quote is ' + buyFromAmmQuote / 1e18);
+			console.log('100 Quote is ' + buyFromAmmQuote / 1e6);
 
 			await expect(
-				voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(100), 1, {
+				voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(100), id, {
 					from: second,
 				})
 			).to.be.revertedWith('Insufficient amount in voucher');
 
 			await expect(
-				voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(100), 1, {
+				voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(100), id, {
 					from: first,
 				})
 			).to.be.revertedWith('You are not the voucher owner!');
+
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(67));
+			console.log('65 Quote is ' + buyFromAmmQuote / 1e6);
+
+			let secondBalanceBeforeBurn = await voucher.balanceOf(second);
+			console.log('Second balance before burn is ' + secondBalanceBeforeBurn);
+
+			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(67), id, {
+				from: second,
+			});
+
+			home = await position.at(options.home);
+			away = await position.at(options.away);
+
+			balanceHome = await home.balanceOf(second);
+			console.log('Balance Home = ' + balanceHome);
+
+			balanceAway = await away.balanceOf(second);
+			console.log('Balance Away = ' + balanceAway);
+
+			balanceOfVoucher = await Thales.balanceOf(voucher.address);
+			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
+
+			let secondBalanceAfterBurn = await voucher.balanceOf(second);
+			console.log('Second balance after burn is ' + secondBalanceAfterBurn);
+
+			assert.bnEqual(0, secondBalanceAfterBurn);
 		});
+
+		// it('Buy from SportsAMM, position 1, value: 100', async () => {
+		// 	let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+		// 	let additionalSlippage = toUnit(0.01);
+		// 	let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
+		// 	answer = await Thales.balanceOf(first);
+		// 	let before_balance = answer;
+		// 	console.log('acc balance: ', fromUnit(answer));
+		// 	console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+		// 	answer = await SportsAMM.buyFromAMM(
+		// 		deployedMarket.address,
+		// 		1,
+		// 		toUnit(100),
+		// 		buyFromAmmQuote,
+		// 		additionalSlippage,
+		// 		{ from: first }
+		// 	);
+		// 	answer = await Thales.balanceOf(first);
+		// 	console.log('acc after buy balance: ', fromUnit(answer));
+		// 	console.log('cost: ', fromUnit(before_balance.sub(answer)));
+		// 	let options = await deployedMarket.balancesOf(first);
+		// 	console.log('Balances', options[0].toString(), fromUnit(options[1]), options[2].toString());
+		// });
 	});
 });

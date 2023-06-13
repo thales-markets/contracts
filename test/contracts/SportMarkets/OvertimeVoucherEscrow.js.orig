@@ -241,8 +241,11 @@ contract('SportsVauchers', (accounts) => {
 			second,
 			second,
 			second,
+<<<<<<< HEAD
 			second,
+=======
 			ZERO_ADDRESS,
+>>>>>>> origin/main
 			{ from: owner }
 		);
 

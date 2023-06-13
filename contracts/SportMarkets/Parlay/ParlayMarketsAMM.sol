@@ -237,8 +237,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _expectedPayout,
         address _differentRecipient
     ) external nonReentrant notPaused {
-        uint balance = sUSD.balanceOf(address(this));
-        console.log(">>> initBalance AMM: ", balance);
         if (_differentRecipient == address(0)) {
             _differentRecipient = msg.sender;
         }
@@ -254,8 +252,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(_differentRecipient, _sUSDPaid);
         }
-        balance = sUSD.balanceOf(address(this)) - balance;
-        console.log(">>> finalGain AMM: ", balance);
+        uint balance = sUSD.balanceOf(address(this));
         if (balance > 0) {
             sUSD.transfer(
                 IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),

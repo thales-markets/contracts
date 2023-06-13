@@ -523,6 +523,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "exerciseMarketsReadyToExercisedBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "firstRoundStartTime",
     "outputs": [

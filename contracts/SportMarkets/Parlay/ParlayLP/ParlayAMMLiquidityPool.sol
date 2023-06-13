@@ -46,6 +46,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     uint public round;
     uint public roundLength;
+    //actually second round, as first one is default for mixed round and never closes
     uint public firstRoundStartTime;
 
     mapping(uint => address) public roundPools;
@@ -388,6 +389,32 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         }
     }
 
+    /// @notice Exercises markets in a round
+    /// @param batchSize number of markets to be processed
+    function exerciseMarketsReadyToExercisedBatch(uint batchSize)
+        external
+        nonReentrant
+        whenNotPaused
+        roundClosingNotPrepared
+    {
+        require(batchSize > 0, "batchSize has to be greater than 0");
+
+        ParlayAMMLiquidityPoolRound poolRound = ParlayAMMLiquidityPoolRound(roundPools[round]);
+        uint count = 0;
+        ParlayMarket market;
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            if (count == batchSize) break;
+            address marketAddress = tradingMarketsPerRound[round][i];
+            if (!marketAlreadyExercisedInRound[round][marketAddress]) {
+                market = ParlayMarket(marketAddress);
+                if (market.hasMarketLostButHasExercisableWinningPositions()) {
+                    parlayAMM.exerciseParlay(marketAddress);
+                    count += 1;
+                }
+            }
+        }
+    }
+
     /* ========== VIEWS ========== */
 
     /// @notice whether the user is currently LPing
@@ -486,14 +513,14 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     /// @param _round number
     /// @return uint the start time of the given round
     function getRoundStartTime(uint _round) public view returns (uint) {
-        return firstRoundStartTime + (_round - 1) * roundLength;
+        return firstRoundStartTime + (_round - 2) * roundLength;
     }
 
     /// @notice Return the end time of the passed round
     /// @param _round number
     /// @return uint the end time of the given round
     function getRoundEndTime(uint _round) public view returns (uint) {
-        return firstRoundStartTime + _round * roundLength;
+        return firstRoundStartTime + (_round - 1) * roundLength;
     }
 
     /// @notice Return the round to which a market belongs to

@@ -272,16 +272,16 @@ contract('PostitionalMarketData', (accounts) => {
 				from: minter,
 			});
 
-			let priceImpactForAllActiveMarkets = await marketData.getPriceImpactForAllActiveMarkets();
+			let priceImpactForAllActiveMarkets = await marketData.getBatchPriceImpactForAllActiveMarkets(
+				0,
+				1
+			);
 			assert.bnEqual(priceImpactForAllActiveMarkets.length, 1);
 
-			let liquidityForAllActiveMarkets = await marketData.getLiquidityForAllActiveMarkets();
-			assert.bnEqual(liquidityForAllActiveMarkets.length, 1);
-
-			let pricesForAllActiveMarkets = await marketData.getPricesForAllActiveMarkets();
-			assert.bnEqual(pricesForAllActiveMarkets.length, 1);
-
-			let basePricesForAllActiveMarkets = await marketData.getBasePricesForAllActiveMarkets();
+			let basePricesForAllActiveMarkets = await marketData.getBatchBasePricesForAllActiveMarkets(
+				0,
+				1
+			);
 			assert.bnEqual(basePricesForAllActiveMarkets.length, 1);
 		});
 	});

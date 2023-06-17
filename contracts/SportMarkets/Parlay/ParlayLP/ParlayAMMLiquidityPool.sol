@@ -477,7 +477,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             address marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (!market.parlayAlreadyLost() && !market.fundsIssued()) {
+                if (market.hasMarketLostButHasExercisableWinningPositions()) {
                     return false;
                 }
             }

@@ -89,12 +89,34 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         uint leftPrice;
         uint rightPrice;
     }
+    struct AmmMarketData {
+        uint upBuyLiquidity;
+        uint downBuyLiquidity;
+        uint upSellLiquidity;
+        uint downSellLiquidity;
+        uint upBuyPrice;
+        uint downBuyPrice;
+        uint upSellPrice;
+        uint downSellPrice;
+        int upBuyPriceImpact;
+        int downBuyPriceImpact;
+        int upSellPriceImpact;
+        int downSellPriceImpact;
+        uint iv;
+        bool isMarketInAMMTrading;
+    }
 
-    struct RangedMarketPricesAndLiqudity {
-        uint inPrice;
-        uint outPrice;
-        uint inLiquidity;
-        uint outLiquidity;
+    struct RangedAmmMarketData {
+        uint inBuyLiquidity;
+        uint outBuyLiquidity;
+        uint inSellLiquidity;
+        uint outSellLiquidity;
+        uint inBuyPrice;
+        uint outBuyPrice;
+        uint inSellPrice;
+        uint outSellPrice;
+        int inPriceImpact;
+        int outPriceImpact;
     }
 
     uint private constant ONE = 1e18;
@@ -157,33 +179,6 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     /// @notice getPriceImpactForAllActiveMarkets returns price impact for all active markets
-    /// @return ActiveMarketsPriceImpact
-    function getPriceImpactForAllActiveMarkets() external view returns (ActiveMarketsPriceImpact[] memory) {
-        address[] memory activeMarkets = PositionalMarketManager(manager).activeMarkets(
-            0,
-            PositionalMarketManager(manager).numActiveMarkets()
-        );
-        ActiveMarketsPriceImpact[] memory marketPriceImpact = new ActiveMarketsPriceImpact[](activeMarkets.length);
-        for (uint i = 0; i < activeMarkets.length; i++) {
-            marketPriceImpact[i].market = activeMarkets[i];
-
-            if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                marketPriceImpact[i].upPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
-                    activeMarkets[i],
-                    IThalesAMM.Position.Up,
-                    ONE
-                );
-                marketPriceImpact[i].downPriceImpact = IThalesAMM(thalesAMM).buyPriceImpact(
-                    activeMarkets[i],
-                    IThalesAMM.Position.Down,
-                    ONE
-                );
-            }
-        }
-        return marketPriceImpact;
-    }
-
-    /// @notice getPriceImpactForAllActiveMarkets returns price impact for all active markets
     /// @param start startIndex
     /// @param end endIndex
     /// @return ActiveMarketsPriceImpact
@@ -217,110 +212,6 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             }
         }
         return marketPriceImpact;
-    }
-
-    /// @notice getLiquidityForAllActiveMarkets returns liquidity for all active markets
-    /// @return ActiveMarketsLiquidity
-    function getLiquidityForAllActiveMarkets() external view returns (ActiveMarketsLiquidity[] memory) {
-        address[] memory activeMarkets = PositionalMarketManager(manager).activeMarkets(
-            0,
-            PositionalMarketManager(manager).numActiveMarkets()
-        );
-        ActiveMarketsLiquidity[] memory marketLiquidity = new ActiveMarketsLiquidity[](activeMarkets.length);
-        for (uint i = 0; i < activeMarkets.length; i++) {
-            marketLiquidity[i].market = activeMarkets[i];
-
-            if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                marketLiquidity[i].upLiquidity = IThalesAMM(thalesAMM).availableToBuyFromAMM(
-                    activeMarkets[i],
-                    IThalesAMM.Position.Up
-                );
-                marketLiquidity[i].downLiquidity = IThalesAMM(thalesAMM).availableToBuyFromAMM(
-                    activeMarkets[i],
-                    IThalesAMM.Position.Down
-                );
-            }
-        }
-        return marketLiquidity;
-    }
-
-    /// @notice getPricesForAllActiveMarkets returns prices for all active markets
-    /// @return ActiveMarketsPrices
-    function getPricesForAllActiveMarkets() external view returns (ActiveMarketsPrices[] memory) {
-        address[] memory activeMarkets = PositionalMarketManager(manager).activeMarkets(
-            0,
-            PositionalMarketManager(manager).numActiveMarkets()
-        );
-        ActiveMarketsPrices[] memory marketPrices = new ActiveMarketsPrices[](activeMarkets.length);
-        for (uint i = 0; i < activeMarkets.length; i++) {
-            marketPrices[i].market = activeMarkets[i];
-
-            if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                marketPrices[i].upPrice = IThalesAMM(thalesAMM).buyFromAmmQuote(
-                    activeMarkets[i],
-                    IThalesAMM.Position.Up,
-                    ONE
-                );
-                marketPrices[i].downPrice = IThalesAMM(thalesAMM).buyFromAmmQuote(
-                    activeMarkets[i],
-                    IThalesAMM.Position.Down,
-                    ONE
-                );
-            }
-        }
-        return marketPrices;
-    }
-
-    /// @notice getBatchPricesForAllActiveMarkets returns prices for all active markets
-    /// @param start startIndex
-    /// @param end endIndex
-    /// @return ActiveMarketsPrices
-    function getBatchPricesForAllActiveMarkets(uint start, uint end) external view returns (ActiveMarketsPrices[] memory) {
-        address[] memory activeMarkets = PositionalMarketManager(manager).activeMarkets(
-            0,
-            PositionalMarketManager(manager).numActiveMarkets()
-        );
-        uint endIndex = end > PositionalMarketManager(manager).numActiveMarkets()
-            ? PositionalMarketManager(manager).numActiveMarkets()
-            : end;
-        ActiveMarketsPrices[] memory marketPrices = new ActiveMarketsPrices[](endIndex - start);
-        for (uint i = start; i < endIndex; i++) {
-            marketPrices[i].market = activeMarkets[i];
-
-            if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                marketPrices[i - start].upPrice = IThalesAMM(thalesAMM).buyFromAmmQuote(
-                    activeMarkets[i],
-                    IThalesAMM.Position.Up,
-                    ONE
-                );
-                marketPrices[i - start].downPrice = IThalesAMM(thalesAMM).buyFromAmmQuote(
-                    activeMarkets[i],
-                    IThalesAMM.Position.Down,
-                    ONE
-                );
-            }
-        }
-        return marketPrices;
-    }
-
-    /// @notice getBasePricesForAllActiveMarkets returns base prices for all active markets
-    /// @return ActiveMarketsPrices
-    function getBasePricesForAllActiveMarkets() external view returns (ActiveMarketsPrices[] memory) {
-        address[] memory activeMarkets = PositionalMarketManager(manager).activeMarkets(
-            0,
-            PositionalMarketManager(manager).numActiveMarkets()
-        );
-
-        ActiveMarketsPrices[] memory marketPrices = new ActiveMarketsPrices[](activeMarkets.length);
-        for (uint i = 0; i < activeMarkets.length; i++) {
-            marketPrices[i].market = activeMarkets[i];
-
-            if (IThalesAMM(thalesAMM).isMarketInAMMTrading(activeMarkets[i])) {
-                marketPrices[i].upPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Up);
-                marketPrices[i].downPrice = IThalesAMM(thalesAMM).price(activeMarkets[i], IThalesAMM.Position.Down);
-            }
-        }
-        return marketPrices;
     }
 
     /// @notice getBatchBasePricesForAllActiveMarkets returns base prices for all active markets
@@ -361,7 +252,7 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         bytes32[] memory allActiveAssets = new bytes32[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             IPositionalMarket market = IPositionalMarket(activeMarkets[i]);
-            (bytes32 key, uint strikePrice, ) = market.getOracleDetails();
+            (bytes32 key, , ) = market.getOracleDetails();
             allActiveAssets[i] = key;
         }
         return allActiveAssets;
@@ -378,7 +269,7 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         uint[] memory activeDates = new uint[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             IPositionalMarket market = IPositionalMarket(activeMarkets[i]);
-            (bytes32 key, uint strikePrice, ) = market.getOracleDetails();
+            (bytes32 key, , ) = market.getOracleDetails();
             if (key == asset) {
                 (uint strikeDate, ) = market.times();
                 activeDates[i] = strikeDate;
@@ -399,7 +290,7 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         address[] memory activeMarketsToReturn = new address[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             IPositionalMarket market = IPositionalMarket(activeMarkets[i]);
-            (bytes32 key, uint strikePrice, ) = market.getOracleDetails();
+            (bytes32 key, , ) = market.getOracleDetails();
             if (key == asset) {
                 (uint strikeDate, ) = market.times();
                 if (strikeDate == strikeDateParam) {
@@ -423,7 +314,7 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         for (uint i = 0; i < markets.length; i++) {
             activeMarkets[i].market = markets[i];
             IPositionalMarket market = IPositionalMarket(markets[i]);
-            (bytes32 key, uint strikePrice, ) = market.getOracleDetails();
+            (, uint strikePrice, ) = market.getOracleDetails();
 
             activeMarkets[i].strikePrice = strikePrice;
 
@@ -450,8 +341,8 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             activeMarkets[i].market = markets[i];
             IPositionalMarket leftMarket = IPositionalMarket(RangedMarket(markets[i]).leftMarket());
             IPositionalMarket rightMarket = IPositionalMarket(RangedMarket(markets[i]).rightMarket());
-            (bytes32 leftKey, uint leftStrikePrice, ) = leftMarket.getOracleDetails();
-            (bytes32 rightKey, uint rightStrikePrice, ) = rightMarket.getOracleDetails();
+            (, uint leftStrikePrice, ) = leftMarket.getOracleDetails();
+            (, uint rightStrikePrice, ) = rightMarket.getOracleDetails();
             activeMarkets[i].leftPrice = leftStrikePrice;
             activeMarkets[i].rightPrice = rightStrikePrice;
 
@@ -463,20 +354,48 @@ contract PositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         return activeMarkets;
     }
 
-    /// @notice getRangedMarketPricesAndLiquidity returns prices and liquidity for ranged market
-    /// @param market RangedMarket
-    /// @return RangedMarketPricesAndLiqudity
-    function getRangedMarketPricesAndLiquidity(RangedMarket market)
-        external
-        view
-        returns (RangedMarketPricesAndLiqudity memory)
-    {
-        uint inPrice = RangedMarketsAMM(rangedMarketsAMM).buyFromAmmQuote(market, RangedMarket.Position.In, ONE);
-        uint outPrice = RangedMarketsAMM(rangedMarketsAMM).buyFromAmmQuote(market, RangedMarket.Position.Out, ONE);
-        uint inLiquidity = RangedMarketsAMM(rangedMarketsAMM).availableToBuyFromAMM(market, RangedMarket.Position.In);
-        uint outLiquidity = RangedMarketsAMM(rangedMarketsAMM).availableToBuyFromAMM(market, RangedMarket.Position.Out);
+    /// @notice getAmmMarketData returns AMM market data
+    /// @param market market address
+    /// @return AmmMarketData
+    function getAmmMarketData(address market) external view returns (AmmMarketData memory) {
+        (bytes32 key, , ) = IPositionalMarket(market).getOracleDetails();
 
-        return RangedMarketPricesAndLiqudity(inPrice, outPrice, inLiquidity, outLiquidity);
+        return
+            AmmMarketData(
+                IThalesAMM(thalesAMM).availableToBuyFromAMM(market, IThalesAMM.Position.Up),
+                IThalesAMM(thalesAMM).availableToBuyFromAMM(market, IThalesAMM.Position.Down),
+                IThalesAMM(thalesAMM).availableToSellToAMM(market, IThalesAMM.Position.Up),
+                IThalesAMM(thalesAMM).availableToSellToAMM(market, IThalesAMM.Position.Down),
+                IThalesAMM(thalesAMM).buyFromAmmQuote(market, IThalesAMM.Position.Up, ONE),
+                IThalesAMM(thalesAMM).buyFromAmmQuote(market, IThalesAMM.Position.Down, ONE),
+                IThalesAMM(thalesAMM).sellToAmmQuote(market, IThalesAMM.Position.Up, ONE),
+                IThalesAMM(thalesAMM).sellToAmmQuote(market, IThalesAMM.Position.Down, ONE),
+                IThalesAMM(thalesAMM).buyPriceImpact(market, IThalesAMM.Position.Up, ONE),
+                IThalesAMM(thalesAMM).buyPriceImpact(market, IThalesAMM.Position.Down, ONE),
+                IThalesAMM(thalesAMM).sellPriceImpact(market, IThalesAMM.Position.Up, ONE),
+                IThalesAMM(thalesAMM).sellPriceImpact(market, IThalesAMM.Position.Down, ONE),
+                IThalesAMM(thalesAMM).impliedVolatilityPerAsset(key),
+                IThalesAMM(thalesAMM).isMarketInAMMTrading(market)
+            );
+    }
+
+    /// @notice RangedAmmMarketData returns Ranged AMM market data
+    /// @param market ranged market
+    /// @return RangedAmmMarketData
+    function getRangedAmmMarketData(RangedMarket market) external view returns (RangedAmmMarketData memory) {
+        return
+            RangedAmmMarketData(
+                RangedMarketsAMM(rangedMarketsAMM).availableToBuyFromAMM(market, RangedMarket.Position.In),
+                RangedMarketsAMM(rangedMarketsAMM).availableToBuyFromAMM(market, RangedMarket.Position.Out),
+                RangedMarketsAMM(rangedMarketsAMM).availableToSellToAMM(market, RangedMarket.Position.In),
+                RangedMarketsAMM(rangedMarketsAMM).availableToSellToAMM(market, RangedMarket.Position.Out),
+                RangedMarketsAMM(rangedMarketsAMM).buyFromAmmQuote(market, RangedMarket.Position.In, ONE),
+                RangedMarketsAMM(rangedMarketsAMM).buyFromAmmQuote(market, RangedMarket.Position.Out, ONE),
+                RangedMarketsAMM(rangedMarketsAMM).sellToAmmQuote(market, RangedMarket.Position.In, ONE),
+                RangedMarketsAMM(rangedMarketsAMM).sellToAmmQuote(market, RangedMarket.Position.Out, ONE),
+                RangedMarketsAMM(rangedMarketsAMM).getPriceImpact(market, RangedMarket.Position.In),
+                RangedMarketsAMM(rangedMarketsAMM).getPriceImpact(market, RangedMarket.Position.Out)
+            );
     }
 
     function setPositionalMarketManager(address _manager) external onlyOwner {

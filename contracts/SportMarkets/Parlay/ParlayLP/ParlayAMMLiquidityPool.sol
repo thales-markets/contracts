@@ -385,6 +385,9 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
                 if (market.hasMarketLostButHasExercisableWinningPositions()) {
                     parlayAMM.exerciseParlay(marketAddress);
                 }
+                if (market.areAllPositionsResolved()) {
+                    marketAlreadyExercisedInRound[round][marketAddress] = true;
+                }
             }
         }
     }
@@ -477,7 +480,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             address marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (market.hasMarketLostButHasExercisableWinningPositions()) {
+                if (!market.areAllPositionsResolved()) {
                     return false;
                 }
             }

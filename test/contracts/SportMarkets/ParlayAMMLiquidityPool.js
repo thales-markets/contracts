@@ -1433,7 +1433,7 @@ contract('ParlayAMM', (accounts) => {
 				console.log('Current time:', await currentTime());
 				let canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
 				console.log('Can close round: ', canClose);
-				assert.equal(canClose, false);
+				assert.equal(canClose, true);
 				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
 				await fastForward(await currentTime());
 				console.log('Current time:', await currentTime());
@@ -1926,7 +1926,7 @@ contract('ParlayAMM', (accounts) => {
 				let tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
 				console.log('Trading Markets: ', tradingMarketsPerRound.toString());
 				console.log('Can close round: ', canClose);
-				assert.equal(canClose, false);
+				assert.equal(canClose, true);
 				console.log('Exercising: ', parlaySingleMarket.address);
 				console.log('Exercising: ', parlaySingleMarket2.address);
 				let readyToBeExercised = await ParlayAMMLiquidityPool.hasMarketsReadyToBeExercised();
@@ -2033,7 +2033,7 @@ contract('ParlayAMM', (accounts) => {
 				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
 
 				let tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
-				assert.equal(canClose, false);
+				assert.equal(canClose, true);
 				let readyToBeExercised = await ParlayAMMLiquidityPool.hasMarketsReadyToBeExercised();
 				await ParlayAMMLiquidityPool.exerciseMarketsReadyToExercised();
 				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);

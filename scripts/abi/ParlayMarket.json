@@ -91,6 +91,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "areAllPositionsResolved",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",

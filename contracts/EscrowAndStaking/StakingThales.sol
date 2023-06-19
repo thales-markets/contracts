@@ -124,9 +124,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     ISportsAMMLiquidityPool public sportsAMMLiquidityPool;
     IThalesAMMLiquidityPool public thalesAMMLiquidityPool;
-    IParlayAMMLiquidityPool public parlayAMMLiquidityPool;
 
     IStakingThalesBonusRewardsManager public stakingThalesBonusRewardsManager;
+    IParlayAMMLiquidityPool public parlayAMMLiquidityPool;
 
     /* ========== CONSTRUCTOR ========== */
 

@@ -356,16 +356,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket)
-        external
-        nonReentrant
-        notPaused
-        onlyKnownMarkets(_parlayMarket)
-    {
-        ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
-        parlayMarket.exerciseSpecificSportMarket(_sportMarket);
-    }
-
     function resolveParlay() external notPaused onlyKnownMarkets(msg.sender) {
         _resolveParlay(msg.sender);
     }

@@ -54,8 +54,6 @@ interface IParlayMarketsAMM {
 
     function exerciseParlay(address _parlayMarket) external;
 
-    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket) external;
-
     function triggerResolvedEvent(address _account, bool _userWon) external;
 
     function resolveParlay() external;

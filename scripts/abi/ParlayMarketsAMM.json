@@ -864,24 +864,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_sportMarket",
-        "type": "address"
-      }
-    ],
-    "name": "exerciseSportMarketInParlay",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address[]",
         "name": "_parlayMarkets",
         "type": "address[]"

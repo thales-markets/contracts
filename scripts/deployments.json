@@ -140,7 +140,14 @@
 		"ThalesAMMLiquidityPoolData": "0x1E95fAcA5F99dCC8e517fEA193a3C3B0AAc1E0a1",
 		"ThalesAMMLiquidityPoolDataImplementation": "0xB23Ea6561953B406f4806cD177377D6940420608",
 		"ThalesAMMStakingThalesBonusRewardsManager": "0xc07520843239C2CAA28101D8241D9132669B4271",
-		"ThalesAMMStakingThalesBonusRewardsManagerImplementation": "0x5830e9E30B55Cb5FD6102805fEa2cF951F6afB49"
+		"ThalesAMMStakingThalesBonusRewardsManagerImplementation": "0x5830e9E30B55Cb5FD6102805fEa2cF951F6afB49",
+		"ParlayAMMLiquidityPool": "0x2Dc1fe64Afa2281FF38dF998bE029E94C561937f",
+		"ParlayAMMLiquidityPoolImplementation": "0x1d936B0AE8FDc2b240C5bbB114A9B699211c9752",
+		"ParlayAMMLiquidityPoolRoundMastercopy": "0xa01AD492B19314bEfBcE4891B927A030d660ffA5",
+		"ParlayAMMLiquidityPoolData": "0x6d4393FAd7A2928c10cdD0bcdd7702B39086d8b2",
+		"ParlayAMMLiquidityPoolDataImplementation": "0xB23Ea6561953B406f4806cD177377D6940420608",
+		"ParlayDefaultLiquidityProvider": "0x99fb60a3281467b138Ad4d3A7bA575cd9f30a17F",
+		"ParlayDefaultLiquidityProviderImplementation": "0xA20Ed099894dcfC46AF290705Ff5aE4d318B0235"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -246,7 +253,14 @@
 		"ThalesAMMLiquidityPoolData": "0xc7909cdc3B54bA28c2bAcc096ac6D7e83d9fd00c",
 		"ThalesAMMLiquidityPoolDataImplementation": "0xade53971B171f61d474754d9Cad9Ca20564347Bf",
 		"ThalesAMMStakingThalesBonusRewardsManager": "0x6535F4cCC70E0CCb192a8A224d5eBA420DDF9e3f",
-		"ThalesAMMStakingThalesBonusRewardsManagerImplementation": "0x1f09E08b503B06633992a9b847281675e8895202"
+		"ThalesAMMStakingThalesBonusRewardsManagerImplementation": "0x1f09E08b503B06633992a9b847281675e8895202",
+		"ParlayAMMLiquidityPool": "0x6848f7C1B5aa2da86F6529bed9d641A67663f0bE",
+		"ParlayAMMLiquidityPoolImplementation": "0x3A5dA5851a511600CBbf7788C3a034bE287ebB78",
+		"ParlayAMMLiquidityPoolRoundMastercopy": "0x65eBe63c2C0717aC76698e675dA58A1361B85Aa7",
+		"ParlayAMMLiquidityPoolData": "0xB5F1924136d7A72C3E5E746Ba2E23A3bfd499097",
+		"ParlayAMMLiquidityPoolDataImplementation": "0xade53971B171f61d474754d9Cad9Ca20564347Bf",
+		"ParlayDefaultLiquidityProvider": "0xE644eBDe62A77689eE8c8700053917b4718ace99",
+		"ParlayDefaultLiquidityProviderImplementation": "0xa475e7314f41D77FB800245DAC18Ee8a760a491F"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

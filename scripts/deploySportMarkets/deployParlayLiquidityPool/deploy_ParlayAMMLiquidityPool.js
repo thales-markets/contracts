@@ -11,6 +11,7 @@ async function main() {
 	let network = networkObj.name;
 
 	let proxySUSD;
+	let transformCollateral = false;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -50,6 +51,7 @@ async function main() {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
 		proxySUSD = getTargetAddress('ProxyUSDC', network);
+		transformCollateral = true;
 	}
 
 	console.log('Account is: ' + owner.address);
@@ -72,6 +74,7 @@ async function main() {
 			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
 			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
+			_needsTransformingCollateral: transformCollateral,
 		},
 	]);
 

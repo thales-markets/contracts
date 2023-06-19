@@ -64,7 +64,9 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	const DefaultLiquidityProvider = await ethers.getContractFactory('DefaultLiquidityProvider');
+	const DefaultLiquidityProvider = await ethers.getContractFactory(
+		'contracts/SportMarkets/Parlay/ParlayLP/DefaultLiquidityProvider.sol:DefaultLiquidityProvider'
+	);
 	let DefaultLiquidityProviderDeployed = await upgrades.deployProxy(DefaultLiquidityProvider, [
 		owner.address,
 		proxySUSD,

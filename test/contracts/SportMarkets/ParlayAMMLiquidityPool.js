@@ -34,6 +34,7 @@ const {
 } = require('../../utils/helpers');
 const { BN } = require('bn.js');
 const { expect } = require('chai');
+const { current } = require('@openzeppelin/test-helpers/src/balance');
 
 contract('ParlayAMM', (accounts) => {
 	const [
@@ -49,6 +50,7 @@ contract('ParlayAMM', (accounts) => {
 		defaultLiquidityProvider,
 		firstParlayAMMLiquidityProvider,
 		defaultParlayAMMLiquidityProvider,
+		secondParlayAMMLiquidityProvider,
 	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -78,6 +80,13 @@ contract('ParlayAMM', (accounts) => {
 	const ParlayMarketContract = artifacts.require('ParlayMarketMastercopy');
 	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
 	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
+
+	const ParlayAMMLiquidityPoolContract = artifacts.require('ParlayAMMLiquidityPool');
+	const ParlayAMMLiquidityPoolRoundMastercopy = artifacts.require(
+		'ParlayAMMLiquidityPoolRoundMastercopy'
+	);
+	const ParlayAMMLiquidityPoolDataContract = artifacts.require('ParlayAMMLiquidityPoolData');
+
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
 	let ParlayAMM;
@@ -219,7 +228,8 @@ contract('ParlayAMM', (accounts) => {
 		ParlayVerifier,
 		SportsAMM,
 		SportAMMLiquidityPool,
-		ParlayAMMLiquidityPool;
+		ParlayAMMLiquidityPool,
+		ParlayAMMLiquidityPoolData;
 
 	let verifier;
 
@@ -246,11 +256,17 @@ contract('ParlayAMM', (accounts) => {
 	let parlayMarkets4 = [];
 	let parlayMarkets5 = [];
 
+	let parlayTwoMarkets = [];
+	let parlayTwoMarketDifferentRound = [];
+	let parlayThreeMarkets = [];
+
 	let equalParlayMarkets = [];
 	let parlayPositions = [];
 	let parlaySingleMarketAddress;
 	let parlaySingleMarket;
+	let parlaySingleMarket2;
 	let voucher;
+	let maturityTimes = [];
 
 	let sportsAMMUtils;
 
@@ -721,6 +737,7 @@ contract('ParlayAMM', (accounts) => {
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
 			from: owner,
 		});
+
 		await Thales.transfer(firstLiquidityProvider, toUnit('10000000'), { from: owner });
 		await Thales.approve(SportAMMLiquidityPool.address, toUnit('10000000'), {
 			from: firstLiquidityProvider,
@@ -753,11 +770,8 @@ contract('ParlayAMM', (accounts) => {
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(ParlayAMM.address, toUnit(1000), { from: first });
+
 		// Parlay LP initializers:
-		const ParlayAMMLiquidityPoolContract = artifacts.require('ParlayAMMLiquidityPool');
-		const ParlayAMMLiquidityPoolRoundMastercopy = artifacts.require(
-			'ParlayAMMLiquidityPoolRoundMastercopy'
-		);
 
 		ParlayAMMLiquidityPool = await ParlayAMMLiquidityPoolContract.new({ from: manager });
 
@@ -767,7 +781,7 @@ contract('ParlayAMM', (accounts) => {
 				_parlayAMM: ParlayAMM.address,
 				_sUSD: Thales.address,
 				_roundLength: WEEK,
-				_maxAllowedDeposit: toUnit(100000).toString(),
+				_maxAllowedDeposit: toUnit(1000000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
 			},
@@ -790,7 +804,7 @@ contract('ParlayAMM', (accounts) => {
 			from: owner,
 		});
 		await ParlayAMMLiquidityPool.deposit(toUnit(100000), { from: firstParlayAMMLiquidityProvider });
-		await ParlayAMMLiquidityPool.start({ from: owner });
+		// await ParlayAMMLiquidityPool.start({ from: owner });
 		await ParlayAMMLiquidityPool.setDefaultLiquidityProvider(defaultParlayAMMLiquidityProvider, {
 			from: owner,
 		});
@@ -798,6 +812,8 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultParlayAMMLiquidityProvider,
 		});
+
+		ParlayAMMLiquidityPoolData = await ParlayAMMLiquidityPoolDataContract.new({ from: manager });
 	});
 
 	describe('Parlay AMM setters', () => {
@@ -815,10 +831,6 @@ contract('ParlayAMM', (accounts) => {
 
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
-
-			// assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			// assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			// assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let game_2 = await TherundownConsumerDeployed.gameCreated(gameid2);
@@ -841,14 +853,6 @@ contract('ParlayAMM', (accounts) => {
 				_id: gameid2,
 				_game: game_2,
 			});
-
-			// console.log("1. game:");
-			// console.log("==> home: ", game.homeTeam);
-			// console.log("==> away: ", game.awayTeam);
-
-			// console.log("2. game:");
-			// console.log("==> home: ", game_2.homeTeam);
-			// console.log("==> away: ", game_2.awayTeam);
 
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
 			let deployedMarket_1 = await SportPositionalMarketContract.at(answer);
@@ -930,10 +934,6 @@ contract('ParlayAMM', (accounts) => {
 				_game: fight,
 			});
 
-			// console.log("3. game:");
-			// console.log("==> home: ", fight.homeTeam);
-			// console.log("==> away: ", fight.awayTeam);
-
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('2');
 			let deployedMarket_3 = await SportPositionalMarketContract.at(answer);
 
@@ -969,13 +969,13 @@ contract('ParlayAMM', (accounts) => {
 				_game: game_4,
 			});
 
-			// console.log('4. game:');
-			// console.log('==> home: ', game_4.homeTeam);
-			// console.log('==> away: ', game_4.awayTeam);
+			console.log('4. game:');
+			console.log('==> home: ', game_4.homeTeam);
+			console.log('==> away: ', game_4.awayTeam);
 
-			// console.log('5. game:');
-			// console.log('==> home: ', game_5.homeTeam);
-			// console.log('==> away: ', game_5.awayTeam);
+			console.log('5. game:');
+			console.log('==> home: ', game_5.homeTeam);
+			console.log('==> away: ', game_5.awayTeam);
 
 			// create markets
 			const tx_create_4 = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
@@ -1007,19 +1007,17 @@ contract('ParlayAMM', (accounts) => {
 			});
 
 			let allMarkets = await SportPositionalMarketManager.activeMarkets('0', '100');
-			// console.log(allMarkets);
-			// for (let i = 0; i < allMarkets.length; i++) {
-			// 	let market = await SportPositionalMarketContract.at(allMarkets[i]);
-			// 	let tags = await market.getTags();
-			// 	let gameDetails = await market.getGameDetails();
-			// 	console.log('market ', i, ' : ', market.address);
-			// 	console.log('  tag1: ', parseInt(tags[0]));
-			// 	console.log('  tag2: ', parseInt(tags[1]));
-			// 	console.log('  gameDetails: ', gameDetails[1].toString());
-			// 	console.log('  \n');
-			// }
-			// console.log(mainMarketSpreadChildMarket);
-			// console.log(mainMarketTotalChildMarket);
+			console.log(allMarkets);
+			for (let i = 0; i < allMarkets.length; i++) {
+				let market = await SportPositionalMarketContract.at(allMarkets[i]);
+				let tags = await market.getTags();
+				let gameDetails = await market.getGameDetails();
+				// console.log('market ', i, ' : ', market.address);
+				// console.log('  tag1: ', parseInt(tags[0]));
+				// console.log('  tag2: ', parseInt(tags[1]));
+				// console.log('  gameDetails: ', gameDetails[1].toString());
+				// console.log('  \n');
+			}
 
 			assert.equal(deployedMarket_4.address, marketAdd_4);
 			assert.equal(deployedMarket_5.address, marketAdd_5);
@@ -1037,16 +1035,21 @@ contract('ParlayAMM', (accounts) => {
 
 			// Atalanta vs Charlotte
 			let market_1 = await SportPositionalMarketContract.at(allMarkets[0]);
+
 			//  Clayton Carpenter vs Edgar Chairez
 			let market_2 = await SportPositionalMarketContract.at(allMarkets[4]);
+
 			// Atletico Madrid vs Manchester City
 			let market_3 = await SportPositionalMarketContract.at(allMarkets[5]);
+
 			// Liverpool vs Benfica
 			let market_4 = await SportPositionalMarketContract.at(allMarkets[9]);
+
 			// Atalanta vs Charlotte totals
 			let market_5 = await SportPositionalMarketContract.at(allMarkets[2]);
 			// Atalanta vs Charlotte spreads
 			let market_6 = await SportPositionalMarketContract.at(allMarkets[3]);
+
 			// Atletico Madrid vs Manchester City - totals
 			let market_7 = await SportPositionalMarketContract.at(allMarkets[13]);
 			// Atletico Madrid vs Manchester City - spreads
@@ -1062,6 +1065,9 @@ contract('ParlayAMM', (accounts) => {
 			parlayMarkets4 = [market_6, market_7, market_8, market_4, market_5];
 			parlayMarkets5 = [market_1, market_2, market_3, market_4, market_6];
 
+			parlayTwoMarkets = [market_1, market_5];
+			parlayTwoMarketDifferentRound = [market_3, market_7];
+			parlayThreeMarkets = [market_1, market_2, market_5];
 			// console.log(market_1.address);
 			// console.log(market_2.address);
 			// console.log(market_3.address);
@@ -1070,34 +1076,89 @@ contract('ParlayAMM', (accounts) => {
 			// console.log(deployedMarket_5.address);
 		});
 
+		it('Get times between games', async () => {
+			let timeCurrent = await currentTime();
+			let max = timeCurrent;
+			let minTime = timeCurrent;
+			if (max < game1NBATime) {
+				max = game1NBATime;
+			}
+			if (max < gameFootballTime) {
+				max = gameFootballTime;
+			}
+			if (max < fightTime) {
+				max = fightTime;
+			}
+
+			if (minTime > game1NBATime) {
+				minTime = game1NBATime;
+			}
+			if (minTime > gameFootballTime) {
+				minTime = gameFootballTime;
+			}
+			if (minTime > fightTime) {
+				minTime = fightTime;
+			}
+
+			console.log('currentTime: ', timeCurrent.toString());
+			console.log('nba time: ', game1NBATime.toString());
+			console.log('nba time + WEEK: ', parseInt(game1NBATime.toString() + WEEK));
+			console.log('football time: ', gameFootballTime.toString());
+			console.log('fight time: ', fightTime.toString());
+			console.log('MAX time: ', max.toString());
+			console.log('MIN time: ', minTime.toString());
+			let maturity;
+			for (let i = 0; i < parlayTwoMarkets.length; i++) {
+				maturity = await parlayTwoMarkets[i].times();
+				console.log(parlayTwoMarkets[i].address, ' maturity at: ', maturity[0].toString());
+			}
+
+			let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+			let roundPool_3_Address = await ParlayAMMLiquidityPool.roundPools(3);
+			let roundPool_4_Address = await ParlayAMMLiquidityPool.roundPools(4);
+			let roundPool_5_Address = await ParlayAMMLiquidityPool.roundPools(5);
+			let roundPool_6_Address = await ParlayAMMLiquidityPool.roundPools(6);
+			console.log('RoundPool 2: ', roundPool_2_Address);
+			console.log('RoundPool 3: ', roundPool_3_Address);
+			console.log('RoundPool 4: ', roundPool_4_Address);
+			console.log('RoundPool 5: ', roundPool_5_Address);
+			console.log('RoundPool 6: ', roundPool_6_Address);
+
+			let roundTwo = await ParlayAMMLiquidityPoolRoundMastercopy.at(roundPool_2_Address);
+			console.log('RoundPool 2 startTime: ', (await roundTwo.roundStartTime()).toString());
+			console.log('RoundPool 2 endTime: ', (await roundTwo.roundEndTime()).toString());
+		});
 		it('Create/Buy Parlay', async () => {
+			let fastForwardTime = game1NBATime - (await currentTime()) - SECOND;
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			let maturity;
+			for (let i = 0; i < parlayTwoMarkets.length; i++) {
+				maturity = await parlayTwoMarkets[i].times();
+				console.log(parlayTwoMarkets[i].address, ' maturity at: ', maturity[0].toString());
+				maturityTimes[i] = parseInt(maturity[0].toString());
+			}
+			await fastForward(maturityTimes[0] - (await currentTime()) - 10 * 60 * SECOND);
+			await ParlayAMMLiquidityPool.start({ from: owner });
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
 			assert.equal(answer.toString(), '15');
 			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1'];
+			parlayPositions = ['1', '1'];
+			// parlayPositions = ['1', '1', '1', '1'];
 			let parlayPositions2 = ['1', '1', '1', '1', '0'];
 			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length - 1; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+			for (let i = 0; i < parlayTwoMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayTwoMarkets[i].address.toString().toUpperCase();
+				parlayMarketsAddress[i] = parlayTwoMarkets[i].address.toString().replace('0X', '0x');
 			}
+			console.log('parlayAddr: ', parlayMarketsAddress);
 			let slippage = toUnit('0.01');
 			let result = await ParlayAMM.buyQuoteFromParlay(
 				parlayMarketsAddress,
 				parlayPositions,
 				totalSUSDToPay
 			);
-			let calculateSkew = await ParlayAMM.calculateSkewImpact(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
-
-			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
-			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
-
+			console.log('result quote: ', fromUnit(result.totalBuyAmount));
 			let buyParlayTX = await ParlayAMM.buyFromParlay(
 				parlayMarketsAddress,
 				parlayPositions,
@@ -1107,332 +1168,140 @@ contract('ParlayAMM', (accounts) => {
 				ZERO_ADDRESS,
 				{ from: first }
 			);
-			// console.log("event: \n", buyParlayTX.logs[0]);
+			// console.log('event: \n', buyParlayTX.logs[2]);
 
 			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 			});
-		});
-		it('Read data', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await ParlayMarketData.getAllSGPFees();
-			// console.log("All SGPFees: ", answer);
-			assert.equal(answer.length, 4);
-			answer = await ParlayMarketData.getAllSGPFeesForBatch([9004, 9006]);
-			// console.log("All SGPFees for batch: ", answer);
-			assert.equal(answer.length, 2);
+			// console.log(buyParlayTX.logs[2].market);
+			console.log(buyParlayTX.logs[2].args.market);
+			let parlayMarketCreated = buyParlayTX.logs[2].args.market;
+
+			let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+			let roundPool_3_Address = await ParlayAMMLiquidityPool.roundPools(3);
+			let roundPool_4_Address = await ParlayAMMLiquidityPool.roundPools(4);
+			let roundPool_5_Address = await ParlayAMMLiquidityPool.roundPools(5);
+			let roundPool_6_Address = await ParlayAMMLiquidityPool.roundPools(6);
+			console.log('RoundPool 2: ', roundPool_2_Address);
+			console.log('RoundPool 3: ', roundPool_3_Address);
+			console.log('RoundPool 4: ', roundPool_4_Address);
+			console.log('RoundPool 5: ', roundPool_5_Address);
+			console.log('RoundPool 6: ', roundPool_6_Address);
+
+			let roundTwo = await ParlayAMMLiquidityPoolRoundMastercopy.at(roundPool_2_Address);
+			console.log('fastForwardTime: ', fastForwardTime.toString());
+			console.log('currentTime: ', (await currentTime()).toString());
+			console.log('RoundPool 2 startTime: ', (await roundTwo.roundStartTime()).toString());
+			console.log('RoundPool 2 endTime: ', (await roundTwo.roundEndTime()).toString());
+			let marketRound = await ParlayAMMLiquidityPool.getMarketRound(parlayMarketCreated);
+			console.log(parlayMarketCreated, ' market in round: ', marketRound.toString());
+			assert.equal(marketRound.toString(), '2');
 		});
 
-		it('Create/Buy Parlay same game parlay | final result + totals', async () => {
+		it('Stake and deposit', async () => {
+			let fastForwardTime = game1NBATime - (await currentTime()) - SECOND;
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1', '1'];
-			let parlayPositions2 = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+			let maturity;
+			for (let i = 0; i < parlayTwoMarkets.length; i++) {
+				maturity = await parlayTwoMarkets[i].times();
+				console.log(parlayTwoMarkets[i].address, ' maturity at: ', maturity[0].toString());
+				maturityTimes[i] = parseInt(maturity[0].toString());
 			}
-			let slippage = toUnit('0.01');
-			// console.log('buyQuote --->');
-			let result = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
+			await fastForward(maturityTimes[0] - (await currentTime()) - 10 * 60 * SECOND);
+			await ParlayAMMLiquidityPool.start({ from: owner });
+			await Thales.transfer(secondParlayAMMLiquidityProvider, toUnit('1000'), { from: owner });
+			const MockStakingThales = artifacts.require('MockStakingThales');
+			let mockStakingThales = await MockStakingThales.new({ from: owner });
 
-			let calculateSkew = await ParlayAMM.calculateSkewImpact(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
-
-			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
-			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
-			// console.log('buyTX --->');
-			let buyParlayTX = await ParlayAMM.buyFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[1],
-				ZERO_ADDRESS,
-				{ from: first }
-			);
-			// console.log("event: \n", buyParlayTX.logs[0]);
-
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-				account: first,
-				sUSDPaid: totalSUSDToPay,
+			await Thales.approve(mockStakingThales.address, toUnit(1000), {
+				from: secondParlayAMMLiquidityProvider,
 			});
-		});
 
-		it('Create/Buy Parlay same game parlay | final result + spread', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1', '1'];
-			let parlayPositions2 = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets5.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets5[i].address.toString().toUpperCase();
-				parlayMarketsAddress[i] = parlayMarkets5[i].address.toString().replace('0X', '0x');
-			}
-			let slippage = toUnit('0.01');
-			console.log('buyQuote --->');
+			await Thales.approve(ParlayAMMLiquidityPool.address, toUnit(1000), {
+				from: secondParlayAMMLiquidityProvider,
+			});
+			await mockStakingThales.stake(toUnit(100), { from: secondParlayAMMLiquidityProvider });
+
+			await ParlayAMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
+				from: owner,
+			});
+
+			await ParlayAMMLiquidityPool.setStakingThales(mockStakingThales.address, {
+				from: owner,
+			});
+
 			await expect(
-				ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
-			).to.be.revertedWith('SameTeamOnParlay');
-		});
-		it('Create/Buy Parlay same game parlay | totals + spread', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1', '1'];
-			let parlayPositions2 = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets2.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets2[i].address.toString().toUpperCase();
-				parlayMarketsAddress[i] = parlayMarkets2[i].address.toString().replace('0X', '0x');
-			}
-			let slippage = toUnit('0.01');
-			console.log('buyQuote --->');
-			let result = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
-			console.log('buyTX --->');
-			let buyParlayTX = await ParlayAMM.buyFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[1],
-				ZERO_ADDRESS,
-				{ from: first }
-			);
-			// console.log("event: \n", buyParlayTX.logs[0]);
-
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-				account: first,
-				sUSDPaid: totalSUSDToPay,
-			});
-		});
-
-		it('Create/Buy Parlay same game parlay | totals + spread + finalResults', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1', '1'];
-			let parlayPositions2 = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets3.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets3[i].address.toString().toUpperCase();
-				parlayMarketsAddress[i] = parlayMarkets3[i].address.toString().replace('0X', '0x');
-			}
-			let slippage = toUnit('0.01');
-			// console.log('buyQuote --->');
+				ParlayAMMLiquidityPool.deposit(toUnit(100000000), {
+					from: secondParlayAMMLiquidityProvider,
+				})
+			).to.be.revertedWith('Deposit amount exceeds AMM LP cap');
+			let totalDeposited = await ParlayAMMLiquidityPool.totalDeposited();
+			console.log('Total deposited', fromUnit(totalDeposited));
 			await expect(
-				ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
-			).to.be.revertedWith('SameTeamOnParlay');
-		});
-		it('Create/Buy Parlay same game parlay | 2x (totals + spread)', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1', '1'];
-			let parlayPositions2 = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets4.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().toUpperCase();
-				parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().replace('0X', '0x');
-			}
-			let slippage = toUnit('0.01');
-			// console.log('buyQuote --->');
-			let result = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
-			let calculateSkew = await ParlayAMM.calculateSkewImpact(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
+				ParlayAMMLiquidityPool.deposit(toUnit(101), { from: secondParlayAMMLiquidityProvider })
+			).to.be.revertedWith('Not enough staked THALES');
 
-			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
-			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
-			// console.log('buyTX --->');
-			let buyParlayTX = await ParlayAMM.buyFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[1],
-				ZERO_ADDRESS,
-				{ from: first }
-			);
-			// console.log("event: \n", buyParlayTX.logs[0]);
+			await expect(
+				ParlayAMMLiquidityPool.deposit(toUnit(1), { from: secondParlayAMMLiquidityProvider })
+			).to.be.revertedWith('Amount less than minDepositAmount');
 
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-				account: first,
-				sUSDPaid: totalSUSDToPay,
+			await ParlayAMMLiquidityPool.setOnlyWhitelistedStakersAllowed(true, {
+				from: owner,
 			});
-		});
+			await expect(
+				ParlayAMMLiquidityPool.deposit(toUnit(101), { from: secondParlayAMMLiquidityProvider })
+			).to.be.revertedWith('Only whitelisted stakers allowed');
 
-		it('Read from SportMarketData - Two positional sport', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			const tx = await SportPositionalMarketData.getCombinedOddsForMarket(parlayMarkets[0].address);
-			console.log(tx);
-			console.log(tx.combinedOdds[0].toString());
-			console.log(tx.combinedOdds[1].toString());
-		});
-		it('Read from SportMarketData - Three positional sport', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			const tx = await SportPositionalMarketData.getCombinedOddsForMarket(parlayMarkets[2].address);
-			console.log(tx);
-			console.log(tx.combinedOdds[0].toString());
-			console.log(tx.combinedOdds[1].toString());
-		});
-		it('Check odds calculations', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			const tx = await SportPositionalMarketData.getCombinedOddsForMarket(parlayMarkets[2].address);
-			console.log(tx);
-			console.log(tx.combinedOdds[0].toString());
-			console.log(tx.combinedOdds[1].toString());
+			let getMaxAvailableDepositForUser =
+				await ParlayAMMLiquidityPool.getMaxAvailableDepositForUser(
+					secondParlayAMMLiquidityProvider
+				);
+			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
 
-			let odds = await SportsAMM.getMarketDefaultOdds(parlayMarkets[2].address, false);
-			for (let i = 0; i < odds.length; i++) {
-				console.log(odds[i].toString());
-			}
-
-			let odds2 = await SportsAMM.getMarketDefaultOdds(parlayMarkets4[1].address, false);
-			for (let i = 0; i < odds2.length; i++) {
-				console.log(odds2[i].toString());
-			}
-
-			let calculationONEtotalsONE = parseInt(odds[0].toString()) * parseInt(odds2[0].toString());
-			let sgpFee = parseInt(7 * 1e17);
-			console.log('sgpFee: ', sgpFee);
-			console.log(calculationONEtotalsONE / 1e18);
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[0]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[0] / 1e15), calculationONEtotalsONE);
-
-			calculationONEtotalsONE = parseInt(odds[0].toString()) * parseInt(odds2[1].toString());
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[1]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[1] / 1e15), calculationONEtotalsONE);
-
-			calculationONEtotalsONE = parseInt(odds[1].toString()) * parseInt(odds2[0].toString());
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[2]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[2] / 1e15), calculationONEtotalsONE);
-
-			calculationONEtotalsONE = parseInt(odds[1].toString()) * parseInt(odds2[1].toString());
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[3]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[3] / 1e15), calculationONEtotalsONE);
-
-			calculationONEtotalsONE = parseInt(odds[2].toString()) * parseInt(odds2[0].toString());
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[4]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[4] / 1e15), calculationONEtotalsONE);
-
-			calculationONEtotalsONE = parseInt(odds[2].toString()) * parseInt(odds2[1].toString());
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[5]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[5] / 1e15), calculationONEtotalsONE);
-		});
-
-		it('Checking cancellation math | 2x (totals + spread)', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1', '1'];
-			let parlayPositions2 = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets4.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().toUpperCase();
-				parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().replace('0X', '0x');
-			}
-			let slippage = toUnit('0.01');
-			console.log('buyQuote --->');
-			let result = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
+			let getNeededStakedThalesToWithdrawForUser =
+				await ParlayAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(
+					secondParlayAMMLiquidityProvider
+				);
+			console.log(
+				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
 			);
-			console.log('buyTX --->');
-			let buyParlayTX = await ParlayAMM.buyFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[1],
-				ZERO_ADDRESS,
-				{ from: first }
-			);
-			// console.log("event: \n", buyParlayTX.logs[0]);
-
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-				account: first,
-				sUSDPaid: totalSUSDToPay,
-			});
 		});
-		describe('Exercise whole parlay NO cancellation', () => {
+
+		describe('Exercise whole parlay cancellation of totals market', () => {
 			beforeEach(async () => {
+				let fastForwardTime = game1NBATime - (await currentTime()) - SECOND;
 				await fastForward(game1NBATime - (await currentTime()) - SECOND);
+				let maturity;
+				for (let i = 0; i < parlayTwoMarkets.length; i++) {
+					maturity = await parlayTwoMarkets[i].times();
+					// console.log(parlayTwoMarkets[i].address, ' maturity at: ', maturity[0].toString());
+					maturityTimes[i] = parseInt(maturity[0].toString());
+				}
+				await fastForward(maturityTimes[0] - (await currentTime()) - 10 * 60 * SECOND);
+				await ParlayAMMLiquidityPool.start({ from: owner });
 				// await fastForward((await currentTime()) - SECOND);
 				answer = await SportPositionalMarketManager.numActiveMarkets();
 				assert.equal(answer.toString(), '15');
 				let totalSUSDToPay = toUnit('10');
-				parlayPositions = ['1', '1', '1', '1', '1'];
-				let parlayPositions2 = ['1', '1', '1', '1'];
+				parlayPositions = ['1', '1'];
+				// parlayPositions = ['1', '1', '1', '1'];
+				let parlayPositions2 = ['1', '1', '1', '1', '0'];
 				let parlayMarketsAddress = [];
-				for (let i = 0; i < parlayMarkets.length; i++) {
-					parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-					parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+				for (let i = 0; i < parlayTwoMarkets.length; i++) {
+					parlayMarketsAddress[i] = parlayTwoMarkets[i].address.toString().toUpperCase();
+					parlayMarketsAddress[i] = parlayTwoMarkets[i].address.toString().replace('0X', '0x');
 				}
+				// console.log('parlayAddr: ', parlayMarketsAddress);
 				let slippage = toUnit('0.01');
-				console.log('buyQuote --->');
 				let result = await ParlayAMM.buyQuoteFromParlay(
 					parlayMarketsAddress,
 					parlayPositions,
 					totalSUSDToPay
 				);
-				console.log('buyTX --->');
+				// console.log('result quote: ', fromUnit(result.totalBuyAmount));
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
 				let buyParlayTX = await ParlayAMM.buyFromParlay(
 					parlayMarketsAddress,
 					parlayPositions,
@@ -1442,20 +1311,33 @@ contract('ParlayAMM', (accounts) => {
 					ZERO_ADDRESS,
 					{ from: first }
 				);
+				let roundBalanceAfter = await Thales.balanceOf(roundPool_2_Address);
+				// console.log(
+				// 	'\n\nRound Balance before: ',
+				// 	fromUnit(roundBalanceBefore),
+				// 	'\nRound Balance after: ',
+				// 	fromUnit(roundBalanceAfter),
+				// 	'\nRound change: ',
+				// 	fromUnit(roundBalanceAfter.sub(roundBalanceBefore))
+				// );
+
+				// adding the round 3 market
+
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
 				parlaySingleMarketAddress = activeParlays[0];
 				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-				let resolveMatrix = ['2', '2', '2', '2', '0'];
+				let resolveMatrix = ['2', '2'];
 				console.log('Games resolved: ', resolveMatrix, '\n');
 				// parlayPositions = ['0', '0', '0', '0'];
 				let gameId;
 				let homeResult = '0';
 				let awayResult = '0';
-				for (let i = 0; i < parlayMarkets.length; i++) {
+				let checkResult;
+				for (let i = 0; i < parlayTwoMarkets.length; i++) {
 					homeResult = '0';
 					awayResult = '0';
-					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
+					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayTwoMarkets[i].address);
 					if (resolveMatrix[i] == '1') {
 						homeResult = '1';
 					} else if (resolveMatrix[i] == '2') {
@@ -1465,12 +1347,9 @@ contract('ParlayAMM', (accounts) => {
 						awayResult = '1';
 					}
 					if (i == 0) {
-						homeResult = '10';
-						awayResult = '15';
-						// homeResult = '1';
-						// awayResult = '1';
+						homeResult = '95';
+						awayResult = '105';
 					}
-					// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
 					if (i != parlayMarkets.length - 1) {
 						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
 							parlayMarkets[i].address,
@@ -1480,15 +1359,34 @@ contract('ParlayAMM', (accounts) => {
 							false,
 							{ from: owner }
 						);
+						checkResult = await parlayTwoMarkets[i].result();
+						console.log(
+							i,
+							' outcome for market ',
+							parlayTwoMarkets[i].address,
+							': ',
+							checkResult.toString()
+						);
 					}
 				}
 			});
-			it('Parlay exercised (balances checked)', async () => {
+			it('Parlay exercised, amounts per round checked', async () => {
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
 				let userBalanceBefore = toUnit('1000');
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
 				let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+				let roundBalanceAfter = await Thales.balanceOf(roundPool_2_Address);
 				let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
 				let userBalanceAfter = await Thales.balanceOf(first);
+				console.log(
+					'\n\nRound Balance before: ',
+					fromUnit(roundBalanceBefore),
+					'\nRound Balance after: ',
+					fromUnit(roundBalanceAfter),
+					'\nRound change: ',
+					fromUnit(roundBalanceAfter.sub(roundBalanceBefore))
+				);
 				console.log(
 					'\n\nAMM Balance before: ',
 					fromUnit(balanceBefore),
@@ -1519,41 +1417,81 @@ contract('ParlayAMM', (accounts) => {
 
 				let parlayAmount = await parlaySingleMarket.amount();
 				for (let i = 0; i < parlayData.oddsOnCreation.length; i++) {
-					// sportMarket[i] = await parlaySingleMarket.sportMarket(i);
 					console.log('odd ', i, ' :', fromUnit(parlayData.oddsOnCreation[i]));
 					calculatedQuote = calculatedQuote * parseFloat(fromUnit(parlayData.oddsOnCreation[i]));
 				}
 				calculatedQuote = calculatedQuote / 0.95;
 				console.log('calculatedQuote: ', calculatedQuote);
-				// assert.approximately(parseFloat(fromUnit(parlayData.totalResultQuote)), calculatedQuote, 0.00000000001);
 				let calculatedAmount = feesApplied / calculatedQuote;
-				// assert.approximately(parseFloat(fromUnit(parlayAmount)), calculatedAmount, 0.00000000001);
+			});
 
-				// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+			it('Close round', async () => {
+				let thisRound = await ParlayAMMLiquidityPool.round();
+				let roundClosure = await ParlayAMMLiquidityPool.getRoundEndTime(thisRound);
+				console.log('Current round:', thisRound.toString());
+				console.log('Closing time:', roundClosure.toString());
+				console.log('Current time:', await currentTime());
+				let canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, true);
+				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+				await fastForward(await currentTime());
+				console.log('Current time:', await currentTime());
+				canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, true);
+
+				await ParlayAMMLiquidityPool.prepareRoundClosing();
+				let roundClosingPrepared = await ParlayAMMLiquidityPool.roundClosingPrepared();
+				console.log('Round closing prepared: ', roundClosingPrepared);
+				assert.equal(roundClosingPrepared, true);
+
+				await ParlayAMMLiquidityPool.processRoundClosingBatch(20);
+				let usersProcessedInRound = await ParlayAMMLiquidityPool.usersProcessedInRound();
+				console.log('UsersProcessed: ', usersProcessedInRound.toString());
+				assert.equal(usersProcessedInRound.toString(), '1');
+
+				await ParlayAMMLiquidityPool.closeRound();
+				thisRound = await ParlayAMMLiquidityPool.round();
+				console.log('Current round:', thisRound.toString());
+				assert.equal(thisRound.toString(), '3');
 			});
 		});
-		describe('Exercise whole parlay with single SGP cancellation', () => {
+
+		describe('Mixed rounds markets -> default round (1)', () => {
 			beforeEach(async () => {
+				let fastForwardTime = game1NBATime - (await currentTime()) - SECOND;
 				await fastForward(game1NBATime - (await currentTime()) - SECOND);
+				let maturity;
+				for (let i = 0; i < parlayThreeMarkets.length; i++) {
+					maturity = await parlayThreeMarkets[i].times();
+					// console.log(parlayThreeMarkets[i].address, ' maturity at: ', maturity[0].toString());
+					maturityTimes[i] = parseInt(maturity[0].toString());
+				}
+				await fastForward(maturityTimes[0] - (await currentTime()) - 10 * 60 * SECOND);
+				await ParlayAMMLiquidityPool.start({ from: owner });
 				// await fastForward((await currentTime()) - SECOND);
 				answer = await SportPositionalMarketManager.numActiveMarkets();
 				assert.equal(answer.toString(), '15');
 				let totalSUSDToPay = toUnit('10');
-				parlayPositions = ['1', '1', '1', '1', '1'];
-				let parlayPositions2 = ['1', '1', '1', '1'];
+				parlayPositions = ['1', '1', '1'];
+				// parlayPositions = ['1', '1', '1', '1'];
+				let parlayPositions2 = ['1', '1', '1', '1', '0'];
 				let parlayMarketsAddress = [];
-				for (let i = 0; i < parlayMarkets.length; i++) {
-					parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-					parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+				for (let i = 0; i < parlayThreeMarkets.length; i++) {
+					parlayMarketsAddress[i] = parlayThreeMarkets[i].address.toString().toUpperCase();
+					parlayMarketsAddress[i] = parlayThreeMarkets[i].address.toString().replace('0X', '0x');
 				}
+				// console.log('parlayAddr: ', parlayMarketsAddress);
 				let slippage = toUnit('0.01');
-				console.log('buyQuote --->');
 				let result = await ParlayAMM.buyQuoteFromParlay(
 					parlayMarketsAddress,
 					parlayPositions,
 					totalSUSDToPay
 				);
-				console.log('buyTX --->');
+				// console.log('result quote: ', fromUnit(result.totalBuyAmount));
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
 				let buyParlayTX = await ParlayAMM.buyFromParlay(
 					parlayMarketsAddress,
 					parlayPositions,
@@ -1563,20 +1501,31 @@ contract('ParlayAMM', (accounts) => {
 					ZERO_ADDRESS,
 					{ from: first }
 				);
+				let roundBalanceAfter = await Thales.balanceOf(roundPool_2_Address);
+				// console.log(
+				// 	'\n\nRound Balance before: ',
+				// 	fromUnit(roundBalanceBefore),
+				// 	'\nRound Balance after: ',
+				// 	fromUnit(roundBalanceAfter),
+				// 	'\nRound change: ',
+				// 	fromUnit(roundBalanceAfter.sub(roundBalanceBefore))
+				// );
+
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
 				parlaySingleMarketAddress = activeParlays[0];
 				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-				let resolveMatrix = ['0', '2', '2', '2', '0'];
+				let resolveMatrix = ['2', '2', '2'];
 				console.log('Games resolved: ', resolveMatrix, '\n');
 				// parlayPositions = ['0', '0', '0', '0'];
 				let gameId;
 				let homeResult = '0';
 				let awayResult = '0';
-				for (let i = 0; i < parlayMarkets.length; i++) {
+				let checkResult;
+				for (let i = 0; i < parlayThreeMarkets.length; i++) {
 					homeResult = '0';
 					awayResult = '0';
-					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
+					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayThreeMarkets[i].address);
 					if (resolveMatrix[i] == '1') {
 						homeResult = '1';
 					} else if (resolveMatrix[i] == '2') {
@@ -1585,13 +1534,10 @@ contract('ParlayAMM', (accounts) => {
 						homeResult = '1';
 						awayResult = '1';
 					}
-					// if(i == 0) {
-					// 	homeResult = '10';
-					// 	awayResult = '15';
-					// 	// homeResult = '1';
-					// 	// awayResult = '1';
-					// }
-					// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
+					if (i == 0) {
+						homeResult = '95';
+						awayResult = '105';
+					}
 					if (i != parlayMarkets.length - 1) {
 						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
 							parlayMarkets[i].address,
@@ -1601,15 +1547,34 @@ contract('ParlayAMM', (accounts) => {
 							false,
 							{ from: owner }
 						);
+						checkResult = await parlayThreeMarkets[i].result();
+						console.log(
+							i,
+							' outcome for market ',
+							parlayThreeMarkets[i].address,
+							': ',
+							checkResult.toString()
+						);
 					}
 				}
 			});
-			it('Parlay exercised (balances checked)', async () => {
+			it('Parlay exercised, amounts per round checked', async () => {
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
 				let userBalanceBefore = toUnit('1000');
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
 				let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+				let roundBalanceAfter = await Thales.balanceOf(roundPool_2_Address);
 				let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
 				let userBalanceAfter = await Thales.balanceOf(first);
+				console.log(
+					'\n\nRound Balance before: ',
+					fromUnit(roundBalanceBefore),
+					'\nRound Balance after: ',
+					fromUnit(roundBalanceAfter),
+					'\nRound change: ',
+					fromUnit(roundBalanceAfter.sub(roundBalanceBefore))
+				);
 				console.log(
 					'\n\nAMM Balance before: ',
 					fromUnit(balanceBefore),
@@ -1627,6 +1592,8 @@ contract('ParlayAMM', (accounts) => {
 					fromUnit(userBalanceAfter.sub(userBalanceBefore))
 				);
 
+				assert.equal(balanceAfter, 0);
+
 				let parlayData = await ParlayMarketData.getParlayDetails(parlaySingleMarket.address);
 
 				console.log('Quote: ', fromUnit(parlayData.totalResultQuote));
@@ -1640,42 +1607,101 @@ contract('ParlayAMM', (accounts) => {
 
 				let parlayAmount = await parlaySingleMarket.amount();
 				for (let i = 0; i < parlayData.oddsOnCreation.length; i++) {
-					// sportMarket[i] = await parlaySingleMarket.sportMarket(i);
 					console.log('odd ', i, ' :', fromUnit(parlayData.oddsOnCreation[i]));
 					calculatedQuote = calculatedQuote * parseFloat(fromUnit(parlayData.oddsOnCreation[i]));
 				}
 				calculatedQuote = calculatedQuote / 0.95;
 				console.log('calculatedQuote: ', calculatedQuote);
-				// assert.approximately(parseFloat(fromUnit(parlayData.totalResultQuote)), calculatedQuote, 0.00000000001);
 				let calculatedAmount = feesApplied / calculatedQuote;
-				// assert.approximately(parseFloat(fromUnit(parlayAmount)), calculatedAmount, 0.00000000001);
+			});
 
-				// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+			it('Close round', async () => {
+				let thisRound = await ParlayAMMLiquidityPool.round();
+				let roundClosure = await ParlayAMMLiquidityPool.getRoundEndTime(thisRound);
+				console.log('Current round:', thisRound.toString());
+				console.log('Closing time:', roundClosure.toString());
+				console.log('Current time:', await currentTime());
+				let canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+
+				let tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
+				console.log('Trading Markets: ', tradingMarketsPerRound.toString());
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, true);
+
+				await ParlayAMMLiquidityPool.prepareRoundClosing();
+				let roundClosingPrepared = await ParlayAMMLiquidityPool.roundClosingPrepared();
+				console.log('Round closing prepared: ', roundClosingPrepared);
+				assert.equal(roundClosingPrepared, true);
+
+				await ParlayAMMLiquidityPool.processRoundClosingBatch(20);
+				let usersProcessedInRound = await ParlayAMMLiquidityPool.usersProcessedInRound();
+				console.log('UsersProcessed: ', usersProcessedInRound.toString());
+				assert.equal(usersProcessedInRound.toString(), '1');
+
+				await ParlayAMMLiquidityPool.closeRound();
+				thisRound = await ParlayAMMLiquidityPool.round();
+				console.log('Current round:', thisRound.toString());
+
+				assert.equal(thisRound.toString(), '3');
+				let profitPerRound = await ParlayAMMLiquidityPool.profitAndLossPerRound(2);
+				let cummulativeBetweenRounds = await ParlayAMMLiquidityPool.cumulativePnLBetweenRounds(
+					2,
+					3
+				);
+				console.log('PnL in Round 2: ', fromUnit(profitPerRound));
+				console.log('cummulative PnL between Round 2 & 3: ', fromUnit(cummulativeBetweenRounds));
+				assert.equal(fromUnit(cummulativeBetweenRounds), '0');
+				roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+				console.log('Previous Round 2 balance: ', fromUnit(roundBalanceBefore));
+				assert.equal(fromUnit(profitPerRound), '1');
 			});
 		});
 
-		describe('Exercise whole parlay with single SGP + other game cancellation', () => {
+		describe('Round 2, and round 3 market', () => {
 			beforeEach(async () => {
+				let fastForwardTime = game1NBATime - (await currentTime()) - SECOND;
 				await fastForward(game1NBATime - (await currentTime()) - SECOND);
+				let maturity;
+				for (let i = 0; i < parlayTwoMarketDifferentRound.length; i++) {
+					maturity = await parlayTwoMarketDifferentRound[i].times();
+					// console.log(
+					// 	parlayTwoMarketDifferentRound[i].address,
+					// 	' maturity at: ',
+					// 	maturity[0].toString()
+					// );
+					maturityTimes[i] = parseInt(maturity[0].toString());
+				}
+				let maturity1 = maturityTimes[0];
+				await fastForward(maturityTimes[0] - (await currentTime()) - 10 * 60 * SECOND);
+				await ParlayAMMLiquidityPool.start({ from: owner });
 				// await fastForward((await currentTime()) - SECOND);
 				answer = await SportPositionalMarketManager.numActiveMarkets();
 				assert.equal(answer.toString(), '15');
 				let totalSUSDToPay = toUnit('10');
-				parlayPositions = ['1', '1', '1', '1', '1'];
-				let parlayPositions2 = ['1', '1', '1', '1'];
+				parlayPositions = ['1', '1'];
+				// parlayPositions = ['1', '1', '1', '1'];
+				let parlayPositions2 = ['1', '1', '1', '1', '0'];
 				let parlayMarketsAddress = [];
-				for (let i = 0; i < parlayMarkets.length; i++) {
-					parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-					parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+				for (let i = 0; i < parlayTwoMarketDifferentRound.length; i++) {
+					parlayMarketsAddress[i] = parlayTwoMarketDifferentRound[i].address
+						.toString()
+						.toUpperCase();
+					parlayMarketsAddress[i] = parlayTwoMarketDifferentRound[i].address
+						.toString()
+						.replace('0X', '0x');
 				}
+				// console.log('parlayAddr: ', parlayMarketsAddress);
 				let slippage = toUnit('0.01');
-				console.log('buyQuote --->');
 				let result = await ParlayAMM.buyQuoteFromParlay(
 					parlayMarketsAddress,
 					parlayPositions,
 					totalSUSDToPay
 				);
-				console.log('buyTX --->');
+				console.log('result quote: ', fromUnit(result.totalBuyAmount));
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
 				let buyParlayTX = await ParlayAMM.buyFromParlay(
 					parlayMarketsAddress,
 					parlayPositions,
@@ -1685,120 +1711,45 @@ contract('ParlayAMM', (accounts) => {
 					ZERO_ADDRESS,
 					{ from: first }
 				);
-				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
-				parlaySingleMarketAddress = activeParlays[0];
-				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
-				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-				let resolveMatrix = ['0', '0', '2', '2', '0'];
-				console.log('Games resolved: ', resolveMatrix, '\n');
-				// parlayPositions = ['0', '0', '0', '0'];
-				let gameId;
-				let homeResult = '0';
-				let awayResult = '0';
-				for (let i = 0; i < parlayMarkets.length; i++) {
-					homeResult = '0';
-					awayResult = '0';
-					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
-					if (resolveMatrix[i] == '1') {
-						homeResult = '1';
-					} else if (resolveMatrix[i] == '2') {
-						awayResult = '1';
-					} else if (resolveMatrix[i] == '3') {
-						homeResult = '1';
-						awayResult = '1';
-					}
-					// if(i == 0) {
-					// 	homeResult = '10';
-					// 	awayResult = '15';
-					// 	// homeResult = '1';
-					// 	// awayResult = '1';
-					// }
-					// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-					if (i != parlayMarkets.length - 1) {
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
-							parlayMarkets[i].address,
-							resolveMatrix[i],
-							homeResult,
-							awayResult,
-							false,
-							{ from: owner }
-						);
-					}
+				let roundBalanceAfter = await Thales.balanceOf(roundPool_2_Address);
+				// console.log(
+				// 	'\n\nRound Balance before: ',
+				// 	fromUnit(roundBalanceBefore),
+				// 	'\nRound Balance after: ',
+				// 	fromUnit(roundBalanceAfter),
+				// 	'\nRound change: ',
+				// 	fromUnit(roundBalanceAfter.sub(roundBalanceBefore))
+				// );
+
+				for (let i = 0; i < parlayTwoMarkets.length; i++) {
+					maturity = await parlayTwoMarkets[i].times();
+					console.log(parlayTwoMarkets[i].address, ' maturity at: ', maturity[0].toString());
+					maturityTimes[i] = parseInt(maturity[0].toString());
 				}
-			});
-			it('Parlay exercised (balances checked)', async () => {
-				let userBalanceBefore = toUnit('1000');
-				let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
-				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
-				let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
-				let userBalanceAfter = await Thales.balanceOf(first);
-				console.log(
-					'\n\nAMM Balance before: ',
-					fromUnit(balanceBefore),
-					'\nAMM Balance after: ',
-					fromUnit(balanceAfter),
-					'\nAMM change: ',
-					fromUnit(balanceAfter.sub(toUnit(20000)))
-				);
-				console.log(
-					'User balance before: ',
-					fromUnit(userBalanceBefore),
-					'\nUser balance after: ',
-					fromUnit(userBalanceAfter),
-					'\nUser won: ',
-					fromUnit(userBalanceAfter.sub(userBalanceBefore))
-				);
-
-				let parlayData = await ParlayMarketData.getParlayDetails(parlaySingleMarket.address);
-
-				console.log('Quote: ', fromUnit(parlayData.totalResultQuote));
-				console.log('quotes: ', parlayData.oddsOnCreation.toString());
-
-				let sportMarket = [];
-				let calculatedQuote = 1.0;
-				let totalSUSDToPay = toUnit('10');
-				let feesApplied = parseFloat(5) + parseFloat(2);
-				feesApplied = parseFloat(fromUnit(totalSUSDToPay)) * ((100.0 - feesApplied) / 100.0);
-
-				let parlayAmount = await parlaySingleMarket.amount();
-				for (let i = 0; i < parlayData.oddsOnCreation.length; i++) {
-					// sportMarket[i] = await parlaySingleMarket.sportMarket(i);
-					console.log('odd ', i, ' :', fromUnit(parlayData.oddsOnCreation[i]));
-					calculatedQuote = calculatedQuote * parseFloat(fromUnit(parlayData.oddsOnCreation[i]));
-				}
-				calculatedQuote = calculatedQuote / 0.95;
-				console.log('calculatedQuote: ', calculatedQuote);
-				// assert.approximately(parseFloat(fromUnit(parlayData.totalResultQuote)), calculatedQuote, 0.00000000001);
-				let calculatedAmount = feesApplied / calculatedQuote;
-				// assert.approximately(parseFloat(fromUnit(parlayAmount)), calculatedAmount, 0.00000000001);
-
-				// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
-			});
-		});
-
-		describe('Exercise whole parlay with all cancellation', () => {
-			beforeEach(async () => {
-				await fastForward(game1NBATime - (await currentTime()) - SECOND);
 				// await fastForward((await currentTime()) - SECOND);
 				answer = await SportPositionalMarketManager.numActiveMarkets();
 				assert.equal(answer.toString(), '15');
-				let totalSUSDToPay = toUnit('10');
-				parlayPositions = ['1', '1', '1', '1', '1'];
-				let parlayPositions2 = ['1', '1', '1', '1'];
-				let parlayMarketsAddress = [];
-				for (let i = 0; i < parlayMarkets.length; i++) {
-					parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-					parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+				totalSUSDToPay = toUnit('10');
+				parlayPositions = ['1', '1'];
+				// parlayPositions = ['1', '1', '1', '1'];
+				parlayPositions2 = ['1', '1', '1', '1', '0'];
+				parlayMarketsAddress = [];
+				for (let i = 0; i < parlayTwoMarkets.length; i++) {
+					parlayMarketsAddress[i] = parlayTwoMarkets[i].address.toString().toUpperCase();
+					parlayMarketsAddress[i] = parlayTwoMarkets[i].address.toString().replace('0X', '0x');
 				}
-				let slippage = toUnit('0.01');
-				console.log('buyQuote --->');
-				let result = await ParlayAMM.buyQuoteFromParlay(
+				// console.log('parlayAddr: ', parlayMarketsAddress);
+				slippage = toUnit('0.01');
+				result = await ParlayAMM.buyQuoteFromParlay(
 					parlayMarketsAddress,
 					parlayPositions,
 					totalSUSDToPay
 				);
-				console.log('buyTX --->');
-				let buyParlayTX = await ParlayAMM.buyFromParlay(
+				console.log('result quote: ', fromUnit(result.totalBuyAmount));
+				roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(3);
+				console.log('round pool address: ', roundPool_2_Address);
+				roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+				buyParlayTX = await ParlayAMM.buyFromParlay(
 					parlayMarketsAddress,
 					parlayPositions,
 					totalSUSDToPay,
@@ -1807,20 +1758,48 @@ contract('ParlayAMM', (accounts) => {
 					ZERO_ADDRESS,
 					{ from: first }
 				);
+				roundBalanceAfter = await Thales.balanceOf(roundPool_2_Address);
+				console.log(
+					'\n\nRound Balance before: ',
+					fromUnit(roundBalanceBefore),
+					'\nRound Balance after: ',
+					fromUnit(roundBalanceAfter),
+					'\nRound change: ',
+					fromUnit(roundBalanceAfter.sub(roundBalanceBefore))
+				);
+
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
+				console.log('Active parlays: ', activeParlays);
 				parlaySingleMarketAddress = activeParlays[0];
 				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-				let resolveMatrix = ['0', '0', '0', '0', '0'];
+				console.log('previous time: ', fightTime - (await currentTime()) + 3 * HOUR);
+				console.log('other time: ', maturity1 - (await currentTime()) + 5 * HOUR);
+				// await fastForward(maturity1 - (await currentTime()) + 5*HOUR);
+				const tx_from_manager = await SportPositionalMarketManager.resolveMarket(
+					parlayTwoMarketDifferentRound[1].address,
+					0,
+					{ from: manager }
+				);
+				const tx_from_manager2 = await SportPositionalMarketManager.resolveMarket(
+					parlayTwoMarketDifferentRound[0].address,
+					2,
+					{ from: manager }
+				);
+				let resolveMatrix = ['2', '2'];
 				console.log('Games resolved: ', resolveMatrix, '\n');
 				// parlayPositions = ['0', '0', '0', '0'];
 				let gameId;
 				let homeResult = '0';
 				let awayResult = '0';
-				for (let i = 0; i < parlayMarkets.length; i++) {
+				let checkResult;
+				let gameOfParlay;
+
+				for (let i = 0; i < parlayTwoMarketDifferentRound.length; i++) {
 					homeResult = '0';
 					awayResult = '0';
-					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
+					gameOfParlay = await parlaySingleMarket.sportMarket(i);
+					gameId = await TherundownConsumerDeployed.gameIdPerMarket(gameOfParlay.sportAddress);
 					if (resolveMatrix[i] == '1') {
 						homeResult = '1';
 					} else if (resolveMatrix[i] == '2') {
@@ -1829,16 +1808,47 @@ contract('ParlayAMM', (accounts) => {
 						homeResult = '1';
 						awayResult = '1';
 					}
-					// if(i == 0) {
-					// 	// homeResult = '10';
-					// 	// awayResult = '15';
-					// 	homeResult = '1';
-					// 	awayResult = '1';
-					// }
-					// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-					if (i != parlayMarkets.length - 1) {
+					if (i == 0) {
+						homeResult = '2';
+						awayResult = '3';
+					}
+					checkResult = await parlayTwoMarketDifferentRound[i].result();
+					console.log(
+						i,
+						' outcome for market ',
+						parlayTwoMarketDifferentRound[i].address,
+						': ',
+						checkResult.toString()
+					);
+				}
+				parlaySingleMarketAddress = activeParlays[1];
+				parlaySingleMarket2 = await ParlayMarketContract.at(activeParlays[1].toString());
+				resolveMatrix = ['2', '2'];
+				console.log('Games resolved: ', resolveMatrix, '\n');
+				// parlayPositions = ['0', '0', '0', '0'];
+				gameId;
+				homeResult = '0';
+				awayResult = '0';
+				checkResult;
+				for (let i = 0; i < parlayTwoMarkets.length; i++) {
+					homeResult = '0';
+					awayResult = '0';
+					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayTwoMarkets[i].address);
+					if (resolveMatrix[i] == '1') {
+						homeResult = '1';
+					} else if (resolveMatrix[i] == '2') {
+						awayResult = '1';
+					} else if (resolveMatrix[i] == '3') {
+						homeResult = '1';
+						awayResult = '1';
+					}
+					if (i == 0) {
+						homeResult = '95';
+						awayResult = '105';
+					}
+					if (i != parlayTwoMarkets.length - 1) {
 						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
-							parlayMarkets[i].address,
+							parlayTwoMarkets[i].address,
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
@@ -1846,14 +1856,45 @@ contract('ParlayAMM', (accounts) => {
 							{ from: owner }
 						);
 					}
+					checkResult = await parlayTwoMarkets[i].result();
+					console.log(
+						i,
+						' outcome for market ',
+						parlayTwoMarkets[i].address,
+						': ',
+						checkResult.toString()
+					);
 				}
 			});
-			it('Parlay exercised (balances checked)', async () => {
+			it('Balances', async () => {
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundPool_3_Address = await ParlayAMMLiquidityPool.roundPools(3);
 				let userBalanceBefore = toUnit('1000');
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+				let roundBalanceBefore3 = await Thales.balanceOf(roundPool_3_Address);
 				let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+				await ParlayAMM.exerciseParlay(parlaySingleMarket2.address);
+				let roundBalanceAfter = await Thales.balanceOf(roundPool_2_Address);
+				let roundBalanceAfter3 = await Thales.balanceOf(roundPool_3_Address);
 				let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
 				let userBalanceAfter = await Thales.balanceOf(first);
+				console.log(
+					'\n\nRound 2 Balance before: ',
+					fromUnit(roundBalanceBefore),
+					'\nRound 2 Balance after: ',
+					fromUnit(roundBalanceAfter),
+					'\nRound 2 change: ',
+					fromUnit(roundBalanceAfter.sub(roundBalanceBefore))
+				);
+				console.log(
+					'\n\nRound 3 Balance before: ',
+					fromUnit(roundBalanceBefore3),
+					'\nRound 3 Balance after: ',
+					fromUnit(roundBalanceAfter3),
+					'\nRound 3 change: ',
+					fromUnit(roundBalanceAfter3.sub(roundBalanceBefore3))
+				);
 				console.log(
 					'\n\nAMM Balance before: ',
 					fromUnit(balanceBefore),
@@ -1870,165 +1911,165 @@ contract('ParlayAMM', (accounts) => {
 					'\nUser won: ',
 					fromUnit(userBalanceAfter.sub(userBalanceBefore))
 				);
-
-				let parlayData = await ParlayMarketData.getParlayDetails(parlaySingleMarket.address);
-
-				console.log('Quote: ', fromUnit(parlayData.totalResultQuote));
-				console.log('quotes: ', parlayData.oddsOnCreation.toString());
-
-				let sportMarket = [];
-				let calculatedQuote = 1.0;
-				let totalSUSDToPay = toUnit('10');
-				let feesApplied = parseFloat(5) + parseFloat(2);
-				feesApplied = parseFloat(fromUnit(totalSUSDToPay)) * ((100.0 - feesApplied) / 100.0);
-
-				let parlayAmount = await parlaySingleMarket.amount();
-				for (let i = 0; i < parlayData.oddsOnCreation.length; i++) {
-					// sportMarket[i] = await parlaySingleMarket.sportMarket(i);
-					console.log('odd ', i, ' :', fromUnit(parlayData.oddsOnCreation[i]));
-					calculatedQuote = calculatedQuote * parseFloat(fromUnit(parlayData.oddsOnCreation[i]));
-				}
-				calculatedQuote = calculatedQuote / 0.95;
-				console.log('calculatedQuote: ', calculatedQuote);
-				// assert.approximately(parseFloat(fromUnit(parlayData.totalResultQuote)), calculatedQuote, 0.00000000001);
-				let calculatedAmount = feesApplied / calculatedQuote;
-				// assert.approximately(parseFloat(fromUnit(parlayAmount)), calculatedAmount, 0.00000000001);
-
-				// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
 			});
-		});
 
-		describe('Exercise whole parlay with all cancellation no totalQuoteCeiling', () => {
-			beforeEach(async () => {
-				await ParlayAMM.setAmounts(
-					toUnit(minUSDAmount),
-					toUnit(maxSupportedAmount),
-					toUnit('0.0005'),
-					parlayAMMfee,
-					safeBoxImpact,
-					toUnit(0.05),
-					toUnit(200000),
-					{
-						from: owner,
-					}
-				);
-				await fastForward(game1NBATime - (await currentTime()) - SECOND);
-				// await fastForward((await currentTime()) - SECOND);
-				answer = await SportPositionalMarketManager.numActiveMarkets();
-				assert.equal(answer.toString(), '15');
-				let totalSUSDToPay = toUnit('10');
-				parlayPositions = ['1', '1', '1', '1', '1'];
-				let parlayPositions2 = ['1', '1', '1', '1'];
-				let parlayMarketsAddress = [];
-				for (let i = 0; i < parlayMarkets.length; i++) {
-					parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-					parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
-				}
-				let slippage = toUnit('0.01');
-				console.log('buyQuote --->');
-				let result = await ParlayAMM.buyQuoteFromParlay(
-					parlayMarketsAddress,
-					parlayPositions,
-					totalSUSDToPay
-				);
-				console.log('buyTX --->');
-				let buyParlayTX = await ParlayAMM.buyFromParlay(
-					parlayMarketsAddress,
-					parlayPositions,
-					totalSUSDToPay,
-					slippage,
-					result[1],
-					ZERO_ADDRESS,
-					{ from: first }
-				);
-				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
-				parlaySingleMarketAddress = activeParlays[0];
-				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
-				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-				let resolveMatrix = ['0', '0', '0', '0', '0'];
-				console.log('Games resolved: ', resolveMatrix, '\n');
-				// parlayPositions = ['0', '0', '0', '0'];
-				let gameId;
-				let homeResult = '0';
-				let awayResult = '0';
-				for (let i = 0; i < parlayMarkets.length; i++) {
-					homeResult = '0';
-					awayResult = '0';
-					gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
-					if (resolveMatrix[i] == '1') {
-						homeResult = '1';
-					} else if (resolveMatrix[i] == '2') {
-						awayResult = '1';
-					} else if (resolveMatrix[i] == '3') {
-						homeResult = '1';
-						awayResult = '1';
-					}
-					// if(i == 0) {
-					// 	// homeResult = '10';
-					// 	// awayResult = '15';
-					// 	homeResult = '1';
-					// 	awayResult = '1';
-					// }
-					// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-					if (i != parlayMarkets.length - 1) {
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
-							parlayMarkets[i].address,
-							resolveMatrix[i],
-							homeResult,
-							awayResult,
-							false,
-							{ from: owner }
-						);
-					}
-				}
-			});
-			it('Parlay exercised (balances checked)', async () => {
-				let userBalanceBefore = toUnit('1000');
-				let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+			it('Close round', async () => {
+				let thisRound = await ParlayAMMLiquidityPool.round();
+				let roundClosure = await ParlayAMMLiquidityPool.getRoundEndTime(thisRound);
+				console.log('Current round:', thisRound.toString());
+				console.log('Closing time:', roundClosure.toString());
+				console.log('Current time:', await currentTime());
+				let canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+
+				let tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
+				console.log('Trading Markets: ', tradingMarketsPerRound.toString());
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, true);
+				console.log('Exercising: ', parlaySingleMarket.address);
+				console.log('Exercising: ', parlaySingleMarket2.address);
+				let readyToBeExercised = await ParlayAMMLiquidityPool.hasMarketsReadyToBeExercised();
+				console.log('Markets ready for exercise in current round:', readyToBeExercised);
+				await ParlayAMMLiquidityPool.exerciseMarketsReadyToExercised();
 				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
-				let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
-				let userBalanceAfter = await Thales.balanceOf(first);
-				console.log(
-					'\n\nAMM Balance before: ',
-					fromUnit(balanceBefore),
-					'\nAMM Balance after: ',
-					fromUnit(balanceAfter),
-					'\nAMM change: ',
-					fromUnit(balanceAfter.sub(toUnit(20000)))
+				await ParlayAMM.exerciseParlay(parlaySingleMarket2.address);
+				console.log('-> both markets exercised');
+
+				canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, true);
+
+				await ParlayAMMLiquidityPool.prepareRoundClosing();
+				let roundClosingPrepared = await ParlayAMMLiquidityPool.roundClosingPrepared();
+				console.log('Round closing prepared: ', roundClosingPrepared);
+				assert.equal(roundClosingPrepared, true);
+
+				await ParlayAMMLiquidityPool.processRoundClosingBatch(20);
+				let usersProcessedInRound = await ParlayAMMLiquidityPool.usersProcessedInRound();
+				console.log('UsersProcessed: ', usersProcessedInRound.toString());
+				assert.equal(usersProcessedInRound.toString(), '1');
+
+				await ParlayAMMLiquidityPool.closeRound();
+				thisRound = await ParlayAMMLiquidityPool.round();
+				console.log('Current round:', thisRound.toString());
+
+				assert.equal(thisRound.toString(), '3');
+				let profitPerRound = await ParlayAMMLiquidityPool.profitAndLossPerRound(2);
+				let cummulativeBetweenRounds = await ParlayAMMLiquidityPool.cumulativePnLBetweenRounds(
+					2,
+					3
 				);
-				console.log(
-					'User balance before: ',
-					fromUnit(userBalanceBefore),
-					'\nUser balance after: ',
-					fromUnit(userBalanceAfter),
-					'\nUser won: ',
-					fromUnit(userBalanceAfter.sub(userBalanceBefore))
+				console.log('PnL in Round 2: ', fromUnit(profitPerRound));
+				console.log('cummulative PnL between Round 2 & 3: ', fromUnit(cummulativeBetweenRounds));
+				assert.equal(fromUnit(cummulativeBetweenRounds), '0');
+				console.log('Previous balance Round 2: ', fromUnit(roundBalanceBefore));
+
+				console.log('Round 2 closed, closing Round 3 ===> ');
+				// assert.equal(fromUnit(profitPerRound), '1');
+				thisRound = await ParlayAMMLiquidityPool.round();
+				roundClosure = await ParlayAMMLiquidityPool.getRoundEndTime(thisRound);
+				console.log('Current round:', thisRound.toString());
+				console.log('Closing time:', roundClosure.toString());
+				console.log('Current time:', await currentTime());
+				canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+
+				tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
+				console.log('Trading Markets: ', tradingMarketsPerRound.toString());
+				console.log('Can close round: ', canClose);
+				assert.equal(canClose, true);
+
+				await ParlayAMMLiquidityPool.prepareRoundClosing();
+				roundClosingPrepared = await ParlayAMMLiquidityPool.roundClosingPrepared();
+				console.log('Round closing prepared: ', roundClosingPrepared);
+				assert.equal(roundClosingPrepared, true);
+
+				await ParlayAMMLiquidityPool.processRoundClosingBatch(20);
+				usersProcessedInRound = await ParlayAMMLiquidityPool.usersProcessedInRound();
+				console.log('UsersProcessed: ', usersProcessedInRound.toString());
+				assert.equal(usersProcessedInRound.toString(), '1');
+
+				await ParlayAMMLiquidityPool.closeRound();
+				thisRound = await ParlayAMMLiquidityPool.round();
+				console.log('Current round:', thisRound.toString());
+
+				assert.equal(thisRound.toString(), '4');
+				profitPerRound = await ParlayAMMLiquidityPool.profitAndLossPerRound(3);
+				cummulativeBetweenRounds = await ParlayAMMLiquidityPool.cumulativePnLBetweenRounds(3, 4);
+				console.log('PnL in Round 3: ', fromUnit(profitPerRound));
+				console.log('cummulative PnL between Round 3 & 4: ', fromUnit(cummulativeBetweenRounds));
+				// assert.equal(fromUnit(cummulativeBetweenRounds), '0');
+				console.log('Previous balance Round 2: ', fromUnit(roundBalanceBefore));
+			});
+
+			it('Read from data contract', async () => {
+				await Thales.transfer(secondParlayAMMLiquidityProvider, toUnit('1000'), { from: owner });
+				const MockStakingThales = artifacts.require('MockStakingThales');
+				let mockStakingThales = await MockStakingThales.new({ from: owner });
+
+				await Thales.approve(mockStakingThales.address, toUnit(1000), {
+					from: secondParlayAMMLiquidityProvider,
+				});
+
+				await Thales.approve(ParlayAMMLiquidityPool.address, toUnit(1000), {
+					from: secondParlayAMMLiquidityProvider,
+				});
+				await mockStakingThales.stake(toUnit(100), { from: secondParlayAMMLiquidityProvider });
+
+				await ParlayAMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
+					from: owner,
+				});
+
+				await ParlayAMMLiquidityPool.setStakingThales(mockStakingThales.address, {
+					from: owner,
+				});
+
+				let thisRound = await ParlayAMMLiquidityPool.round();
+				let roundClosure = await ParlayAMMLiquidityPool.getRoundEndTime(thisRound);
+				let canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				let roundPool_2_Address = await ParlayAMMLiquidityPool.roundPools(2);
+				let roundBalanceBefore = await Thales.balanceOf(roundPool_2_Address);
+
+				let tradingMarketsPerRound = await ParlayAMMLiquidityPool.getTradingMarketsPerRound(2);
+				assert.equal(canClose, true);
+				let readyToBeExercised = await ParlayAMMLiquidityPool.hasMarketsReadyToBeExercised();
+				await ParlayAMMLiquidityPool.exerciseMarketsReadyToExercised();
+				await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+				await ParlayAMM.exerciseParlay(parlaySingleMarket2.address);
+
+				canClose = await ParlayAMMLiquidityPool.canCloseCurrentRound();
+				assert.equal(canClose, true);
+
+				await ParlayAMMLiquidityPool.prepareRoundClosing();
+				let roundClosingPrepared = await ParlayAMMLiquidityPool.roundClosingPrepared();
+				assert.equal(roundClosingPrepared, true);
+
+				await ParlayAMMLiquidityPool.processRoundClosingBatch(20);
+				let usersProcessedInRound = await ParlayAMMLiquidityPool.usersProcessedInRound();
+				assert.equal(usersProcessedInRound.toString(), '1');
+
+				await ParlayAMMLiquidityPool.closeRound();
+				thisRound = await ParlayAMMLiquidityPool.round();
+				console.log('Current round:', thisRound.toString());
+
+				assert.equal(thisRound.toString(), '3');
+				let profitPerRound = await ParlayAMMLiquidityPool.profitAndLossPerRound(2);
+				let cummulativeBetweenRounds = await ParlayAMMLiquidityPool.cumulativePnLBetweenRounds(
+					2,
+					3
 				);
 
-				let parlayData = await ParlayMarketData.getParlayDetails(parlaySingleMarket.address);
-
-				console.log('Quote: ', fromUnit(parlayData.totalResultQuote));
-				console.log('quotes: ', parlayData.oddsOnCreation.toString());
-
-				let sportMarket = [];
-				let calculatedQuote = 1.0;
-				let totalSUSDToPay = toUnit('10');
-				let feesApplied = parseFloat(5) + parseFloat(2);
-				feesApplied = parseFloat(fromUnit(totalSUSDToPay)) * ((100.0 - feesApplied) / 100.0);
-
-				let parlayAmount = await parlaySingleMarket.amount();
-				for (let i = 0; i < parlayData.oddsOnCreation.length; i++) {
-					// sportMarket[i] = await parlaySingleMarket.sportMarket(i);
-					console.log('odd ', i, ' :', fromUnit(parlayData.oddsOnCreation[i]));
-					calculatedQuote = calculatedQuote * parseFloat(fromUnit(parlayData.oddsOnCreation[i]));
-				}
-				calculatedQuote = calculatedQuote / 0.95;
-				console.log('calculatedQuote: ', calculatedQuote);
-				// assert.approximately(parseFloat(fromUnit(parlayData.totalResultQuote)), calculatedQuote, 0.00000000001);
-				let calculatedAmount = feesApplied / calculatedQuote;
-				// assert.approximately(parseFloat(fromUnit(parlayAmount)), calculatedAmount, 0.00000000001);
-
-				// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+				let LPData = await ParlayAMMLiquidityPoolData.getLiquidityPoolData(
+					ParlayAMMLiquidityPool.address
+				);
+				console.log('LP DATA:\n', LPData);
+				let userLPData = await ParlayAMMLiquidityPoolData.getUserLiquidityPoolData(
+					ParlayAMMLiquidityPool.address,
+					secondParlayAMMLiquidityProvider
+				);
+				console.log('User LP DATA:\n', userLPData);
 			});
 		});
 	});

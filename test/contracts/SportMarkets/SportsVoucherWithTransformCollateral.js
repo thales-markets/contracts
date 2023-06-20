@@ -245,6 +245,7 @@ contract('SportsVauchers', (accounts) => {
 			second,
 			second,
 			second,
+			second,
 			ZERO_ADDRESS,
 			{ from: owner }
 		);

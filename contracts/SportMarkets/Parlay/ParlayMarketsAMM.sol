@@ -23,6 +23,9 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
+import "../../interfaces/IParlayAMMLiquidityPool.sol";
+
+import "hardhat/console.sol";
 
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -80,6 +83,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     mapping(bytes32 => uint) public riskPerPackedGamesCombination;
 
     mapping(uint => mapping(uint => mapping(uint => uint))) public SGPFeePerCombination;
+
+    address public parlayLP;
 
     function initialize(
         address _owner,
@@ -247,6 +252,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(_differentRecipient, _sUSDPaid);
         }
+        uint balance = sUSD.balanceOf(address(this));
+        if (balance > 0) {
+            sUSD.transfer(
+                IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
+                balance
+            );
+        }
     }
 
     function buyFromParlayWithReferrer(
@@ -258,6 +270,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address _differentRecipient,
         address _referrer
     ) external nonReentrant notPaused {
+        uint balance = sUSD.balanceOf(address(this));
         if (_differentRecipient == address(0)) {
             _differentRecipient = msg.sender;
         }
@@ -276,6 +289,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(_differentRecipient, _sUSDPaid);
         }
+        balance = sUSD.balanceOf(address(this)) - balance;
+        if (balance > 0) {
+            sUSD.transfer(
+                IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
+                balance
+            );
+        }
     }
 
     function buyFromParlayWithDifferentCollateralAndReferrer(
@@ -290,6 +310,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
+        uint balance = sUSD.balanceOf(address(this));
+
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
@@ -316,21 +338,22 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(msg.sender, _sUSDPaid);
         }
+        balance = sUSD.balanceOf(address(this)) - balance;
+        if (balance > 0) {
+            sUSD.transfer(
+                IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
+                balance
+            );
+        }
     }
 
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseWiningSportMarkets();
-    }
-
-    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket)
-        external
-        nonReentrant
-        notPaused
-        onlyKnownMarkets(_parlayMarket)
-    {
-        ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
-        parlayMarket.exerciseSpecificSportMarket(_sportMarket);
+        uint amount = sUSD.balanceOf(address(this));
+        if (amount > 0) {
+            IParlayAMMLiquidityPool(parlayLP).transferToPool(_parlayMarket, amount);
+        }
     }
 
     function resolveParlay() external notPaused onlyKnownMarkets(msg.sender) {
@@ -389,6 +412,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
 
         if (_sendSUSD) {
+            // todo send to LP
             sUSD.safeTransferFrom(msg.sender, address(this), _sUSDPaid);
         }
         sUSD.safeTransfer(safeBox, safeBoxAmount);
@@ -412,6 +436,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         _knownMarkets.add(address(parlayMarket));
         sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
+
+        IParlayAMMLiquidityPool(parlayLP).commitTrade(
+            address(parlayMarket),
+            totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)
+        );
         // buy the positions
         _buyPositionsFromSportAMM(
             _sportMarkets,
@@ -715,6 +744,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit CurveParametersUpdated(_curveSUSD, _dai, _usdc, _usdt, _curveOnrampEnabled, _maxAllowedPegSlippagePercentage);
     }
 
+    function setParlayLP(address _parlayLP) external onlyOwner {
+        if (parlayLP != address(0)) {
+            sUSD.approve(parlayLP, 0);
+        }
+        parlayLP = _parlayLP;
+        sUSD.approve(_parlayLP, type(uint256).max);
+        emit ParlayLPSet(_parlayLP);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyKnownMarkets(address _parlayMarket) {
@@ -766,4 +804,5 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         bool curveOnrampEnabled,
         uint maxAllowedPegSlippagePercentage
     );
+    event ParlayLPSet(address parlayLP);
 }

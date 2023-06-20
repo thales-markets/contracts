@@ -174,6 +174,7 @@ contract('StakingThales', (accounts) => {
 			ZERO_ADDRESS,
 			ZERO_ADDRESS,
 			ZERO_ADDRESS,
+			ZERO_ADDRESS,
 			{ from: owner }
 		);
 		await StakingThalesDeployed.startStakingPeriod({ from: owner });

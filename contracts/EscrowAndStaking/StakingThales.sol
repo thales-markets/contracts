@@ -19,6 +19,7 @@ import "../interfaces/IThalesStakingRewardsPool.sol";
 import "../interfaces/IAddressResolver.sol";
 import "../interfaces/ISportsAMMLiquidityPool.sol";
 import "../interfaces/IThalesAMMLiquidityPool.sol";
+import "../interfaces/IParlayAMMLiquidityPool.sol";
 import "../interfaces/IThalesAMM.sol";
 import "../interfaces/IPositionalMarketManager.sol";
 import "../interfaces/IStakingThalesBonusRewardsManager.sol";
@@ -125,6 +126,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     IThalesAMMLiquidityPool public thalesAMMLiquidityPool;
 
     IStakingThalesBonusRewardsManager public stakingThalesBonusRewardsManager;
+    IParlayAMMLiquidityPool public parlayAMMLiquidityPool;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -294,6 +296,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address _addressResolver,
         address _sportsAMMLiquidityPool,
         address _thalesAMMLiquidityPool,
+        address _parlayAMMLiquidityPool,
         address _stakingThalesBonusRewardsManager
     ) external onlyOwner {
         SNXRewards = ISNXRewards(_snxRewards);
@@ -305,6 +308,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         addressResolver = IAddressResolver(_addressResolver);
         sportsAMMLiquidityPool = ISportsAMMLiquidityPool(_sportsAMMLiquidityPool);
         thalesAMMLiquidityPool = IThalesAMMLiquidityPool(_thalesAMMLiquidityPool);
+        parlayAMMLiquidityPool = IParlayAMMLiquidityPool(_parlayAMMLiquidityPool);
         stakingThalesBonusRewardsManager = IStakingThalesBonusRewardsManager(_stakingThalesBonusRewardsManager);
         emit AddressesChanged(
             _snxRewards,
@@ -316,6 +320,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             _addressResolver,
             _sportsAMMLiquidityPool,
             _thalesAMMLiquidityPool,
+            _parlayAMMLiquidityPool,
             _stakingThalesBonusRewardsManager
         );
     }
@@ -609,6 +614,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
         if (address(thalesAMMLiquidityPool) != address(0)) {
             require(!thalesAMMLiquidityPool.isUserLPing(msg.sender), "Cannot unstake while LPing");
+        }
+
+        if (address(parlayAMMLiquidityPool) != address(0)) {
+            require(!parlayAMMLiquidityPool.isUserLPing(msg.sender), "Cannot unstake while LPing");
         }
 
         if (_calculateAvailableRewardsToClaim(msg.sender) > 0) {
@@ -984,6 +993,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address addressResolver,
         address sportsAMMLiquidityPool,
         address thalesAMMLiquidityPool,
+        address parlayAMMLiquidityPool,
         address stakingThalesBonusRewardsManager
     );
     event EscrowChanged(address newEscrow);

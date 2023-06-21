@@ -102,6 +102,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     IGamesOddsObtainer public oddsObtainer;
     uint public maxNumberOfMarketsToResolve;
 
+    uint private constant STATUS_RETIRED = 201;
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -631,7 +632,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint8 _status
     ) internal {
         sportsManager.resolveMarket(_market, _outcome);
-        if (_status == 201) {
+        if (_status == STATUS_RETIRED) {
             oddsObtainer.resolveChildMarkets(_market, 0, 0, 0);
         } else {
             oddsObtainer.resolveChildMarkets(_market, _outcome, _homeScore, _awayScore);

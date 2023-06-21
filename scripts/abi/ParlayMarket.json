@@ -91,6 +91,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "areAllPositionsResolved",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -175,6 +188,19 @@
         "internalType": "uint256[]",
         "name": "allBalances",
         "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "hasMarketLostButHasExercisableWinningPositions",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "itHasLostButHasExercisableWinningPositions",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

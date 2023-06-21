@@ -218,6 +218,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "parlayLP",
+        "type": "address"
+      }
+    ],
+    "name": "ParlayLPSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "market",
         "type": "address"
       },
@@ -851,24 +864,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_sportMarket",
-        "type": "address"
-      }
-    ],
-    "name": "exerciseSportMarketInParlay",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address[]",
         "name": "_parlayMarkets",
         "type": "address[]"
@@ -1163,6 +1158,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parlayLP",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1679,6 +1687,19 @@
       }
     ],
     "name": "setParlayAmmFeePerAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayLP",
+        "type": "address"
+      }
+    ],
+    "name": "setParlayLP",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

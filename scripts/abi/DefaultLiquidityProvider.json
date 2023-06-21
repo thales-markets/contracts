@@ -37,11 +37,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_sportAMMLiquidityPool",
+        "name": "_parlayAMMLiquidityPool",
         "type": "address"
       }
     ],
-    "name": "SetSportAMMLiquidityPool",
+    "name": "SetParlayAMMLiquidityPool",
     "type": "event"
   },
   {
@@ -72,7 +72,7 @@
       },
       {
         "internalType": "address",
-        "name": "_sportAMMLiquidityPool",
+        "name": "_parlayAMMLiquidityPool",
         "type": "address"
       }
     ],
@@ -181,11 +181,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_sportAMMLiquidityPool",
+        "name": "_parlayAMMLiquidityPool",
         "type": "address"
       }
     ],
-    "name": "setSportAMMLiquidityPool",
+    "name": "setParlayAMMLiquidityPool",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

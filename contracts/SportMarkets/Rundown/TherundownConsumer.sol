@@ -25,6 +25,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     uint public constant AWAY_WIN = 2;
     uint public constant RESULT_DRAW = 3;
     uint public constant MIN_TAG_NUMBER = 9000;
+    uint public constant STATUS_RETIRED = 201;
 
     /* ========== CONSUMER STATE VARIABLES ========== */
 
@@ -102,7 +103,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     IGamesOddsObtainer public oddsObtainer;
     uint public maxNumberOfMarketsToResolve;
 
-    uint private constant STATUS_RETIRED = 201;
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(

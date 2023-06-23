@@ -148,6 +148,47 @@
         "internalType": "contract ParlayAMMLiquidityPool",
         "name": "liquidityPool",
         "type": "address"
+      }
+    ],
+    "name": "getPendingParlaysInCurrentRound",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "totalParlaysInRound",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "closedParlays",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "pendingParlays",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address[]",
+            "name": "pendingParlayMarkets",
+            "type": "address[]"
+          }
+        ],
+        "internalType": "struct ParlayAMMLiquidityPoolData.PendingParlays",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract ParlayAMMLiquidityPool",
+        "name": "liquidityPool",
+        "type": "address"
       },
       {
         "internalType": "address",

@@ -640,7 +640,7 @@
 		"GamesOddsReceiverImplementation": "0x764A51F3C84158E70d228122c4cE2BC7A605DFdF",
 		"ThalesAMMLiquidityPool": "0x7e98D27847e06261bE499E248060DCD6F7B82303",
 		"ThalesAMMDefaultLiquidityProvider": "0xF179465BA0beB8Ea17c8e28CfFda29fFEC737c05",
-		"ThalesAMMLiquidityPoolImplementation": "0x40b8F4852eB5394c1EcABc1bEf09016a868f90FC",
+		"ThalesAMMLiquidityPoolImplementation": "0x1c6BD32F85cB64962958649e8304e7e7020C0B3c",
 		"ThalesAMMLiquidityPoolRoundMastercopy": "0x26C6E00406f4B83bF35d80f6Bda4e60dEF0A43A3",
 		"ThalesAMMDefaultLiquidityProviderImplementation": "0xff3b64266F0CfF08138de2C9ceb15E65FddA1fBA",
 		"ThalesAMMNew": "0xCf0f20487d4d5361C104DA48317b0028086Ad503",

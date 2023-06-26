@@ -23,7 +23,8 @@ interface IParlayMarketsAMM {
     function getSgpFeePerCombination(
         uint tag1,
         uint tag2_1,
-        uint tag2_2
+        uint tag2_2,
+        uint position
     ) external view returns (uint sgpFee);
 
     function riskPerCombination(

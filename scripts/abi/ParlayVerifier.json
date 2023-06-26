@@ -136,6 +136,11 @@
         "type": "address[]"
       },
       {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
         "internalType": "uint256",
         "name": "_sUSDAfterFees",
         "type": "uint256"

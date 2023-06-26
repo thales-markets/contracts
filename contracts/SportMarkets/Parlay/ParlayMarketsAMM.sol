@@ -35,6 +35,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     uint private constant ONE_PERCENT = 1e16;
     uint private constant DEFAULT_PARLAY_SIZE = 4;
     uint private constant MAX_APPROVAL = type(uint256).max;
+    uint private constant POSITION_TAG_CONSTANT = 1e7;
 
     ISportsAMM public sportsAmm;
     ISportPositionalMarketManager public sportManager;
@@ -128,9 +129,23 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function getSgpFeePerCombination(
         uint tag1,
         uint tag2_1,
-        uint tag2_2
+        uint tag2_2,
+        uint position
     ) external view returns (uint sgpFee) {
-        sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
+        console.log(">>>> position: ", position);
+        uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * ((position % 100) / 10)));
+        uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * (position % 10)));
+        console.log(">>>> position_tag1: ", posTag2_1);
+        console.log(">>>> position_tag2: ", posTag2_2);
+        console.log(">>>> original_sgp: ", SGPFeePerCombination[tag1][tag2_1][tag2_2]);
+        console.log(">>>> position_sgp: ", SGPFeePerCombination[tag1][posTag2_1][posTag2_2]);
+        if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] > 0) {
+            if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] < ONE) {
+                sgpFee = SGPFeePerCombination[tag1][posTag2_1][posTag2_2];
+            }
+        } else {
+            sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
+        }
     }
 
     function buyQuoteFromParlay(
@@ -513,6 +528,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
         resultSkew = parlayVerifier.getSkewImpact(
             _sportMarkets,
+            _positions,
             sUSDAfterFees,
             sportsAmm,
             address(this),
@@ -654,6 +670,26 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     ) external onlyOwner {
         SGPFeePerCombination[tag1][tag2_1][tag2_2] = fee;
         SGPFeePerCombination[tag1][tag2_2][tag2_1] = fee;
+    }
+
+    function setRestrictedPositionPerSGPCombination(
+        uint tag1,
+        uint tag2_1,
+        uint tag2_2,
+        uint position_1,
+        uint position_2,
+        uint fee
+    ) external onlyOwner {
+        require(SGPFeePerCombination[tag1][tag2_1][tag2_2] > 0, "SGP not set for tags");
+        uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_1));
+        uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_2));
+        console.log(">>>> set | position_tag1: ", posTag2_1);
+        console.log(">>>> set | position_tag2: ", posTag2_2);
+        // SGPFeePerCombination[tag1][posTag2_1][posTag2_2] = SGPFeePerCombination[tag1][tag2_1][tag2_2];
+        SGPFeePerCombination[tag1][posTag2_1][posTag2_2] = fee;
+        SGPFeePerCombination[tag1][posTag2_2][posTag2_1] = fee;
+        console.log(">>>> set | original_sgp: ", SGPFeePerCombination[tag1][tag2_1][tag2_2]);
+        console.log(">>>> set | position_sgp: ", SGPFeePerCombination[tag1][posTag2_1][posTag2_2]);
     }
 
     /// @notice Updates contract parametars

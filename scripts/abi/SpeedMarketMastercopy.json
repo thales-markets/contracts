@@ -9,13 +9,13 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
+        "internalType": "int64",
         "name": "finalPrice",
-        "type": "uint256"
+        "type": "int64"
       },
       {
         "indexed": false,
-        "internalType": "enum SpeedRoyaleMarket.Direction",
+        "internalType": "enum SpeedMarket.Direction",
         "name": "result",
         "type": "uint8"
       },
@@ -60,7 +60,7 @@
     "name": "direction",
     "outputs": [
       {
-        "internalType": "enum SpeedRoyaleMarket.Direction",
+        "internalType": "enum SpeedMarket.Direction",
         "name": "",
         "type": "uint8"
       }
@@ -73,9 +73,9 @@
     "name": "finalPrice",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "int64",
         "name": "",
-        "type": "uint256"
+        "type": "int64"
       }
     ],
     "stateMutability": "view",
@@ -84,39 +84,46 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_speedRoyaleAMM",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_strikeTime",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_strikePrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "enum SpeedRoyaleMarket.Direction",
-        "name": "_direction",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_buyinAmount",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "_speedMarketsAMM",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_user",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "_asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "_strikeTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "int64",
+            "name": "_strikePrice",
+            "type": "int64"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction",
+            "name": "_direction",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_buyinAmount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SpeedMarket.InitParams",
+        "name": "params",
+        "type": "tuple"
       }
     ],
     "name": "initialize",
@@ -138,11 +145,24 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "isUserWinner",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
-        "internalType": "uint256",
+        "internalType": "int64",
         "name": "_finalPrice",
-        "type": "uint256"
+        "type": "int64"
       }
     ],
     "name": "resolve",
@@ -168,7 +188,7 @@
     "name": "result",
     "outputs": [
       {
-        "internalType": "enum SpeedRoyaleMarket.Direction",
+        "internalType": "enum SpeedMarket.Direction",
         "name": "",
         "type": "uint8"
       }
@@ -178,10 +198,10 @@
   },
   {
     "inputs": [],
-    "name": "speedRoyaleAMM",
+    "name": "speedMarketsAMM",
     "outputs": [
       {
-        "internalType": "contract SpeedRoyaleAMM",
+        "internalType": "contract SpeedMarketsAMM",
         "name": "",
         "type": "address"
       }
@@ -194,9 +214,9 @@
     "name": "strikePrice",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "int64",
         "name": "",
-        "type": "uint256"
+        "type": "int64"
       }
     ],
     "stateMutability": "view",
@@ -207,9 +227,9 @@
     "name": "strikeTime",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",

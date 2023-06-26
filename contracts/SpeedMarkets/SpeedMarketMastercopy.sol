@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 // Inheritance
-import "./SpeedRoyaleMarket.sol";
+import "./SpeedMarket.sol";
 
-contract SpeedRoyaleMarketMastercopy is SpeedRoyaleMarket {
+contract SpeedMarketMastercopy is SpeedMarket {
     constructor() {
         // Freeze mastercopy on deployment so it can never be initialized with real arguments
         initialized = true;

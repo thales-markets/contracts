@@ -25,7 +25,6 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/IParlayAMMLiquidityPool.sol";
 
-import "hardhat/console.sol";
 
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -132,16 +131,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint tag2_2,
         uint position
     ) external view returns (uint sgpFee) {
-        console.log(">>>> position: ", position);
-        uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * ((position % 100) / 10)));
-        uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * (position % 10)));
-        console.log(">>>> position_tag1: ", posTag2_1);
-        console.log(">>>> position_tag2: ", posTag2_2);
-        console.log(">>>> original_sgp: ", SGPFeePerCombination[tag1][tag2_1][tag2_2]);
-        console.log(">>>> position_sgp: ", SGPFeePerCombination[tag1][posTag2_1][posTag2_2]);
-        if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] > 0) {
-            if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] < ONE) {
-                sgpFee = SGPFeePerCombination[tag1][posTag2_1][posTag2_2];
+        if(position >= 100) {
+            uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * ((position % 100) / 10)));
+            uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * (position % 10)));
+            if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] > 0) {
+                if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] < ONE) {
+                    sgpFee = SGPFeePerCombination[tag1][posTag2_1][posTag2_2];
+                } 
+            } else {
+                sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
             }
         } else {
             sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
@@ -672,7 +670,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         SGPFeePerCombination[tag1][tag2_2][tag2_1] = fee;
     }
 
-    function setRestrictedPositionPerSGPCombination(
+    function setSGPFeePerPosition(
         uint tag1,
         uint tag2_1,
         uint tag2_2,
@@ -683,13 +681,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(SGPFeePerCombination[tag1][tag2_1][tag2_2] > 0, "SGP not set for tags");
         uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_1));
         uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_2));
-        console.log(">>>> set | position_tag1: ", posTag2_1);
-        console.log(">>>> set | position_tag2: ", posTag2_2);
-        // SGPFeePerCombination[tag1][posTag2_1][posTag2_2] = SGPFeePerCombination[tag1][tag2_1][tag2_2];
         SGPFeePerCombination[tag1][posTag2_1][posTag2_2] = fee;
         SGPFeePerCombination[tag1][posTag2_2][posTag2_1] = fee;
-        console.log(">>>> set | original_sgp: ", SGPFeePerCombination[tag1][tag2_1][tag2_2]);
-        console.log(">>>> set | position_sgp: ", SGPFeePerCombination[tag1][posTag2_1][posTag2_2]);
     }
 
     /// @notice Updates contract parametars

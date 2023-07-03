@@ -951,6 +951,30 @@
         "type": "address"
       }
     ],
+    "name": "getActiveChildMarketsFromParent",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "totalsMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spreadsMarket",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parent",
+        "type": "address"
+      }
+    ],
     "name": "getAllChildMarketsFromParent",
     "outputs": [
       {
@@ -1528,6 +1552,29 @@
       }
     ],
     "name": "pauseUnpauseChildMarkets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      }
+    ],
+    "name": "pauseUnpauseCurrentActiveChildMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

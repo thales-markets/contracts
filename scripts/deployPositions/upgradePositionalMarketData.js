@@ -39,12 +39,12 @@ async function main() {
 	const MarketDataAddress = getTargetAddress('PositionalMarketData', network);
 
 	let implementation;
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 137) {
 		implementation = await upgrades.prepareUpgrade(MarketDataAddress, MarketData);
 	}
 
 	// upgrade if test networks
-	if (networkObj.chainId == 420) {
+	if (networkObj.chainId == 420 || networkObj.chainId == 56) {
 		await upgrades.upgradeProxy(MarketDataAddress, MarketData);
 
 		implementation = await getImplementationAddress(ethers.provider, MarketDataAddress);

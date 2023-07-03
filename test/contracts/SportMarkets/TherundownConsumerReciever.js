@@ -729,9 +729,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -812,8 +809,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(fightId, await gamesQueue.gamesCreateQueue(1));
 
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(fightId));
 			assert.equal(true, await TherundownConsumerDeployed.gameFulfilledCreated(fightId));
 
 			// added into queue!!!
@@ -965,9 +960,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -1056,10 +1048,6 @@ contract('TheRundownConsumer', (accounts) => {
 				_id: gameid1,
 				_outcome: 2,
 			});
-
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 
 		it('Fulfill Games Resolved - Champions League Game 1, resolve market, check results', async () => {
@@ -1292,10 +1280,6 @@ contract('TheRundownConsumer', (accounts) => {
 			await expect(
 				TherundownConsumerDeployed.resolveMarketForGame(gameFootballid2, { from: owner })
 			).to.be.revertedWith('ID4');
-
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 
 		it('Fulfill Games Resolved - UFC, create market, resolve market, check results', async () => {
@@ -1798,9 +1782,6 @@ contract('TheRundownConsumer', (accounts) => {
 				game1NBATime,
 				{ from: wrapper }
 			);
-
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
 
@@ -1920,8 +1901,6 @@ contract('TheRundownConsumer', (accounts) => {
 				_game: gameR,
 			});
 
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-
 			let childMarket1 = await SportPositionalMarketContract.at(mainMarketSpreadChildMarket);
 			let childMarket2 = await SportPositionalMarketContract.at(mainMarketTotalChildMarket);
 
@@ -1938,8 +1917,6 @@ contract('TheRundownConsumer', (accounts) => {
 				_id: gameid1,
 				_outcome: 2,
 			});
-
-			assert.equal(0, await gamesQueue.getLengthUnproccessedGames());
 
 			assert.equal(true, await deployedMarket.resolved());
 			assert.equal(true, await childMarket1.resolved());
@@ -1958,8 +1935,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
 
@@ -2067,8 +2042,6 @@ contract('TheRundownConsumer', (accounts) => {
 				_game: gameR,
 			});
 
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-
 			let childMarket1 = await SportPositionalMarketContract.at(mainMarketSpreadChildMarket);
 			let childMarket2 = await SportPositionalMarketContract.at(mainMarketTotalChildMarket);
 
@@ -2085,8 +2058,6 @@ contract('TheRundownConsumer', (accounts) => {
 				_id: gameid1,
 				_outcome: 2,
 			});
-
-			assert.equal(0, await gamesQueue.getLengthUnproccessedGames());
 
 			assert.equal(true, await deployedMarket.resolved());
 			assert.equal(true, await childMarket1.resolved());
@@ -2105,8 +2076,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
 
@@ -2217,8 +2186,6 @@ contract('TheRundownConsumer', (accounts) => {
 				_game: gameR,
 			});
 
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-
 			let childMarket1 = await SportPositionalMarketContract.at(mainMarketSpreadChildMarket);
 			let childMarket2 = await SportPositionalMarketContract.at(mainMarketTotalChildMarket);
 
@@ -2235,8 +2202,6 @@ contract('TheRundownConsumer', (accounts) => {
 				_id: gameid1,
 				_outcome: 1,
 			});
-
-			assert.equal(0, await gamesQueue.getLengthUnproccessedGames());
 
 			assert.equal(true, await deployedMarket.resolved());
 			assert.equal(true, await childMarket1.resolved());
@@ -2255,8 +2220,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
 
@@ -2364,8 +2327,6 @@ contract('TheRundownConsumer', (accounts) => {
 				_game: gameR,
 			});
 
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-
 			let childMarket1 = await SportPositionalMarketContract.at(mainMarketSpreadChildMarket);
 			let childMarket2 = await SportPositionalMarketContract.at(mainMarketTotalChildMarket);
 
@@ -2382,8 +2343,6 @@ contract('TheRundownConsumer', (accounts) => {
 				_id: gameid1,
 				_outcome: 1,
 			});
-
-			assert.equal(0, await gamesQueue.getLengthUnproccessedGames());
 
 			assert.equal(true, await deployedMarket.resolved());
 			assert.equal(true, await childMarket1.resolved());
@@ -2560,10 +2519,6 @@ contract('TheRundownConsumer', (accounts) => {
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, false, { from: third })
 			).to.be.revertedWith('ID13');
-
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 
 		it('Resolve market address manually, check results', async () => {
@@ -2658,10 +2613,6 @@ contract('TheRundownConsumer', (accounts) => {
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, false, { from: third })
 			).to.be.revertedWith('ID13');
-
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 
 		it('Cancel market Manually, check results', async () => {
@@ -2676,9 +2627,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -2764,10 +2712,6 @@ contract('TheRundownConsumer', (accounts) => {
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, 0, 0, false, { from: third })
 			).to.be.revertedWith('ID13');
-
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 	});
 
@@ -2897,9 +2841,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -2980,9 +2921,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -3105,9 +3043,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -3221,9 +3156,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -3337,9 +3269,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -3464,9 +3393,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -3597,9 +3523,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -3767,9 +3690,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -3949,9 +3869,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -4162,9 +4079,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -4566,9 +4480,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -4732,9 +4643,6 @@ contract('TheRundownConsumer', (accounts) => {
 		assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 		assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-		assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-		assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 		assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 		assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 		assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -5004,9 +4912,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -5090,9 +4995,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
@@ -5205,9 +5107,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(fightIdTime, await gamesQueue.gamesCreateQueue(1));
 
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(fightIdTime));
-
 			// added into queue!!!
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(1, await gamesQueue.lastCreated());
@@ -5272,10 +5171,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(2, await gamesQueue.lastCreated());
 
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
-
 			await expect(gamesQueue.dequeueGamesCreated({ from: second })).to.be.revertedWith(
 				'Only consumer or whitelisted address'
 			);
@@ -5308,22 +5203,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
-
-			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
-
-			await expect(gamesQueue.removeItemUnproccessedGames(0, { from: second })).to.be.revertedWith(
-				'Only consumer or whitelisted address'
-			);
-
-			const tx_remove = await gamesQueue.removeItemUnproccessedGames(0, {
-				from: third,
-			});
-
-			// changed from 1 -> 0
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 		});
 
 		it('Test resolved queue', async () => {

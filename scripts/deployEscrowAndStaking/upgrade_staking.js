@@ -45,7 +45,7 @@ async function main() {
 		await upgrades.upgradeProxy(StakingAddress, StakingContract);
 		await delay(5000);
 
-		console.log('Escrow upgraded');
+		console.log('Staking upgraded');
 		StakingImplementation = await getImplementationAddress(ethers.provider, StakingAddress);
 	}
 

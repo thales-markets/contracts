@@ -99,52 +99,42 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function createRangedMarket(address leftMarket, address rightMarket) external nonReentrant notPaused {
-        require(canCreateRangedMarket(leftMarket, rightMarket), "Can't create such a ranged market!");
-
-        RangedMarket rm = RangedMarket(Clones.clone(rangedMarketMastercopy));
-        createdRangedMarkets[leftMarket][rightMarket] = address(rm);
-
-        RangedPosition inp = RangedPosition(Clones.clone(rangedPositionMastercopy));
-        inp.initialize(address(rm), "Position IN", "IN", address(this));
-
-        RangedPosition outp = RangedPosition(Clones.clone(rangedPositionMastercopy));
-        outp.initialize(address(rm), "Position OUT", "OUT", address(this));
-
-        rm.initialize(leftMarket, rightMarket, address(inp), address(outp), address(this));
-
-        _knownMarkets.add(address(rm));
-
-        emit RangedMarketCreated(address(rm), leftMarket, rightMarket);
+        _createRangedMarket(leftMarket, rightMarket);
     }
 
-    function canCreateRangedMarket(address leftMarket, address rightMarket) public view returns (bool) {
-        if (!thalesAmm.isMarketInAMMTrading(leftMarket) || !thalesAmm.isMarketInAMMTrading(rightMarket)) {
-            return false;
+    function createRangedMarkets(address[] calldata leftMarkets, address[] calldata rightMarkets)
+        external
+        nonReentrant
+        notPaused
+    {
+        require(
+            leftMarkets.length > 0 && rightMarkets.length == leftMarkets.length,
+            "Both arrays have to be non-empty and same size"
+        );
+        for (uint i = 0; i < leftMarkets.length; i++) {
+            if (canCreateRangedMarket(leftMarkets[i], rightMarkets[i])) {
+                _createRangedMarket(leftMarkets[i], rightMarkets[i]);
+            }
         }
-        (uint maturityLeft, ) = IPositionalMarket(leftMarket).times();
-        (uint maturityRight, ) = IPositionalMarket(rightMarket).times();
-        if (maturityLeft != maturityRight) {
-            return false;
-        }
+    }
 
-        (bytes32 leftkey, uint leftstrikePrice, ) = IPositionalMarket(leftMarket).getOracleDetails();
-        (bytes32 rightkey, uint rightstrikePrice, ) = IPositionalMarket(rightMarket).getOracleDetails();
-        if (leftkey != rightkey) {
-            return false;
-        }
-        if (leftstrikePrice >= rightstrikePrice) {
-            return false;
-        }
+    function canCreateRangedMarket(address leftMarket, address rightMarket) public view returns (bool toReturn) {
+        if (thalesAmm.isMarketInAMMTrading(leftMarket) && thalesAmm.isMarketInAMMTrading(rightMarket)) {
+            (uint maturityLeft, ) = IPositionalMarket(leftMarket).times();
+            (uint maturityRight, ) = IPositionalMarket(rightMarket).times();
+            (bytes32 leftkey, uint leftstrikePrice, ) = IPositionalMarket(leftMarket).getOracleDetails();
+            (bytes32 rightkey, uint rightstrikePrice, ) = IPositionalMarket(rightMarket).getOracleDetails();
 
-        if (!(((ONE + minimalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE < rightstrikePrice)) {
-            return false;
+            if ((leftkey == rightkey) && (leftstrikePrice < rightstrikePrice) && (maturityLeft == maturityRight)) {
+                if (!(((ONE + minimalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE < rightstrikePrice)) {
+                    toReturn = false;
+                } else if (!(((ONE + maximalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE > rightstrikePrice)) {
+                    toReturn = false;
+                } else {
+                    toReturn = createdRangedMarkets[leftMarket][rightMarket] == address(0);
+                }
+            }
         }
-
-        if (!(((ONE + maximalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE > rightstrikePrice)) {
-            return false;
-        }
-
-        return createdRangedMarkets[leftMarket][rightMarket] == address(0);
     }
 
     function availableToBuyFromAMM(RangedMarket rangedMarket, RangedMarket.Position position)
@@ -247,7 +237,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
+        require(curveIndex > 0 && curveOnrampEnabled, "ID1");
 
         (uint collateralQuote, uint susdQuote) = buyFromAmmQuoteWithDifferentCollateral(
             rangedMarket,
@@ -262,13 +252,12 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(
             maxAllowedPegSlippagePercentage > 0 &&
                 transformedCollateralForPegCheck >= (susdQuote * (ONE - maxAllowedPegSlippagePercentage)) / ONE,
-            "Amount below max allowed peg slippage"
+            "ID3"
         );
 
-        require((collateralQuote * ONE) / expectedPayout <= (ONE + additionalSlippage), "Slippage too high");
+        require((collateralQuote * ONE) / expectedPayout <= (ONE + additionalSlippage), "ID2");
 
-        IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
-        collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
+        IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
         curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, susdQuote);
 
         _buyFromAMM(rangedMarket, position, amount, susdQuote, additionalSlippage, false);
@@ -316,7 +305,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint additionalSlippage,
         bool sendSUSD
     ) internal {
-        require(availableToBuyFromAMM(rangedMarket, position) >= amount, "Insufficient liquidity");
+        require(availableToBuyFromAMM(rangedMarket, position) >= amount, "ID4");
 
         uint sUSDPaid;
         address target;
@@ -332,8 +321,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         uint basePrice = _transformCollateral((sUSDPaid * ONE) / amount, true);
-        require(basePrice > minSupportedPrice && basePrice < ONE, "Invalid price");
-        require(sUSDPaid > 0 && ((sUSDPaid * ONE) / expectedPayout <= (ONE + additionalSlippage)), "Slippage too high");
+        require(basePrice > minSupportedPrice && basePrice < ONE, "ID5");
+        require(sUSDPaid > 0 && ((sUSDPaid * ONE) / expectedPayout <= (ONE + additionalSlippage)), "ID2");
 
         if (sendSUSD) {
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
@@ -482,7 +471,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         pricePaid = _handleSellToAmm(rangedMarket, position, amount);
-        require(pricePaid > 0 && (expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "Slippage too high");
+        require(pricePaid > 0 && (expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "ID2");
 
         if (position == RangedMarket.Position.In) {
             _handleSafeBoxFeeOnSell(amount, rangedMarket, pricePaid);
@@ -509,6 +498,24 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             if (_knownMarkets.contains(market) && !RangedMarket(market).resolved()) {
                 RangedMarket(market).resolveMarket();
             }
+        }
+    }
+
+    function getPriceImpact(RangedMarket rangedMarket, RangedMarket.Position position) external view returns (int _impact) {
+        int buyPriceImpactLeft = thalesAmm.buyPriceImpact(
+            address(rangedMarket.leftMarket()),
+            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
+            ONE
+        );
+        int buyPriceImpactRight = thalesAmm.buyPriceImpact(
+            address(rangedMarket.rightMarket()),
+            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
+            ONE
+        );
+
+        _impact = buyPriceImpactLeft + buyPriceImpactRight;
+        if (position == RangedMarket.Position.Out) {
+            _impact = _impact / 2;
         }
     }
 
@@ -600,7 +607,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint amount,
         uint sUSDPaid
     ) internal {
-        uint safeBoxShare = 0;
+        uint safeBoxShare;
         if (safeBoxImpact > 0) {
             safeBoxShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + safeBoxImpact));
             sUSD.transfer(safeBox, safeBoxShare);
@@ -618,6 +625,25 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             safeBoxShare = ((sUSDPaid * ONE) / (ONE - safeBoxImpact)) - sUSDPaid;
             sUSD.transfer(safeBox, safeBoxShare);
         }
+    }
+
+    function _createRangedMarket(address leftMarket, address rightMarket) internal {
+        require(canCreateRangedMarket(leftMarket, rightMarket), "Can't create such a ranged market!");
+
+        RangedMarket rm = RangedMarket(Clones.clone(rangedMarketMastercopy));
+        createdRangedMarkets[leftMarket][rightMarket] = address(rm);
+
+        RangedPosition inp = RangedPosition(Clones.clone(rangedPositionMastercopy));
+        inp.initialize(address(rm), "Position IN", "IN", address(this));
+
+        RangedPosition outp = RangedPosition(Clones.clone(rangedPositionMastercopy));
+        outp.initialize(address(rm), "Position OUT", "OUT", address(this));
+
+        rm.initialize(leftMarket, rightMarket, address(inp), address(outp), address(this));
+
+        _knownMarkets.add(address(rm));
+
+        emit RangedMarketCreated(address(rm), leftMarket, rightMarket);
     }
 
     function _transformCollateral(uint collateral, bool reverse) internal view returns (uint transformed) {
@@ -657,16 +683,16 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit SetMinimalMaximalDifBetweenStrikes(minimalDifBetweenStrikes, maximalDifBetweenStrikes);
     }
 
-    function setSafeBoxData(address _safeBox, uint _safeBoxImpact) external onlyOwner {
+    function setSafeBoxDataAndRangedAMMFee(
+        address _safeBox,
+        uint _safeBoxImpact,
+        uint _rangedAMMFee
+    ) external onlyOwner {
         safeBoxImpact = _safeBoxImpact;
         safeBox = _safeBox;
         emit SafeBoxChanged(_safeBoxImpact, _safeBox);
-    }
-
-    function setCapPerMarketAndRangedAMMFee(uint _capPerMarket, uint _rangedAMMFee) external onlyOwner {
-        capPerMarket = _capPerMarket;
         rangedAmmFee = _rangedAMMFee;
-        emit SetCapPerMarketAndRangedFee(capPerMarket, rangedAmmFee);
+        emit SetRangedFee(rangedAmmFee);
     }
 
     function setThalesAMMStakingThalesAndReferrals(
@@ -682,23 +708,10 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         referrerFee = _referrerFee;
     }
 
-    function setCurveSUSD(
-        address _curveSUSD,
-        address _dai,
-        address _usdc,
-        address _usdt,
-        bool _curveOnrampEnabled,
-        uint _maxAllowedPegSlippagePercentage
-    ) external onlyOwner {
-        curveSUSD = ICurveSUSD(_curveSUSD);
-        dai = _dai;
-        usdc = _usdc;
-        usdt = _usdt;
-        IERC20(dai).approve(_curveSUSD, type(uint256).max);
-        IERC20(usdc).approve(_curveSUSD, type(uint256).max);
-        IERC20(usdt).approve(_curveSUSD, type(uint256).max);
-        // not needed unless selling into different collateral is enabled
-        //sUSD.approve(_curveSUSD, type(uint256).max);
+    /// @notice Updates contract parametars
+    /// @param _curveOnrampEnabled whether AMM supports curve onramp
+    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
+    function setCurveSUSD(bool _curveOnrampEnabled, uint _maxAllowedPegSlippagePercentage) external onlyOwner {
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
@@ -732,6 +745,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event SafeBoxChanged(uint _safeBoxImpact, address _safeBox);
     event SetMinMaxSupportedPrice(uint minSupportedPrice, uint maxSupportedPrice);
     event SetMinimalMaximalDifBetweenStrikes(uint minSupportedPrice, uint maxSupportedPrice);
-    event SetCapPerMarketAndRangedFee(uint capPerMarket, uint rangedAmmFee);
+    event SetRangedFee(uint rangedAmmFee);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
 }

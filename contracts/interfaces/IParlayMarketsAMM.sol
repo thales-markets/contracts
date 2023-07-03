@@ -20,6 +20,12 @@ interface IParlayMarketsAMM {
 
     function maxSupportedOdds() external view returns (uint);
 
+    function getSgpFeePerCombination(
+        uint tag1,
+        uint tag2_1,
+        uint tag2_2
+    ) external view returns (uint sgpFee);
+
     function riskPerCombination(
         address _sportMarkets1,
         uint _position1,
@@ -42,11 +48,11 @@ interface IParlayMarketsAMM {
         address _sportMarkets8
     ) external view returns (uint);
 
+    function riskPerPackedGamesCombination(bytes32 gamesPacked) external view returns (uint);
+
     function isActiveParlay(address _parlayMarket) external view returns (bool isActiveParlayMarket);
 
     function exerciseParlay(address _parlayMarket) external;
-
-    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket) external;
 
     function triggerResolvedEvent(address _account, bool _userWon) external;
 

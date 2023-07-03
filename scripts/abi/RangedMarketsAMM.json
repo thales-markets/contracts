@@ -199,25 +199,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "capPerMarket",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "rangedAmmFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetCapPerMarketAndRangedFee",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "minSupportedPrice",
         "type": "uint256"
       },
@@ -248,6 +229,19 @@
       }
     ],
     "name": "SetMinimalMaximalDifBetweenStrikes",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "rangedAmmFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetRangedFee",
     "type": "event"
   },
   {
@@ -592,7 +586,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "toReturn",
         "type": "bool"
       }
     ],
@@ -626,6 +620,24 @@
       }
     ],
     "name": "createRangedMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "leftMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "rightMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "createRangedMarkets",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -688,6 +700,30 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "enum RangedMarket.Position",
+        "name": "position",
+        "type": "uint8"
+      }
+    ],
+    "name": "getPriceImpact",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "_impact",
+        "type": "int256"
       }
     ],
     "stateMutability": "view",
@@ -1112,44 +1148,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_capPerMarket",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_rangedAMMFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCapPerMarketAndRangedAMMFee",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_curveSUSD",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_dai",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_usdc",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_usdt",
-        "type": "address"
-      },
-      {
         "internalType": "bool",
         "name": "_curveOnrampEnabled",
         "type": "bool"
@@ -1248,9 +1246,14 @@
         "internalType": "uint256",
         "name": "_safeBoxImpact",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_rangedAMMFee",
+        "type": "uint256"
       }
     ],
-    "name": "setSafeBoxData",
+    "name": "setSafeBoxDataAndRangedAMMFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

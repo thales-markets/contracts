@@ -20,6 +20,18 @@ interface IGamesOddsObtainer {
 
     // view
 
+    function getActiveChildMarketsFromParent(address _parent) external view returns (address, address);
+
+    function getSpreadTotalsChildMarketsFromParent(address _parent)
+        external
+        view
+        returns (
+            uint numOfSpreadMarkets,
+            address[] memory spreadMarkets,
+            uint numOfTotalsMarkets,
+            address[] memory totalMarkets
+        );
+
     function areOddsValid(bytes32 _gameId, bool _useBackup) external view returns (bool);
 
     function invalidOdds(address _market) external view returns (bool);
@@ -89,6 +101,12 @@ interface IGamesOddsObtainer {
     function setBackupOddsAsMainOddsForGame(bytes32 _gameId) external;
 
     function pauseUnpauseChildMarkets(address _main, bool _flag) external;
+
+    function pauseUnpauseCurrentActiveChildMarket(
+        bytes32 _gameId,
+        address _main,
+        bool _flag
+    ) external;
 
     function resolveChildMarkets(
         address _market,

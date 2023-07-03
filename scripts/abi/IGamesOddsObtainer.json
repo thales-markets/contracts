@@ -83,6 +83,30 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_parent",
+        "type": "address"
+      }
+    ],
+    "name": "getActiveChildMarketsFromParent",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"
@@ -215,6 +239,40 @@
         "internalType": "int24[]",
         "name": "odds",
         "type": "int24[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parent",
+        "type": "address"
+      }
+    ],
+    "name": "getSpreadTotalsChildMarketsFromParent",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "numOfSpreadMarkets",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "spreadMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "numOfTotalsMarkets",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "totalMarkets",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -448,6 +506,29 @@
       }
     ],
     "name": "pauseUnpauseChildMarkets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      }
+    ],
+    "name": "pauseUnpauseCurrentActiveChildMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

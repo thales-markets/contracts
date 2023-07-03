@@ -123,6 +123,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getOddsObtainer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "obtainer",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",

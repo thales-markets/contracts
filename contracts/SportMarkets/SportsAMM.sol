@@ -159,6 +159,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     // @return specific min_spread per address
     mapping(uint => mapping(uint => uint)) public minSpreadPerSport;
 
+    /// @return the sport which is one-sider
+    mapping(uint => bool) public isMarketForSportOnePositional;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -762,6 +765,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetMinSpreadPerSport(_tag1, _tag2, _minSpread);
     }
 
+    /// @notice setting one positional sport
+    /// @param _sportID tag id for sport
+    /// @param _flag is one positional sport flag
+    function setSportOnePositional(uint _sportID, bool _flag) external onlyOwner {
+        isMarketForSportOnePositional[_sportID] = _flag;
+        emit SetSportOnePositional(_sportID, _flag);
+    }
+
     /// @notice Setting the Cap per Sport ID
     /// @param _sportID The tagID used for sport (9004)
     /// @param _childID The tagID used for childid (10002)
@@ -1219,6 +1230,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SetCapPerSport(uint _sport, uint _cap);
     event SetMinSpreadPerSport(uint _tag1, uint _tag2, uint _spread);
+    event SetSportOnePositional(uint _sport, bool _flag);
     event SetCapPerMarket(address _market, uint _cap);
     event SetCapPerSportAndChild(uint _sport, uint _child, uint _cap);
 }

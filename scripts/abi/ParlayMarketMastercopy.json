@@ -96,6 +96,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "areAllPositionsResolved",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -186,6 +199,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "hasMarketLostButHasExercisableWinningPositions",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "itHasLostButHasExercisableWinningPositions",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address[]",
@@ -221,6 +247,16 @@
         "internalType": "address",
         "name": "_parlayOwner",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_marketQuotes",
+        "type": "uint256[]"
       }
     ],
     "name": "initialize",
@@ -555,24 +591,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "_marketQuotes",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_totalResultQuote",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateQuotes",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

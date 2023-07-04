@@ -119,7 +119,7 @@ contract OvertimeWorldCupZebro is ERC721URIStorage, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual override {
+    ) internal virtual {
         require(from == address(0) || to == address(0), "Can not transfer NFT, only mint and burn");
     }
 

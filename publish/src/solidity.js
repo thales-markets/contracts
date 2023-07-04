@@ -2,7 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
-const solidifier = require('solidifier');
+// const solidifier = require('solidifier');
 const {
 	constants: { COMPILED_FOLDER },
 } = require('../..');
@@ -17,7 +17,7 @@ const findSolFiles = ({ sourcePath, ignore = [] }) => {
 		for (const file of files) {
 			const fullPath = path.join(cd, file);
 			const relativePath = path.join(curRelativePath, file);
-			if (ignore.filter(regex => regex.test(relativePath)).length > 0) {
+			if (ignore.filter((regex) => regex.test(relativePath)).length > 0) {
 				continue;
 			} else if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
 				doWork(fullPath, relativePath, fileList);
@@ -39,7 +39,7 @@ module.exports = {
 
 	getLatestSolTimestamp(dir) {
 		let latestSolTimestamp = 0;
-		Object.keys(findSolFiles({ sourcePath: dir })).forEach(file => {
+		Object.keys(findSolFiles({ sourcePath: dir })).forEach((file) => {
 			const sourceFilePath = path.join(dir, file);
 			latestSolTimestamp = Math.max(latestSolTimestamp, fs.statSync(sourceFilePath).mtimeMs);
 		});
@@ -55,11 +55,13 @@ module.exports = {
 
 		for (const contract of Object.keys(contracts)) {
 			console.log('Contract is ' + contract);
-			const flattened = await solidifier.flatten({
-				files,
-				path: contract,
-				stripExcessWhitespace: true,
-			});
+			// const flattened = await solidifier.flatten({
+			// 	files,
+			// 	path: contract,
+			// 	stripExcessWhitespace: true,
+			// });
+
+			const flattened = 'XXXXXXX';
 
 			flattenedContracts[contract] = {
 				content: addSolidityHeader({ content: flattened, contract }),
@@ -93,8 +95,8 @@ module.exports = {
 			)
 		);
 
-		const warnings = output.errors ? output.errors.filter(e => e.severity === 'warning') : [];
-		const errors = output.errors ? output.errors.filter(e => e.severity === 'error') : [];
+		const warnings = output.errors ? output.errors.filter((e) => e.severity === 'warning') : [];
+		const errors = output.errors ? output.errors.filter((e) => e.severity === 'error') : [];
 
 		// Ok, now pull the contract we care about out of each file's output.
 		for (const contract of Object.keys(output.contracts || {})) {
@@ -117,7 +119,7 @@ module.exports = {
 		}
 		const compiled = fs
 			.readdirSync(compiledSourcePath)
-			.filter(name => /^.+\.json$/.test(name))
+			.filter((name) => /^.+\.json$/.test(name))
 			.reduce((memo, contractFilename) => {
 				const contract = contractFilename.replace(/\.json$/, '');
 				const sourceFile = path.join(compiledSourcePath, contractFilename);

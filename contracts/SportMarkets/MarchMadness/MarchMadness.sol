@@ -185,7 +185,7 @@ contract MarchMadness is ERC721URIStorage, Pausable, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual override {
+    ) internal virtual {
         require(from == address(0) || to == address(0), "NonTransferrableERC721Token: non transferrable");
     }
 

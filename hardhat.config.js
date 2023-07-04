@@ -14,6 +14,7 @@ require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 require('hardhat-contract-sizer');
 require('@matterlabs/hardhat-zksync-toolbox');
+require('@matterlabs/hardhat-zksync-upgradable');
 
 const {
 	constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },
@@ -138,7 +139,7 @@ module.exports = {
 		ignores: 'test-helpers',
 	},
 	zksolc: {
-		version: '1.3.8',
+		version: '1.3.13',
 		compilerSource: 'binary',
 		settings: {
 			//compilerPath: "zksolc",  // optional. Ignored for compilerSource "docker". Can be used if compiler is located in a specific folder
@@ -184,6 +185,11 @@ module.exports = {
 			url: 'https://goerli.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 			zksync: false,
+		},
+		zkSyncNetwork: {
+			zksync: true,
+			ethNetwork: 'goerli',
+			url: 'http://localhost:3050',
 		},
 		zkTestnet: {
 			url: 'https://testnet.era.zksync.dev', // The testnet RPC URL of zkSync Era network.

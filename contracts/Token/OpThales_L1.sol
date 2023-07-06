@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -35,7 +35,7 @@ contract OpThales is ERC20, Ownable {
         __symbol = symbol_;
         emit SymbolChanged(symbol_);
     }
-    
+
     event NameChanged(string name);
     event SymbolChanged(string symbol);
 }

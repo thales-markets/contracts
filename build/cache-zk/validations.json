@@ -1,0 +1,1897 @@
+{
+  "version": "3.4",
+  "log": [
+    {
+      "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)",
+          "latestRoundData()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/MockAgregatorV2V3.sol:MockAggregatorV2V3": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:37",
+        "version": {
+          "withMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "withoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "linkedWithoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759"
+        },
+        "inherit": [
+          "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "setLatestAnswer(int256,uint256)",
+          "setLatestAnswerWithRound(int256,uint256,uint80)",
+          "setDecimals(uint8)",
+          "latestRoundData()",
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "roundId",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "keyDecimals",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "roundId",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint80",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+            },
+            {
+              "label": "keyDecimals",
+              "offset": 10,
+              "slot": "0",
+              "type": "t_uint8",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+            },
+            {
+              "label": "entries",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_mapping(t_uint256,t_struct(Entry)73_storage)",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:49"
+            }
+          ],
+          "types": {
+            "t_int256": {
+              "label": "int256",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Entry)73_storage)": {
+              "label": "mapping(uint256 => struct MockAggregatorV2V3.Entry)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Entry)73_storage": {
+              "label": "struct MockAggregatorV2V3.Entry",
+              "members": [
+                {
+                  "label": "roundId",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "answer",
+                  "type": "t_int256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "startedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "updatedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "answeredInRound",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            },
+            "t_uint8": {
+              "label": "uint8",
+              "numberOfBytes": "1"
+            },
+            "t_uint80": {
+              "label": "uint80",
+              "numberOfBytes": "10"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState": {
+        "src": "contracts/interfaces/ISNXRewardsState.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/SNXRewardsState.sol:SNXRewardsState": {
+        "src": "contracts/test-helpers/SNXRewardsState.sol:7",
+        "version": {
+          "withMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "withoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "linkedWithoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8"
+        },
+        "inherit": [
+          "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [
+            {
+              "label": "debtPercentage",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:8"
+            },
+            {
+              "label": "debtEntryIndex",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:9"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)",
+          "latestRoundData()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/MockAgregatorV2V3.sol:MockAggregatorV2V3": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:37",
+        "version": {
+          "withMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "withoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "linkedWithoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759"
+        },
+        "inherit": [
+          "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "setLatestAnswer(int256,uint256)",
+          "setLatestAnswerWithRound(int256,uint256,uint80)",
+          "setDecimals(uint8)",
+          "latestRoundData()",
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "roundId",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "keyDecimals",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "roundId",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint80",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+            },
+            {
+              "label": "keyDecimals",
+              "offset": 10,
+              "slot": "0",
+              "type": "t_uint8",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+            },
+            {
+              "label": "entries",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_mapping(t_uint256,t_struct(Entry)73_storage)",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:49"
+            }
+          ],
+          "types": {
+            "t_int256": {
+              "label": "int256",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Entry)73_storage)": {
+              "label": "mapping(uint256 => struct MockAggregatorV2V3.Entry)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Entry)73_storage": {
+              "label": "struct MockAggregatorV2V3.Entry",
+              "members": [
+                {
+                  "label": "roundId",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "answer",
+                  "type": "t_int256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "startedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "updatedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "answeredInRound",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            },
+            "t_uint8": {
+              "label": "uint8",
+              "numberOfBytes": "1"
+            },
+            "t_uint80": {
+              "label": "uint80",
+              "numberOfBytes": "10"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState": {
+        "src": "contracts/interfaces/ISNXRewardsState.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/SNXRewardsState.sol:SNXRewardsState": {
+        "src": "contracts/test-helpers/SNXRewardsState.sol:7",
+        "version": {
+          "withMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "withoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "linkedWithoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8"
+        },
+        "inherit": [
+          "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [
+            {
+              "label": "debtPercentage",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:8"
+            },
+            {
+              "label": "debtEntryIndex",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:9"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)",
+          "latestRoundData()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/MockAgregatorV2V3.sol:MockAggregatorV2V3": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:37",
+        "version": {
+          "withMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "withoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "linkedWithoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759"
+        },
+        "inherit": [
+          "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "setLatestAnswer(int256,uint256)",
+          "setLatestAnswerWithRound(int256,uint256,uint80)",
+          "setDecimals(uint8)",
+          "latestRoundData()",
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "roundId",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "keyDecimals",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "roundId",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint80",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+            },
+            {
+              "label": "keyDecimals",
+              "offset": 10,
+              "slot": "0",
+              "type": "t_uint8",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+            },
+            {
+              "label": "entries",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_mapping(t_uint256,t_struct(Entry)73_storage)",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:49"
+            }
+          ],
+          "types": {
+            "t_int256": {
+              "label": "int256",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Entry)73_storage)": {
+              "label": "mapping(uint256 => struct MockAggregatorV2V3.Entry)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Entry)73_storage": {
+              "label": "struct MockAggregatorV2V3.Entry",
+              "members": [
+                {
+                  "label": "roundId",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "answer",
+                  "type": "t_int256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "startedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "updatedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "answeredInRound",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            },
+            "t_uint8": {
+              "label": "uint8",
+              "numberOfBytes": "1"
+            },
+            "t_uint80": {
+              "label": "uint80",
+              "numberOfBytes": "10"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState": {
+        "src": "contracts/interfaces/ISNXRewardsState.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/SNXRewardsState.sol:SNXRewardsState": {
+        "src": "contracts/test-helpers/SNXRewardsState.sol:7",
+        "version": {
+          "withMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "withoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "linkedWithoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8"
+        },
+        "inherit": [
+          "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [
+            {
+              "label": "debtPercentage",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:8"
+            },
+            {
+              "label": "debtEntryIndex",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:9"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)",
+          "latestRoundData()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/MockAgregatorV2V3.sol:MockAggregatorV2V3": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:37",
+        "version": {
+          "withMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "withoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "linkedWithoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759"
+        },
+        "inherit": [
+          "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "setLatestAnswer(int256,uint256)",
+          "setLatestAnswerWithRound(int256,uint256,uint80)",
+          "setDecimals(uint8)",
+          "latestRoundData()",
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "roundId",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "keyDecimals",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "roundId",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint80",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+            },
+            {
+              "label": "keyDecimals",
+              "offset": 10,
+              "slot": "0",
+              "type": "t_uint8",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+            },
+            {
+              "label": "entries",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_mapping(t_uint256,t_struct(Entry)73_storage)",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:49"
+            }
+          ],
+          "types": {
+            "t_int256": {
+              "label": "int256",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Entry)73_storage)": {
+              "label": "mapping(uint256 => struct MockAggregatorV2V3.Entry)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Entry)73_storage": {
+              "label": "struct MockAggregatorV2V3.Entry",
+              "members": [
+                {
+                  "label": "roundId",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "answer",
+                  "type": "t_int256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "startedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "updatedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "answeredInRound",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            },
+            "t_uint8": {
+              "label": "uint8",
+              "numberOfBytes": "1"
+            },
+            "t_uint80": {
+              "label": "uint80",
+              "numberOfBytes": "10"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState": {
+        "src": "contracts/interfaces/ISNXRewardsState.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/SNXRewardsState.sol:SNXRewardsState": {
+        "src": "contracts/test-helpers/SNXRewardsState.sol:7",
+        "version": {
+          "withMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "withoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "linkedWithoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8"
+        },
+        "inherit": [
+          "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [
+            {
+              "label": "debtPercentage",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:8"
+            },
+            {
+              "label": "debtEntryIndex",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:9"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)",
+          "latestRoundData()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/MockAgregatorV2V3.sol:MockAggregatorV2V3": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:37",
+        "version": {
+          "withMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "withoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "linkedWithoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759"
+        },
+        "inherit": [
+          "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "setLatestAnswer(int256,uint256)",
+          "setLatestAnswerWithRound(int256,uint256,uint80)",
+          "setDecimals(uint8)",
+          "latestRoundData()",
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "roundId",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "keyDecimals",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "roundId",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint80",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+            },
+            {
+              "label": "keyDecimals",
+              "offset": 10,
+              "slot": "0",
+              "type": "t_uint8",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+            },
+            {
+              "label": "entries",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_mapping(t_uint256,t_struct(Entry)73_storage)",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:49"
+            }
+          ],
+          "types": {
+            "t_int256": {
+              "label": "int256",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Entry)73_storage)": {
+              "label": "mapping(uint256 => struct MockAggregatorV2V3.Entry)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Entry)73_storage": {
+              "label": "struct MockAggregatorV2V3.Entry",
+              "members": [
+                {
+                  "label": "roundId",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "answer",
+                  "type": "t_int256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "startedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "updatedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "answeredInRound",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            },
+            "t_uint8": {
+              "label": "uint8",
+              "numberOfBytes": "1"
+            },
+            "t_uint80": {
+              "label": "uint80",
+              "numberOfBytes": "10"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState": {
+        "src": "contracts/interfaces/ISNXRewardsState.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/SNXRewardsState.sol:SNXRewardsState": {
+        "src": "contracts/test-helpers/SNXRewardsState.sol:7",
+        "version": {
+          "withMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "withoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "linkedWithoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8"
+        },
+        "inherit": [
+          "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [
+            {
+              "label": "debtPercentage",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:8"
+            },
+            {
+              "label": "debtEntryIndex",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:9"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)",
+          "latestRoundData()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/MockAgregatorV2V3.sol:MockAggregatorV2V3": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:37",
+        "version": {
+          "withMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "withoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "linkedWithoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759"
+        },
+        "inherit": [
+          "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "setLatestAnswer(int256,uint256)",
+          "setLatestAnswerWithRound(int256,uint256,uint80)",
+          "setDecimals(uint8)",
+          "latestRoundData()",
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "roundId",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "keyDecimals",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "roundId",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint80",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+            },
+            {
+              "label": "keyDecimals",
+              "offset": 10,
+              "slot": "0",
+              "type": "t_uint8",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+            },
+            {
+              "label": "entries",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_mapping(t_uint256,t_struct(Entry)73_storage)",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:49"
+            }
+          ],
+          "types": {
+            "t_int256": {
+              "label": "int256",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Entry)73_storage)": {
+              "label": "mapping(uint256 => struct MockAggregatorV2V3.Entry)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Entry)73_storage": {
+              "label": "struct MockAggregatorV2V3.Entry",
+              "members": [
+                {
+                  "label": "roundId",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "answer",
+                  "type": "t_int256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "startedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "updatedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "answeredInRound",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            },
+            "t_uint8": {
+              "label": "uint8",
+              "numberOfBytes": "1"
+            },
+            "t_uint80": {
+              "label": "uint80",
+              "numberOfBytes": "10"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState": {
+        "src": "contracts/interfaces/ISNXRewardsState.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/SNXRewardsState.sol:SNXRewardsState": {
+        "src": "contracts/test-helpers/SNXRewardsState.sol:7",
+        "version": {
+          "withMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "withoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "linkedWithoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8"
+        },
+        "inherit": [
+          "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [
+            {
+              "label": "debtPercentage",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:8"
+            },
+            {
+              "label": "debtEntryIndex",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:9"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/utils/proxy/OwnedUpgradeabilityProxy.sol:OwnedUpgradeabilityProxy": {
+        "src": "contracts/utils/proxy/OwnedUpgradeabilityProxy.sol:11",
+        "version": {
+          "withMetadata": "6f96fbad058d5a499e823462d4001dbcca4f366415ad9270dfea1951dc2d68c3",
+          "withoutMetadata": "6f96fbad058d5a499e823462d4001dbcca4f366415ad9270dfea1951dc2d68c3",
+          "linkedWithoutMetadata": "6f96fbad058d5a499e823462d4001dbcca4f366415ad9270dfea1951dc2d68c3"
+        },
+        "inherit": [
+          "contracts/utils/proxy/UpgradeabilityProxy.sol:UpgradeabilityProxy",
+          "contracts/utils/proxy/Proxy.sol:Proxy"
+        ],
+        "libraries": [],
+        "methods": [
+          "OwnedUpgradeabilityProxy()",
+          "proxyOwner()",
+          "transferProxyOwnership(address)",
+          "upgradeTo(address)",
+          "upgradeToAndCall(address,bytes storage pointer)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.4.21"
+      },
+      "contracts/utils/proxy/Proxy.sol:Proxy": {
+        "src": "contracts/utils/proxy/Proxy.sol:9",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "implementation()",
+          "()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.4.21"
+      },
+      "contracts/utils/proxy/UpgradeabilityProxy.sol:UpgradeabilityProxy": {
+        "src": "contracts/utils/proxy/UpgradeabilityProxy.sol:11",
+        "version": {
+          "withMetadata": "4b4666b74ca92db64a9affcc4f11d3b2fb5eca65eb6975af93237cd5e2a04fec",
+          "withoutMetadata": "4b4666b74ca92db64a9affcc4f11d3b2fb5eca65eb6975af93237cd5e2a04fec",
+          "linkedWithoutMetadata": "4b4666b74ca92db64a9affcc4f11d3b2fb5eca65eb6975af93237cd5e2a04fec"
+        },
+        "inherit": [
+          "contracts/utils/proxy/Proxy.sol:Proxy"
+        ],
+        "libraries": [],
+        "methods": [
+          "UpgradeabilityProxy()",
+          "implementation()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.4.21"
+      }
+    },
+    {
+      "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)",
+          "latestRoundData()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/MockAgregatorV2V3.sol:MockAggregatorV2V3": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:37",
+        "version": {
+          "withMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "withoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "linkedWithoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759"
+        },
+        "inherit": [
+          "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "setLatestAnswer(int256,uint256)",
+          "setLatestAnswerWithRound(int256,uint256,uint80)",
+          "setDecimals(uint8)",
+          "latestRoundData()",
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "roundId",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "keyDecimals",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "roundId",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint80",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+            },
+            {
+              "label": "keyDecimals",
+              "offset": 10,
+              "slot": "0",
+              "type": "t_uint8",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+            },
+            {
+              "label": "entries",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_mapping(t_uint256,t_struct(Entry)73_storage)",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:49"
+            }
+          ],
+          "types": {
+            "t_int256": {
+              "label": "int256",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Entry)73_storage)": {
+              "label": "mapping(uint256 => struct MockAggregatorV2V3.Entry)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Entry)73_storage": {
+              "label": "struct MockAggregatorV2V3.Entry",
+              "members": [
+                {
+                  "label": "roundId",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "answer",
+                  "type": "t_int256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "startedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "updatedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "answeredInRound",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            },
+            "t_uint8": {
+              "label": "uint8",
+              "numberOfBytes": "1"
+            },
+            "t_uint80": {
+              "label": "uint80",
+              "numberOfBytes": "10"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState": {
+        "src": "contracts/interfaces/ISNXRewardsState.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/SNXRewardsState.sol:SNXRewardsState": {
+        "src": "contracts/test-helpers/SNXRewardsState.sol:7",
+        "version": {
+          "withMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "withoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "linkedWithoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8"
+        },
+        "inherit": [
+          "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [
+            {
+              "label": "debtPercentage",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:8"
+            },
+            {
+              "label": "debtEntryIndex",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:9"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/utils/proxy/OwnedUpgradeabilityProxy.sol:OwnedUpgradeabilityProxy": {
+        "src": "contracts/utils/proxy/OwnedUpgradeabilityProxy.sol:11",
+        "version": {
+          "withMetadata": "6f96fbad058d5a499e823462d4001dbcca4f366415ad9270dfea1951dc2d68c3",
+          "withoutMetadata": "6f96fbad058d5a499e823462d4001dbcca4f366415ad9270dfea1951dc2d68c3",
+          "linkedWithoutMetadata": "6f96fbad058d5a499e823462d4001dbcca4f366415ad9270dfea1951dc2d68c3"
+        },
+        "inherit": [
+          "contracts/utils/proxy/UpgradeabilityProxy.sol:UpgradeabilityProxy",
+          "contracts/utils/proxy/Proxy.sol:Proxy"
+        ],
+        "libraries": [],
+        "methods": [
+          "OwnedUpgradeabilityProxy()",
+          "proxyOwner()",
+          "transferProxyOwnership(address)",
+          "upgradeTo(address)",
+          "upgradeToAndCall(address,bytes storage pointer)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.4.21"
+      },
+      "contracts/utils/proxy/Proxy.sol:Proxy": {
+        "src": "contracts/utils/proxy/Proxy.sol:9",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "implementation()",
+          "()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.4.21"
+      },
+      "contracts/utils/proxy/UpgradeabilityProxy.sol:UpgradeabilityProxy": {
+        "src": "contracts/utils/proxy/UpgradeabilityProxy.sol:11",
+        "version": {
+          "withMetadata": "4b4666b74ca92db64a9affcc4f11d3b2fb5eca65eb6975af93237cd5e2a04fec",
+          "withoutMetadata": "4b4666b74ca92db64a9affcc4f11d3b2fb5eca65eb6975af93237cd5e2a04fec",
+          "linkedWithoutMetadata": "4b4666b74ca92db64a9affcc4f11d3b2fb5eca65eb6975af93237cd5e2a04fec"
+        },
+        "inherit": [
+          "contracts/utils/proxy/Proxy.sol:Proxy"
+        ],
+        "libraries": [],
+        "methods": [
+          "UpgradeabilityProxy()",
+          "implementation()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.4.21"
+      }
+    },
+    {
+      "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)",
+          "latestRoundData()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/MockAgregatorV2V3.sol:MockAggregatorV2V3": {
+        "src": "contracts/test-helpers/MockAgregatorV2V3.sol:37",
+        "version": {
+          "withMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "withoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759",
+          "linkedWithoutMetadata": "909d7ba7eac7a67a6fd7666c71cbfef99602421355eafbd8f5c781871d34b759"
+        },
+        "inherit": [
+          "contracts/test-helpers/MockAgregatorV2V3.sol:AggregatorV2V3Interface"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "setLatestAnswer(int256,uint256)",
+          "setLatestAnswerWithRound(int256,uint256,uint80)",
+          "setDecimals(uint8)",
+          "latestRoundData()",
+          "latestRound()",
+          "decimals()",
+          "getAnswer(uint256)",
+          "getTimestamp(uint256)",
+          "getRoundData(uint80)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "roundId",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "keyDecimals",
+            "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "roundId",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint80",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:38"
+            },
+            {
+              "label": "keyDecimals",
+              "offset": 10,
+              "slot": "0",
+              "type": "t_uint8",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:39"
+            },
+            {
+              "label": "entries",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_mapping(t_uint256,t_struct(Entry)73_storage)",
+              "contract": "MockAggregatorV2V3",
+              "src": "contracts/test-helpers/MockAgregatorV2V3.sol:49"
+            }
+          ],
+          "types": {
+            "t_int256": {
+              "label": "int256",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Entry)73_storage)": {
+              "label": "mapping(uint256 => struct MockAggregatorV2V3.Entry)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Entry)73_storage": {
+              "label": "struct MockAggregatorV2V3.Entry",
+              "members": [
+                {
+                  "label": "roundId",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "answer",
+                  "type": "t_int256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "startedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "updatedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "answeredInRound",
+                  "type": "t_uint80",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            },
+            "t_uint8": {
+              "label": "uint8",
+              "numberOfBytes": "1"
+            },
+            "t_uint80": {
+              "label": "uint80",
+              "numberOfBytes": "10"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    },
+    {
+      "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState": {
+        "src": "contracts/interfaces/ISNXRewardsState.sol:5",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false
+        },
+        "solcVersion": "0.5.16"
+      },
+      "contracts/test-helpers/SNXRewardsState.sol:SNXRewardsState": {
+        "src": "contracts/test-helpers/SNXRewardsState.sol:7",
+        "version": {
+          "withMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "withoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8",
+          "linkedWithoutMetadata": "fe3f4dd7d42fc09a2d045c7bb4d5f2ff6c2a8388d597f7df6b7e4cd877de63e8"
+        },
+        "inherit": [
+          "contracts/interfaces/ISNXRewardsState.sol:ISNXRewardsState"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "getAccountsDebtEntry(address,uint256)",
+          "setAccountsDebtEntry(address,uint256,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [
+            {
+              "label": "debtPercentage",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:8"
+            },
+            {
+              "label": "debtEntryIndex",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "SNXRewardsState",
+              "src": "contracts/test-helpers/SNXRewardsState.sol:9"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true
+        },
+        "solcVersion": "0.5.16"
+      }
+    }
+  ]
+}

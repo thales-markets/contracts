@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -25,7 +25,7 @@ contract OpThales is ERC20, Ownable {
         return __decimals;
     }
 
-    address public override l1Token;
+    address public l1Token;
     address public l2Bridge;
 
     /**
@@ -61,23 +61,23 @@ contract OpThales is ERC20, Ownable {
         _;
     }
 
-    function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {
+    function supportsInterface(bytes4 _interfaceId) public view virtual returns (bool) {
         bytes4 firstSupportedInterface = bytes4(keccak256("supportsInterface(bytes4)")); // ERC165
         bytes4 secondSupportedInterface = bytes4(keccak256("supportsInterface(bytes4)"));
         // IL2StandardERC20.l1Token.selector ^ IL2StandardERC20.mint.selector ^ IL2StandardERC20.burn.selector;
         return _interfaceId == firstSupportedInterface || _interfaceId == secondSupportedInterface;
     }
 
-    function mint(address _to, uint256 _amount) public virtual override onlyL2Bridge {
+    function mint(address _to, uint256 _amount) public virtual onlyL2Bridge {
         _mint(_to, _amount);
 
-        emit Mint(_to, _amount);
+        emit Transfer(address(0), _to, _amount);
     }
 
-    function burn(address _from, uint256 _amount) public virtual override onlyL2Bridge {
+    function burn(address _from, uint256 _amount) public virtual onlyL2Bridge {
         _burn(_from, _amount);
 
-        emit Burn(_from, _amount);
+        emit Transfer(_from, address(0), _amount);
     }
 
     event NameChanged(string name);

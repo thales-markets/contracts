@@ -57,9 +57,36 @@ contract ParlayVerifier {
         uint tag2;
     }
 
+    struct ParlayData {
+        uint[] tag1;
+        uint[] tag2;
+        uint[] odds;
+    }
+
     // ISportsAMM sportsAmm;
 
-    function _verifyMarkets(VerifyMarket memory params) internal view returns (bool eligible, uint sgpFee) {
+    function _obtainTagsAndOdds(VerifyMarket memory params) internal view returns (ParlayData memory parlay) {
+        ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
+        uint numOfParlays = params.sportMarkets.length;
+        parlay.tag1 = new uint[](numOfParlays);
+        parlay.tag2 = new uint[](numOfParlays);
+        parlay.odds = new uint[](numOfParlays);
+        for (uint i = 0; i < numOfParlays; i++) {}
+    }
+
+    function _verifyMarkets(VerifyMarket memory params)
+        internal
+        view
+        returns (
+            // address[] memory _sportMarkets,
+            // uint[] memory _positions,
+            // uint _totalSUSDToPay,
+            // ISportsAMM _sportsAMM,
+            // address _parlayAMM
+            bool eligible,
+            uint sgpFee
+        )
+    {
         eligible = true;
         ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
         CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
@@ -336,6 +363,19 @@ contract ParlayVerifier {
         }
         if (left < j) _quickSort(arr, left, j);
         if (i < right) _quickSort(arr, i, right);
+    }
+
+    function _sqrt(uint y) internal pure returns (uint z) {
+        if (y > 3) {
+            z = y;
+            uint x = y / 2 + 1;
+            while (x < z) {
+                z = x;
+                x = (y / x + x) / 2;
+            }
+        } else if (y != 0) {
+            z = 1;
+        }
     }
 
     function _getGameIds(ITherundownConsumer consumer, address sportMarket)

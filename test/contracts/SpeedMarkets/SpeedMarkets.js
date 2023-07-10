@@ -96,17 +96,53 @@ contract('SpeedMarkets', (accounts) => {
 			let fee = await mockPyth.getUpdateFee(updateDataArray);
 			console.log('Fee is ' + fee);
 
-			await mockPyth.updatePriceFeeds([priceFeedUpdateData], { value: fee });
-
-			let price = await mockPyth.getPrice(pythId);
-			console.log('price of pyth Id is ' + price);
+			// await mockPyth.updatePriceFeeds([priceFeedUpdateData], { value: fee });
 
 			let minimalTimeToMaturity = await speedMarketsAMM.minimalTimeToMaturity();
 			console.log('minimalTimeToMaturity ' + minimalTimeToMaturity);
 
-			await speedMarketsAMM.createNewMarket(toBytes32('ETH'), now + 36000, 0, toUnit(10), []); //updatedata;
+			await speedMarketsAMM.createNewMarket(
+				toBytes32('ETH'),
+				now + 36000,
+				0,
+				toUnit(10),
+				[priceFeedUpdateData],
+				{ value: fee }
+			);
+
+			let price = await mockPyth.getPrice(pythId);
+			console.log('price of pyth Id is ' + price);
 
 			console.log('market created');
+
+			let numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
+
+			console.log('numActiveMarkets ' + numActiveMarkets);
+
+			await speedMarketsAMM.createNewMarket(
+				toBytes32('ETH'),
+				now + 36000,
+				0,
+				toUnit(10),
+				[priceFeedUpdateData],
+				{ value: fee }
+			);
+
+			numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
+			console.log('numActiveMarkets ' + numActiveMarkets);
+
+			await fastForward(86400);
+
+			await expect(
+				speedMarketsAMM.createNewMarket(
+					toBytes32('ETH'),
+					now + 36000,
+					0,
+					toUnit(10),
+					[priceFeedUpdateData],
+					{ value: fee }
+				)
+			).to.be.revertedWith('time has to be in the future + minimalTimeToMaturity');
 		});
 	});
 });

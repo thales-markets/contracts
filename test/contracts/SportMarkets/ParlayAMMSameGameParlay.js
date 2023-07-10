@@ -1308,16 +1308,16 @@ contract('ParlayAMM', (accounts) => {
 				parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().replace('0X', '0x');
 			}
 			let slippage = toUnit('0.01');
-			await ParlayAMM.setRestrictedPositionPerSGPCombination(9016, 10001, 10002, 1, 1, toUnit(1), {
+			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 1, 1, toUnit(1), {
 				from: owner,
 			});
-			await ParlayAMM.setRestrictedPositionPerSGPCombination(9016, 10001, 10002, 1, 0, toUnit(1), {
+			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 1, 0, toUnit(1), {
 				from: owner,
 			});
-			await ParlayAMM.setRestrictedPositionPerSGPCombination(9016, 10001, 10002, 0, 1, toUnit(1), {
+			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 0, 1, toUnit(1), {
 				from: owner,
 			});
-			await ParlayAMM.setRestrictedPositionPerSGPCombination(9016, 10001, 10002, 0, 0, toUnit(1), {
+			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 0, 0, toUnit(1), {
 				from: owner,
 			});
 

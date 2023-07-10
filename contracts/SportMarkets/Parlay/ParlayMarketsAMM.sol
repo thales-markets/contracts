@@ -25,7 +25,6 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/IParlayAMMLiquidityPool.sol";
 
-
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -34,7 +33,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     uint private constant ONE_PERCENT = 1e16;
     uint private constant DEFAULT_PARLAY_SIZE = 4;
     uint private constant MAX_APPROVAL = type(uint256).max;
-    uint private constant POSITION_TAG_CONSTANT = 1e7;
+    uint private constant POSITION_TAG_CONSTANT = 1e8;
 
     ISportsAMM public sportsAmm;
     ISportPositionalMarketManager public sportManager;
@@ -131,13 +130,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint tag2_2,
         uint position
     ) external view returns (uint sgpFee) {
-        if(position >= 100) {
+        if (position >= 100) {
             uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * ((position % 100) / 10)));
             uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * (position % 10)));
             if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] > 0) {
                 if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] < ONE) {
                     sgpFee = SGPFeePerCombination[tag1][posTag2_1][posTag2_2];
-                } 
+                }
             } else {
                 sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
             }

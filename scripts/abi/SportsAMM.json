@@ -339,6 +339,25 @@
       },
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_minSupportedOddsPerSport",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMinSupportedOddsPerSport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sport",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "bool",
         "name": "_flag",
         "type": "bool"
@@ -1019,6 +1038,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "minSupportedOddsPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "min_spread",
     "outputs": [
@@ -1413,6 +1451,24 @@
       }
     ],
     "name": "setMinSpreadPerSport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minSupportedOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinSupportedOddsPerSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

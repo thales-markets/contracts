@@ -165,6 +165,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The maximum supported odd for sport
     mapping(uint => uint) public minSupportedOddsPerSport;
 
+    /// @return The maximum supported odd for sport
+    mapping(uint => uint) public maxSpreadPerSport;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -758,9 +761,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetCapPerSport(_sportID, _capPerSport);
     }
 
-    function setMinSupportedOddsPerSport(uint _sportID, uint _minSupportedOdds) external onlyOwner {
+    function setMinSupportedOddsPerSport(
+        uint _sportID,
+        uint _minSupportedOdds,
+        uint _maxSpreadPerSport
+    ) external onlyOwner {
         minSupportedOddsPerSport[_sportID] = _minSupportedOdds;
-        emit SetMinSupportedOddsPerSport(_sportID, _minSupportedOdds);
+        maxSpreadPerSport[_sportID] = _maxSpreadPerSport;
+        emit SetMinSupportedOddsAndMaxSpreadPerSport(_sportID, _minSupportedOdds, _maxSpreadPerSport);
     }
 
     /// @notice Setting the Min Spread per Sport ID
@@ -1045,7 +1053,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 spentOnGame[market],
                 baseOdds,
                 balance,
-                max_spread
+                _maxSpreadForMarket(market)
             );
         }
     }
@@ -1079,6 +1087,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function _minOddsForMarket(address _market) internal view returns (uint minOdds) {
         (uint tag1, ) = _getTagsForMarket(_market);
         minOdds = minSupportedOddsPerSport[tag1] > 0 ? minSupportedOddsPerSport[tag1] : minSupportedOdds;
+    }
+
+    function _maxSpreadForMarket(address _market) internal view returns (uint maxSpread) {
+        (uint tag1, ) = _getTagsForMarket(_market);
+        maxSpread = maxSpreadPerSport[tag1] > 0 ? maxSpreadPerSport[tag1] : max_spread;
     }
 
     function _sendMintedPositionsAndUSDToLiquidityPool(address market) internal {
@@ -1147,7 +1160,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     _availableToBuyFromAMM,
                     _availableToBuyFromAMMOtherSide,
                     liquidityPool,
-                    max_spread,
+                    _maxSpreadForMarket(market),
                     _minOddsForMarket(market)
                 )
             );
@@ -1251,5 +1264,5 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetSportOnePositional(uint _sport, bool _flag);
     event SetCapPerMarket(address _market, uint _cap);
     event SetCapPerSportAndChild(uint _sport, uint _child, uint _cap);
-    event SetMinSupportedOddsPerSport(uint _sport, uint _minSupportedOddsPerSport);
+    event SetMinSupportedOddsAndMaxSpreadPerSport(uint _sport, uint _minSupportedOddsPerSport, uint _maxSpreadPerSport);
 }

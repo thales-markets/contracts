@@ -342,9 +342,15 @@
         "internalType": "uint256",
         "name": "_minSupportedOddsPerSport",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxSpreadPerSport",
+        "type": "uint256"
       }
     ],
-    "name": "SetMinSupportedOddsPerSport",
+    "name": "SetMinSupportedOddsAndMaxSpreadPerSport",
     "type": "event"
   },
   {
@@ -975,6 +981,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "maxSpreadPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "maxSupportedOdds",
     "outputs": [
@@ -1465,6 +1490,11 @@
       {
         "internalType": "uint256",
         "name": "_minSupportedOdds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxSpreadPerSport",
         "type": "uint256"
       }
     ],

@@ -57,7 +57,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     mapping(bytes32 => bytes32) public assetToPythId;
 
-    //Optimism 0xff1a0f4744e8582df1ae09d5611b887b6a12925c
+    //eth 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace
     IPyth pyth;
 
     uint64 public maximumPriceDelay;
@@ -83,6 +83,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         bytes[] calldata priceUpdateData
     ) external payable nonReentrant {
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "wrong buy in amount");
+        require(
+            strikeTime >= (block.timestamp + minimalTimeToMaturity),
+            "time has to be in the future + minimalTimeToMaturity"
+        );
+        require(strikeTime <= block.timestamp + maximalTimeToMaturity, "time too far into the future");
 
         // PYTH SPECIFIC code
         uint fee = pyth.getUpdateFee(priceUpdateData);
@@ -187,6 +192,44 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         return _maturedMarkets.getPage(index, pageSize);
     }
 
+    //////////////////setters/////////////////
+
+    /// @notice Set mastercopy to use to create markets
+    /// @param _mastercopy to use to create markets
+    function setMastercopy(address _mastercopy) external onlyOwner {
+        speedMarketMastercopy = _mastercopy;
+        emit MastercopyChanged(_mastercopy);
+    }
+
+    /// @notice Set minimum and maximum buyin amounts
+    function setAmounts(uint _minBuyinAmount, uint _maxBuyinAmount) external onlyOwner {
+        minBuyinAmount = _minBuyinAmount;
+        maxBuyinAmount = _maxBuyinAmount;
+        emit AmountsChanged(_minBuyinAmount, _maxBuyinAmount);
+    }
+
+    /// @notice Set minimum and maximum time to maturity
+    function setTimes(uint _minimalTimeToMaturity, uint _maximalTimeToMaturity) external onlyOwner {
+        minimalTimeToMaturity = _minimalTimeToMaturity;
+        maximalTimeToMaturity = _maximalTimeToMaturity;
+        emit TimesChanged(_minimalTimeToMaturity, _maximalTimeToMaturity);
+    }
+
+    function setAssetToPythID(bytes32 asset, bytes32 pythId) external onlyOwner {
+        assetToPythId[asset] = pythId;
+        emit SetAssetToPythID(asset, pythId);
+    }
+
+    function setMaximumPriceDelay(uint64 _maximumPriceDelay) external onlyOwner {
+        maximumPriceDelay = _maximumPriceDelay;
+        emit SetMaximumPriceDelay(maximumPriceDelay);
+    }
+
+    function setMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset) external onlyOwner {
+        maxRiskPerAsset[asset] = _maxRiskPerAsset;
+        emit SetMaxRiskPerAsset(asset, _maxRiskPerAsset);
+    }
+
     //////////////////events/////////////////
 
     event MarketCreated(
@@ -198,4 +241,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         SpeedMarket.Direction direction,
         uint buyinAmount
     );
+
+    event MastercopyChanged(address mastercopy);
+    event AmountsChanged(uint _minBuyinAmount, uint _maxBuyinAmount);
+    event TimesChanged(uint _minimalTimeToMaturity, uint _maximalTimeToMaturity);
+    event SetAssetToPythID(bytes32 asset, bytes32 pythId);
+    event SetMaximumPriceDelay(uint _maximumPriceDelay);
+    event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
 }

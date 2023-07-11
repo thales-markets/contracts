@@ -162,6 +162,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return the sport which is one-sider
     mapping(uint => bool) public isMarketForSportOnePositional;
 
+    /// @return The maximum supported odd for sport
+    mapping(uint => uint) public minSupportedOddsPerSport;
+
+    /// @return The maximum supported odd for sport
+    mapping(uint => uint) public maxSpreadPerSport;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -218,7 +224,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (isMarketInAMMTrading(market)) {
             uint baseOdds = _obtainOdds(market, position);
             if (baseOdds > 0) {
-                baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+                uint minOdds = _minOddsForMarket(market);
+                baseOdds = baseOdds < minOdds ? minOdds : baseOdds;
                 _quote = _buyFromAmmQuoteWithBaseOdds(
                     market,
                     position,
@@ -321,7 +328,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         DoubleChanceStruct memory dcs
     ) internal view returns (uint returnQuote) {
         if (position == ISportsAMM.Position.Home) {
-            (uint baseOdds1, uint baseOdds2) = sportAmmUtils.getBaseOddsForDoubleChance(market, minSupportedOdds);
+            (uint baseOdds1, uint baseOdds2) = sportAmmUtils.getBaseOddsForDoubleChance(market, _minOddsForMarket(market));
 
             if (baseOdds1 > 0 && baseOdds2 > 0) {
                 uint firstQuote = _buyFromAmmQuoteWithBaseOddsInternal(
@@ -377,8 +384,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position positionSecond
     ) internal view returns (uint _availableOtherSideFirst, uint _availableOtherSideSecond) {
         (uint baseOddsFirst, uint baseOddsSecond) = sportAmmUtils.obtainOddsMulti(market, positionFirst, positionSecond);
-        baseOddsFirst = baseOddsFirst < minSupportedOdds ? minSupportedOdds : baseOddsFirst;
-        baseOddsSecond = baseOddsSecond < minSupportedOdds ? minSupportedOdds : baseOddsSecond;
+        uint minOdds = _minOddsForMarket(market);
+        baseOddsFirst = baseOddsFirst < minOdds ? minOdds : baseOddsFirst;
+        baseOddsSecond = baseOddsSecond < minOdds ? minOdds : baseOddsSecond;
 
         (uint balanceFirst, uint balanceSecond) = sportAmmUtils.getBalanceOfPositionsOnMarketByPositions(
             market,
@@ -414,7 +422,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount
     ) public view returns (uint _quote) {
         uint baseOdds = _obtainOdds(market, position);
-        baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
+        uint minOdds = _minOddsForMarket(market);
+        baseOdds = (baseOdds > 0 && baseOdds < minOdds) ? minOdds : baseOdds;
         _quote = _buyFromAmmQuoteWithBaseOdds(
             market,
             position,
@@ -752,6 +761,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetCapPerSport(_sportID, _capPerSport);
     }
 
+    function setMinSupportedOddsAndMaxSpreadPerSportPerSport(
+        uint _sportID,
+        uint _minSupportedOdds,
+        uint _maxSpreadPerSport
+    ) external onlyOwner {
+        minSupportedOddsPerSport[_sportID] = _minSupportedOdds;
+        maxSpreadPerSport[_sportID] = _maxSpreadPerSport;
+        emit SetMinSupportedOddsAndMaxSpreadPerSport(_sportID, _minSupportedOdds, _maxSpreadPerSport);
+    }
+
     /// @notice Setting the Min Spread per Sport ID
     /// @param _tag1 The first tagID used for each market
     /// @param _tag2 The second tagID used for each market
@@ -883,7 +902,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         uint baseOdds = _obtainOddsWithDC(params.market, params.position, dcs.isDoubleChance);
         require(baseOdds > 0, "No base odds");
-        baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+        uint minOdds = _minOddsForMarket(params.market);
+        baseOdds = baseOdds < minOdds ? minOdds : baseOdds;
 
         uint availableInContract = sportAmmUtils.balanceOfPositionOnMarket(
             params.market,
@@ -1009,7 +1029,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 _available = availableFirst > availableSecond ? availableSecond : availableFirst;
             }
         } else {
-            baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+            uint minOdds = _minOddsForMarket(market);
+            baseOdds = baseOdds < minOdds ? minOdds : baseOdds;
             _available = _availableToBuyFromAMMWithBaseOdds(market, position, baseOdds, balance, useBalance);
         }
     }
@@ -1032,7 +1053,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 spentOnGame[market],
                 baseOdds,
                 balance,
-                max_spread
+                _maxSpreadForMarket(market)
             );
         }
     }
@@ -1040,7 +1061,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function _obtainOdds(address _market, ISportsAMM.Position _position) internal view returns (uint) {
         if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(_market)) {
             if (_position == ISportsAMM.Position.Home) {
-                return sportAmmUtils.getBaseOddsForDoubleChanceSum(_market, minSupportedOdds);
+                return sportAmmUtils.getBaseOddsForDoubleChanceSum(_market, _minOddsForMarket(_market));
             }
         }
         return sportAmmUtils.obtainOdds(_market, _position);
@@ -1052,7 +1073,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bool isDoubleChance
     ) internal view returns (uint) {
         if (isDoubleChance) {
-            return sportAmmUtils.getBaseOddsForDoubleChanceSum(_market, minSupportedOdds);
+            return sportAmmUtils.getBaseOddsForDoubleChanceSum(_market, _minOddsForMarket(_market));
         }
         return sportAmmUtils.obtainOdds(_market, _position);
     }
@@ -1061,6 +1082,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (toCheck != parlayAMM) {
             return safeBoxFeePerAddress[toCheck] > 0 ? safeBoxFeePerAddress[toCheck] : safeBoxImpact;
         }
+    }
+
+    function _minOddsForMarket(address _market) internal view returns (uint minOdds) {
+        (uint tag1, ) = _getTagsForMarket(_market);
+        minOdds = minSupportedOddsPerSport[tag1] > 0 ? minSupportedOddsPerSport[tag1] : minSupportedOdds;
+    }
+
+    function _maxSpreadForMarket(address _market) internal view returns (uint maxSpread) {
+        (uint tag1, ) = _getTagsForMarket(_market);
+        maxSpread = maxSpreadPerSport[tag1] > 0 ? maxSpreadPerSport[tag1] : max_spread;
     }
 
     function _sendMintedPositionsAndUSDToLiquidityPool(address market) internal {
@@ -1129,8 +1160,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     _availableToBuyFromAMM,
                     _availableToBuyFromAMMOtherSide,
                     liquidityPool,
-                    max_spread,
-                    minSupportedOdds
+                    _maxSpreadForMarket(market),
+                    _minOddsForMarket(market)
                 )
             );
     }
@@ -1233,4 +1264,5 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetSportOnePositional(uint _sport, bool _flag);
     event SetCapPerMarket(address _market, uint _cap);
     event SetCapPerSportAndChild(uint _sport, uint _child, uint _cap);
+    event SetMinSupportedOddsAndMaxSpreadPerSport(uint _sport, uint _minSupportedOddsPerSport, uint _maxSpreadPerSport);
 }

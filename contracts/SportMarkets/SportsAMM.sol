@@ -761,7 +761,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetCapPerSport(_sportID, _capPerSport);
     }
 
-    function setMinSupportedOddsPerSport(
+    function setMinSupportedOddsAndMaxSpreadPerSportPerSport(
         uint _sportID,
         uint _minSupportedOdds,
         uint _maxSpreadPerSport

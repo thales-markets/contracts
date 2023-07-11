@@ -46,7 +46,6 @@ contract ParlayVerifier {
 
     struct VerifyMarket {
         address[] sportMarkets;
-        uint[] positions;
         ISportsAMM sportsAMM;
         address parlayAMM;
     }
@@ -58,36 +57,7 @@ contract ParlayVerifier {
         uint tag2;
     }
 
-    struct ParlayData {
-        uint[] tag1;
-        uint[] tag2;
-        uint[] odds;
-    }
-
-    // ISportsAMM sportsAmm;
-
-    function _obtainTagsAndOdds(VerifyMarket memory params) internal view returns (ParlayData memory parlay) {
-        ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
-        uint numOfParlays = params.sportMarkets.length;
-        parlay.tag1 = new uint[](numOfParlays);
-        parlay.tag2 = new uint[](numOfParlays);
-        parlay.odds = new uint[](numOfParlays);
-        for (uint i = 0; i < numOfParlays; i++) {}
-    }
-
-    function _verifyMarkets(VerifyMarket memory params)
-        internal
-        view
-        returns (
-            // address[] memory _sportMarkets,
-            // uint[] memory _positions,
-            // uint _totalSUSDToPay,
-            // ISportsAMM _sportsAMM,
-            // address _parlayAMM
-            bool eligible,
-            uint sgpFee
-        )
-    {
+    function _verifyMarkets(VerifyMarket memory params) internal view returns (bool eligible, uint sgpFee) {
         eligible = true;
         ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
         CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
@@ -96,12 +66,10 @@ contract ParlayVerifier {
         bytes32 gameIdAway;
         uint tag1;
         uint tag2;
-        uint[] memory position = params.positions;
         address sportMarket;
         uint motoCounter = 0;
         for (uint i = 0; i < params.sportMarkets.length; i++) {
             sportMarket = params.sportMarkets[i];
-            // position = params.positions[i];
             (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
             tag1 = ISportPositionalMarket(sportMarket).tags(0);
             tag2 = consumer.isChildMarket(sportMarket) ? ISportPositionalMarket(sportMarket).tags(1) : 0;
@@ -117,8 +85,7 @@ contract ParlayVerifier {
                     uint feeToApply = IParlayMarketsAMM(params.parlayAMM).getSgpFeePerCombination(
                         tag1,
                         tag2,
-                        cachedTeams[j].tag2,
-                        100 + (10 * position[i] + position[j / 2])
+                        cachedTeams[j].tag2
                     );
                     if (cachedTeams[j].gameCounter > 0 || feeToApply == 0) {
                         revert("SameTeamOnParlay");
@@ -161,9 +128,7 @@ contract ParlayVerifier {
         uint numOfMarkets = params.sportMarkets.length;
         uint inverseSum;
         bool eligible;
-        (eligible, params.sgpFee) = _verifyMarkets(
-            VerifyMarket(params.sportMarkets, params.positions, params.sportsAMM, params.parlayAMM)
-        );
+        (eligible, params.sgpFee) = _verifyMarkets(VerifyMarket(params.sportMarkets, params.sportsAMM, params.parlayAMM));
         if (eligible && numOfMarkets == params.positions.length && numOfMarkets > 0 && numOfMarkets <= params.parlaySize) {
             finalQuotes = new uint[](numOfMarkets);
             amountsToBuy = new uint[](numOfMarkets);
@@ -299,7 +264,6 @@ contract ParlayVerifier {
 
     function getSkewImpact(
         address[] memory _sportMarkets,
-        uint[] memory _positions,
         uint _sUSDAfterFees,
         ISportsAMM _sportsAMM,
         address _parlayAMM,
@@ -308,7 +272,7 @@ contract ParlayVerifier {
         uint _oldSkew
     ) external view returns (uint resultSkewImpact) {
         uint newBuyAmount;
-        (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
+        (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, ISportsAMM(_sportsAMM), _parlayAMM));
         if (sgpFee > 0) {
             _totalQuote = (_totalQuote * sgpFee) / ONE;
             newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
@@ -364,19 +328,6 @@ contract ParlayVerifier {
         }
         if (left < j) _quickSort(arr, left, j);
         if (i < right) _quickSort(arr, i, right);
-    }
-
-    function _sqrt(uint y) internal pure returns (uint z) {
-        if (y > 3) {
-            z = y;
-            uint x = y / 2 + 1;
-            while (x < z) {
-                z = x;
-                x = (y / x + x) / 2;
-            }
-        } else if (y != 0) {
-            z = 1;
-        }
     }
 
     function _getGameIds(ITherundownConsumer consumer, address sportMarket)

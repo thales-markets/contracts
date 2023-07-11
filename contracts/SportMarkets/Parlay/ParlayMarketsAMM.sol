@@ -127,22 +127,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function getSgpFeePerCombination(
         uint tag1,
         uint tag2_1,
-        uint tag2_2,
-        uint position
+        uint tag2_2
     ) external view returns (uint sgpFee) {
-        if (position >= 100) {
-            uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * ((position % 100) / 10)));
-            uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * (position % 10)));
-            if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] > 0) {
-                if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] < ONE) {
-                    sgpFee = SGPFeePerCombination[tag1][posTag2_1][posTag2_2];
-                }
-            } else {
-                sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
-            }
-        } else {
-            sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
-        }
+        sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
     }
 
     function buyQuoteFromParlay(
@@ -525,7 +512,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
         resultSkew = parlayVerifier.getSkewImpact(
             _sportMarkets,
-            _positions,
             sUSDAfterFees,
             sportsAmm,
             address(this),

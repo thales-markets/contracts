@@ -890,11 +890,6 @@
         "internalType": "uint256",
         "name": "tag2_2",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "position",
-        "type": "uint256"
       }
     ],
     "name": "getSgpFeePerCombination",

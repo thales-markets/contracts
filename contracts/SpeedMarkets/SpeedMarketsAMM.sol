@@ -118,6 +118,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice resolveMarket resolves an active market
     /// @param market address of the market
     function resolveMarket(address market, bytes[] calldata priceUpdateData) external payable {
+        _resolveMarket(market, priceUpdateData);
+    }
+
+    function _resolveMarket(address market, bytes[] memory priceUpdateData) internal {
         require(_activeMarkets.contains(market), "Not an active market");
         require(SpeedMarket(market).strikeTime() < block.timestamp, "Not ready to be resolved");
         require(!SpeedMarket(market).resolved(), "Already resolved");
@@ -153,7 +157,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         for (uint i = 0; i < markets.length; i++) {
             address market = markets[i];
             if (canResolveMarket(market)) {
-                resolveMarket(market, priceUpdateData[i]);
+                bytes[] memory subarray = new bytes[](1);
+                subarray[0] = priceUpdateData[i];
+                _resolveMarket(market, subarray);
             }
         }
     }

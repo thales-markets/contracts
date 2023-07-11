@@ -248,6 +248,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "canResolveMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -609,6 +628,24 @@
       }
     ],
     "name": "resolveMarket",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "markets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "priceUpdateData",
+        "type": "bytes[]"
+      }
+    ],
+    "name": "resolveMarketsBatch",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"

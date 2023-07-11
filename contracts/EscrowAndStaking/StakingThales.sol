@@ -777,6 +777,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             require(!thalesAMMLiquidityPool.isUserLPing(msg.sender), "Cannot merge while LPing");
         }
 
+        if (address(parlayAMMLiquidityPool) != address(0)) {
+            require(!parlayAMMLiquidityPool.isUserLPing(msg.sender), "Cannot merge while LPing");
+        }
+
         iEscrowThales.mergeAccount(msg.sender, destAccount);
 
         _stakedBalances[destAccount] = _stakedBalances[destAccount].add(_stakedBalances[msg.sender]);

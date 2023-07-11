@@ -35,6 +35,13 @@ contract ParlayAMMLiquidityPoolData is Initializable, ProxyOwned, ProxyPausable 
         uint withdrawalShare;
     }
 
+    struct PendingParlays {
+        uint totalParlaysInRound;
+        uint closedParlays;
+        uint pendingParlays;
+        address[] pendingParlayMarkets;
+    }
+
     function initialize(address _owner) external initializer {
         setOwner(_owner);
     }
@@ -87,5 +94,34 @@ contract ParlayAMMLiquidityPoolData is Initializable, ProxyOwned, ProxyPausable 
                 stakedThalesForUser,
                 liquidityPool.withdrawalShare(user)
             );
+    }
+
+    function getPendingParlaysInCurrentRound(ParlayAMMLiquidityPool liquidityPool)
+        external
+        view
+        returns (PendingParlays memory)
+    {
+        uint round = liquidityPool.round();
+        uint tradingMarkets = liquidityPool.getTradingMarketsPerRound(round);
+        address[] memory extractMarkets = new address[](tradingMarkets);
+        address market;
+        uint counter;
+        for (uint i = 0; i < tradingMarkets; i++) {
+            market = liquidityPool.tradingMarketsPerRound(round, i);
+            if (!liquidityPool.marketAlreadyExercisedInRound(round, market)) {
+                extractMarkets[i] = market;
+                ++counter;
+            }
+        }
+        address[] memory pendingParlays = new address[](counter);
+        uint j;
+        for (uint i = 0; i < tradingMarkets; i++) {
+            if (extractMarkets[i] != address(0) && j < counter) {
+                pendingParlays[j] = extractMarkets[i];
+                ++j;
+            }
+        }
+        return
+            PendingParlays(tradingMarkets, (tradingMarkets - pendingParlays.length), pendingParlays.length, pendingParlays);
     }
 }

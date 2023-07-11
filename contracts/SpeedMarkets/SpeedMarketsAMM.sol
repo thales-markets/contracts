@@ -105,7 +105,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             SpeedMarket.InitParams(address(this), msg.sender, asset, strikeTime, price.price, direction, buyinAmount)
         );
 
-        sUSD.safeTransfer(address(this), buyinAmount * 2);
+        sUSD.safeTransfer(address(srm), buyinAmount * 2);
 
         _activeMarkets.add(address(srm));
 
@@ -119,7 +119,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param market address of the market
     function resolveMarket(address market, bytes[] calldata priceUpdateData) external payable {
         require(_activeMarkets.contains(market), "Not an active market");
-        require(SpeedMarket(market).strikeTime() > block.timestamp, "Not ready to be resolved");
+        require(SpeedMarket(market).strikeTime() < block.timestamp, "Not ready to be resolved");
 
         // PYTH SPECIFIC code
         uint fee = pyth.getUpdateFee(priceUpdateData);

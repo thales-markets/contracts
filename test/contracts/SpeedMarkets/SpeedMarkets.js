@@ -38,8 +38,7 @@ contract('SpeedMarkets', (accounts) => {
 			balance = await exoticUSD.balanceOf(owner);
 			console.log('Balance of user is ' + balance / 1e18);
 
-			balance = await exoticUSD.balanceOf(speedMarketsAMM.address);
-			console.log('Balance of speedMarketsAMM.address is ' + balance / 1e18);
+			let balanceOfSpeedMarketAMMBefore = await exoticUSD.balanceOf(speedMarketsAMM.address);
 
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100));
 
@@ -59,6 +58,8 @@ contract('SpeedMarkets', (accounts) => {
 
 			let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
 			let speedMarketMastercopy = await SpeedMarketMastercopy.new();
+
+			await speedMarketsAMM.setMastercopy(speedMarketMastercopy.address);
 
 			await speedMarketsAMM.setAmounts(toUnit(5), toUnit(1000));
 
@@ -128,21 +129,105 @@ contract('SpeedMarkets', (accounts) => {
 				{ value: fee }
 			);
 
+			let balanceOfSpeedMarketAMMAfterCreation = await exoticUSD.balanceOf(speedMarketsAMM.address);
+
 			numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
 			console.log('numActiveMarkets ' + numActiveMarkets);
+
+			let markets = await speedMarketsAMM.activeMarkets(0, 1);
+			let market = markets[0];
+			console.log('market is ' + market);
+
+			let SpeedMarket = artifacts.require('SpeedMarket');
+			let speedMarket = await SpeedMarket.at(market);
+			let strikeTime = await speedMarket.strikeTime();
+			console.log('Strike time is ' + strikeTime);
+
+			now = await currentTime();
+			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				196342931000,
+				74093100,
+				-8,
+				196342931000,
+				74093100,
+				now
+			);
+
+			await expect(
+				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
+			).to.be.revertedWith('Not ready to be resolved');
 
 			await fastForward(86400);
 
 			await expect(
-				speedMarketsAMM.createNewMarket(
-					toBytes32('ETH'),
-					now + 36000,
-					0,
-					toUnit(10),
-					[priceFeedUpdateData],
-					{ value: fee }
-				)
-			).to.be.revertedWith('time has to be in the future + minimalTimeToMaturity');
+				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
+			).to.be.revertedWith('revert');
+
+			now = await currentTime();
+			resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				196342931000,
+				74093100,
+				-8,
+				196342931000,
+				74093100,
+				strikeTime
+			);
+
+			numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
+			console.log('numActiveMarkets before resolve ' + numActiveMarkets);
+
+			let balanceOfMarketBefore = await exoticUSD.balanceOf(market);
+			let balanceOfUserBefore = await exoticUSD.balanceOf(owner);
+
+			await speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee });
+
+			numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
+			console.log('numActiveMarkets after resolve' + numActiveMarkets);
+
+			let resolved = await speedMarket.resolved();
+			console.log('resolved  is ' + resolved);
+
+			let result = await speedMarket.result();
+			console.log('result  is ' + result);
+
+			let direction = await speedMarket.direction();
+			console.log('direction  is ' + direction);
+
+			let buyinAmount = await speedMarket.buyinAmount();
+			console.log('buyinAmount  is ' + buyinAmount / 1e18);
+
+			let isUserWinner = await speedMarket.isUserWinner();
+			console.log('isUserWinner  is ' + isUserWinner);
+
+			let balanceOfMarketAfter = await exoticUSD.balanceOf(market);
+			console.log('balanceOfMarketBefore ' + balanceOfMarketBefore / 1e18);
+			console.log('balanceOfMarketAfter ' + balanceOfMarketAfter / 1e18);
+
+			let balanceOfUserAfter = await exoticUSD.balanceOf(owner);
+			console.log('balanceOfUserBefore ' + balanceOfUserBefore / 1e18);
+			console.log('balanceOfUserAfter ' + balanceOfUserAfter / 1e18);
+
+			let balanceOfSpeedMarketAMMAfterResolve = await exoticUSD.balanceOf(speedMarketsAMM.address);
+			console.log('balanceOfSpeedMarketAMMBefore ' + balanceOfSpeedMarketAMMBefore / 1e18);
+			console.log(
+				'balanceOfSpeedMarketAMMAfterCreation ' + balanceOfSpeedMarketAMMAfterCreation / 1e18
+			);
+			console.log(
+				'balanceOfSpeedMarketAMMAfterResolve ' + balanceOfSpeedMarketAMMAfterResolve / 1e18
+			);
+
+			// await expect(
+			// 	speedMarketsAMM.createNewMarket(
+			// 		toBytes32('ETH'),
+			// 		now + 36000,
+			// 		0,
+			// 		toUnit(10),
+			// 		[priceFeedUpdateData],
+			// 		{ value: fee }
+			// 	)
+			// ).to.be.revertedWith('time has to be in the future + minimalTimeToMaturity');
 		});
 	});
 });

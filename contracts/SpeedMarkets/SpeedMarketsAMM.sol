@@ -120,6 +120,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     function resolveMarket(address market, bytes[] calldata priceUpdateData) external payable {
         require(_activeMarkets.contains(market), "Not an active market");
         require(SpeedMarket(market).strikeTime() < block.timestamp, "Not ready to be resolved");
+        require(!SpeedMarket(market).resolved(), "Already resolved");
 
         // PYTH SPECIFIC code
         uint fee = pyth.getUpdateFee(priceUpdateData);
@@ -144,6 +145,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 currentRiskPerAsset[SpeedMarket(market).asset()] -= (SpeedMarket(market).buyinAmount());
             } else {
                 currentRiskPerAsset[SpeedMarket(market).asset()] = 0;
+            }
+        }
+    }
+
+    function resolveMarketsBatch(address[] calldata markets, bytes[] calldata priceUpdateData) external payable {
+        for (uint i = 0; i < markets.length; i++) {
+            address market = markets[i];
+            if (canResolveMarket(market)) {
+                resolveMarket(market, priceUpdateData[i]);
             }
         }
     }
@@ -190,6 +200,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @return address[] matured market list
     function maturedMarkets(uint index, uint pageSize) external view returns (address[] memory) {
         return _maturedMarkets.getPage(index, pageSize);
+    }
+
+    function canResolveMarket(address market) public view returns (bool) {
+        return
+            _activeMarkets.contains(market) &&
+            (SpeedMarket(market).strikeTime() < block.timestamp) &&
+            !SpeedMarket(market).resolved();
     }
 
     //////////////////setters/////////////////

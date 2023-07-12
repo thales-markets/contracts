@@ -35,6 +35,9 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     ISportPositionalMarketManager public sportsManager;
     mapping(address => bool) public whitelistedAddresses;
 
+    uint public minOddsForCheckingThresholdDefault;
+    mapping(uint => uint) public minOddsForCheckingThresholdPerSport;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -108,6 +111,14 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         uint _newOdds
     ) public view returns (bool) {
         uint threshold = oddsThresholdForSport[_sportId] == 0 ? defaultOddsThreshold : oddsThresholdForSport[_sportId];
+        uint minOdds = minOddsForCheckingThresholdPerSport[_sportId] == 0
+            ? minOddsForCheckingThresholdDefault
+            : minOddsForCheckingThresholdPerSport[_sportId];
+
+        // Check if both _currentOdds and _newOdds are below X% (example 10%) if minOdds is set
+        if (minOdds > 0 && _currentOdds < minOdds * ONE_PERCENT && _newOdds < minOdds * ONE_PERCENT) {
+            return true;
+        }
 
         // new odds appear or it is equal
         if (_currentOdds == 0 || _currentOdds == _newOdds) {
@@ -564,6 +575,24 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         }
     }
 
+    /// @notice setting min percentage for checking threshold
+    /// @param _minOddsForCheckingThresholdDefault min percentage which threshold for odds are checked
+    function setMinOddsForCheckingThresholdDefault(uint _minOddsForCheckingThresholdDefault) external onlyOwner {
+        minOddsForCheckingThresholdDefault = _minOddsForCheckingThresholdDefault;
+        emit NewMinOddsForCheckingThresholdDefault(_minOddsForCheckingThresholdDefault);
+    }
+
+    /// @notice setting custom min odds checking for threshold
+    /// @param _sportId sport id
+    /// @param _minOddsForCheckingThresholdPerSport custom custom min odds checking for threshold
+    function setMinOddsForCheckingThresholdPerSport(uint _sportId, uint _minOddsForCheckingThresholdPerSport)
+        external
+        onlyOwner
+    {
+        minOddsForCheckingThresholdPerSport[_sportId] = _minOddsForCheckingThresholdPerSport;
+        emit NewMinOddsForCheckingThresholdPerSport(_sportId, _minOddsForCheckingThresholdPerSport);
+    }
+
     /* ========== EVENTS ========== */
     event NewConsumerAddress(address _consumer);
     event SetInvalidName(bytes32 _invalidName, bool _isInvalid);
@@ -575,4 +604,6 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     event NewObtainerAddress(address _obtainer);
     event NewSportsManagerAddress(address _manager);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
+    event NewMinOddsForCheckingThresholdDefault(uint _minOddsChecking);
+    event NewMinOddsForCheckingThresholdPerSport(uint256 _sportId, uint _minOddsChecking);
 }

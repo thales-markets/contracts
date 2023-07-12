@@ -47,6 +47,8 @@ contract('ParlayAMM', (accounts) => {
 		wrapper,
 		firstLiquidityProvider,
 		defaultLiquidityProvider,
+		firstParlayAMMLiquidityProvider,
+		defaultParlayAMMLiquidityProvider,
 	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -216,7 +218,8 @@ contract('ParlayAMM', (accounts) => {
 		Referrals,
 		ParlayVerifier,
 		SportsAMM,
-		SportAMMLiquidityPool;
+		SportAMMLiquidityPool,
+		ParlayAMMLiquidityPool;
 
 	let verifier;
 
@@ -346,14 +349,14 @@ contract('ParlayAMM', (accounts) => {
 			SNXRewards.address,
 			second,
 			second,
-			second,
-			second,
 			SportsAMM.address,
 			second,
 			second,
 			second,
 			second,
 			second,
+			second,
+			ZERO_ADDRESS,
 			{ from: owner }
 		);
 
@@ -763,6 +766,51 @@ contract('ParlayAMM', (accounts) => {
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(ParlayAMM.address, toUnit(1000), { from: first });
+		// Parlay LP initializers:
+		const ParlayAMMLiquidityPoolContract = artifacts.require('ParlayAMMLiquidityPool');
+		const ParlayAMMLiquidityPoolRoundMastercopy = artifacts.require(
+			'ParlayAMMLiquidityPoolRoundMastercopy'
+		);
+
+		ParlayAMMLiquidityPool = await ParlayAMMLiquidityPoolContract.new({ from: manager });
+
+		await ParlayAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_parlayAMM: ParlayAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(100000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+		await ParlayAMM.setParlayLP(ParlayAMMLiquidityPool.address, { from: owner });
+
+		let parlayAMMLiquidityPoolRoundMastercopy = await ParlayAMMLiquidityPoolRoundMastercopy.new();
+		await ParlayAMMLiquidityPool.setPoolRoundMastercopy(
+			parlayAMMLiquidityPoolRoundMastercopy.address,
+			{
+				from: owner,
+			}
+		);
+		await Thales.transfer(firstParlayAMMLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
+			from: firstParlayAMMLiquidityProvider,
+		});
+		await ParlayAMMLiquidityPool.setWhitelistedAddresses([firstParlayAMMLiquidityProvider], true, {
+			from: owner,
+		});
+		await ParlayAMMLiquidityPool.deposit(toUnit(100000), { from: firstParlayAMMLiquidityProvider });
+		await ParlayAMMLiquidityPool.start({ from: owner });
+		await ParlayAMMLiquidityPool.setDefaultLiquidityProvider(defaultParlayAMMLiquidityProvider, {
+			from: owner,
+		});
+		await Thales.transfer(defaultParlayAMMLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
+			from: defaultParlayAMMLiquidityProvider,
+		});
 	});
 
 	describe('Parlay AMM setters', () => {
@@ -1257,6 +1305,70 @@ contract('ParlayAMM', (accounts) => {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 			});
+		});
+
+		it('Create/Buy Parlay same game parlay | 2x (totals + spread), restrict Football position', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '15');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1', '1'];
+			let parlayPositions2 = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets4.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().toUpperCase();
+				parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().replace('0X', '0x');
+			}
+			let slippage = toUnit('0.01');
+			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 1, 1, toUnit(1), {
+				from: owner,
+			});
+			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 1, 0, toUnit(1), {
+				from: owner,
+			});
+			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 0, 1, toUnit(1), {
+				from: owner,
+			});
+			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 0, 0, toUnit(1), {
+				from: owner,
+			});
+
+			// console.log('buyQuote --->')
+			// await expect(
+			// 	ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
+			// ).to.be.revertedWith('SameTeamOnParlay');
+			// let result = await ParlayAMM.buyQuoteFromParlay(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay
+			// );
+			// console.log("RESULT QUOTE: ")
+			// console.log(result[1].toString());
+			// let calculateSkew = await ParlayAMM.calculateSkewImpact(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay
+			// );
+
+			// console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
+			// console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
+			// // console.log('buyTX --->');
+			// let buyParlayTX = await ParlayAMM.buyFromParlay(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay,
+			// 	slippage,
+			// 	result[1],
+			// 	ZERO_ADDRESS,
+			// 	{ from: first }
+			// );
+			// // console.log("event: \n", buyParlayTX.logs[0]);
+
+			// assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+			// 	account: first,
+			// 	sUSDPaid: totalSUSDToPay,
+			// });
 		});
 
 		it('Read from SportMarketData - Two positional sport', async () => {

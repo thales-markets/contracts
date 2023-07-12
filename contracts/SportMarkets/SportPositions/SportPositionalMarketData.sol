@@ -235,6 +235,8 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
 
     function _getCombinedOddsForMarket(address _mainMarket) internal view returns (SameGameParlayMarket memory sgpMarket) {
         if (ISportPositionalMarketManager(manager).isActiveMarket(_mainMarket)) {
+            uint joinedPosition;
+            uint sgpFee;
             sgpMarket.mainMarket = _mainMarket;
             (address totalsMarket, address spreadMarket) = IGamesOddsObtainer(
                 ISportPositionalMarketManager(manager).getOddsObtainer()
@@ -261,12 +263,21 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                         uint[] memory positions = new uint[](2);
                         positions[0] = j > 1 ? (j > 3 ? 2 : 1) : 0;
                         positions[1] = j % 2;
-                        (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
-                            .buyQuoteFromParlay(
-                                markets,
-                                positions,
-                                ISportPositionalMarketManager(manager).transformCollateral(ONE)
-                            );
+                        joinedPosition = 100 + (10 * positions[0] + positions[1]);
+                        sgpFee = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM()).getSgpFeePerCombination(
+                            newCombinedOdds.tags[0],
+                            0,
+                            newCombinedOdds.tags[1]
+                        );
+
+                        if (sgpFee > 0) {
+                            (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
+                                .buyQuoteFromParlay(
+                                    markets,
+                                    positions,
+                                    ISportPositionalMarketManager(manager).transformCollateral(ONE)
+                                );
+                        }
                     }
                     newCombinedOdds.tags[0] = 0;
                     totalCombainedOdds[0] = newCombinedOdds;
@@ -292,12 +303,21 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                         uint[] memory positions = new uint[](2);
                         positions[0] = j > 1 ? 1 : 0;
                         positions[1] = j % 2;
-                        (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
-                            .buyQuoteFromParlay(
-                                markets,
-                                positions,
-                                ISportPositionalMarketManager(manager).transformCollateral(ONE)
-                            );
+                        joinedPosition = 100 + (10 * positions[0] + positions[1]);
+                        sgpFee = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM()).getSgpFeePerCombination(
+                            newCombinedOdds.tags[0],
+                            0,
+                            newCombinedOdds.tags[1]
+                        );
+
+                        if (sgpFee > 0) {
+                            (, , newCombinedOdds.odds[j], , , , ) = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM())
+                                .buyQuoteFromParlay(
+                                    markets,
+                                    positions,
+                                    ISportPositionalMarketManager(manager).transformCollateral(ONE)
+                                );
+                        }
                     }
                     totalCombainedOdds[1] = newCombinedOdds;
                 }

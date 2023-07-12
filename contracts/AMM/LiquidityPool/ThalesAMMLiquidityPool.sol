@@ -741,8 +741,10 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
     modifier canDeposit(uint amount) {
         require(!withdrawalRequested[msg.sender], "Withdrawal is requested, cannot deposit");
-        require(amount >= minDepositAmount, "Amount less than minDepositAmount");
         require(totalDeposited + amount <= maxAllowedDeposit, "Deposit amount exceeds AMM LP cap");
+        if (balancesPerRound[round][msg.sender] == 0 && balancesPerRound[round + 1][msg.sender] == 0) {
+            require(amount >= minDepositAmount, "Amount less than minDepositAmount");
+        }
         _;
     }
 

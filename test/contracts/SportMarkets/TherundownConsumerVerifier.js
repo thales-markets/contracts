@@ -368,6 +368,14 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		await verifier.setBookmakerIdsBySportId(4, [3, 11], {
 			from: owner,
 		});
+
+		await verifier.setMinOddsForCheckingThresholdDefault(10, {
+			from: owner,
+		});
+
+		await verifier.setMinOddsForCheckingThresholdPerSport(sportId_16, 6, {
+			from: owner,
+		});
 	});
 
 	describe('Init', () => {
@@ -395,6 +403,9 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			//failover to default
 			let failoverBookmaker = await verifier.getBookmakerIdsBySportId(17);
 			assert.bnEqual(1, failoverBookmaker.length);
+
+			assert.equal(10, await verifier.minOddsForCheckingThresholdDefault());
+			assert.equal(6, await verifier.minOddsForCheckingThresholdPerSport(sportId_16));
 		});
 	});
 
@@ -467,6 +478,51 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			assert.equal(
 				false,
 				await verifier.areOddsInThreshold(sportId_16, toUnit('89'), toUnit('100'))
+			);
+
+			// 980392156862745098,19607843137254901,0
+			console.log(toUnit('0.019607843137254901').toString());
+			assert.equal(
+				true,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					toUnit('0.019607843137254901'),
+					toUnit('0.059607843137254901')
+				)
+			);
+			assert.equal(
+				true,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					toUnit('0.059607843137254901'),
+					toUnit('0.019607843137254901')
+				)
+			);
+
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					toUnit('0.196078431372549010'),
+					toUnit('0.059607843137254901')
+				)
+			);
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					toUnit('0.059607843137254901'),
+					toUnit('0.196078431372549010')
+				)
+			);
+
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					toUnit('0.019607843137254901'),
+					toUnit('0.096078431372549010')
+				)
 			);
 
 			assert.equal(

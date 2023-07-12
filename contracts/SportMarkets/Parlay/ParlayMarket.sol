@@ -102,6 +102,37 @@ contract ParlayMarket is OwnedWithInit {
         }
     }
 
+    function hasMarketLostButHasExercisableWinningPositions()
+        external
+        view
+        returns (bool itHasLostButHasExercisableWinningPositions)
+    {
+        bool marketWinning;
+        bool marketResolved;
+        bool hasLost;
+        bool hasPendingWinningMarkets;
+        for (uint i = 0; i < numOfSportMarkets; i++) {
+            (marketWinning, marketResolved) = _isWinningSportMarket(sportMarket[i].sportAddress, sportMarket[i].position);
+            if (marketWinning && !sportMarket[i].exercised) {
+                hasPendingWinningMarkets = true;
+            } else if (marketResolved) {
+                hasLost = true;
+            }
+        }
+        if (hasPendingWinningMarkets && hasLost) {
+            itHasLostButHasExercisableWinningPositions = true;
+        }
+    }
+
+    function areAllPositionsResolved() external view returns (bool) {
+        for (uint i = 0; i < numOfSportMarkets; i++) {
+            if (!ISportPositionalMarket(sportMarket[i].sportAddress).resolved()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     //===================== VIEWS ===========================
 
     function isAnySportMarketResolved() external view returns (bool isResolved, address[] memory resolvableMarkets) {

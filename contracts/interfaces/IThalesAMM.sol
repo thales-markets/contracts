@@ -55,5 +55,11 @@ interface IThalesAMM {
         uint amount
     ) external view returns (int);
 
+    function sellPriceImpact(
+        address market,
+        Position position,
+        uint amount
+    ) external view returns (int);
+
     function priceFeed() external view returns (IPriceFeed);
 }

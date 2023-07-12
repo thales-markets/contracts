@@ -251,15 +251,6 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         emit ParlaysExercised(profit, _parlayMarket);
     }
 
-    // todo
-    function exerciseSportMarketInParlays(address[] memory _parlayMarket, address _sportMarket) external {
-        for (uint i = 0; i < _parlayMarket.length; i++) {
-            if (IParlayMarketsAMM(parlayMarketsAMM).isActiveParlay(_parlayMarket[i])) {
-                IParlayMarketsAMM(parlayMarketsAMM).exerciseSportMarketInParlay(_parlayMarket[i], _sportMarket);
-            }
-        }
-    }
-
     function addUserParlay(address _parlayMarket, address _parlayOwner) external onlyParlayAMM {
         userNumOfParlays[_parlayOwner] = userNumOfParlays[_parlayOwner] + 1;
         userParlays[_parlayOwner][userNumOfParlays[_parlayOwner]] = _parlayMarket;

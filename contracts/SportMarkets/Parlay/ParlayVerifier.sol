@@ -134,7 +134,7 @@ contract ParlayVerifier {
     }
 
     function _verifyMarkets(VerifyMarket memory params) internal view returns (bool eligible, uint sgpFee) {
-        _obtainAllTags(params.sportMarkets);
+        _obtainAllTags(params.sportMarkets, params.parlayAMM);
         eligible = true;
         ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
         CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);

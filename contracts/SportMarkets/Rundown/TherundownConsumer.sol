@@ -25,6 +25,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     uint public constant AWAY_WIN = 2;
     uint public constant RESULT_DRAW = 3;
     uint public constant MIN_TAG_NUMBER = 9000;
+    uint public constant STATUS_RETIRED = 201;
 
     /* ========== CONSUMER STATE VARIABLES ========== */
 
@@ -533,7 +534,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             } else {
                 // if market is paused only remove from queue
                 if (!sportsManager.isMarketPaused(marketPerGameId[game.gameId])) {
-                    _setMarketCancelOrResolved(marketPerGameId[game.gameId], _outcome, _homeScore, _awayScore);
+                    _setMarketCancelOrResolved(
+                        marketPerGameId[game.gameId],
+                        _outcome,
+                        _homeScore,
+                        _awayScore,
+                        game.statusId
+                    );
                     if (!_resolveMarketWithoutQueue) {
                         _cleanStorageQueue();
                     }
@@ -566,7 +573,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         _pauseOrUnpauseMarket(_market, false);
         oddsObtainer.pauseUnpauseChildMarkets(_market, false);
-        _setMarketCancelOrResolved(_market, _outcome, _homeScore, _awayScore);
+        _setMarketCancelOrResolved(
+            _market,
+            _outcome,
+            _homeScore,
+            _awayScore,
+            isSportTwoPositionsSport(sportsIdPerGame[gameIdPerMarket[_market]]) ? 8 : 11
+        );
         gameResolved[gameIdPerMarket[_market]] = GameResolve(
             gameIdPerMarket[_market],
             _homeScore,
@@ -603,7 +616,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _cancelMarket(bytes32 _gameId, bool cleanStorage) internal {
-        _setMarketCancelOrResolved(marketPerGameId[_gameId], CANCELLED, 0, 0);
+        _setMarketCancelOrResolved(marketPerGameId[_gameId], CANCELLED, 0, 0, 0);
         if (cleanStorage) {
             _cleanStorageQueue();
         }
@@ -615,10 +628,15 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         address _market,
         uint _outcome,
         uint8 _homeScore,
-        uint8 _awayScore
+        uint8 _awayScore,
+        uint8 _status
     ) internal {
         sportsManager.resolveMarket(_market, _outcome);
-        oddsObtainer.resolveChildMarkets(_market, _outcome, _homeScore, _awayScore);
+        if (_status == STATUS_RETIRED) {
+            oddsObtainer.resolveChildMarkets(_market, 0, 0, 0);
+        } else {
+            oddsObtainer.resolveChildMarkets(_market, _outcome, _homeScore, _awayScore);
+        }
         marketCanceled[_market] = _outcome == CANCELLED;
         marketResolved[_market] = _outcome != CANCELLED;
     }

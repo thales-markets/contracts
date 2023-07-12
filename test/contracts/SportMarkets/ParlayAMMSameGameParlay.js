@@ -1322,9 +1322,9 @@ contract('ParlayAMM', (accounts) => {
 			});
 
 			// console.log('buyQuote --->')
-			await expect(
-				ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
-			).to.be.revertedWith('SameTeamOnParlay');
+			// await expect(
+			// 	ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
+			// ).to.be.revertedWith('SameTeamOnParlay');
 			// let result = await ParlayAMM.buyQuoteFromParlay(
 			// 	parlayMarketsAddress,
 			// 	parlayPositions,

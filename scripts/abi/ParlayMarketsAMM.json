@@ -1751,6 +1751,44 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2_1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2_2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position_1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position_2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "fee",
+        "type": "uint256"
+      }
+    ],
+    "name": "setSGPFeePerPosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_address",
         "type": "address"

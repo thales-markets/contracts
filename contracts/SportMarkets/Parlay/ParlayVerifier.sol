@@ -13,6 +13,8 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 
+import "hardhat/console.sol";
+
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
 
@@ -58,36 +60,81 @@ contract ParlayVerifier {
         uint tag2;
     }
 
-    struct ParlayData {
-        uint[] tag1;
-        uint[] tag2;
-        uint[] odds;
+    struct ParlayGameData {
+        uint tag1;
+        uint tag2;
+        uint posiiton;
+        uint odds;
+        bytes32 homeId;
+        bytes32 awayId;
     }
 
     // ISportsAMM sportsAmm;
 
-    function _obtainTagsAndOdds(VerifyMarket memory params) internal view returns (ParlayData memory parlay) {
+    function _obtainTagsAndOdds(VerifyMarket memory params) internal view returns (ParlayGameData[] memory parlay) {
         ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
         uint numOfParlays = params.sportMarkets.length;
-        parlay.tag1 = new uint[](numOfParlays);
-        parlay.tag2 = new uint[](numOfParlays);
-        parlay.odds = new uint[](numOfParlays);
-        for (uint i = 0; i < numOfParlays; i++) {}
+        parlay = new ParlayGameData[](numOfParlays);
+        uint[] memory defaultOdds;
+        for (uint i = 0; i < numOfParlays; i++) {
+            (parlay[i].homeId, parlay[i].awayId) = _getGameIds(consumer, params.sportMarkets[i]);
+            parlay[i].tag1 = ISportPositionalMarket(params.sportMarkets[i]).tags(0);
+            parlay[i].tag2 = consumer.isChildMarket(params.sportMarkets[i])
+                ? ISportPositionalMarket(params.sportMarkets[i]).tags(1)
+                : 0;
+            defaultOdds = params.sportsAMM.getMarketDefaultOdds(params.sportMarkets[i], false);
+            parlay[i].odds = defaultOdds[params.positions[i]];
+            parlay[i].posiiton = params.positions[i];
+        }
+        // uint gasFinal = gasleft();
+        // console.log(">>>>>> GAS consumed: ", (gasFinal-gasInitial));
     }
 
-    function _verifyMarkets(VerifyMarket memory params)
+    function _obtainAllTags(address[] memory sportMarkets, address _parlayAMM)
         internal
         view
-        returns (
-            // address[] memory _sportMarkets,
-            // uint[] memory _positions,
-            // uint _totalSUSDToPay,
-            // ISportsAMM _sportsAMM,
-            // address _parlayAMM
-            bool eligible,
-            uint sgpFee
-        )
+        returns (uint[] memory tag1, uint[] memory tag2)
     {
+        tag1 = new uint[](sportMarkets.length);
+        tag2 = new uint[](sportMarkets.length);
+        uint[] memory uniqueTags = tag1;
+        uint[] memory uniqueTagsCount = tag1;
+        uint uniqueTagsCounter;
+        address sportMarket;
+        for (uint i = 0; i < sportMarkets.length; i++) {
+            sportMarket = sportMarkets[i];
+            tag1[i] = ISportPositionalMarket(sportMarket).tags(0);
+            tag2[i] = ISportPositionalMarket(sportMarket).getTagsLength() > 1
+                ? ISportPositionalMarket(sportMarket).tags(1)
+                : 0;
+            if (i > 0) {
+                for (uint j = 0; j < i; j++) {
+                    if (uniqueTags[j] != tag1[i]) {
+                        uniqueTags[j] = tag1[i];
+                        ++uniqueTagsCount[j];
+                        ++uniqueTagsCounter;
+                        break;
+                    } else if (uniqueTags[j] > 0) {
+                        ++uniqueTagsCount[j];
+                    }
+                }
+            }
+        }
+        bool eligible = _getRestrictedCounts(uniqueTags, uniqueTagsCount, uniqueTagsCounter, _parlayAMM);
+    }
+
+    function _getRestrictedCounts(
+        uint[] memory _uniqueTags,
+        uint[] memory _uniqueTagsCount,
+        uint _uniqueTagsCounter,
+        address _parlayAMM
+    ) internal view returns (bool eligible) {
+        //todo ParlayPolicy contract
+        for (uint i = 0; i < _uniqueTagsCounter; i++) {}
+    }
+
+    function _verifyMarkets(VerifyMarket memory params) internal view returns (bool eligible, uint sgpFee) {
+        _obtainAllTags(params.sportMarkets);
         eligible = true;
         ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
         CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
@@ -104,6 +151,7 @@ contract ParlayVerifier {
             // position = params.positions[i];
             (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
             tag1 = ISportPositionalMarket(sportMarket).tags(0);
+            console.log("tag1 herE:", tag1);
             tag2 = consumer.isChildMarket(sportMarket) ? ISportPositionalMarket(sportMarket).tags(1) : 0;
             motoCounter = (tag1 == TAG_F1 || tag1 == TAG_MOTOGP || tag1 == TAG_GOLF) ? ++motoCounter : motoCounter;
             require(motoCounter <= 1, "2xMotosport");

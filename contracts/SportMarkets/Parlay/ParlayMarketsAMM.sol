@@ -85,6 +85,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     address public parlayLP;
 
+    address public parlayPolicy;
+
     function initialize(
         address _owner,
         ISportsAMM _sportsAmm,

@@ -35,6 +35,8 @@ interface ISportsAMM {
 
     function maxSupportedOdds() external view returns (uint);
 
+    function minSupportedOddsPerSport(uint) external view returns (uint);
+
     function min_spread() external view returns (uint);
 
     function max_spread() external view returns (uint);

@@ -262,7 +262,16 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _append(IGamesPlayerProps.PlayerProps memory _player) internal view returns (string memory) {
-        return string(abi.encodePacked(_player.playerName, " - ", Strings.toString(_player.line)));
+        return
+            string(
+                abi.encodePacked(
+                    _player.playerName,
+                    " - ",
+                    Strings.toString(_player.option),
+                    " - ",
+                    Strings.toString(_player.line)
+                )
+            );
     }
 
     function _calculateTags(uint _sportsId, uint8 _option) internal pure returns (uint[] memory) {

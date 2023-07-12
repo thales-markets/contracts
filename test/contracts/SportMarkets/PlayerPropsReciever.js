@@ -1827,7 +1827,7 @@ contract('PlayerProps', (accounts) => {
 			assert.bnEqual(10010, await childMarket.tags(1));
 			assert.bnEqual(11037, await childMarket.tags(2));
 			let gameD = await childMarket.getGameDetails();
-			assert.bnEqual('Nikola Jokic - 285', gameD[1]);
+			assert.bnEqual('Nikola Jokic - 37 - 285', gameD[1]);
 
 			assert.equal(false, await childMarket.canResolve());
 			assert.equal(false, await childMarket.paused());
@@ -2039,7 +2039,7 @@ contract('PlayerProps', (accounts) => {
 			assert.bnEqual(10010, await childMarket.tags(1));
 			assert.bnEqual(11037, await childMarket.tags(2));
 			let gameD = await childMarket.getGameDetails();
-			assert.bnEqual('Nikola Jokic - 285', gameD[1]);
+			assert.bnEqual('Nikola Jokic - 37 - 285', gameD[1]);
 
 			assert.equal(false, await childMarket.canResolve());
 			await fastForward(await currentTime());
@@ -2236,7 +2236,7 @@ contract('PlayerProps', (accounts) => {
 			assert.bnEqual(10010, await childMarket.tags(1));
 			assert.bnEqual(11037, await childMarket.tags(2));
 			let gameD = await childMarket.getGameDetails();
-			assert.bnEqual('Nikola Jokic - 2850', gameD[1]);
+			assert.bnEqual('Nikola Jokic - 37 - 2850', gameD[1]);
 
 			assert.equal(false, await childMarket.canResolve());
 			await fastForward(await currentTime());
@@ -2464,9 +2464,9 @@ contract('PlayerProps', (accounts) => {
 			assert.bnEqual(10010, await childMarket.tags(1));
 			assert.bnEqual(11037, await childMarket.tags(2));
 			let gameD = await childMarket.getGameDetails();
-			assert.bnEqual('Nikola Jokic - 2850', gameD[1]);
+			assert.bnEqual('Nikola Jokic - 37 - 2850', gameD[1]);
 			let gameD2 = await childMarket2.getGameDetails();
-			assert.bnEqual('Jimmy Buttler - 2850', gameD2[1]);
+			assert.bnEqual('Jimmy Buttler - 37 - 2850', gameD2[1]);
 
 			assert.equal(false, await childMarket.canResolve());
 			assert.equal(false, await childMarket2.canResolve());

@@ -23,8 +23,6 @@ import "../utils/libraries/AddressSetLib.sol";
 
 import "./SpeedMarket.sol";
 
-import "../interfaces/IPriceFeed.sol";
-
 /// @title An AMM for Thales speed markets
 contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -36,7 +34,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
 
-    IPriceFeed public priceFeed;
     IERC20Upgradeable public sUSD;
 
     address public speedMarketMastercopy;
@@ -64,13 +61,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     function initialize(
         address _owner,
-        IPriceFeed _priceFeed,
         IERC20Upgradeable _sUSD,
         IPyth _pyth
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
-        priceFeed = _priceFeed;
         sUSD = _sUSD;
         pyth = _pyth;
     }
@@ -82,6 +77,26 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint buyinAmount,
         bytes[] calldata priceUpdateData
     ) external payable nonReentrant {
+        _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData);
+    }
+
+    function createNewMarketWithDelta(
+        bytes32 asset,
+        uint64 delta,
+        SpeedMarket.Direction direction,
+        uint buyinAmount,
+        bytes[] calldata priceUpdateData
+    ) external payable nonReentrant {
+        _createNewMarket(asset, uint64(block.timestamp + delta), direction, buyinAmount, priceUpdateData);
+    }
+
+    function _createNewMarket(
+        bytes32 asset,
+        uint64 strikeTime,
+        SpeedMarket.Direction direction,
+        uint buyinAmount,
+        bytes[] memory priceUpdateData
+    ) internal {
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "wrong buy in amount");
         require(
             strikeTime >= (block.timestamp + minimalTimeToMaturity),

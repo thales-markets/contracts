@@ -301,6 +301,39 @@
     "inputs": [
       {
         "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "delta",
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum SpeedMarket.Direction",
+        "name": "direction",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "buyinAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "priceUpdateData",
+        "type": "bytes[]"
+      }
+    ],
+    "name": "createNewMarketWithDelta",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
       }

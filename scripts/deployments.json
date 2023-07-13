@@ -147,7 +147,8 @@
 		"ParlayAMMLiquidityPoolData": "0x6d4393FAd7A2928c10cdD0bcdd7702B39086d8b2",
 		"ParlayAMMLiquidityPoolDataImplementation": "0xB23Ea6561953B406f4806cD177377D6940420608",
 		"ParlayDefaultLiquidityProvider": "0x99fb60a3281467b138Ad4d3A7bA575cd9f30a17F",
-		"ParlayDefaultLiquidityProviderImplementation": "0xA20Ed099894dcfC46AF290705Ff5aE4d318B0235"
+		"ParlayDefaultLiquidityProviderImplementation": "0xA20Ed099894dcfC46AF290705Ff5aE4d318B0235",
+		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -260,7 +261,8 @@
 		"ParlayAMMLiquidityPoolData": "0xB5F1924136d7A72C3E5E746Ba2E23A3bfd499097",
 		"ParlayAMMLiquidityPoolDataImplementation": "0xade53971B171f61d474754d9Cad9Ca20564347Bf",
 		"ParlayDefaultLiquidityProvider": "0xE644eBDe62A77689eE8c8700053917b4718ace99",
-		"ParlayDefaultLiquidityProviderImplementation": "0xa475e7314f41D77FB800245DAC18Ee8a760a491F"
+		"ParlayDefaultLiquidityProviderImplementation": "0xa475e7314f41D77FB800245DAC18Ee8a760a491F",
+		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -657,7 +659,8 @@
 		"ParlayAMMLiquidityPoolData": "0xb25A2e739D9f10E346c5de5a46520Bf23df769E9",
 		"ParlayAMMLiquidityPoolDataImplementation": "0x7ce099733e08f6e2c18251278D0E195a697d3016",
 		"ParlayDefaultLiquidityProvider": "0xE2c8EC9F0aF39530f00F13214ce9BA933034E59f",
-		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27"
+		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27",
+		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C"
 	},
 	"localhost": {
 		"Airdrop": "",

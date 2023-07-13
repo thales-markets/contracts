@@ -745,6 +745,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit AddressesSet(_sportsAMM, _safeBox, _referrals, _parlayMarketData, _parlayVerifier);
     }
 
+    function setPolicyAddresses(address _parlayPolicy) external onlyOwner {
+        parlayPolicy = _parlayPolicy;
+    }
+
     /// @notice Setting the Curve collateral addresses for all collaterals
     /// @param _curveSUSD Address of the Curve contract
     /// @param _dai Address of the DAI contract

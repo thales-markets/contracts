@@ -219,7 +219,8 @@ contract('ParlayAMM', (accounts) => {
 		ParlayVerifier,
 		SportsAMM,
 		SportAMMLiquidityPool,
-		ParlayAMMLiquidityPool;
+		ParlayAMMLiquidityPool,
+		ParlayPolicy;
 
 	let verifier;
 
@@ -798,6 +799,12 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultParlayAMMLiquidityProvider,
 		});
+
+		const ParlayPolicyContract = artifacts.require('ParlayPolicy');
+		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
+		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
+
+		await ParlayAMM.setPolicyAddresses(ParlayPolicy.address, { from: owner });
 	});
 
 	describe('Parlay AMM setters', () => {
@@ -1097,6 +1104,8 @@ contract('ParlayAMM', (accounts) => {
 
 			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
 			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
+
+			await ParlayPolicy.setRestrictedMarketsCountPerTag(9016, 1, { from: owner });
 
 			let buyParlayTX = await ParlayAMM.buyFromParlay(
 				parlayMarketsAddress,

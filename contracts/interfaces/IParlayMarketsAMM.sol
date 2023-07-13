@@ -14,6 +14,8 @@ interface IParlayMarketsAMM {
 
     function sportsAmm() external view returns (address);
 
+    function parlayPolicy() external view returns (address);
+
     function parlayAmmFee() external view returns (uint);
 
     function maxAllowedRiskPerCombination() external view returns (uint);

@@ -12,6 +12,7 @@ import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/ITherundownConsumer.sol";
+import "../../interfaces/IParlayPolicy.sol";
 
 import "hardhat/console.sol";
 
@@ -97,30 +98,43 @@ contract ParlayVerifier {
     {
         tag1 = new uint[](sportMarkets.length);
         tag2 = new uint[](sportMarkets.length);
-        uint[] memory uniqueTags = tag1;
-        uint[] memory uniqueTagsCount = tag1;
+        uint[] memory uniqueTags = new uint[](sportMarkets.length);
+        uint[] memory uniqueTagsCount = new uint[](sportMarkets.length);
         uint uniqueTagsCounter;
         address sportMarket;
+        bool oldUnique;
         for (uint i = 0; i < sportMarkets.length; i++) {
             sportMarket = sportMarkets[i];
             tag1[i] = ISportPositionalMarket(sportMarket).tags(0);
             tag2[i] = ISportPositionalMarket(sportMarket).getTagsLength() > 1
                 ? ISportPositionalMarket(sportMarket).tags(1)
                 : 0;
-            if (i > 0) {
-                for (uint j = 0; j < i; j++) {
-                    if (uniqueTags[j] != tag1[i]) {
-                        uniqueTags[j] = tag1[i];
+            console.log(">>> start tag1: ", tag1[i]);
+            if (i == 0) {
+                uniqueTags[uniqueTagsCounter] = tag1[i];
+                ++uniqueTagsCount[uniqueTagsCounter];
+                ++uniqueTagsCounter;
+            } else {
+                oldUnique = false;
+                for (uint j = 0; j < uniqueTagsCounter; j++) {
+                    if (uniqueTags[j] == tag1[i]) {
                         ++uniqueTagsCount[j];
-                        ++uniqueTagsCounter;
-                        break;
-                    } else if (uniqueTags[j] > 0) {
-                        ++uniqueTagsCount[j];
+                        oldUnique = true;
                     }
+                }
+                if (!oldUnique) {
+                    uniqueTags[uniqueTagsCounter] = tag1[i];
+                    ++uniqueTagsCount[uniqueTagsCounter];
+                    ++uniqueTagsCounter;
                 }
             }
         }
         bool eligible = _getRestrictedCounts(uniqueTags, uniqueTagsCount, uniqueTagsCounter, _parlayAMM);
+        console.log(">>>> eligible tags: ", eligible);
+        if (!eligible) {
+            tag1 = new uint[](sportMarkets.length);
+            tag2 = new uint[](sportMarkets.length);
+        }
     }
 
     function _getRestrictedCounts(
@@ -129,8 +143,18 @@ contract ParlayVerifier {
         uint _uniqueTagsCounter,
         address _parlayAMM
     ) internal view returns (bool eligible) {
-        //todo ParlayPolicy contract
-        for (uint i = 0; i < _uniqueTagsCounter; i++) {}
+        eligible = true;
+        if (_uniqueTagsCounter > 0) {
+            address parlayPolicyAddress = IParlayMarketsAMM(_parlayAMM).parlayPolicy();
+            uint restrictedCount;
+            for (uint i = 0; i < _uniqueTagsCounter; i++) {
+                restrictedCount = IParlayPolicy(parlayPolicyAddress).restrictedMarketsCount(_uniqueTags[i]);
+                console.log(">>> tag, count, restricted", _uniqueTags[i], _uniqueTagsCount[i], restrictedCount);
+                if (restrictedCount > 0 && restrictedCount < _uniqueTagsCount[i]) {
+                    eligible = false;
+                }
+            }
+        }
     }
 
     function _verifyMarkets(VerifyMarket memory params) internal view returns (bool eligible, uint sgpFee) {
@@ -151,7 +175,6 @@ contract ParlayVerifier {
             // position = params.positions[i];
             (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
             tag1 = ISportPositionalMarket(sportMarket).tags(0);
-            console.log("tag1 herE:", tag1);
             tag2 = consumer.isChildMarket(sportMarket) ? ISportPositionalMarket(sportMarket).tags(1) : 0;
             motoCounter = (tag1 == TAG_F1 || tag1 == TAG_MOTOGP || tag1 == TAG_GOLF) ? ++motoCounter : motoCounter;
             require(motoCounter <= 1, "2xMotosport");

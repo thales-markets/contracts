@@ -295,6 +295,19 @@
   },
   {
     "inputs": [],
+    "name": "parlayPolicy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "parlaySize",
     "outputs": [
       {

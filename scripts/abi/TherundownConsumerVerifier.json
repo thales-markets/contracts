@@ -100,6 +100,38 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_minOddsChecking",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMinOddsForCheckingThresholdDefault",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minOddsChecking",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMinOddsForCheckingThresholdPerSport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_obtainer",
         "type": "address"
@@ -972,6 +1004,38 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "minOddsForCheckingThresholdDefault",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "minOddsForCheckingThresholdPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1144,6 +1208,37 @@
       }
     ],
     "name": "setInvalidNames",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minOddsForCheckingThresholdDefault",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinOddsForCheckingThresholdDefault",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minOddsForCheckingThresholdPerSport",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinOddsForCheckingThresholdPerSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

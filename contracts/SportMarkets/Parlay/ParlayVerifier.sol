@@ -18,6 +18,7 @@ contract ParlayVerifier {
 
     uint private constant TAG_F1 = 9445;
     uint private constant TAG_MOTOGP = 9497;
+    uint private constant TAG_GOLF = 100121;
     uint private constant TAG_NUMBER_SPREAD = 10001;
     uint private constant TAG_NUMBER_TOTAL = 10002;
     uint private constant DOUBLE_CHANCE_TAG = 10003;
@@ -56,44 +57,30 @@ contract ParlayVerifier {
         uint tag2;
     }
 
-    // ISportsAMM sportsAmm;
-
-    function _verifyMarkets(VerifyMarket memory params)
-        internal
-        view
-        returns (
-            // address[] memory _sportMarkets,
-            // uint[] memory _positions,
-            // uint _totalSUSDToPay,
-            // ISportsAMM _sportsAMM,
-            // address _parlayAMM
-            bool eligible,
-            uint sgpFee
-        )
-    {
+    function _verifyMarkets(VerifyMarket memory params) internal view returns (bool eligible, uint sgpFee) {
         eligible = true;
         ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
-        // bytes32[] memory cachedTeams = new bytes32[](_sportMarkets.length * 2);
         CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
         uint lastCachedIdx = 0;
         bytes32 gameIdHome;
         bytes32 gameIdAway;
         uint tag1;
         uint tag2;
+        address sportMarket;
         uint motoCounter = 0;
         for (uint i = 0; i < params.sportMarkets.length; i++) {
-            address sportMarket = params.sportMarkets[i];
+            sportMarket = params.sportMarkets[i];
             (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
             tag1 = ISportPositionalMarket(sportMarket).tags(0);
             tag2 = consumer.isChildMarket(sportMarket) ? ISportPositionalMarket(sportMarket).tags(1) : 0;
-            motoCounter = (tag1 == TAG_F1 || tag1 == TAG_MOTOGP) ? ++motoCounter : motoCounter;
+            motoCounter = (tag1 == TAG_F1 || tag1 == TAG_MOTOGP || tag1 == TAG_GOLF) ? ++motoCounter : motoCounter;
             require(motoCounter <= 1, "2xMotosport");
             // check if game IDs already exist
             for (uint j = 0; j < lastCachedIdx; j++) {
                 if (
                     (cachedTeams[j].gameId == gameIdHome ||
-                        (j > 1 && cachedTeams[j].gameId == gameIdAway && cachedTeams[j - 1].gameId != gameIdHome)) &&
-                    cachedTeams[j].tag1 == tag1
+                        (j > 1 && cachedTeams[j].gameId == gameIdAway && cachedTeams[j - 1].gameId != gameIdHome))
+                    // && cachedTeams[j].tag1 == tag1
                 ) {
                     uint feeToApply = IParlayMarketsAMM(params.parlayAMM).getSgpFeePerCombination(
                         tag1,

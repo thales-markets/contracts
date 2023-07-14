@@ -56,5 +56,7 @@ interface ITherundownConsumerVerifier {
 
     function getBookmakerIdsBySportId(uint256 _sportId) external view returns (uint256[] memory);
 
+    function getBookmakerIdsBySportIdForPlayerProps(uint256 _sportId) external view returns (uint256[] memory);
+
     function getStringIDsFromBytesArrayIDs(bytes32[] memory _ids) external view returns (string[] memory);
 }

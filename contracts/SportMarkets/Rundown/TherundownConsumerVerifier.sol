@@ -12,6 +12,7 @@ import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
+import "../../interfaces/IGamesPlayerProps.sol";
 
 /// @title Verifier of data which are coming from CL and stored into TherundownConsumer.sol
 /// @author gruja
@@ -37,6 +38,10 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
 
     uint public minOddsForCheckingThresholdDefault;
     mapping(uint => uint) public minOddsForCheckingThresholdPerSport;
+
+    IGamesPlayerProps public playerProps;
+    uint256[] public defaultPlayerPropsBookmakerIds;
+    mapping(uint256 => uint256[]) public sportIdForPlayerPropsToBookmakerIds;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -469,6 +474,15 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         return sportIdToBookmakerIds[_sportId].length > 0 ? sportIdToBookmakerIds[_sportId] : defaultBookmakerIds;
     }
 
+    /// @notice getting bookmaker by sports id for playerProps
+    /// @param _sportId id of a sport for fetching
+    function getBookmakerIdsBySportIdForPlayerProps(uint256 _sportId) external view returns (uint256[] memory) {
+        return
+            sportIdForPlayerPropsToBookmakerIds[_sportId].length > 0
+                ? sportIdForPlayerPropsToBookmakerIds[_sportId]
+                : defaultPlayerPropsBookmakerIds;
+    }
+
     /// @notice return string array from bytes32 array
     /// @param _ids bytes32 array of game ids
     function getStringIDsFromBytesArrayIDs(bytes32[] memory _ids) external view returns (string[] memory _gameIds) {
@@ -554,6 +568,34 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         emit NewBookmakerIdsBySportId(_sportId, _bookmakerIds);
     }
 
+    /// @notice setting default bookmakers for player props
+    /// @param _defaultPlayerPropsBookmakerIds array of bookmaker ids
+    function setDefaultBookmakerIdsForPlayerProps(uint256[] memory _defaultPlayerPropsBookmakerIds) external onlyOwner {
+        defaultPlayerPropsBookmakerIds = _defaultPlayerPropsBookmakerIds;
+        emit NewDefaultBookmakerIdsForPlayerProps(_defaultPlayerPropsBookmakerIds);
+    }
+
+    /// @notice setting bookmaker by sports id for playerProps
+    /// @param _sportId id of a sport
+    /// @param _bookmakerIds array of bookmakers
+    function setBookmakerIdsBySportIdForPlayerProps(uint256 _sportId, uint256[] memory _bookmakerIds) external {
+        require(msg.sender == owner || whitelistedAddresses[msg.sender], "Only owner or whitelisted address");
+        require(
+            consumer.supportedSport(_sportId) && playerProps.doesSportSupportPlayerProps(_sportId),
+            "SportId is not supported"
+        );
+        sportIdForPlayerPropsToBookmakerIds[_sportId] = _bookmakerIds;
+        emit NewBookmakerIdsBySportIdForPlayerProps(_sportId, _bookmakerIds);
+    }
+
+    /// @notice sets the PlayerProps contract address, which only owner can execute
+    /// @param _playerProps address of a player props contract
+    function setPlayerPropsAddress(address _playerProps) external onlyOwner {
+        require(_playerProps != address(0), "Invalid address");
+        playerProps = IGamesPlayerProps(_playerProps);
+        emit NewPlayerPropsAddress(_playerProps);
+    }
+
     /// @notice sets obtainer
     /// @param _obtainer obtainer address
     function setObtainer(address _obtainer) external onlyOwner {
@@ -606,4 +648,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event NewMinOddsForCheckingThresholdDefault(uint _minOddsChecking);
     event NewMinOddsForCheckingThresholdPerSport(uint256 _sportId, uint _minOddsChecking);
+    event NewBookmakerIdsBySportIdForPlayerProps(uint256 _sportId, uint256[] _ids);
+    event NewDefaultBookmakerIdsForPlayerProps(uint256[] _ids);
+    event NewPlayerPropsAddress(address _playerProps);
 }

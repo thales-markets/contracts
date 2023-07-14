@@ -33,4 +33,6 @@ interface IGamesPlayerProps {
     function mainMarketChildMarketIndex(address _main, uint _index) external view returns (address);
 
     function numberOfChildMarkets(address _main) external view returns (uint);
+
+    function doesSportSupportPlayerProps(uint _sportId) external view returns (bool);
 }

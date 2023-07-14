@@ -79,6 +79,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 	let game_1_create;
 	let game_1_update_after;
 	let game_1_update_before;
+	let GamesPlayerPropsDeployed;
 	let game_1_resolve;
 	let fightId;
 	let fight_create;
@@ -343,6 +344,18 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			{ from: owner }
 		);
 
+		let GamesPlayerProps = artifacts.require('GamesPlayerProps');
+		GamesPlayerPropsDeployed = await GamesPlayerProps.new({ from: owner });
+		await GamesPlayerPropsDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			fourth, // dummy at beggining
+			[4, 16],
+			{ from: owner }
+		);
+
 		await consumer.setSportContracts(
 			wrapper,
 			gamesQueue.address,
@@ -376,6 +389,18 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		await verifier.setMinOddsForCheckingThresholdPerSport(sportId_16, 6, {
 			from: owner,
 		});
+
+		await verifier.setPlayerPropsAddress(GamesPlayerPropsDeployed.address, {
+			from: owner,
+		});
+
+		await verifier.setDefaultBookmakerIdsForPlayerProps([11], {
+			from: owner,
+		});
+
+		await verifier.setBookmakerIdsBySportIdForPlayerProps(4, [3, 11], {
+			from: owner,
+		});
 	});
 
 	describe('Init', () => {
@@ -406,6 +431,11 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 
 			assert.equal(10, await verifier.minOddsForCheckingThresholdDefault());
 			assert.equal(6, await verifier.minOddsForCheckingThresholdPerSport(sportId_16));
+
+			bookmakerIdsBySportId = await verifier.getBookmakerIdsBySportIdForPlayerProps(4);
+			assert.bnEqual(2, bookmakerIdsBySportId.length);
+			defaultBooke = await verifier.defaultPlayerPropsBookmakerIds(0);
+			assert.bnEqual(11, defaultBooke);
 		});
 	});
 
@@ -830,6 +860,54 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 					_oddsThresholdForSport: 19,
 				}
 			);
+
+			const tx_setdefaultplayer = await verifier.setDefaultBookmakerIdsForPlayerProps(bookee, {
+				from: owner,
+			});
+
+			await expect(
+				verifier.setDefaultBookmakerIdsForPlayerProps(bookee, { from: first })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_setdefaultplayer.logs[0], 'NewDefaultBookmakerIdsForPlayerProps', {
+				_ids: bookee,
+			});
+
+			const tx_setBookmakerIdsBySportIdPlayer =
+				await verifier.setBookmakerIdsBySportIdForPlayerProps(4, bookee, {
+					from: owner,
+				});
+
+			await expect(
+				verifier.setBookmakerIdsBySportIdForPlayerProps(4, bookee, { from: first })
+			).to.be.revertedWith('Only owner or whitelisted address');
+
+			await expect(
+				verifier.setBookmakerIdsBySportIdForPlayerProps(5, bookee, { from: owner })
+			).to.be.revertedWith('SportId is not supported');
+
+			// check if event is emited
+			assert.eventEqual(
+				tx_setBookmakerIdsBySportIdPlayer.logs[0],
+				'NewBookmakerIdsBySportIdForPlayerProps',
+				{
+					_sportId: 4,
+					_ids: bookee,
+				}
+			);
+
+			const tx_setPlayerPropsAddress = await verifier.setPlayerPropsAddress(wrapper, {
+				from: owner,
+			});
+
+			await expect(verifier.setPlayerPropsAddress(wrapper, { from: wrapper })).to.be.revertedWith(
+				'Only the contract owner may perform this action'
+			);
+
+			await expect(
+				verifier.setPlayerPropsAddress(ZERO_ADDRESS, { from: owner })
+			).to.be.revertedWith('Invalid address');
 		});
 	});
 });

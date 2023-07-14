@@ -41,6 +41,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     uint public safeBoxImpact;
     uint public lpFee;
 
+    address public safeBox;
+
     mapping(bytes32 => bool) public supportedAsset;
 
     uint public minimalTimeToMaturity;
@@ -76,7 +78,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         SpeedMarket.Direction direction,
         uint buyinAmount,
         bytes[] calldata priceUpdateData
-    ) external payable nonReentrant {
+    ) external payable nonReentrant notPaused {
         _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData);
     }
 
@@ -86,7 +88,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         SpeedMarket.Direction direction,
         uint buyinAmount,
         bytes[] calldata priceUpdateData
-    ) external payable nonReentrant {
+    ) external payable nonReentrant notPaused {
         _createNewMarket(asset, uint64(block.timestamp + delta), direction, buyinAmount, priceUpdateData);
     }
 
@@ -104,7 +106,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         );
         require(strikeTime <= block.timestamp + maximalTimeToMaturity, "time too far into the future");
 
-        // PYTH SPECIFIC code
         uint fee = pyth.getUpdateFee(priceUpdateData);
         pyth.updatePriceFeeds{value: fee}(priceUpdateData);
 
@@ -122,6 +123,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         sUSD.safeTransfer(address(srm), buyinAmount * 2);
 
+        sUSD.safeTransfer(safeBox, (buyinAmount * safeBoxImpact) / ONE);
+
         _activeMarkets.add(address(srm));
 
         currentRiskPerAsset[asset] += buyinAmount;
@@ -132,8 +135,25 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     /// @notice resolveMarket resolves an active market
     /// @param market address of the market
-    function resolveMarket(address market, bytes[] calldata priceUpdateData) external payable {
+    function resolveMarket(address market, bytes[] calldata priceUpdateData) external payable nonReentrant notPaused {
         _resolveMarket(market, priceUpdateData);
+    }
+
+    /// @notice resolveMarkets in a batch
+    function resolveMarketsBatch(address[] calldata markets, bytes[] calldata priceUpdateData)
+        external
+        payable
+        nonReentrant
+        notPaused
+    {
+        for (uint i = 0; i < markets.length; i++) {
+            address market = markets[i];
+            if (canResolveMarket(market)) {
+                bytes[] memory subarray = new bytes[](1);
+                subarray[0] = priceUpdateData[i];
+                _resolveMarket(market, subarray);
+            }
+        }
     }
 
     function _resolveMarket(address market, bytes[] memory priceUpdateData) internal {
@@ -141,7 +161,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         require(SpeedMarket(market).strikeTime() < block.timestamp, "Not ready to be resolved");
         require(!SpeedMarket(market).resolved(), "Already resolved");
 
-        // PYTH SPECIFIC code
         uint fee = pyth.getUpdateFee(priceUpdateData);
 
         bytes32[] memory priceIds = new bytes32[](1);
@@ -164,17 +183,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 currentRiskPerAsset[SpeedMarket(market).asset()] -= (SpeedMarket(market).buyinAmount());
             } else {
                 currentRiskPerAsset[SpeedMarket(market).asset()] = 0;
-            }
-        }
-    }
-
-    function resolveMarketsBatch(address[] calldata markets, bytes[] calldata priceUpdateData) external payable {
-        for (uint i = 0; i < markets.length; i++) {
-            address market = markets[i];
-            if (canResolveMarket(market)) {
-                bytes[] memory subarray = new bytes[](1);
-                subarray[0] = priceUpdateData[i];
-                _resolveMarket(market, subarray);
             }
         }
     }
@@ -223,6 +231,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         return _maturedMarkets.getPage(index, pageSize);
     }
 
+    /// @notice whether a market can be resolved
     function canResolveMarket(address market) public view returns (bool) {
         return
             _activeMarkets.contains(market) &&
@@ -253,19 +262,35 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit TimesChanged(_minimalTimeToMaturity, _maximalTimeToMaturity);
     }
 
+    /// @notice map asset to PythID, e.g. "ETH" as bytes 32 to an equivalent ID from pyth docs
     function setAssetToPythID(bytes32 asset, bytes32 pythId) external onlyOwner {
         assetToPythId[asset] = pythId;
         emit SetAssetToPythID(asset, pythId);
     }
 
+    /// @notice whats the longest a price can be delayed
     function setMaximumPriceDelay(uint64 _maximumPriceDelay) external onlyOwner {
         maximumPriceDelay = _maximumPriceDelay;
         emit SetMaximumPriceDelay(maximumPriceDelay);
     }
 
+    /// @notice maximum open interest per asset
     function setMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset) external onlyOwner {
         maxRiskPerAsset[asset] = _maxRiskPerAsset;
         emit SetMaxRiskPerAsset(asset, _maxRiskPerAsset);
+    }
+
+    /// @notice set SafeBox params
+    function setSafeBoxParams(address _safeBox, uint _safeBoxImpact) external onlyOwner {
+        safeBox = _safeBox;
+        safeBoxImpact = _safeBoxImpact;
+        emit SetSafeBoxParams(_safeBox, _safeBoxImpact);
+    }
+
+    /// @notice set LP fee
+    function setLPFee(uint _lpFee) external onlyOwner {
+        lpFee = _lpFee;
+        emit SetLPFee(_lpFee);
     }
 
     //////////////////events/////////////////
@@ -286,4 +311,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event SetMaximumPriceDelay(uint _maximumPriceDelay);
     event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
+    event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
+    event SetLPFee(uint _lpFee);
 }

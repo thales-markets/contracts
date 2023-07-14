@@ -52,7 +52,7 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: SpeedMarketMastercopyDeployed.address,
 		constructorArguments: [],
-		contract: 'contracts/SpeedMArkets/SpeedMarketMastercopy.sol:SpeedMarketMastercopy',
+		contract: 'contracts/SpeedMarkets/SpeedMarketMastercopy.sol:SpeedMarketMastercopy',
 	});
 
 	function delay(time) {

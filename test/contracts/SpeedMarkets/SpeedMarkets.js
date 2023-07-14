@@ -16,7 +16,7 @@ const { fastForward, toUnit, fromUnit, currentTime } = require('../../utils')();
 const { encodeCall, convertToDecimals } = require('../../utils/helpers');
 
 contract('SpeedMarkets', (accounts) => {
-	const [owner, user] = accounts;
+	const [owner, user, safeBox] = accounts;
 
 	describe('Test Speed markets ', () => {
 		it('deploy and test', async () => {
@@ -49,12 +49,7 @@ contract('SpeedMarkets', (accounts) => {
 			let MockPyth = artifacts.require('MockPythCustom');
 			let mockPyth = await MockPyth.new(60, 1e6);
 
-			await speedMarketsAMM.initialize(
-				owner,
-				MockPriceFeedDeployed.address,
-				exoticUSD.address,
-				mockPyth.address
-			);
+			await speedMarketsAMM.initialize(owner, exoticUSD.address, mockPyth.address);
 
 			let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
 			let speedMarketMastercopy = await SpeedMarketMastercopy.new();
@@ -68,6 +63,8 @@ contract('SpeedMarkets', (accounts) => {
 			await speedMarketsAMM.setMaximumPriceDelay(60);
 
 			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
+			await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.01));
+			await speedMarketsAMM.setLPFee(toUnit(0.01));
 
 			await speedMarketsAMM.setAssetToPythID(
 				toBytes32('ETH'),
@@ -102,6 +99,32 @@ contract('SpeedMarkets', (accounts) => {
 			let minimalTimeToMaturity = await speedMarketsAMM.minimalTimeToMaturity();
 			console.log('minimalTimeToMaturity ' + minimalTimeToMaturity);
 
+			await expect(
+				speedMarketsAMM.createNewMarket(
+					toBytes32('BTC'),
+					now + 36000,
+					0,
+					toUnit(10),
+					[priceFeedUpdateData],
+					{ value: fee }
+				)
+			).to.be.revertedWith('revert');
+
+			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(10));
+
+			await expect(
+				speedMarketsAMM.createNewMarket(
+					toBytes32('ETH'),
+					now + 36000,
+					0,
+					toUnit(10),
+					[priceFeedUpdateData],
+					{ value: fee }
+				)
+			).to.be.revertedWith('OI cap breached');
+
+			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
+
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				now + 36000,
@@ -110,6 +133,10 @@ contract('SpeedMarkets', (accounts) => {
 				[priceFeedUpdateData],
 				{ value: fee }
 			);
+
+			let currestRiskPerAsset = await speedMarketsAMM.currentRiskPerAsset(toBytes32('ETH'));
+
+			console.log('currestRiskPerAsset ' + currestRiskPerAsset / 1e18);
 
 			let price = await mockPyth.getPrice(pythId);
 			console.log('price of pyth Id is ' + price);
@@ -160,6 +187,20 @@ contract('SpeedMarkets', (accounts) => {
 
 			await fastForward(86400);
 
+			await expect(
+				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
+			).to.be.revertedWith('revert');
+
+			now = await currentTime();
+			resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				'0x63f341689d98a12ef60a5cff1d7f85c70a9e17bf1575f0e7c0b2512d48b1c8b3',
+				196342931000,
+				74093100,
+				-8,
+				196342931000,
+				74093100,
+				strikeTime
+			);
 			await expect(
 				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
 			).to.be.revertedWith('revert');
@@ -218,16 +259,8 @@ contract('SpeedMarkets', (accounts) => {
 				'balanceOfSpeedMarketAMMAfterResolve ' + balanceOfSpeedMarketAMMAfterResolve / 1e18
 			);
 
-			// await expect(
-			// 	speedMarketsAMM.createNewMarket(
-			// 		toBytes32('ETH'),
-			// 		now + 36000,
-			// 		0,
-			// 		toUnit(10),
-			// 		[priceFeedUpdateData],
-			// 		{ value: fee }
-			// 	)
-			// ).to.be.revertedWith('time has to be in the future + minimalTimeToMaturity');
+			let balanceSafeBox = await exoticUSD.balanceOf(safeBox);
+			console.log('balanceSafeBox ' + balanceSafeBox / 1e18);
 		});
 	});
 });

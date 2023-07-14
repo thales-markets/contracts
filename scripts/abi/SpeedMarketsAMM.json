@@ -149,6 +149,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_lpFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetLPFee",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -174,6 +187,25 @@
       }
     ],
     "name": "SetMaximumPriceDelay",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_safeBox",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_safeBoxImpact",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetSafeBoxParams",
     "type": "event"
   },
   {
@@ -361,11 +393,6 @@
       {
         "internalType": "address",
         "name": "_owner",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IPriceFeed",
-        "name": "_priceFeed",
         "type": "address"
       },
       {
@@ -635,19 +662,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "priceFeed",
-    "outputs": [
-      {
-        "internalType": "contract IPriceFeed",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -689,6 +703,19 @@
     "outputs": [
       {
         "internalType": "contract IERC20Upgradeable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "safeBox",
+    "outputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -741,6 +768,19 @@
       }
     ],
     "name": "setAssetToPythID",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_lpFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "setLPFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -811,6 +851,24 @@
       }
     ],
     "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_safeBox",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_safeBoxImpact",
+        "type": "uint256"
+      }
+    ],
+    "name": "setSafeBoxParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

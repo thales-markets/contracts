@@ -213,6 +213,38 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "SetStakingThales",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_supported",
+        "type": "bool"
+      }
+    ],
+    "name": "SetSupportedAsset",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "_minimalTimeToMaturity",
         "type": "uint256"
@@ -662,6 +694,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "pyth",
+    "outputs": [
+      {
+        "internalType": "contract IPyth",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -876,6 +921,37 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "setStakingThales",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bool",
+        "name": "_supported",
+        "type": "bool"
+      }
+    ],
+    "name": "setSupportedAsset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_minimalTimeToMaturity",
         "type": "uint256"
@@ -897,6 +973,19 @@
     "outputs": [
       {
         "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stakingThales",
+    "outputs": [
+      {
+        "internalType": "contract IStakingThales",
         "name": "",
         "type": "address"
       }

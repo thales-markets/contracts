@@ -121,6 +121,19 @@ contract('SpeedMarkets', (accounts) => {
 					[priceFeedUpdateData],
 					{ value: fee }
 				)
+			).to.be.revertedWith('Asset is not supported');
+
+			await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
+
+			await expect(
+				speedMarketsAMM.createNewMarket(
+					toBytes32('ETH'),
+					now + 36000,
+					0,
+					toUnit(10),
+					[priceFeedUpdateData],
+					{ value: fee }
+				)
 			).to.be.revertedWith('OI cap breached');
 
 			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));

@@ -63,12 +63,8 @@ async function main() {
 
 	console.log('Implementation SpeedMarketsAMM: ', SpeedMarketsAMMImplementation);
 
-	setTargetAddress('ThalesAMMSpeedMarketsAMM', network, SpeedMarketsAMMDeployed.address);
-	setTargetAddress(
-		'ThalesAMMSpeedMarketsAMMImplementation',
-		network,
-		SpeedMarketsAMMImplementation
-	);
+	setTargetAddress('SpeedMarketsAMM', network, SpeedMarketsAMMDeployed.address);
+	setTargetAddress('SpeedMarketsAMMImplementation', network, SpeedMarketsAMMImplementation);
 
 	delay(5000);
 

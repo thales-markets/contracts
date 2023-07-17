@@ -21,6 +21,8 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../utils/libraries/AddressSetLib.sol";
 
+import "../interfaces/IStakingThales.sol";
+
 import "./SpeedMarket.sol";
 
 /// @title An AMM for Thales speed markets
@@ -57,9 +59,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     mapping(bytes32 => bytes32) public assetToPythId;
 
     //eth 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace
-    IPyth pyth;
+    IPyth public pyth;
 
     uint64 public maximumPriceDelay;
+
+    /// @return The address of the Staking contract
+    IStakingThales public stakingThales;
 
     function initialize(
         address _owner,
@@ -99,6 +104,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint buyinAmount,
         bytes[] memory priceUpdateData
     ) internal {
+        require(supportedAsset[asset], "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "wrong buy in amount");
         require(
             strikeTime >= (block.timestamp + minimalTimeToMaturity),
@@ -129,6 +135,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         currentRiskPerAsset[asset] += buyinAmount;
         require(currentRiskPerAsset[asset] < maxRiskPerAsset[asset], "OI cap breached");
+
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(msg.sender, buyinAmount);
+        }
 
         emit MarketCreated(address(srm), msg.sender, asset, strikeTime, price.price, direction, buyinAmount);
     }
@@ -293,6 +303,19 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetLPFee(_lpFee);
     }
 
+    /// @notice Set staking thales
+    function setStakingThales(address _stakingThales) external onlyOwner {
+        //TODO: dont set till StakingThalesBonusRewardsManager is ready for it
+        stakingThales = IStakingThales(_stakingThales);
+        emit SetStakingThales(_stakingThales);
+    }
+
+    /// @notice set whether an asset is supported
+    function setSupportedAsset(bytes32 asset, bool _supported) external onlyOwner {
+        supportedAsset[asset] = _supported;
+        emit SetSupportedAsset(asset, _supported);
+    }
+
     //////////////////events/////////////////
 
     event MarketCreated(
@@ -313,4 +336,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
     event SetLPFee(uint _lpFee);
+    event SetStakingThales(address _stakingThales);
+    event SetSupportedAsset(bytes32 asset, bool _supported);
 }

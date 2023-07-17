@@ -66,6 +66,22 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @return The address of the Staking contract
     IStakingThales public stakingThales;
 
+    mapping(address => AddressSetLib.AddressSet) internal _activeMarketsPerUser;
+    mapping(address => AddressSetLib.AddressSet) internal _maturedMarketsPerUser;
+
+    struct MarketData {
+        address user;
+        bytes32 asset;
+        uint64 strikeTime;
+        int64 strikePrice;
+        SpeedMarket.Direction direction;
+        uint buyinAmount;
+        bool resolved;
+        int64 finalPrice;
+        SpeedMarket.Direction result;
+        bool isUserWinner;
+    }
+
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
@@ -132,6 +148,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         sUSD.safeTransfer(safeBox, (buyinAmount * safeBoxImpact) / ONE);
 
         _activeMarkets.add(address(srm));
+        _activeMarketsPerUser[msg.sender].add(address(srm));
 
         currentRiskPerAsset[asset] += buyinAmount;
         require(currentRiskPerAsset[asset] < maxRiskPerAsset[asset], "OI cap breached");
@@ -188,6 +205,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
 
+        _activeMarketsPerUser[msg.sender].remove(market);
+        _maturedMarketsPerUser[msg.sender].add(market);
+
         if (!SpeedMarket(market).isUserWinner()) {
             if (currentRiskPerAsset[SpeedMarket(market).asset()] > SpeedMarket(market).buyinAmount()) {
                 currentRiskPerAsset[SpeedMarket(market).asset()] -= (SpeedMarket(market).buyinAmount());
@@ -241,12 +261,59 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         return _maturedMarkets.getPage(index, pageSize);
     }
 
+    /// @notice numActiveMarkets returns number of active markets per use
+    function numActiveMarketsPerUser(address user) external view returns (uint) {
+        return _activeMarketsPerUser[user].elements.length;
+    }
+
+    /// @notice activeMarkets returns list of active markets per user
+    function activeMarketsPerUser(
+        uint index,
+        uint pageSize,
+        address user
+    ) external view returns (address[] memory) {
+        return _activeMarketsPerUser[user].getPage(index, pageSize);
+    }
+
+    /// @notice numMaturedMarkets returns number of matured markets per use
+    function numMaturedMarketsPerUser(address user) external view returns (uint) {
+        return _maturedMarketsPerUser[user].elements.length;
+    }
+
+    /// @notice maturedMarkets returns list of matured markets per user
+    function maturedMarketsPerUser(
+        uint index,
+        uint pageSize,
+        address user
+    ) external view returns (address[] memory) {
+        return _maturedMarketsPerUser[user].getPage(index, pageSize);
+    }
+
     /// @notice whether a market can be resolved
     function canResolveMarket(address market) public view returns (bool) {
         return
             _activeMarkets.contains(market) &&
             (SpeedMarket(market).strikeTime() < block.timestamp) &&
             !SpeedMarket(market).resolved();
+    }
+
+    /// @notice return all market data for an array of markets
+    function getMarketsData(address[] calldata marketsArray) external view returns (MarketData[] memory) {
+        MarketData[] memory markets = new MarketData[](marketsArray.length);
+        for (uint i = 0; i < marketsArray.length; i++) {
+            SpeedMarket market = SpeedMarket(marketsArray[i]);
+            markets[i].user = market.user();
+            markets[i].asset = market.asset();
+            markets[i].strikeTime = market.strikeTime();
+            markets[i].strikePrice = market.strikePrice();
+            markets[i].direction = market.direction();
+            markets[i].buyinAmount = market.buyinAmount();
+            markets[i].resolved = market.resolved();
+            markets[i].finalPrice = market.finalPrice();
+            markets[i].result = market.result();
+            markets[i].isUserWinner = market.isUserWinner();
+        }
+        return markets;
     }
 
     //////////////////setters/////////////////

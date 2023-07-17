@@ -72,20 +72,20 @@ contract ParlayVerifier {
     // ISportsAMM sportsAmm;
 
     function _obtainTagsAndOdds(VerifyMarket memory params) internal view returns (ParlayGameData[] memory parlay) {
-        ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
-        uint numOfParlays = params.sportMarkets.length;
-        parlay = new ParlayGameData[](numOfParlays);
-        uint[] memory defaultOdds;
-        for (uint i = 0; i < numOfParlays; i++) {
-            (parlay[i].homeId, parlay[i].awayId) = _getGameIds(consumer, params.sportMarkets[i]);
-            parlay[i].tag1 = ISportPositionalMarket(params.sportMarkets[i]).tags(0);
-            parlay[i].tag2 = consumer.isChildMarket(params.sportMarkets[i])
-                ? ISportPositionalMarket(params.sportMarkets[i]).tags(1)
-                : 0;
-            defaultOdds = params.sportsAMM.getMarketDefaultOdds(params.sportMarkets[i], false);
-            parlay[i].odds = defaultOdds[params.positions[i]];
-            parlay[i].posiiton = params.positions[i];
-        }
+        // ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
+        // uint numOfParlays = params.sportMarkets.length;
+        // parlay = new ParlayGameData[](numOfParlays);
+        // uint[] memory defaultOdds;
+        // for (uint i = 0; i < numOfParlays; i++) {
+        //     (parlay[i].homeId, parlay[i].awayId) = _getGameIds(consumer, params.sportMarkets[i]);
+        //     parlay[i].tag1 = ISportPositionalMarket(params.sportMarkets[i]).tags(0);
+        //     parlay[i].tag2 = consumer.isChildMarket(params.sportMarkets[i])
+        //         ? ISportPositionalMarket(params.sportMarkets[i]).tags(1)
+        //         : 0;
+        //     defaultOdds = params.sportsAMM.getMarketDefaultOdds(params.sportMarkets[i], false);
+        //     parlay[i].odds = defaultOdds[params.positions[i]];
+        //     parlay[i].posiiton = params.positions[i];
+        // }
         // uint gasFinal = gasleft();
         // console.log(">>>>>> GAS consumed: ", (gasFinal-gasInitial));
     }
@@ -151,6 +151,20 @@ contract ParlayVerifier {
                 console.log(">>> tag, count, restricted", _uniqueTags[i], _uniqueTagsCount[i], restrictedCount);
                 if (restrictedCount > 0 && restrictedCount < _uniqueTagsCount[i]) {
                     eligible = false;
+                }
+                if (eligible && i > 0) {
+                    for (uint j = 0; j < i; j++) {
+                        console.log(">>> j: ", j);
+                        if (IParlayPolicy(parlayPolicyAddress).restrictedTagCombination(_uniqueTags[i], _uniqueTags[j])) {
+                            eligible = IParlayPolicy(parlayPolicyAddress).isRestrictedComboEligible(
+                                _uniqueTags[i],
+                                _uniqueTags[j],
+                                _uniqueTagsCount[i],
+                                _uniqueTagsCount[j]
+                            );
+                            console.log("eligible: ", eligible);
+                        }
+                    }
                 }
             }
         }
@@ -439,5 +453,13 @@ contract ParlayVerifier {
 
         home = keccak256(abi.encodePacked(game.homeTeam));
         away = keccak256(abi.encodePacked(game.awayTeam));
+    }
+
+    function _fact(uint x) internal pure returns (uint) {
+        if (x == 0) {
+            return 1;
+        } else {
+            return x * _fact(x - 1);
+        }
     }
 }

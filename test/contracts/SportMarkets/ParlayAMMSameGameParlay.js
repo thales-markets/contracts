@@ -1105,7 +1105,8 @@ contract('ParlayAMM', (accounts) => {
 			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
 			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
 
-			await ParlayPolicy.setRestrictedMarketsCountPerTag(9016, 1, { from: owner });
+			// await ParlayPolicy.setRestrictedMarketsCountPerTag(9016, 1, { from: owner });
+			await ParlayPolicy.setRestrictedTagCombos(9007, 9016, 1, 1, { from: owner });
 
 			let buyParlayTX = await ParlayAMM.buyFromParlay(
 				parlayMarketsAddress,

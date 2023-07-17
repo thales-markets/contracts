@@ -8,4 +8,11 @@ interface IParlayPolicy {
     function isRestrictedToBeCombined(uint tag) external view returns (bool);
 
     function restrictedTagCombination(uint tag1, uint tag2) external view returns (bool);
+
+    function isRestrictedComboEligible(
+        uint tag1,
+        uint tag2,
+        uint tag1Count,
+        uint tag2Count
+    ) external view returns (bool eligible);
 }

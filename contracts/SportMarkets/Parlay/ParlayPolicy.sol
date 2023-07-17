@@ -15,10 +15,46 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     mapping(uint => uint) public restrictedMarketsCount;
     mapping(uint => bool) public isRestrictedToBeCombined;
     mapping(uint => mapping(uint => bool)) public restrictedTagCombination;
+    mapping(bytes32 => mapping(uint => uint)) public restrictedTagComboCount;
 
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
         setOwner(_owner);
         parlayMarketsAMM = _parlayMarketsAMM;
+    }
+
+    function isRestrictedComboEligible(
+        uint tag1,
+        uint tag2,
+        uint tag1Count,
+        uint tag2Count
+    ) external view returns (bool eligible) {
+        bytes32 tagHash = keccak256(abi.encode(tag1, tag2));
+        eligible = true;
+        uint restrictTag1 = restrictedTagComboCount[tagHash][tag1];
+        uint restrictTag2 = restrictedTagComboCount[tagHash][tag2];
+        if (restrictTag1 > 0 && restrictTag1 < tag1Count) {
+            eligible = false;
+        } else if (restrictTag2 > 0 && restrictTag2 < tag2Count) {
+            eligible = false;
+        }
+    }
+
+    function setRestrictedTagCombos(
+        uint tag1,
+        uint tag2,
+        uint tag1Count,
+        uint tag2Count
+    ) external onlyOwner {
+        if (tag1Count > 0 && tag2Count > 0) {
+            bytes32 tagHash = keccak256(abi.encode(tag1, tag2));
+            restrictedTagCombination[tag1][tag2] = true;
+            restrictedTagComboCount[tagHash][tag1] = tag1Count;
+            restrictedTagComboCount[tagHash][tag2] = tag2Count;
+            tagHash = keccak256(abi.encode(tag2, tag1));
+            restrictedTagCombination[tag2][tag1] = true;
+            restrictedTagComboCount[tagHash][tag1] = tag1Count;
+            restrictedTagComboCount[tagHash][tag2] = tag2Count;
+        }
     }
 
     function setRestrictedMarketsCountPerTag(uint tag, uint count) external onlyOwner {

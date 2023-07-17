@@ -86,6 +86,40 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag1Count",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2Count",
+        "type": "uint256"
+      }
+    ],
+    "name": "isRestrictedComboEligible",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "eligible",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "",
         "type": "uint256"
       }
@@ -225,6 +259,30 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "restrictedTagComboCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -275,6 +333,34 @@
       }
     ],
     "name": "setRestrictedMarketsCountPerTag",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag1Count",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2Count",
+        "type": "uint256"
+      }
+    ],
+    "name": "setRestrictedTagCombos",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

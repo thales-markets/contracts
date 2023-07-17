@@ -3,6 +3,40 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag1Count",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2Count",
+        "type": "uint256"
+      }
+    ],
+    "name": "isRestrictedComboEligible",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "eligible",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "tag",
         "type": "uint256"
       }

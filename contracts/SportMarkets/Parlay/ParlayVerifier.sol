@@ -132,8 +132,8 @@ contract ParlayVerifier {
         bool eligible = _getRestrictedCounts(uniqueTags, uniqueTagsCount, uniqueTagsCounter, _parlayAMM);
         console.log(">>>> eligible tags: ", eligible);
         if (!eligible) {
-            tag1 = new uint[](sportMarkets.length);
-            tag2 = new uint[](sportMarkets.length);
+            tag1 = new uint[](0);
+            tag2 = new uint[](0);
         }
     }
 

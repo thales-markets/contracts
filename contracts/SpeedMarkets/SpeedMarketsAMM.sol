@@ -205,7 +205,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
 
-        _activeMarketsPerUser[msg.sender].remove(market);
+        if (_activeMarketsPerUser[msg.sender].contains(market)) {
+            _activeMarketsPerUser[msg.sender].remove(market);
+        }
         _maturedMarketsPerUser[msg.sender].add(market);
 
         if (!SpeedMarket(market).isUserWinner()) {

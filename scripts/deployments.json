@@ -662,7 +662,7 @@
 		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"SpeedMarketsAMM": "0x05cD078cECB32d62b304e9028C147bBCdef5Ba24",
-		"SpeedMarketsAMMImplementation": "0x36b93f535cC337F7D45a118e0516E725dd8Db728",
+		"SpeedMarketsAMMImplementation": "0xF62C894DA4347c5a15eD6443BD07d27f2B74C1A3",
 		"SpeedMarketMastercopy": "0xD5e10B2a63446B1311B76317e19F1924e67f3a0A"
 	},
 	"localhost": {

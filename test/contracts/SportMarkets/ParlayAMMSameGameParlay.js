@@ -1063,6 +1063,9 @@ contract('ParlayAMM', (accounts) => {
 			// console.log('parlay 3: ', deployedMarket_3.address);
 			// console.log('parlay 4: ', deployedMarket_4.address);
 
+			let tagsLength = await market_5.getTagsLength();
+			console.log('Tags length: ', tagsLength.toString());
+
 			parlayMarkets = [market_1, market_2, market_3, market_4, market_5];
 			parlayMarkets2 = [market_6, market_2, market_3, market_4, market_5];
 			parlayMarkets3 = [market_6, market_1, market_3, market_4, market_5];
@@ -1135,52 +1138,52 @@ contract('ParlayAMM', (accounts) => {
 		// 	assert.equal(answer.length, 2);
 		// });
 
-		// it('Create/Buy Parlay same game parlay | final result + totals', async () => {
-		// 	await fastForward(game1NBATime - (await currentTime()) - SECOND);
-		// 	// await fastForward((await currentTime()) - SECOND);
-		// 	answer = await SportPositionalMarketManager.numActiveMarkets();
-		// 	assert.equal(answer.toString(), '15');
-		// 	let totalSUSDToPay = toUnit('10');
-		// 	parlayPositions = ['1', '1', '1', '1', '1'];
-		// 	let parlayPositions2 = ['1', '1', '1', '1'];
-		// 	let parlayMarketsAddress = [];
-		// 	for (let i = 0; i < parlayMarkets.length; i++) {
-		// 		parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-		// 		parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
-		// 	}
-		// 	let slippage = toUnit('0.01');
-		// 	// console.log('buyQuote --->');
-		// 	let result = await ParlayAMM.buyQuoteFromParlay(
-		// 		parlayMarketsAddress,
-		// 		parlayPositions,
-		// 		totalSUSDToPay
-		// 	);
+		it('Create/Buy Parlay same game parlay | final result + totals', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '15');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1', '1'];
+			let parlayPositions2 = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+			}
+			let slippage = toUnit('0.01');
+			// console.log('buyQuote --->');
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
 
-		// 	let calculateSkew = await ParlayAMM.calculateSkewImpact(
-		// 		parlayMarketsAddress,
-		// 		parlayPositions,
-		// 		totalSUSDToPay
-		// 	);
+			let calculateSkew = await ParlayAMM.calculateSkewImpact(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
 
-		// 	console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
-		// 	console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
-		// 	// console.log('buyTX --->');
-		// 	let buyParlayTX = await ParlayAMM.buyFromParlay(
-		// 		parlayMarketsAddress,
-		// 		parlayPositions,
-		// 		totalSUSDToPay,
-		// 		slippage,
-		// 		result[1],
-		// 		ZERO_ADDRESS,
-		// 		{ from: first }
-		// 	);
-		// 	// console.log("event: \n", buyParlayTX.logs[0]);
+			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
+			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
+			// console.log('buyTX --->');
+			let buyParlayTX = await ParlayAMM.buyFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				{ from: first }
+			);
+			// console.log("event: \n", buyParlayTX.logs[0]);
 
-		// 	assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-		// 		account: first,
-		// 		sUSDPaid: totalSUSDToPay,
-		// 	});
-		// });
+			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+				account: first,
+				sUSDPaid: totalSUSDToPay,
+			});
+		});
 
 		// it('Create/Buy Parlay same game parlay | final result + spread', async () => {
 		// 	await fastForward(game1NBATime - (await currentTime()) - SECOND);

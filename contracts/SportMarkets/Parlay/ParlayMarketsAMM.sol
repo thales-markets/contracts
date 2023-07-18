@@ -514,6 +514,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
         resultSkew = parlayVerifier.getSkewImpact(
             _sportMarkets,
+            _positions,
             sUSDAfterFees,
             sportsAmm,
             address(this),

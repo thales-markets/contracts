@@ -1655,6 +1655,11 @@ contract('SportsAMM', (accounts) => {
 			assert.bnEqual(activeMarkets.length, 4);
 		});
 
+		it('Get tags length', async () => {
+			let activeMarkets = await deployedMarket.getTagsLength();
+			assert.bnEqual(activeMarkets.length, 1);
+		});
+
 		it('Pause market', async () => {
 			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(first), true);
 			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(second), false);

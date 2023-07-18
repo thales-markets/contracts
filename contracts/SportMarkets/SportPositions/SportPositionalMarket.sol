@@ -170,6 +170,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         }
     }
 
+    function getTagsLength() external view override returns (uint tagsLength) {
+        return tags.length;
+    }
+
     function phase() external view override returns (Phase) {
         if (!_matured()) {
             return Phase.Trading;

@@ -548,6 +548,19 @@
   },
   {
     "inputs": [],
+    "name": "getTagsLength",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "tagsLength",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "homeOddsOnCancellation",
     "outputs": [
       {

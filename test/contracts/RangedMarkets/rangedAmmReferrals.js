@@ -400,9 +400,18 @@ contract('RangedAMM', (accounts) => {
 
 			let rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
 			console.log('rangedMarketsAMM before:' + rangedMarketsAMMBalanceSUSd / 1e18);
+
 			let referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
 			console.log('referrerSusdBalance before:' + referrerSusdBalance / 1e18);
+			assert.equal(referrerSusdBalance, 0);
 
+			let secondreferrerSusdBalance = await sUSDSynth.balanceOf(secondReferrerAddress);
+			console.log('secondreferrerSusdBalance before:' + secondreferrerSusdBalance / 1e18);
+			assert.equal(secondreferrerSusdBalance, 0);
+
+			console.log(
+				'========================== 1st buyFromAMMWithReferrer ==============================='
+			);
 			let additionalSlippage = toUnit(0.01);
 			await rangedMarketsAMM.buyFromAMMWithReferrer(
 				rangedMarket.address,
@@ -416,16 +425,26 @@ contract('RangedAMM', (accounts) => {
 
 			let referredMinter = await referrals.referrals(minter);
 			console.log('Minter referrer is ' + referredMinter);
+			assert.equal(referrerAddress, referredMinter);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance:' + minterSusdBalance / 1e18);
 
 			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			console.log('rangedMarketsAMM:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
-			console.log('referrerSusdBalance after:' + referrerSusdBalance / 1e18);
+			console.log('referrerSusdBalance:' + referrerSusdBalance / 1e18);
+			assert.bnGte(referrerSusdBalance, toUnit(0));
+			assert.bnLte(referrerSusdBalance, toUnit(1));
 
+			secondreferrerSusdBalance = await sUSDSynth.balanceOf(secondReferrerAddress);
+			console.log('secondreferrerSusdBalance:' + secondreferrerSusdBalance / 1e18);
+			assert.equal(secondreferrerSusdBalance, 0);
+
+			console.log(
+				'========================== 2st buyFromAMMWithReferrer ==============================='
+			);
 			await rangedMarketsAMM.buyFromAMMWithReferrer(
 				rangedMarket.address,
 				RangedPosition.IN,
@@ -438,18 +457,23 @@ contract('RangedAMM', (accounts) => {
 
 			referredMinter = await referrals.referrals(minter);
 			console.log('Minter referrer is ' + referredMinter);
+			assert.equal(secondReferrerAddress, referredMinter);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance:' + minterSusdBalance / 1e18);
 
 			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			console.log('rangedMarketsAMM:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
-			console.log('referrerSusdBalance after:' + referrerSusdBalance / 1e18);
+			console.log('referrerSusdBalance:' + referrerSusdBalance / 1e18);
+			assert.bnGte(referrerSusdBalance, toUnit(0));
+			assert.bnLte(referrerSusdBalance, toUnit(1));
 
-			let secondreferrerSusdBalance = await sUSDSynth.balanceOf(secondReferrerAddress);
-			console.log('secondreferrerSusdBalance after:' + secondreferrerSusdBalance / 1e18);
+			secondreferrerSusdBalance = await sUSDSynth.balanceOf(secondReferrerAddress);
+			console.log('secondreferrerSusdBalance:' + secondreferrerSusdBalance / 1e18);
+			assert.bnGte(secondreferrerSusdBalance, toUnit(0));
+			assert.bnLte(secondreferrerSusdBalance, toUnit(1));
 
 			console.log('DONE BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
 		});

@@ -8,6 +8,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IVault.sol";
+import "../interfaces/IPositionalMarketManagerTruncated.sol";
 
 import "../utils/libraries/AddressSetLib.sol";
 
@@ -63,6 +64,8 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
         uint userLPPointsPerRound;
         uint userTradingPointsPerRound;
     }
+
+    IPositionalMarketManagerTruncated public manager;
 
     function initialize(address _owner, address _stakingThales) public initializer {
         setOwner(_owner);
@@ -197,6 +200,11 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
         }
     }
 
+    function setManager(address _manager) external onlyOwner {
+        manager = IPositionalMarketManagerTruncated(_manager);
+        emit ManagerChanged(_manager);
+    }
+
     //***********************VIEWS***********************
 
     /// @notice return the share of bonus rewards per user per round.
@@ -247,37 +255,38 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
             stakersArray[i].stakingMultiplier = getStakingMultiplier(stakers[i]);
             stakersArray[i].userVaultPointsPerRound = getEstimatedCurrentVaultPoints(stakers[i]);
             stakersArray[i].userLPPointsPerRound = getEstimatedCurrentLPsPoints(stakers[i]);
-            stakersArray[i].userTradingPointsPerRound =
-                ((ONE + stakersArray[i].stakingMultiplier) * userTradingBasePointsPerRound[stakers[i]][round]) /
-                ONE;
+            stakersArray[i].userTradingPointsPerRound = userTradingBasePointsPerRound[stakers[i]][round];
         }
         return stakersArray;
     }
 
     function getEstimatedCurrentVaultPoints(address user) public view returns (uint estimatedPoints) {
-        uint userStakingMultiplier = getStakingMultiplier(user);
         uint numVaults = vaults.elements.length;
         address[] memory vaultsIterable = vaults.getPage(0, numVaults);
         for (uint i = 0; i < vaultsIterable.length; i++) {
             uint vaultRound = IVault(vaultsIterable[i]).round();
-            uint vaultPoints = ((ONE + userStakingMultiplier) *
-                ((IVault(vaultsIterable[i]).balancesPerRound(vaultRound, user) * vaultsMultiplier) / ONE)) / ONE;
+            uint vaultPoints = (IVault(vaultsIterable[i]).balancesPerRound(vaultRound, user) * vaultsMultiplier) / ONE;
+            if (address(manager) != address(0)) {
+                vaultPoints = manager.reverseTransformCollateral(vaultPoints);
+            }
             estimatedPoints += vaultPoints;
         }
     }
 
     function getEstimatedCurrentLPsPoints(address user) public view returns (uint estimatedPoints) {
-        uint userStakingMultiplier = getStakingMultiplier(user);
         uint numLPs = lps.elements.length;
         address[] memory vaultsIterable = lps.getPage(0, numLPs);
         for (uint i = 0; i < vaultsIterable.length; i++) {
             uint vaultRound = IVault(vaultsIterable[i]).round();
-            uint vaultPoints = ((ONE + userStakingMultiplier) *
-                ((IVault(vaultsIterable[i]).balancesPerRound(vaultRound, user) * lpMultiplier) / ONE)) / ONE;
+            uint vaultPoints = (IVault(vaultsIterable[i]).balancesPerRound(vaultRound, user) * lpMultiplier) / ONE;
+            if (address(manager) != address(0)) {
+                vaultPoints = manager.reverseTransformCollateral(vaultPoints);
+            }
             estimatedPoints += vaultPoints;
         }
     }
 
+    event ManagerChanged(address manager);
     event SetStakingThales(address _stakingThales);
     event PointsStored(address user, address origin, uint basePoints, uint round);
     event SetKnownVault(address vault, bool value);

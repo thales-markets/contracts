@@ -265,8 +265,8 @@ contract ParlayVerifier {
     function _verifyMarkets(VerifyMarket memory params) internal view returns (bool eligible, uint[] memory odds) {
         uint[] memory tags1;
         uint[] memory tags2;
-        IParlayPolicy parlayPolicyAddress = IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy());
-        (tags1, tags2) = _obtainAllTags(params.sportMarkets, params.parlayAMM, parlayPolicyAddress);
+        // IParlayPolicy parlayPolicyAddress = IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy());
+        (tags1, tags2) = _obtainAllTags(params.sportMarkets, params.parlayAMM, IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy()));
         // _obtainAllTags(params.sportMarkets, params.parlayAMM);
         odds = _getOdds(
             tags1,
@@ -275,7 +275,7 @@ contract ParlayVerifier {
             params.sportMarkets,
             params.parlayAMM,
             params.sportsAMM,
-            parlayPolicyAddress
+            IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy())
         );
         eligible = true;
         // ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
@@ -433,7 +433,7 @@ contract ParlayVerifier {
             totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
         if (totalQuote > 0) {
-            totalQuote = params.sgpFee > 0 ? ((totalQuote * ONE * ONE) / params.sgpFee) / ONE : totalQuote;
+            // totalQuote = params.sgpFee > 0 ? ((totalQuote * ONE * ONE) / params.sgpFee) / ONE : totalQuote;
             if (totalQuote < IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds()) {
                 totalQuote = IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds();
             }

@@ -262,13 +262,13 @@ contract ParlayVerifier {
         }
     }
 
-    function _verifyMarkets(VerifyMarket memory params) internal view returns (bool eligible, uint sgpFee) {
+    function _verifyMarkets(VerifyMarket memory params) internal view returns (bool eligible, uint[] memory odds) {
         uint[] memory tags1;
         uint[] memory tags2;
         IParlayPolicy parlayPolicyAddress = IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy());
         (tags1, tags2) = _obtainAllTags(params.sportMarkets, params.parlayAMM, parlayPolicyAddress);
         // _obtainAllTags(params.sportMarkets, params.parlayAMM);
-        tags2 = _getOdds(
+        odds = _getOdds(
             tags1,
             tags2,
             params.positions,
@@ -347,24 +347,24 @@ contract ParlayVerifier {
         uint numOfMarkets = params.sportMarkets.length;
         uint inverseSum;
         bool eligible;
-        (eligible, params.sgpFee) = _verifyMarkets(
+        uint[] memory marketOdds;
+        (eligible, marketOdds) = _verifyMarkets(
             VerifyMarket(params.sportMarkets, params.positions, params.sportsAMM, params.parlayAMM)
         );
         if (eligible && numOfMarkets == params.positions.length && numOfMarkets > 0 && numOfMarkets <= params.parlaySize) {
             finalQuotes = new uint[](numOfMarkets);
             amountsToBuy = new uint[](numOfMarkets);
-            uint[] memory marketOdds;
             for (uint i = 0; i < numOfMarkets; i++) {
                 if (params.positions[i] > 2) {
                     totalQuote = 0;
                     break;
                 }
-                marketOdds = params.sportsAMM.getMarketDefaultOdds(params.sportMarkets[i], false);
+                // marketOdds = params.sportsAMM.getMarketDefaultOdds(params.sportMarkets[i], false);
                 if (marketOdds.length == 0) {
                     totalQuote = 0;
                     break;
                 }
-                finalQuotes[i] = (params.defaultONE * marketOdds[params.positions[i]]);
+                finalQuotes[i] = (params.defaultONE * marketOdds[i]);
                 totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
                 skewImpact = skewImpact + finalQuotes[i];
                 // use as inverseQuotes
@@ -494,7 +494,9 @@ contract ParlayVerifier {
         uint _oldSkew
     ) external view returns (uint resultSkewImpact) {
         uint newBuyAmount;
-        (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
+        //todo refactor this part
+        uint sgpFee = 5*1e16;
+        // (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
         if (sgpFee > 0) {
             _totalQuote = (_totalQuote * sgpFee) / ONE;
             newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;

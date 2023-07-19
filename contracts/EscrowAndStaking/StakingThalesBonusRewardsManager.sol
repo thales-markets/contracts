@@ -61,7 +61,7 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
         uint stakingMultiplier;
         uint userVaultPointsPerRound;
         uint userLPPointsPerRound;
-        uint userTradingBasePointsPerRound;
+        uint userTradingPointsPerRound;
     }
 
     function initialize(address _owner, address _stakingThales) public initializer {
@@ -247,7 +247,9 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
             stakersArray[i].stakingMultiplier = getStakingMultiplier(stakers[i]);
             stakersArray[i].userVaultPointsPerRound = getEstimatedCurrentVaultPoints(stakers[i]);
             stakersArray[i].userLPPointsPerRound = getEstimatedCurrentLPsPoints(stakers[i]);
-            stakersArray[i].userTradingBasePointsPerRound = userTradingBasePointsPerRound[stakers[i]][round];
+            stakersArray[i].userTradingPointsPerRound =
+                ((ONE + stakersArray[i].stakingMultiplier) * userTradingBasePointsPerRound[stakers[i]][round]) /
+                ONE;
         }
         return stakersArray;
     }

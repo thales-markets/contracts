@@ -89265,13 +89265,13 @@
           {
             "contract": "StakingThalesBonusRewardsManager",
             "label": "vaults",
-            "type": "t_struct(AddressSet)87751_storage",
+            "type": "t_struct(AddressSet)90313_storage",
             "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:57"
           },
           {
             "contract": "StakingThalesBonusRewardsManager",
             "label": "lps",
-            "type": "t_struct(AddressSet)87751_storage",
+            "type": "t_struct(AddressSet)90313_storage",
             "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:58"
           }
         ],
@@ -89294,7 +89294,222 @@
           "t_bool": {
             "label": "bool"
           },
-          "t_struct(AddressSet)87751_storage": {
+          "t_struct(AddressSet)90313_storage": {
+            "label": "struct AddressSetLib.AddressSet",
+            "members": [
+              {
+                "label": "elements",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "indices",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          }
+        }
+      }
+    },
+    "e58b551b4500ae2ea6a9a80d2c19cdef3cfca2ab41aaabac0784f1923b909d74": {
+      "address": "0xDDe32B09DA4941a4762100A4eb2aE3a98Cc70264",
+      "txHash": "0x1ce6ec07158647446843399660cf2011fe676f5487b973d144826350a35bad9f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "stakingThales",
+            "type": "t_address",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:31"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "stakingBaseDivider",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:33"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "maxStakingMultiplier",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:35"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "vaultsMultiplier",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:37"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "lpMultiplier",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:38"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "tradingMultiplier",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:39"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "userVaultBasePointsPerRound",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:41"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "userLPBasePointsPerRound",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:42"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "userTradingBasePointsPerRound",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:43"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "userRoundBonusPoints",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:44"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "totalVaultBasePointsPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:46"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "totalLPBasePointsPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:47"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "totalTradingBasePointsPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:48"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "totalRoundBonusPoints",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:49"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "knownVaults",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:51"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "knownLiquidityPools",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:52"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "knownTradingAMMs",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:53"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "useNewBonusModel",
+            "type": "t_bool",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:55"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "vaults",
+            "type": "t_struct(AddressSet)87777_storage",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:57"
+          },
+          {
+            "contract": "StakingThalesBonusRewardsManager",
+            "label": "lps",
+            "type": "t_struct(AddressSet)87777_storage",
+            "src": "contracts\\EscrowAndStaking\\StakingThalesBonusRewardsManager.sol:58"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_struct(AddressSet)87777_storage": {
             "label": "struct AddressSetLib.AddressSet",
             "members": [
               {

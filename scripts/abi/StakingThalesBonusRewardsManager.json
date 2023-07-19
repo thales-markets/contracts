@@ -292,7 +292,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "userTradingBasePointsPerRound",
+            "name": "userTradingPointsPerRound",
             "type": "uint256"
           }
         ],

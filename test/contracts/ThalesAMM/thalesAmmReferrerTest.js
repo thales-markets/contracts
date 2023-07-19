@@ -265,6 +265,8 @@ contract('ThalesAMM', (accounts) => {
 
 			let ammDownBalance = await down.balanceOf(thalesAMM.address);
 
+			console.log('========================== 1st buyFromAMM ===============================');
+
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);
 			await thalesAMM.buyFromAMM(
@@ -279,11 +281,19 @@ contract('ThalesAMM', (accounts) => {
 			ammDownBalance = await down.balanceOf(thalesAMM.address);
 
 			let minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance:' + minterSusdBalance / 1e18);
 
 			let referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
-			console.log('referrerSusdBalance after:' + referrerSusdBalance / 1e18);
+			console.log('referrerSusdBalance:' + referrerSusdBalance / 1e18);
 			assert.equal(referrerSusdBalance, 0);
+
+			let secondReferrerSusdBalance = await sUSDSynth.balanceOf(secondReferrerAddress);
+			console.log('secondReferrerSusdBalance:' + secondReferrerSusdBalance / 1e18);
+			assert.equal(secondReferrerSusdBalance, 0);
+
+			console.log(
+				'========================== 1st buyFromAMMWithReferrer ==============================='
+			);
 
 			additionalSlippage = toUnit(0.2); // 20%
 			await thalesAMM.buyFromAMMWithReferrer(
@@ -296,10 +306,69 @@ contract('ThalesAMM', (accounts) => {
 				{ from: minter }
 			);
 
+			minterSusdBalance = await sUSDSynth.balanceOf(minter);
+			console.log('minterSusdBalance:' + minterSusdBalance / 1e18);
+
 			referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
-			console.log('referrerSusdBalance after:' + referrerSusdBalance / 1e18);
-			assert.bnGte(referrerSusdBalance, toUnit(0));
-			assert.bnLte(referrerSusdBalance, toUnit(1));
+			console.log('referrerSusdBalance:' + referrerSusdBalance / 1e18);
+			assert.bnGte(referrerSusdBalance, toUnit(0.05));
+			assert.bnLte(referrerSusdBalance, toUnit(0.1));
+
+			secondReferrerSusdBalance = await sUSDSynth.balanceOf(secondReferrerAddress);
+			console.log('secondReferrerSusdBalance:' + secondReferrerSusdBalance / 1e18);
+			assert.equal(secondReferrerSusdBalance, 0);
+
+			console.log('========================== 2nd buyFromAMM ===============================');
+
+			additionalSlippage = toUnit(0.2); // 20%
+			await thalesAMM.buyFromAMM(
+				newMarket.address,
+				Position.UP,
+				toUnit(10),
+				toUnit((buyFromAmmQuote / 1e18) * 0.9),
+				additionalSlippage,
+				{ from: minter }
+			);
+
+			minterSusdBalance = await sUSDSynth.balanceOf(minter);
+			console.log('minterSusdBalance:' + minterSusdBalance / 1e18);
+
+			referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
+			console.log('referrerSusdBalance:' + referrerSusdBalance / 1e18);
+			assert.bnGte(referrerSusdBalance, toUnit(0.1));
+			assert.bnLte(referrerSusdBalance, toUnit(0.15));
+
+			secondReferrerSusdBalance = await sUSDSynth.balanceOf(secondReferrerAddress);
+			console.log('secondReferrerSusdBalance:' + secondReferrerSusdBalance / 1e18);
+			assert.equal(secondReferrerSusdBalance, 0);
+
+			console.log(
+				'========================== 2nd buyFromAMMWithReferrer ==============================='
+			);
+
+			additionalSlippage = toUnit(0.2); // 20%
+			await thalesAMM.buyFromAMMWithReferrer(
+				newMarket.address,
+				Position.UP,
+				toUnit(10),
+				toUnit((buyFromAmmQuote / 1e18) * 0.9),
+				additionalSlippage,
+				secondReferrerAddress,
+				{ from: minter }
+			);
+
+			minterSusdBalance = await sUSDSynth.balanceOf(minter);
+			console.log('minterSusdBalance:' + minterSusdBalance / 1e18);
+
+			referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
+			console.log('referrerSusdBalance:' + referrerSusdBalance / 1e18);
+			assert.bnGte(referrerSusdBalance, toUnit(0.1));
+			assert.bnLte(referrerSusdBalance, toUnit(0.15));
+
+			secondReferrerSusdBalance = await sUSDSynth.balanceOf(secondReferrerAddress);
+			console.log('secondReferrerSusdBalance:' + secondReferrerSusdBalance / 1e18);
+			assert.bnGte(secondReferrerSusdBalance, toUnit(0.05));
+			assert.bnLte(secondReferrerSusdBalance, toUnit(0.1));
 		});
 	});
 	describe('Test Referrers whitelist and traded before', () => {

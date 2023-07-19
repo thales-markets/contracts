@@ -46,6 +46,10 @@ async function main() {
 		network = 'arbitrumOne';
 		PaymentToken = getTargetAddress('ProxyUSDC', network);
 	}
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
@@ -59,7 +63,12 @@ async function main() {
 
 	const Referrals = await ethers.getContractFactory('Referrals');
 	let ReferralsImplementation;
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
+	if (
+		networkObj.chainId == 10 ||
+		networkObj.chainId == 42161 ||
+		networkObj.chainId == 137 ||
+		networkObj.chainId == 56
+	) {
 		ReferralsImplementation = await upgrades.prepareUpgrade(referralsAddress, Referrals);
 	} else {
 		console.log('HERE');

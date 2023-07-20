@@ -101,7 +101,6 @@ contract ParlayVerifier {
         uint[] memory uniqueTags = new uint[](sportMarkets.length);
         uint[] memory uniqueTagsCount = new uint[](sportMarkets.length);
         uint uniqueTagsCounter;
-        uint lastCachedIdx;
         address sportMarket;
         bool eligible;
         bool oldUnique;

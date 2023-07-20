@@ -91,11 +91,11 @@ contract ParlayVerifier {
         // console.log(">>>>>> GAS consumed: ", (gasFinal-gasInitial));
     }
 
-    function _obtainAllTags(
-        address[] memory sportMarkets,
-        address _parlayAMM,
-        IParlayPolicy _parlayPolicy
-    ) internal view returns (uint[] memory tag1, uint[] memory tag2) {
+    function _obtainAllTags(address[] memory sportMarkets, IParlayPolicy _parlayPolicy)
+        internal
+        view
+        returns (uint[] memory tag1, uint[] memory tag2)
+    {
         tag1 = new uint[](sportMarkets.length);
         tag2 = new uint[](sportMarkets.length);
         uint[] memory uniqueTags = new uint[](sportMarkets.length);
@@ -139,7 +139,7 @@ contract ParlayVerifier {
                 }
             }
         }
-        eligible = _getRestrictedCounts(uniqueTags, uniqueTagsCount, uniqueTagsCounter, _parlayAMM, _parlayPolicy);
+        eligible = _getRestrictedCounts(uniqueTags, uniqueTagsCount, uniqueTagsCounter, _parlayPolicy);
         console.log(">>>> eligible tags: ", eligible);
         if (!eligible) {
             tag1 = new uint[](0);
@@ -151,7 +151,6 @@ contract ParlayVerifier {
         uint[] memory _uniqueTags,
         uint[] memory _uniqueTagsCount,
         uint _uniqueTagsCounter,
-        address _parlayAMM,
         IParlayPolicy _parlayPolicyAddress
     ) internal view returns (bool eligible) {
         eligible = true;
@@ -187,12 +186,16 @@ contract ParlayVerifier {
         uint[] memory _positions,
         address[] memory _sportMarkets,
         address _parlayAMM,
-        ISportsAMM _sportsAMM,
-        IParlayPolicy _parlayPolicy
+        ISportsAMM _sportsAMM
     ) internal view returns (uint[] memory odds) {
         odds = new uint[](_tag1.length);
         uint sgpFee;
         bool isSGP;
+        address[] memory parentMarket = new address[](_tag1.length);
+        uint[] memory parentsCount = new uint[](_tag1.length);
+        for (uint i = 0; i < parentMarket.length; i++) {
+            parentMarket[i] = address(ISportPositionalMarket(_sportMarkets[i]).parentMarket());
+        }
         for (uint i = 1; i < _tag1.length; i++) {
             for (uint j = 0; j < i; j++) {
                 if (_tag1[j] == _tag1[i]) {
@@ -203,17 +206,23 @@ contract ParlayVerifier {
                         console.log(">>>> ---> tag2_j: ", _tag2[j]);
                         console.log(">>>> ---> tag2_i: ", _tag2[i]);
                         if (_tag2[i] > 0 && _tag2[j] > 0) {
-                            isSGP =
-                                address(ISportPositionalMarket(_sportMarkets[i]).parentMarket()) ==
-                                address(ISportPositionalMarket(_sportMarkets[j]).parentMarket());
+                            isSGP = parentMarket[i] == parentMarket[j];
+                            parentsCount[i]++;
                         } else if (_tag2[i] > 0) {
-                            address parent = address(ISportPositionalMarket(_sportMarkets[i]).parentMarket());
-                            console.log(">>>> ----> parent i: ", parent);
-                            isSGP = parent == _sportMarkets[j];
+                            // address parent = address(ISportPositionalMarket(_sportMarkets[i]).parentMarket());
+                            // console.log(">>>> ----> parent i: ", parent);
+                            isSGP = parentMarket[i] == _sportMarkets[j];
+                            parentsCount[i]++;
                         } else if (_tag2[j] > 0) {
-                            address parent = address(ISportPositionalMarket(_sportMarkets[j]).parentMarket());
-                            console.log(">>>> ----> parent j: ", parent);
-                            isSGP = parent == _sportMarkets[i];
+                            // address parent = address(ISportPositionalMarket(_sportMarkets[j]).parentMarket());
+                            // console.log(">>>> ----> parent j: ", parent);
+                            isSGP = parentMarket[j] == _sportMarkets[i];
+                            parentsCount[i]++;
+                        }
+                        console.log(">>>> ---> ===> parentsCount: ", parentsCount[i]);
+                        if (parentsCount[i] > 2) {
+                            odds = new uint[](0);
+                            return odds;
                         }
                         console.log(">>>> ---> isSGP: ", isSGP);
                         if (isSGP) {
@@ -266,17 +275,12 @@ contract ParlayVerifier {
         uint[] memory tags1;
         uint[] memory tags2;
         // IParlayPolicy parlayPolicyAddress = IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy());
-        (tags1, tags2) = _obtainAllTags(params.sportMarkets, params.parlayAMM, IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy()));
-        // _obtainAllTags(params.sportMarkets, params.parlayAMM);
-        odds = _getOdds(
-            tags1,
-            tags2,
-            params.positions,
+        (tags1, tags2) = _obtainAllTags(
             params.sportMarkets,
-            params.parlayAMM,
-            params.sportsAMM,
             IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy())
         );
+        // _obtainAllTags(params.sportMarkets, params.parlayAMM);
+        odds = _getOdds(tags1, tags2, params.positions, params.sportMarkets, params.parlayAMM, params.sportsAMM);
         eligible = true;
         // ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
         // CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
@@ -495,7 +499,7 @@ contract ParlayVerifier {
     ) external view returns (uint resultSkewImpact) {
         uint newBuyAmount;
         //todo refactor this part
-        uint sgpFee = 5*1e16;
+        uint sgpFee = 5 * 1e16;
         // (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
         if (sgpFee > 0) {
             _totalQuote = (_totalQuote * sgpFee) / ONE;

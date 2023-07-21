@@ -192,9 +192,10 @@ contract ParlayVerifier {
         bool isSGP;
         address[] memory parentMarket = new address[](_tag1.length);
         uint[] memory parentsCount = new uint[](_tag1.length);
-        for (uint i = 0; i < parentMarket.length; i++) {
-            parentMarket[i] = address(ISportPositionalMarket(_sportMarkets[i]).parentMarket());
-        }
+        (isSGP, parentMarket) = _checkNamesAndGetParent(_sportMarkets, _tag1, ITherundownConsumer(_sportsAMM.theRundownConsumer()));
+        // for (uint i = 0; i < parentMarket.length; i++) {
+        //     parentMarket[i] = address(ISportPositionalMarket(_sportMarkets[i]).parentMarket());
+        // }
         for (uint i = 1; i < _tag1.length; i++) {
             for (uint j = 0; j < i; j++) {
                 if (_tag1[j] == _tag1[i]) {
@@ -251,6 +252,35 @@ contract ParlayVerifier {
                 odds[i] = _sportsAMM.getMarketDefaultOdds(_sportMarkets[i], false)[_positions[i]];
             }
             console.log(">>> >>>> odds: ", odds[i]);
+        }
+    }
+
+    function _checkNamesAndGetParent(address[] memory _sportMarkets, uint[] memory _tag1, ITherundownConsumer consumer) internal view returns(bool eligible, address[] memory parentMarket) {
+        bytes32[] memory cachedTeams = new bytes32[](_sportMarkets.length*2);
+        parentMarket = new address[](_sportMarkets.length);
+        bytes32 homeId;
+        bytes32 awayId;
+        uint lastCachedIdx;
+        eligible = true;
+        for(uint i=0; i<_sportMarkets.length; i++) {
+            (homeId, awayId) = _getGameIds(consumer, _sportMarkets[i]);
+            for(uint j=0; j<lastCachedIdx; j++) {
+                if(cachedTeams[j] == homeId || cachedTeams[j] == awayId) {
+                    if(_sportMarkets[i] != _sportMarkets[j/2]) {
+                        if(_tag1[i] == _tag1[j/2]) {
+                            eligible = false;
+                            
+                        }
+                        else{
+                            //todo check if it is allowed
+                            console.log(">>>> CHECK if it is ALLOWED");
+                        }
+                    }
+                }
+                if(eligible) {
+                    parentMarket[i] = address(ISportPositionalMarket(_sportMarkets[i]).parentMarket());
+                }
+            }
         }
     }
 

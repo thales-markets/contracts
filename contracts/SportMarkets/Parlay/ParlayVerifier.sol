@@ -277,7 +277,8 @@ contract ParlayVerifier {
         uint[] memory _tag2,
         ITherundownConsumer consumer
     ) internal view returns (bool eligible, address[] memory parentMarket) {
-        bytes32[] memory cachedTeams = new bytes32[](_sportMarkets.length * 2);
+        // bytes32[] memory cachedTeams = new bytes32[](_sportMarkets.length * 2);
+        CachedMarket[] memory cachedTeams = new CachedMarket[](_sportMarkets.length * 2);
         parentMarket = new address[](_sportMarkets.length);
         bytes32 homeId;
         bytes32 awayId;
@@ -286,22 +287,23 @@ contract ParlayVerifier {
         for (uint i = 0; i < _sportMarkets.length; i++) {
             (homeId, awayId) = _getGameIds(consumer, _sportMarkets[i]);
             for (uint j = 0; j < lastCachedIdx; j++) {
-                if (cachedTeams[j] == homeId || (j > 1 && cachedTeams[j] == awayId && cachedTeams[j - 1] != homeId)) {
-                    if (_sportMarkets[i] != _sportMarkets[j / 2]) {
-                        if (_tag1[i] == _tag1[j / 2]) {
-                            if (_tag2[i] == _tag2[j / 2]) {
-                                revert("SameTeamOnParlay");
-                            }
-                        } else {
-                            //todo check if it is allowed
-                            // console.log(">>>> CHECK if it is ALLOWED");
-                        }
+                // console.logBytes32(homeId);
+                if (
+                (cachedTeams[j].gameId == homeId ||
+                    (j > 1 && cachedTeams[j].gameId == awayId && cachedTeams[j - 1].gameId != homeId))
+                    // && cachedTeams[j].tag1 == tag1
+                ) {
+                    if (cachedTeams[j].gameCounter > 0) {
+                        revert("SameTeamOnParlay");
                     }
+                    cachedTeams[j].gameCounter += 1;
                 }
                 if (eligible) {
                     parentMarket[i] = address(ISportPositionalMarket(_sportMarkets[i]).parentMarket());
                 }
             }
+            cachedTeams[lastCachedIdx++].gameId = homeId;
+            cachedTeams[lastCachedIdx++].gameId = awayId;
         }
     }
 

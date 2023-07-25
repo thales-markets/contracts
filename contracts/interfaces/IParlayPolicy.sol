@@ -9,6 +9,8 @@ interface IParlayPolicy {
 
     function restrictedTagCombination(uint tag1, uint tag2) external view returns (bool);
 
+    function isTags1ComboRestricted(uint tag1, uint tag2) external view returns (bool isRestricted);
+
     function isRestrictedComboEligible(
         uint tag1,
         uint tag2,

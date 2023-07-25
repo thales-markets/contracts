@@ -136,6 +136,30 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2",
+        "type": "uint256"
+      }
+    ],
+    "name": "isTags1ComboRestricted",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isRestricted",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "lastPauseTime",
     "outputs": [
@@ -245,6 +269,30 @@
         "type": "uint256"
       }
     ],
+    "name": "restrictedTag1Combo",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "restrictedTagCombination",
     "outputs": [
       {
@@ -333,6 +381,29 @@
       }
     ],
     "name": "setRestrictedMarketsCountPerTag",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tag2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_restricted",
+        "type": "bool"
+      }
+    ],
+    "name": "setRestrictedTag1Combo",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

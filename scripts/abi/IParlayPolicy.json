@@ -56,6 +56,30 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tag2",
+        "type": "uint256"
+      }
+    ],
+    "name": "isTags1ComboRestricted",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isRestricted",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "tag",
         "type": "uint256"
       }

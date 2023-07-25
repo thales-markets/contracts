@@ -16,10 +16,15 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     mapping(uint => bool) public isRestrictedToBeCombined;
     mapping(uint => mapping(uint => bool)) public restrictedTagCombination;
     mapping(bytes32 => mapping(uint => uint)) public restrictedTagComboCount;
+    mapping(uint => mapping(uint => bool)) public restrictedTag1Combo;
 
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
         setOwner(_owner);
         parlayMarketsAMM = _parlayMarketsAMM;
+    }
+
+    function isTags1ComboRestricted(uint tag1, uint tag2) external view returns (bool isRestricted) {
+        isRestricted = restrictedTag1Combo[tag1][tag2];
     }
 
     function isRestrictedComboEligible(
@@ -67,6 +72,15 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         if (tag > 0) {
             isRestrictedToBeCombined[tag] = restricted;
         }
+    }
+
+    function setRestrictedTag1Combo(
+        uint _tag1,
+        uint _tag2,
+        bool _restricted
+    ) external onlyOwner {
+        restrictedTag1Combo[_tag1][_tag2] = _restricted;
+        restrictedTag1Combo[_tag2][_tag1] = _restricted;
     }
 
     function setParlayMarketsAMM(address _parlayMarketsAMM) external onlyOwner {

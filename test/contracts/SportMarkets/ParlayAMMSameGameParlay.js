@@ -1064,13 +1064,25 @@ contract('ParlayAMM', (accounts) => {
 			// console.log('parlay 4: ', deployedMarket_4.address);
 
 			let tagsLength = await market_5.getTagsLength();
-			console.log('Tags length: ', tagsLength.toString());
+			// console.log('Tags length: ', tagsLength.toString());
 
 			parlayMarkets = [market_1, market_2, market_3, market_4, market_5];
 			parlayMarkets2 = [market_6, market_2, market_3, market_4, market_5];
 			parlayMarkets3 = [market_6, market_1, market_3, market_4, market_5];
 			parlayMarkets4 = [market_6, market_7, market_8, market_4, market_5];
 			parlayMarkets5 = [market_1, market_2, market_3, market_4, market_6];
+			equalParlayMarkets = [
+				deployedMarket_1.address,
+				deployedMarket_2.address,
+				deployedMarket_3.address,
+				deployedMarket_4.address,
+			];
+
+			// console.log("Equal:", equalParlayMarkets);
+			// console.log("1. Atalanta vs Charlotte: ", market_1.address);
+			// console.log("1. Atalanta vs Charlotte totals: ", market_5.address);
+			// console.log("1. Atalanta vs Charlotte spreads: ", market_6.address);
+			// console.log(allMarkets);
 
 			// console.log(market_1.address);
 			// console.log(market_2.address);
@@ -1127,6 +1139,7 @@ contract('ParlayAMM', (accounts) => {
 				sUSDPaid: totalSUSDToPay,
 			});
 		});
+
 		it('Read data', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);

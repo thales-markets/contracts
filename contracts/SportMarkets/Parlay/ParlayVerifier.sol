@@ -59,6 +59,14 @@ contract ParlayVerifier {
         uint gameCounter;
     }
 
+    struct CheckNames {
+        address[] sportMarkets;
+        uint[] positions;
+        uint[] tag1;
+        uint[] tag2;
+        IParlayPolicy parlayPolicy;
+    }
+
     struct SGPMarket {
         address sportMarket1;
         address sportMarket2;
@@ -192,7 +200,9 @@ contract ParlayVerifier {
                         if (parentsCount[j] > 1 || parentsCount[i] > 1) {
                             revert("SameTeamOnParlay");
                         }
+                        console.log("isSGP: ", false);
                         if (isSGP) {
+                            console.log("Enters");
                             (odds[i], odds[j]) = _getSGPOdds(
                                 SGPMarket(
                                     _sportMarkets[i],
@@ -207,6 +217,8 @@ contract ParlayVerifier {
                                 )
                             );
                         }
+                    } else {
+                        revert("SameTeamOnParlay");
                     }
                 }
             }
@@ -247,39 +259,74 @@ contract ParlayVerifier {
         }
     }
 
-    function _checkNamesAndGetParent(
-        address[] memory _sportMarkets,
-        uint[] memory _tag1,
-        ITherundownConsumer consumer,
-        IParlayPolicy parlayPolicy
-    ) internal view returns (address[] memory parentMarket) {
-        CachedMarket[] memory cachedTeams = new CachedMarket[](_sportMarkets.length * 2);
-        parentMarket = new address[](_sportMarkets.length);
+    function _checkNamesAndGetOdds(CheckNames memory params)
+        internal
+        view
+        returns (
+            // address[] memory _sportMarkets,
+            // uint[] memory _positions,
+            // uint[] memory _tag1,
+            // uint[] memory _tag2,
+            // IParlayPolicy parlayPolicy
+            uint[] memory odds
+        )
+    {
+        CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
+        odds = new uint[](params.sportMarkets.length);
         bytes32 homeId;
         bytes32 awayId;
         uint lastCachedIdx;
-        for (uint i = 0; i < _sportMarkets.length; i++) {
-            (homeId, awayId) = _getGameIds(consumer, _sportMarkets[i]);
+        uint sgpFee;
+        console.log("Entered in _checkNames");
+        for (uint i = 0; i < params.sportMarkets.length; i++) {
+            (homeId, awayId) = _getGameIds(ITherundownConsumer(params.parlayPolicy.consumer()), params.sportMarkets[i]);
+            // console.log("Market: ", params.sportMarkets[i]);
+            // console.log("Home", i, ": ");
+            // console.logBytes32(homeId);
             for (uint j = 0; j < lastCachedIdx; j++) {
-                // console.logBytes32(homeId);
                 if (
                     (cachedTeams[j].gameId == homeId ||
                         (j > 1 && cachedTeams[j].gameId == awayId && cachedTeams[j - 1].gameId != homeId))
                 ) {
-                    if (_tag1[i] != _tag1[j / 2]) {
-                        if (parlayPolicy.isTags1ComboRestricted(_tag1[i], _tag1[j / 2])) {
+                    if (params.tag1[i] != params.tag1[j / 2]) {
+                        if (params.parlayPolicy.isTags1ComboRestricted(params.tag1[i], params.tag1[j / 2])) {
                             revert("SameTeamOnParlay");
                         }
                     }
-                    if (cachedTeams[j].gameCounter > 0) {
+                    sgpFee = params.parlayPolicy.getSgpFeePerCombination(
+                        IParlayPolicy.SGPData(
+                            params.tag1[i],
+                            params.tag2[i],
+                            params.tag2[j / 2],
+                            params.positions[i],
+                            params.positions[j / 2]
+                        )
+                    );
+                    // if(sgpFee > 0) {
+                    //     (odds[i], odds[j/2]) = _getSGPSingleOdds(
+                    //         params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[i], params.positions[i]),
+                    //         params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[j/2], params.positions[j/2]),
+                    //         sgpFee
+                    //     );
+                    // }
+                    console.log(">> --> SGP fee: ", sgpFee);
+                    if (cachedTeams[j].gameCounter > 0 || sgpFee == 0) {
                         revert("SameTeamOnParlay");
                     }
                     cachedTeams[j].gameCounter += 1;
+                    (odds[i], odds[j / 2]) = _getSGPSingleOdds(
+                        params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[i], params.positions[i]),
+                        params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[j / 2], params.positions[j / 2]),
+                        sgpFee
+                    );
+                    // (odds[i], odds[j/2]) = address(ISportPositionalMarket(params.sportMarkets[i]).parentMarket());
                 }
-                parentMarket[i] = address(ISportPositionalMarket(_sportMarkets[i]).parentMarket());
             }
             cachedTeams[lastCachedIdx++].gameId = homeId;
             cachedTeams[lastCachedIdx++].gameId = awayId;
+            if (odds[i] == 0) {
+                odds[i] = params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[i], params.positions[i]);
+            }
         }
     }
 
@@ -305,27 +352,9 @@ contract ParlayVerifier {
         eligible = true;
         uint[] memory tags1;
         uint[] memory tags2;
-        address[] memory parentMarket;
         IParlayPolicy parlayPolicy = IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy());
         (tags1, tags2) = _obtainAllTags(params.sportMarkets, parlayPolicy);
-        parentMarket = _checkNamesAndGetParent(
-            params.sportMarkets,
-            tags1,
-            ITherundownConsumer(params.sportsAMM.theRundownConsumer()),
-            parlayPolicy
-        );
-        odds = _getOdds(
-            tags1,
-            tags2,
-            params.positions,
-            params.sportMarkets,
-            parentMarket,
-            params.parlayAMM,
-            params.sportsAMM
-        );
-        if (odds.length == 0) {
-            eligible = false;
-        }
+        odds = _checkNamesAndGetOdds(CheckNames(params.sportMarkets, params.positions, tags1, tags2, parlayPolicy));
         // eligible = true;
         // ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
         // CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);

@@ -229,7 +229,8 @@ contract('ParlayAMM', (accounts) => {
 		SportsAMM,
 		SportAMMLiquidityPool,
 		ParlayAMMLiquidityPool,
-		ParlayAMMLiquidityPoolData;
+		ParlayAMMLiquidityPoolData,
+		ParlayPolicy;
 
 	let verifier;
 
@@ -814,6 +815,12 @@ contract('ParlayAMM', (accounts) => {
 		});
 
 		ParlayAMMLiquidityPoolData = await ParlayAMMLiquidityPoolDataContract.new({ from: manager });
+
+		const ParlayPolicyContract = artifacts.require('ParlayPolicy');
+		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
+		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
+
+		await ParlayAMM.setPolicyAddresses(ParlayPolicy.address, { from: owner });
 	});
 
 	describe('Parlay AMM setters', () => {

@@ -9,9 +9,15 @@ import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
-    address public parlayMarketsAMM;
+import "../../interfaces/ISportsAMM.sol";
+import "../../interfaces/IParlayMarketsAMM.sol";
 
+import "../../interfaces/IParlayPolicy.sol";
+
+contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
+    IParlayMarketsAMM public parlayMarketsAMM;
+    ISportsAMM public sportsAMM;
+    address public consumer;
     mapping(uint => uint) public restrictedMarketsCount;
     mapping(uint => bool) public isRestrictedToBeCombined;
     mapping(uint => mapping(uint => bool)) public restrictedTagCombination;
@@ -20,7 +26,23 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
 
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
         setOwner(_owner);
-        parlayMarketsAMM = _parlayMarketsAMM;
+        parlayMarketsAMM = IParlayMarketsAMM(_parlayMarketsAMM);
+        sportsAMM = ISportsAMM(parlayMarketsAMM.sportsAmm());
+        consumer = sportsAMM.theRundownConsumer();
+    }
+
+    function getSgpFeePerCombination(IParlayPolicy.SGPData memory params) external view returns (uint sgpFee) {
+        sgpFee = parlayMarketsAMM.getSgpFeePerCombination(
+            params.tag1,
+            params.tag2_1,
+            params.tag2_2,
+            params.position1,
+            params.position2
+        );
+    }
+
+    function getMarketDefaultOdds(address _sportMarket, uint _position) external view returns (uint odd) {
+        odd = sportsAMM.getMarketDefaultOdds(_sportMarket, false)[_position];
     }
 
     function isTags1ComboRestricted(uint tag1, uint tag2) external view returns (bool isRestricted) {
@@ -84,7 +106,9 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function setParlayMarketsAMM(address _parlayMarketsAMM) external onlyOwner {
-        parlayMarketsAMM = _parlayMarketsAMM;
+        parlayMarketsAMM = IParlayMarketsAMM(_parlayMarketsAMM);
+        sportsAMM = ISportsAMM(parlayMarketsAMM.sportsAmm());
+        consumer = sportsAMM.theRundownConsumer();
         emit SetParlayMarketsAMM(_parlayMarketsAMM);
     }
 
@@ -94,7 +118,7 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _onlyParlayAMM() internal view {
-        require(msg.sender == parlayMarketsAMM, "Not ParlayAMM");
+        require(msg.sender == address(parlayMarketsAMM), "Not ParlayAMM");
     }
 
     event SetParlayMarketsAMM(address _parlayMarketsAMM);

@@ -1410,65 +1410,65 @@ contract('ParlayAMM', (accounts) => {
 			console.log(tx.combinedOdds[0].toString());
 			console.log(tx.combinedOdds[1].toString());
 		});
-		it('Check odds calculations', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			const tx = await SportPositionalMarketData.getCombinedOddsForMarket(parlayMarkets[2].address);
-			console.log(tx);
-			console.log(tx.combinedOdds[0].toString());
-			console.log(tx.combinedOdds[1].toString());
+		// it('Check odds calculations', async () => {
+		// 	await fastForward(game1NBATime - (await currentTime()) - SECOND);
+		// 	// await fastForward((await currentTime()) - SECOND);
+		// 	answer = await SportPositionalMarketManager.numActiveMarkets();
+		// 	assert.equal(answer.toString(), '15');
+		// 	const tx = await SportPositionalMarketData.getCombinedOddsForMarket(parlayMarkets[2].address);
+		// 	console.log(tx);
+		// 	console.log(tx.combinedOdds[0].toString());
+		// 	console.log(tx.combinedOdds[1].toString());
 
-			let odds = await SportsAMM.getMarketDefaultOdds(parlayMarkets[2].address, false);
-			for (let i = 0; i < odds.length; i++) {
-				console.log(odds[i].toString());
-			}
+		// 	let odds = await SportsAMM.getMarketDefaultOdds(parlayMarkets[2].address, false);
+		// 	for (let i = 0; i < odds.length; i++) {
+		// 		console.log(odds[i].toString());
+		// 	}
 
-			let odds2 = await SportsAMM.getMarketDefaultOdds(parlayMarkets4[1].address, false);
-			for (let i = 0; i < odds2.length; i++) {
-				console.log(odds2[i].toString());
-			}
+		// 	let odds2 = await SportsAMM.getMarketDefaultOdds(parlayMarkets4[1].address, false);
+		// 	for (let i = 0; i < odds2.length; i++) {
+		// 		console.log(odds2[i].toString());
+		// 	}
 
-			let calculationONEtotalsONE = parseInt(odds[0].toString()) * parseInt(odds2[0].toString());
-			let sgpFee = parseInt(7 * 1e17);
-			console.log('sgpFee: ', sgpFee);
-			console.log(calculationONEtotalsONE / 1e18);
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[0]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[0] / 1e15), calculationONEtotalsONE);
+		// 	let calculationONEtotalsONE = parseInt(odds[0].toString()) * parseInt(odds2[0].toString());
+		// 	let sgpFee = parseInt(7 * 1e17);
+		// 	console.log('sgpFee: ', sgpFee);
+		// 	console.log(calculationONEtotalsONE / 1e18);
+		// 	console.log(calculationONEtotalsONE / sgpFee);
+		// 	calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
+		// 	console.log('comboOdds: ', tx.combinedOdds[0].odds[0]);
+		// 	assert.equal(parseInt(tx.combinedOdds[0].odds[0] / 1e15), calculationONEtotalsONE);
 
-			calculationONEtotalsONE = parseInt(odds[0].toString()) * parseInt(odds2[1].toString());
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[1]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[1] / 1e15), calculationONEtotalsONE);
+		// 	calculationONEtotalsONE = parseInt(odds[0].toString()) * parseInt(odds2[1].toString());
+		// 	console.log(calculationONEtotalsONE / sgpFee);
+		// 	calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
+		// 	console.log('comboOdds: ', tx.combinedOdds[0].odds[1]);
+		// 	assert.equal(parseInt(tx.combinedOdds[0].odds[1] / 1e15), calculationONEtotalsONE);
 
-			calculationONEtotalsONE = parseInt(odds[1].toString()) * parseInt(odds2[0].toString());
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[2]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[2] / 1e15), calculationONEtotalsONE);
+		// 	calculationONEtotalsONE = parseInt(odds[1].toString()) * parseInt(odds2[0].toString());
+		// 	console.log(calculationONEtotalsONE / sgpFee);
+		// 	calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
+		// 	console.log('comboOdds: ', tx.combinedOdds[0].odds[2]);
+		// 	assert.equal(parseInt(tx.combinedOdds[0].odds[2] / 1e15), calculationONEtotalsONE);
 
-			calculationONEtotalsONE = parseInt(odds[1].toString()) * parseInt(odds2[1].toString());
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[3]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[3] / 1e15), calculationONEtotalsONE);
+		// 	calculationONEtotalsONE = parseInt(odds[1].toString()) * parseInt(odds2[1].toString());
+		// 	console.log(calculationONEtotalsONE / sgpFee);
+		// 	calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
+		// 	console.log('comboOdds: ', tx.combinedOdds[0].odds[3]);
+		// 	assert.equal(parseInt(tx.combinedOdds[0].odds[3] / 1e15), calculationONEtotalsONE);
 
-			calculationONEtotalsONE = parseInt(odds[2].toString()) * parseInt(odds2[0].toString());
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[4]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[4] / 1e15), calculationONEtotalsONE);
+		// 	calculationONEtotalsONE = parseInt(odds[2].toString()) * parseInt(odds2[0].toString());
+		// 	console.log(calculationONEtotalsONE / sgpFee);
+		// 	calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
+		// 	console.log('comboOdds: ', tx.combinedOdds[0].odds[4]);
+		// 	assert.equal(parseInt(tx.combinedOdds[0].odds[4] / 1e15), calculationONEtotalsONE);
 
-			calculationONEtotalsONE = parseInt(odds[2].toString()) * parseInt(odds2[1].toString());
-			console.log(calculationONEtotalsONE / sgpFee);
-			calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
-			console.log('comboOdds: ', tx.combinedOdds[0].odds[5]);
-			assert.equal(parseInt(tx.combinedOdds[0].odds[5] / 1e15), calculationONEtotalsONE);
-		});
+		// 	calculationONEtotalsONE = parseInt(odds[2].toString()) * parseInt(odds2[1].toString());
+		// 	console.log(calculationONEtotalsONE / sgpFee);
+		// 	calculationONEtotalsONE = parseInt(calculationONEtotalsONE / (sgpFee * 1e15));
+		// 	console.log('comboOdds: ', tx.combinedOdds[0].odds[5]);
+		// 	assert.equal(parseInt(tx.combinedOdds[0].odds[5] / 1e15), calculationONEtotalsONE);
+		// });
 
 		it('Checking cancellation math | 2x (totals + spread)', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);

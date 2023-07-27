@@ -25,6 +25,8 @@ import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/IParlayAMMLiquidityPool.sol";
 
+import "hardhat/console.sol";
+
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -133,8 +135,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint position1,
         uint position2
     ) external view returns (uint sgpFee) {
+        console.log(">>amm>>> here");
         if (position1 > 2 || position2 > 2) {
             sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
+            console.log(">>amm>>> sgp: ", sgpFee);
             return sgpFee;
         }
         uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position1));

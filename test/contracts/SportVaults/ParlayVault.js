@@ -158,7 +158,8 @@ contract('Parlay Vault', (accounts) => {
 		ParlayVerifier,
 		SportsAMM,
 		SportAMMLiquidityPool,
-		ParlayAMMLiquidityPool;
+		ParlayAMMLiquidityPool,
+		ParlayPolicyContract;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -867,6 +868,12 @@ contract('Parlay Vault', (accounts) => {
 		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultParlayAMMLiquidityProvider,
 		});
+
+		const ParlayPolicyContract = artifacts.require('ParlayPolicy');
+		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
+		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
+
+		await ParlayAMM.setPolicyAddresses(ParlayPolicy.address, { from: owner });
 	});
 
 	describe('Test parlays vault', () => {

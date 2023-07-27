@@ -320,6 +320,8 @@ contract ParlayVerifier {
                         sgpFee
                     );
                     // (odds[i], odds[j/2]) = address(ISportPositionalMarket(params.sportMarkets[i]).parentMarket());
+                    console.log(">>>checkNamesVerifier>>> odd[i]: ", odds[i]);
+                    console.log(">>>checkNamesVerifier>>> odd[j]: ", odds[j / 2]);
                 }
             }
             cachedTeams[lastCachedIdx++].gameId = homeId;
@@ -334,10 +336,12 @@ contract ParlayVerifier {
         uint odds1,
         uint odds2,
         uint sgpFee
-    ) internal pure returns (uint resultOdds1, uint resultOdds2) {
+    ) internal view returns (uint resultOdds1, uint resultOdds2) {
         if (odds1 > 0 && odds2 > 0) {
             uint multiplied = (odds1 * odds2) / ONE;
             uint discountedQuote = ((multiplied * ONE * ONE) / sgpFee) / ONE;
+            // resultOdds1 = _sqrt(discountedQuote);
+            // resultOdds2 = _sqrt(discountedQuote);
             if (odds1 > odds2) {
                 resultOdds1 = odds1;
                 resultOdds2 = ((discountedQuote * ONE * ONE) / odds1) / ONE;
@@ -345,6 +349,8 @@ contract ParlayVerifier {
                 resultOdds1 = ((discountedQuote * ONE * ONE) / odds2) / ONE;
                 resultOdds2 = odds2;
             }
+            console.log(">>>verifier>> odds1: ", resultOdds1);
+            console.log(">>>verifier>> odds2: ", resultOdds2);
         }
     }
 
@@ -429,6 +435,9 @@ contract ParlayVerifier {
         (eligible, marketOdds) = _verifyMarkets(
             VerifyMarket(params.sportMarkets, params.positions, params.sportsAMM, params.parlayAMM)
         );
+        console.log(">>AMM: ", marketOdds.length);
+        console.log(">>AMM: ", marketOdds[0]);
+        console.log(">>AMM: ", marketOdds[1]);
         if (eligible && numOfMarkets == params.positions.length && numOfMarkets > 0 && numOfMarkets <= params.parlaySize) {
             finalQuotes = new uint[](numOfMarkets);
             amountsToBuy = new uint[](numOfMarkets);
@@ -444,6 +453,8 @@ contract ParlayVerifier {
                 }
                 finalQuotes[i] = (params.defaultONE * marketOdds[i]);
                 totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
+                // console.log(">>>> pre-quote: ", finalQuotes[i]);
+                // console.log(">>>> pre-quote total: ", totalQuote);
                 skewImpact = skewImpact + finalQuotes[i];
                 // use as inverseQuotes
                 finalQuotes[i] = ONE - finalQuotes[i];
@@ -453,7 +464,7 @@ contract ParlayVerifier {
                     break;
                 }
             }
-
+            console.log(">>>> pre-total quote: ", totalQuote);
             if (totalQuote > 0) {
                 for (uint i = 0; i < finalQuotes.length; i++) {
                     // use finalQuotes as inverseQuotes in equation
@@ -462,6 +473,7 @@ contract ParlayVerifier {
                     amountsToBuy[i] =
                         ((ONE * finalQuotes[i] * params.totalSUSDToPay * skewImpact)) /
                         (totalQuote * inverseSum * skewImpact);
+                    console.log(">>>> amountsToBuy: ", amountsToBuy[i]);
                 }
                 (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = calculateFinalQuotes(
                     FinalQuoteParameters(
@@ -507,9 +519,13 @@ contract ParlayVerifier {
             }
         }
         for (uint i = 0; i < params.sportMarkets.length; i++) {
+            console.log(">>>> quote sportsAMM :", buyQuoteAmountPerMarket[i]);
+            console.log(">>>> quote calculated:", params.buyQuoteAmounts[i]);
             finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / params.buyQuoteAmounts[i]) / ONE;
+            console.log(">>> verifier -> finalQuotes: ", finalQuotes[i]);
             totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
+        console.log(">>> verifier -> totalQuote: ", totalQuote);
         if (totalQuote > 0) {
             // totalQuote = params.sgpFee > 0 ? ((totalQuote * ONE * ONE) / params.sgpFee) / ONE : totalQuote;
             if (totalQuote < IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds()) {

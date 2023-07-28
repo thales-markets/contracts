@@ -159,7 +159,7 @@ contract('Parlay Vault', (accounts) => {
 		SportsAMM,
 		SportAMMLiquidityPool,
 		ParlayAMMLiquidityPool,
-		ParlayPolicyContract;
+		ParlayPolicy;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;

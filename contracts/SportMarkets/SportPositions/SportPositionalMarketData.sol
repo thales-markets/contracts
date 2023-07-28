@@ -17,8 +17,6 @@ import "../Rundown/GamesOddsObtainer.sol";
 import "../Rundown/TherundownConsumer.sol";
 import "../Voucher/OvertimeVoucherEscrow.sol";
 
-import "hardhat/console.sol";
-
 contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     uint private constant TAG_NUMBER_SPREAD = 10001;
     uint private constant TAG_NUMBER_TOTAL = 10002;
@@ -283,7 +281,6 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                                     positions,
                                     ISportPositionalMarketManager(manager).transformCollateral(ONE)
                                 );
-                            console.log(">>>data>> newCombo: ", newCombinedOdds.odds[j]);
                         }
                     }
                     newCombinedOdds.tags[0] = 0;

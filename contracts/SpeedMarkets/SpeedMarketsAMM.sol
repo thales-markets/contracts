@@ -22,6 +22,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../utils/libraries/AddressSetLib.sol";
 
 import "../interfaces/IStakingThales.sol";
+import "../interfaces/IMultiCollateralOnOffRamp.sol";
 
 import "./SpeedMarket.sol";
 
@@ -82,6 +83,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         bool isUserWinner;
     }
 
+    mapping(address => bool) public whitelistedAddresses;
+    IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
+
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
@@ -100,7 +104,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint buyinAmount,
         bytes[] calldata priceUpdateData
     ) external payable nonReentrant notPaused {
-        _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData);
+        _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData, true);
     }
 
     function createNewMarketWithDelta(
@@ -110,7 +114,49 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint buyinAmount,
         bytes[] calldata priceUpdateData
     ) external payable nonReentrant notPaused {
-        _createNewMarket(asset, uint64(block.timestamp + delta), direction, buyinAmount, priceUpdateData);
+        _createNewMarket(asset, uint64(block.timestamp + delta), direction, buyinAmount, priceUpdateData, true);
+    }
+
+    function createNewMarketWithDifferentCollateral(
+        bytes32 asset,
+        uint64 strikeTime,
+        SpeedMarket.Direction direction,
+        bytes[] calldata priceUpdateData,
+        address collateral,
+        uint collateralAmount,
+        bool isEth
+    ) external payable nonReentrant notPaused {
+        uint buyinAmount = _convertCollateral(collateral, collateralAmount, isEth);
+        _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData, false);
+    }
+
+    function createNewMarketWithDifferentCollateralAndDelta(
+        bytes32 asset,
+        uint64 delta,
+        SpeedMarket.Direction direction,
+        bytes[] calldata priceUpdateData,
+        address collateral,
+        uint collateralAmount,
+        bool isEth
+    ) external payable nonReentrant notPaused {
+        uint buyinAmount = _convertCollateral(collateral, collateralAmount, isEth);
+        _createNewMarket(asset, uint64(block.timestamp + delta), direction, buyinAmount, priceUpdateData, false);
+    }
+
+    function _convertCollateral(
+        address collateral,
+        uint collateralAmount,
+        bool isEth
+    ) internal returns (uint buyinAmount) {
+        uint convertedAmount;
+        if (isEth) {
+            IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
+            convertedAmount = multiCollateralOnOffRamp.onrampWithEth{value: msg.value}(buyinAmount, collateralAmount);
+        } else {
+            IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
+            convertedAmount = multiCollateralOnOffRamp.onramp(buyinAmount, collateral, collateralAmount);
+        }
+        buyinAmount = (convertedAmount * (ONE - safeBoxImpact - lpFee)) / ONE;
     }
 
     function _createNewMarket(
@@ -118,7 +164,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint64 strikeTime,
         SpeedMarket.Direction direction,
         uint buyinAmount,
-        bytes[] memory priceUpdateData
+        bytes[] memory priceUpdateData,
+        bool transferSusd
     ) internal {
         require(supportedAsset[asset], "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "wrong buy in amount");
@@ -135,9 +182,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         require((price.publishTime + maximumPriceDelay) > block.timestamp, "Stale price");
 
-        uint totalAmountToTransfer = (buyinAmount * (ONE + safeBoxImpact + lpFee)) / ONE;
-        sUSD.safeTransferFrom(msg.sender, address(this), totalAmountToTransfer);
-
+        if (transferSusd) {
+            uint totalAmountToTransfer = (buyinAmount * (ONE + safeBoxImpact + lpFee)) / ONE;
+            sUSD.safeTransferFrom(msg.sender, address(this), totalAmountToTransfer);
+        }
         SpeedMarket srm = SpeedMarket(Clones.clone(speedMarketMastercopy));
         srm.initialize(
             SpeedMarket.InitParams(address(this), msg.sender, asset, strikeTime, price.price, direction, buyinAmount)
@@ -201,7 +249,19 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         PythStructs.Price memory price = prices[0].price;
 
-        SpeedMarket(market).resolve(price.price);
+        _resolveMarketWithPrice(market, price.price);
+    }
+
+    /// @notice resolve market for a given market address with finalPrice
+    function resolveMarketManually(address _market, int64 _finalPrice) external isAddressWhitelisted {
+        require(_activeMarkets.contains(_market), "Not an active market");
+        require(SpeedMarket(_market).strikeTime() < block.timestamp, "Not ready to be resolved");
+        require(!SpeedMarket(_market).resolved(), "Already resolved");
+        _resolveMarketWithPrice(_market, _finalPrice);
+    }
+
+    function _resolveMarketWithPrice(address market, int64 _finalPrice) internal {
+        SpeedMarket(market).resolve(_finalPrice);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
 
@@ -217,6 +277,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 currentRiskPerAsset[SpeedMarket(market).asset()] = 0;
             }
         }
+
+        emit MarketResolved(market, SpeedMarket(market).result(), SpeedMarket(market).isUserWinner());
     }
 
     //////////// getters for active and matured markets/////////////////
@@ -385,6 +447,22 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetSupportedAsset(asset, _supported);
     }
 
+    /// @notice adding/removing whitelist address depending on a flag
+    /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
+    /// @param _flag adding or removing from whitelist (true: add, false: remove)
+    function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
+        require(_whitelistAddress != address(0) && whitelistedAddresses[_whitelistAddress] != _flag);
+        whitelistedAddresses[_whitelistAddress] = _flag;
+        emit AddedIntoWhitelist(_whitelistAddress, _flag);
+    }
+
+    //////////////////modifiers/////////////////
+
+    modifier isAddressWhitelisted() {
+        require(whitelistedAddresses[msg.sender], "ID10");
+        _;
+    }
+
     //////////////////events/////////////////
 
     event MarketCreated(
@@ -397,6 +475,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint buyinAmount
     );
 
+    event MarketResolved(address market, SpeedMarket.Direction result, bool userIsWinner);
+
     event MastercopyChanged(address mastercopy);
     event AmountsChanged(uint _minBuyinAmount, uint _maxBuyinAmount);
     event TimesChanged(uint _minimalTimeToMaturity, uint _maximalTimeToMaturity);
@@ -407,4 +487,5 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetLPFee(uint _lpFee);
     event SetStakingThales(address _stakingThales);
     event SetSupportedAsset(bytes32 asset, bool _supported);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 }

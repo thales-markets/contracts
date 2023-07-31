@@ -245,11 +245,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "buyinAmount",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "collateral",
         "type": "address"
@@ -273,11 +268,6 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "buyinAmount",
-        "type": "uint256"
-      },
       {
         "internalType": "uint256",
         "name": "collateralAmount",
@@ -466,11 +456,24 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_quoter",
+        "name": "_priceFeed",
         "type": "address"
       }
     ],
-    "name": "setQuoter",
+    "name": "setPriceFeed",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_usd",
+        "type": "address"
+      }
+    ],
+    "name": "setSUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -520,32 +523,6 @@
       }
     ],
     "name": "setSwapRouter",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_usd",
-        "type": "address"
-      }
-    ],
-    "name": "setUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_factory",
-        "type": "address"
-      }
-    ],
-    "name": "setUniswapFactory",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

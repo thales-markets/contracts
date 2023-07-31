@@ -2,11 +2,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "buyinAmount",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "collateral",
         "type": "address"
@@ -30,11 +25,6 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "buyinAmount",
-        "type": "uint256"
-      },
       {
         "internalType": "uint256",
         "name": "collateralAmount",

@@ -6,8 +6,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract ExoticUSDC is ERC20, Ownable {
-    string private __name = "Exotic USDC Token";
-    string private __symbol = "eUSDC";
+    string private __name = "Exotic USD Token";
+    string private __symbol = "eUSD";
     uint8 private constant __decimals = 6;
     uint private constant INITIAL_TOTAL_SUPPLY = 100;
 

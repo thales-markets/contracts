@@ -65,18 +65,6 @@ contract ParlayVerifier {
         IParlayPolicy parlayPolicy;
     }
 
-    struct SGPMarket {
-        address sportMarket1;
-        address sportMarket2;
-        uint tag1;
-        uint tag2_2;
-        uint tag2_1;
-        uint position1;
-        uint position2;
-        ISportsAMM sportsAMM;
-        address parlayAMM;
-    }
-
     function _obtainAllTags(address[] memory sportMarkets, IParlayPolicy _parlayPolicy)
         internal
         view
@@ -88,7 +76,6 @@ contract ParlayVerifier {
         uint[] memory uniqueTagsCount = new uint[](sportMarkets.length);
         uint uniqueTagsCounter;
         address sportMarket;
-        bool eligible;
         bool oldUnique;
         for (uint i = 0; i < sportMarkets.length; i++) {
             sportMarket = sportMarkets[i];
@@ -122,10 +109,8 @@ contract ParlayVerifier {
                 }
             }
         }
-        eligible = _getRestrictedCounts(uniqueTags, uniqueTagsCount, uniqueTagsCounter, _parlayPolicy);
-        if (!eligible) {
-            tag1 = new uint[](0);
-            tag2 = new uint[](0);
+        if (!_getRestrictedCounts(uniqueTags, uniqueTagsCount, uniqueTagsCounter, _parlayPolicy)) {
+            revert("RestrictedTag1Combo");
         }
     }
 
@@ -141,7 +126,7 @@ contract ParlayVerifier {
             for (uint i = 0; i < _uniqueTagsCounter; i++) {
                 restrictedCount = _parlayPolicy.restrictedMarketsCount(_uniqueTags[i]);
                 if (restrictedCount > 0 && restrictedCount < _uniqueTagsCount[i]) {
-                    eligible = false;
+                    revert("RestrictedTag1Count");
                 }
                 if (eligible && i > 0) {
                     for (uint j = 0; j < i; j++) {
@@ -162,15 +147,7 @@ contract ParlayVerifier {
     function _checkNamesAndGetOdds(CheckNames memory params)
         internal
         view
-        returns (
-            // address[] memory _sportMarkets,
-            // uint[] memory _positions,
-            // uint[] memory _tag1,
-            // uint[] memory _tag2,
-            // IParlayPolicy parlayPolicy
-            uint[] memory odds,
-            uint[] memory sgpFees
-        )
+        returns (uint[] memory odds, uint[] memory sgpFees)
     {
         CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
         odds = new uint[](params.sportMarkets.length);
@@ -236,14 +213,9 @@ contract ParlayVerifier {
         resultOdds1 = odds1;
         resultOdds2 = odds2;
         if (odds1 > 0 && odds2 > 0) {
-            // uint multiplied = (odds1 * odds2) / ONE;
-            // uint discountedQuote = ((multiplied * ONE * ONE) / sgpFee) / ONE;
             if (odds1 > odds2) {
-                // resultOdds2 = ((discountedQuote * ONE * ONE) / odds1) / ONE;
                 sgpFee2 = sgpFee;
             } else {
-                // resultOdds1 = ((discountedQuote * ONE * ONE) / odds2) / ONE;
-                // resultOdds2 = odds2;
                 sgpFee1 = sgpFee;
             }
         }

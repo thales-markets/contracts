@@ -268,6 +268,31 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         }
     }
 
+    /// @notice view function which returns odds and lnes for player props
+    /// @param _gameIds game ids for which games is looking
+    /// @param _playerIds player ids
+    /// @param _optionIds option ids such as points etc
+    /// @return odds odds array
+    /// @return lines line array
+    function getPlayerPropForOption(
+        bytes32[] memory _gameIds,
+        bytes32[] memory _playerIds,
+        uint8[] memory _optionIds
+    ) public view returns (int24[] memory odds, uint16[] memory lines) {
+        odds = new int24[](2 * _gameIds.length);
+        lines = new uint16[](_gameIds.length);
+        for (uint i = 0; i < _gameIds.length; i++) {
+            (uint16 line, int24 overOdds, int24 underOdds) = playerProps.getPlayerPropForOption(
+                _gameIds[i],
+                _playerIds[i],
+                _optionIds[i]
+            );
+            lines[i] = line;
+            odds[i * 2 + 0] = overOdds; // 0 2 4 ...
+            odds[i * 2 + 1] = underOdds; // 1 3 5 ...
+        }
+    }
+
     /// @notice view function which returns odds in a batch of games
     /// @param _gameIds game ids for which games is looking
     /// @return odds odds array

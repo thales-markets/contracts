@@ -704,6 +704,7 @@ contract('PlayerProps', (accounts) => {
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 		await verifier.setObtainer(GamesOddsObtainerDeployed.address, { from: owner });
 		await verifier.setSportsManager(SportPositionalMarketManager.address, { from: owner });
+		await verifier.setPlayerPropsAddress(GamesPlayerPropsDeployed.address, { from: owner });
 		await GamesOddsReceiverDeployed.addToWhitelist([third], true, { from: owner });
 
 		await GamesOddsObtainerDeployed.setContracts(
@@ -1110,6 +1111,29 @@ contract('PlayerProps', (accounts) => {
 					from: third,
 				}
 			);
+
+			let props = await GamesPlayerPropsDeployed.getPlayerPropForOption(
+				'0x6536306366613738303834366166363839373862343935373965356366333936',
+				'0x3431373836333400000000000000000000000000000000000000000000000000',
+				37
+			);
+
+			assert.bnEqual(285, props[0]);
+			assert.bnEqual(-11500, props[1]);
+			assert.bnEqual(11500, props[2]);
+
+			let propsArray = await verifier.getPlayerPropForOption(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				['0x3431373836333400000000000000000000000000000000000000000000000000'],
+				[37]
+			);
+
+			let prop1 = propsArray[0];
+			let prop2 = propsArray[1];
+
+			assert.bnEqual(-11500, prop1[0]);
+			assert.bnEqual(11500, prop1[1]);
+			assert.bnEqual(285, prop2[0]);
 
 			assert.bnEqual(1, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
 			let mainMarketPlayerPropsChild =

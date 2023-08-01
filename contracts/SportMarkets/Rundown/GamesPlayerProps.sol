@@ -361,6 +361,23 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                 : getNormalizedChildOddsFromGameOddsStruct(_market);
     }
 
+    function getPlayerPropForOption(
+        bytes32 _gameId,
+        bytes32 _playerId,
+        uint8 _option
+    )
+        external
+        view
+        returns (
+            uint16,
+            int24,
+            int24
+        )
+    {
+        IGamesPlayerProps.PlayerProps memory currentProp = playerProp[_gameId][_playerId][_option];
+        return (currentProp.line, currentProp.overOdds, currentProp.underOdds);
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     /// @notice sets consumer, verifier, manager address

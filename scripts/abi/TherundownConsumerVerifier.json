@@ -847,6 +847,40 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32[]",
+        "name": "_gameIds",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "_playerIds",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "_optionIds",
+        "type": "uint8[]"
+      }
+    ],
+    "name": "getPlayerPropForOption",
+    "outputs": [
+      {
+        "internalType": "int24[]",
+        "name": "odds",
+        "type": "int24[]"
+      },
+      {
+        "internalType": "uint16[]",
+        "name": "lines",
+        "type": "uint16[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"

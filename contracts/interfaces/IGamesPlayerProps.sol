@@ -35,4 +35,17 @@ interface IGamesPlayerProps {
     function numberOfChildMarkets(address _main) external view returns (uint);
 
     function doesSportSupportPlayerProps(uint _sportId) external view returns (bool);
+
+    function getPlayerPropForOption(
+        bytes32 gameId,
+        bytes32 playerId,
+        uint8 option
+    )
+        external
+        view
+        returns (
+            uint16,
+            int24,
+            int24
+        );
 }

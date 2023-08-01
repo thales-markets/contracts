@@ -12,7 +12,7 @@ contract ExoticUSDC is ERC20, Ownable {
     uint private constant INITIAL_TOTAL_SUPPLY = 100;
 
     bool public paused;
-    uint public defaultAmount;
+    uint public defaultAmount = 100 * 1e6;
 
     function name() public view override returns (string memory) {
         return __name;

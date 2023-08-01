@@ -108,7 +108,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
-        uint amountOut = curveSUSD.exchange_underlying(
+        amountOut = curveSUSD.exchange_underlying(
             curveIndex,
             0,
             collateralQuote,
@@ -118,10 +118,10 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
             ? collateralQuote * (1e12)
             : collateralQuote;
+
         require(
-            maxAllowedPegSlippagePercentage > 0 &&
-                transformedCollateralForPegCheck <= (amountOut * (ONE + maxAllowedPegSlippagePercentage)) / ONE,
-            "Amount below max allowed peg slippage"
+            amountOut <= (transformedCollateralForPegCheck * (ONE + maxAllowedPegSlippagePercentage)) / ONE,
+            "Amount above max allowed peg slippage"
         );
     }
 
@@ -203,7 +203,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     function getMinimumReceived(address collateral, uint amount) public view returns (uint minReceived) {
         if (_mapCollateralToCurveIndex(collateral) > 0) {
-            minReceived = (amount * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
+            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt ? amount * (1e12) : amount;
+            minReceived = (transformedCollateralForPegCheck * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
             minReceived = (((amount * currentCollateralPrice) / ONE) * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
@@ -238,6 +239,10 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     /// @notice setPriceFeed
     function setPriceFeed(address _priceFeed) external onlyOwner {
         priceFeed = IPriceFeed(_priceFeed);
+    }
+
+    function setPriceFeedKeyPerAsset(bytes32 key, address asset) external onlyOwner {
+        priceFeedKeyPerCollateral[asset] = key;
     }
 
     /// @notice Updates contract parametars

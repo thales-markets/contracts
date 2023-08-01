@@ -73,37 +73,34 @@ async function main() {
 	const ParlayAMMDeployed = await ParlayAMM.attach(ParlayAMMAddress);
 	console.log('ParlayAMM found at: ', ParlayAMMAddress);
 
-	// const ParlayPolicy = await ethers.getContractFactory('ParlayPolicy');
+	const ParlayPolicy = await ethers.getContractFactory('ParlayPolicy');
 
-	// await delay(2000);
-	// const ParlayPolicyDeployed = await upgrades.deployProxy(ParlayPolicy, [
-	// 	owner.address,
-	// 	ParlayAMMAddress,
-	// ]);
-	// await delay(2000);
-	// await ParlayPolicyDeployed.deployed();
+	await delay(2000);
+	const ParlayPolicyDeployed = await upgrades.deployProxy(ParlayPolicy, [
+		owner.address,
+		ParlayAMMAddress,
+	]);
+	await delay(2000);
+	await ParlayPolicyDeployed.deployed();
 
-	// console.log('ParlayPolicy Deployed on', ParlayPolicyDeployed.address);
-	// setTargetAddress('ParlayPolicy', network, ParlayPolicyDeployed.address);
+	console.log('ParlayPolicy Deployed on', ParlayPolicyDeployed.address);
+	setTargetAddress('ParlayPolicy', network, ParlayPolicyDeployed.address);
 
-	// await delay(65000);
-	// const ParlayPolicyImplementation = await getImplementationAddress(
-	// 	ethers.provider,
-	// 	ParlayPolicyDeployed.address
-	// );
+	await delay(65000);
+	const ParlayPolicyImplementation = await getImplementationAddress(
+		ethers.provider,
+		ParlayPolicyDeployed.address
+	);
 
-	// console.log('Implementation ParlayPolicy: ', ParlayPolicyImplementation);
-	// setTargetAddress('ParlayPolicyImplementation', network, ParlayPolicyImplementation);
+	console.log('Implementation ParlayPolicy: ', ParlayPolicyImplementation);
+	setTargetAddress('ParlayPolicyImplementation', network, ParlayPolicyImplementation);
 
 	await delay(5000);
-    let ParlayPolicyAddress = getTargetAddress('ParlayPolicy', network);
-
 
 	if (networkObj.chainId != 10 || networkObj.chainId != 42161) {
-		await ParlayAMMDeployed.setPolicyAddresses(
-			ParlayPolicyAddress,
-			{ from: owner.address }
-		);
+		await ParlayAMMDeployed.setPolicyAddresses(ParlayPolicyDeployed.address, {
+			from: owner.address,
+		});
 
 		console.log('ParlayPolicy address set on ParlayAMM');
 	}

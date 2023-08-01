@@ -270,8 +270,8 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                             newCombinedOdds.tags[0],
                             0,
                             newCombinedOdds.tags[1],
-                            3,
-                            3
+                            positions[0],
+                            positions[1]
                         );
 
                         if (sgpFee > 0) {
@@ -314,8 +314,8 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                             newCombinedOdds.tags[0],
                             0,
                             newCombinedOdds.tags[1],
-                            3,
-                            3
+                            positions[0],
+                            positions[1]
                         );
 
                         if (sgpFee > 0) {

@@ -306,7 +306,7 @@ contract('Vault', (accounts) => {
 
 		await vault.initialize({
 			_owner: owner,
-			_thalesAmm: rangedMarketsAMM.address,
+			_rangedMarketAmm: rangedMarketsAMM.address,
 			_sUSD: sUSDSynth.address,
 			_roundLength: week,
 			_priceLowerLimit: toUnit(0.05).toString(),
@@ -393,6 +393,7 @@ contract('Vault', (accounts) => {
 			await vault.deposit(toUnit(100), { from: first });
 
 			round = 1;
+			console.log(`vault started is ${vaultStarted}`);
 			assert.bnEqual(await vault.getBalancesPerRound(round, first), toUnit(100));
 
 			assert.bnEqual(await sUSDSynth.balanceOf(vault.address), toUnit(100));
@@ -429,6 +430,7 @@ contract('Vault', (accounts) => {
 			await fastForward(week);
 			// CLOSE ROUND #1 - START ROUND #2
 			await vault.closeRound();
+			console.log('round 1 closed');
 
 			round = 2;
 			assert.bnEqual(await vault.getBalancesPerRound(round, first), toUnit(100));
@@ -507,6 +509,7 @@ contract('Vault', (accounts) => {
 			console.log('getCurrentRoundEnd is:' + getCurrentRoundEnd);
 
 			now = await currentTime();
+			console.log('current time is ', now);
 
 			await manager.setMarketCreationParameters(now - week + 200, now - 3 * day + 200);
 			let price = (await priceFeed.rateForCurrency(ETHkey)) / 1e18;
@@ -571,6 +574,7 @@ contract('Vault', (accounts) => {
 				RangedPosition.IN,
 				toUnit('2')
 			);
+			console.log(`the addy is ${rangedMarket.address}`);
 
 			console.log('buyInQuote is:' + buyInQuote / 1e18);
 
@@ -613,9 +617,9 @@ contract('Vault', (accounts) => {
 			let rangedPositionLeftMarketUPBalance = await up.balanceOf(rangedMarket.address);
 			console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
 
-			let rangedPositionRightMarketUPBalance = await up.balanceOf(rangedMarket.address);
+			let rangedPositionRightMarketDownBalance = await down.balanceOf(rangedMarket.address);
 			console.log(
-				'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
+				'rangedPositionRightMarketDownBalance:' + rangedPositionRightMarketDownBalance / 1e18
 			);
 
 			console.log('DONE BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
@@ -625,7 +629,6 @@ contract('Vault', (accounts) => {
 				rangedMarket.address,
 				RangedPosition.IN
 			);
-			console.log('buyPriceImpactFirst: ', buyPriceImpactFirst);
 
 			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
 				rangedMarket.address,
@@ -646,7 +649,7 @@ contract('Vault', (accounts) => {
 			let allocationSpentInARound = await vault.allocationSpentInARound(round);
 			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
 
-			await vault.trade(rangedMarket.address, toUnit(20), RangedPosition.IN);
+			await vault.trade(rangedMarket.address, toUnit('20'), RangedPosition.IN);
 
 			allocationSpentInARound = await vault.allocationSpentInARound(round);
 			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
@@ -701,8 +704,9 @@ contract('Vault', (accounts) => {
 
 			let profitAndLossPerRound = await vault.profitAndLossPerRound(round - 1);
 			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
-
+			console.log(vaultStarted);
 			await fastForward(week);
+			console.log(`week timestamp: ${week}`);
 			await vault.closeRound();
 
 			round = await vault.round();

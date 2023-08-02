@@ -9,7 +9,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
-import "../interfaces/IThalesAMM.sol";
 import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IStakingThales.sol";
 
@@ -26,7 +25,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     struct InitParams {
         address _owner;
-        RangedMarketsAMM _thalesAmm;
+        RangedMarketsAMM _rangedMarketAmm;
         IERC20Upgradeable _sUSD;
         uint _roundLength;
         uint _priceLowerLimit;
@@ -100,7 +99,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function __BaseVault_init(
         address _owner,
-        RangedMarketsAMM _thalesAmm,
+        RangedMarketsAMM _rangedMarketAmm,
         IERC20Upgradeable _sUSD,
         uint _roundLength,
         uint _maxAllowedDeposit,
@@ -110,7 +109,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal onlyInitializing {
         setOwner(_owner);
         initNonReentrant();
-        rangedAMM = RangedMarketsAMM(_thalesAmm);
+        rangedAMM = RangedMarketsAMM(_rangedMarketAmm);
 
         sUSD = _sUSD;
         roundLength = _roundLength;
@@ -125,7 +124,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function initialize(InitParams calldata params) external initializer {
         __BaseVault_init(
             params._owner,
-            params._thalesAmm,
+            params._rangedMarketAmm,
             params._sUSD,
             params._roundLength,
             params._maxAllowedDeposit,
@@ -158,6 +157,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// excercise options of trading markets and calculate profit and loss
     function closeRound() external nonReentrant whenNotPaused {
         require(canCloseCurrentRound(), "Can't close current round");
+
         // excercise market options
         _exerciseMarketsReadyToExercised();
 
@@ -269,9 +269,8 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         require(vaultStarted, "Vault has not started");
         require(amount >= minTradeAmount, "Amount less than minimum");
         require(position == RangedMarket.Position.In, "Invalid position");
+        require(rangedAMM.availableToBuyFromAMM(market, position) > 0, "Market not known or no options available to buy");
 
-        //IPositionalMarket leftMarketContract = IPositionalMarket(market.leftMarket());
-        //IPositionalMarket rightMarketContract = IPositionalMarket(market.rightMarket());
         (uint leftMaturity, ) = market.leftMarket().times();
         (uint rightMaturity, ) = market.rightMarket().times();
         require(leftMaturity < (roundStartTime[round] + roundLength), "Market time not valid");
@@ -286,14 +285,9 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         require(pricePositionImpact < skewImpactLimit, "Skew impact too high");
         _buyFromAmm(market, position, amount);
 
-        if (!isTradingMarketInARound[round][address(market.leftMarket())]) {
-            tradingMarketsPerRound[round].push(address(market.leftMarket()));
-            isTradingMarketInARound[round][address(market.leftMarket())] = true;
-        }
-
-        if (!isTradingMarketInARound[round][address(market.rightMarket())]) {
-            tradingMarketsPerRound[round].push(address(market.rightMarket()));
-            isTradingMarketInARound[round][address(market.rightMarket())] = true;
+        if (!isTradingMarketInARound[round][address(market)]) {
+            tradingMarketsPerRound[round].push(address(market));
+            isTradingMarketInARound[round][address(market)] = true;
         }
     }
 
@@ -305,11 +299,11 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     /// @notice Set rangedAMM contract
-    /// @param _thalesAMM rangedAMM address
-    function setThalesAmm(RangedMarketsAMM _thalesAMM) external onlyOwner {
-        rangedAMM = _thalesAMM;
+    /// @param _rangedMarketAmm rangedAMM address
+    function setRangedAmm(RangedMarketsAMM _rangedMarketAmm) external onlyOwner {
+        rangedAMM = _rangedMarketAmm;
         sUSD.approve(address(rangedAMM), type(uint256).max);
-        emit ThalesAMMChanged(address(_thalesAMM));
+        emit RangedAMMChanged(address(_rangedMarketAmm));
     }
 
     /// @notice Set IStakingThales contract
@@ -441,8 +435,8 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             return false;
         }
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            IPositionalMarket market = IPositionalMarket(tradingMarketsPerRound[round][i]);
-            if ((!market.resolved())) {
+            RangedMarket market = RangedMarket(tradingMarketsPerRound[round][i]);
+            if ((!market.leftMarket().resolved() || !market.rightMarket().resolved())) {
                 return false;
             }
         }
@@ -506,7 +500,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event VaultStarted();
     event RoundClosed(uint round, uint roundPnL);
     event RoundLengthChanged(uint roundLength);
-    event ThalesAMMChanged(address rangedAMM);
+    event RangedAMMChanged(address rangedAMM);
     event StakingThalesChanged(address stakingThales);
     event SetSUSD(address sUSD);
     event Deposited(address user, uint amount);

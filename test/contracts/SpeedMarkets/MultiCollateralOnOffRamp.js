@@ -32,7 +32,6 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 
 			let MockPriceFeed = artifacts.require('MockPriceFeed');
 			let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
-			await MockPriceFeedDeployed.setPricetoReturn(10000);
 
 			await multiCollateralOnOffRamp.initialize(owner, exoticUSD.address);
 
@@ -181,6 +180,32 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 			await expect(
 				multiCollateralOnOffRamp.onramp(exoticUSDC.address, toUnitSix(10), { from: user })
 			).to.be.revertedWith('Amount above max allowed peg slippage');
+
+			let MockWeth = artifacts.require('MockWeth');
+			let mockWeth = await MockWeth.new();
+			let userEthBalance = await web3.eth.getBalance(user);
+			console.log('userEthBalance ' + userEthBalance);
+
+			await multiCollateralOnOffRamp.setWETH(mockWeth.address);
+
+			balance = await mockWeth.balanceOf(user);
+			console.log('Balance weth user' + balance / 1e18);
+
+			balance = await exoticUSD.balanceOf(user);
+			console.log('Balance exoticUSD user before ' + balance / 1e18);
+
+			await expect(
+				multiCollateralOnOffRamp.onrampWithEth({ from: user, value: toUnit('1') })
+			).to.be.revertedWith('Amount above max allowed peg slippage');
+
+			await swapRouterMock.setMultiplier(1);
+			await multiCollateralOnOffRamp.onrampWithEth({ from: user, value: toUnit('1') });
+
+			balance = await exoticUSD.balanceOf(user);
+			console.log('Balance exoticUSD user after ' + balance / 1e18);
+
+			userEthBalance = await web3.eth.getBalance(user);
+			console.log('userEthBalance after' + userEthBalance);
 		});
 	});
 });

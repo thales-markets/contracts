@@ -44,14 +44,10 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     mapping(address => bool) public ammsSupported;
 
     ISwapRouter public swapRouter;
-    IUniswapV3Factory public uniswapFactory;
-
-    address public WETH9;
-
-    IQuoter public quoter;
 
     IPriceFeed public priceFeed;
 
+    address public WETH9;
     address public usdc;
     address public usdt;
     address public dai;
@@ -72,6 +68,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         sUSD = _sUSD;
     }
 
+    /// @notice use the collateral and collateralAmount to buy sUSD
+    /// @return convertedAmount The amount of sUSD received.
     function onramp(address collateral, uint collateralAmount)
         external
         nonReentrant
@@ -83,24 +81,35 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
         IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
 
+        // use direct path for WETH
         if (collateral == WETH9) {
             convertedAmount = _swapExactSingle(collateralAmount, collateral);
         } else if (curveOnrampEnabled && (collateral == usdc || collateral == dai || collateral == usdt)) {
+            // for stable coins use Curve
             convertedAmount = _swapViaCurve(collateral, collateralAmount);
         } else {
+            // use a path over WETH pools for other ammsSupported collaterals (OP, ARB)
             convertedAmount = _swapExactInput(collateralAmount, collateral);
         }
         sUSD.safeTransfer(msg.sender, convertedAmount);
+
+        emit Onramped(collateral, collateralAmount);
     }
 
-    function onrampWithEth(uint collateralAmount) external payable nonReentrant notPaused returns (uint convertedAmount) {
+    /// @notice use native eth as a collateral to buy sUSD
+    /// @return convertedAmount The amount of sUSD received.
+    function onrampWithEth() external payable nonReentrant notPaused returns (uint convertedAmount) {
+        require(msg.value > 0, "Can not exchange 0 ETH");
+
         WethLike(WETH9).deposit{value: msg.value}();
 
-        require(IERC20Upgradeable(WETH9).balanceOf(address(this)) == collateralAmount);
+        require(IERC20Upgradeable(WETH9).balanceOf(address(this)) == msg.value);
 
-        convertedAmount = _swapExactSingle(collateralAmount, WETH9);
+        convertedAmount = _swapExactSingle(msg.value, WETH9);
 
         sUSD.safeTransfer(msg.sender, convertedAmount);
+
+        emit OnrampedEth(msg.value);
     }
 
     ///////////////////////Curve related code///////////////////
@@ -112,13 +121,14 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
             curveIndex,
             0,
             collateralQuote,
-            getMinimumReceived(collateral, collateralQuote)
+            getMinimumReceived(collateral, collateralQuote) // the minimum received is predefined
         );
 
         uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
             ? collateralQuote * (1e12)
             : collateralQuote;
 
+        // ensure the amount received is withing allowed range per maxAllowedPegSlippagePercentage
         require(
             amountOut <= (transformedCollateralForPegCheck * (ONE + maxAllowedPegSlippagePercentage)) / ONE,
             "Amount above max allowed peg slippage"
@@ -146,8 +156,10 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         amountOut = swapRouter.exactInputSingle(params);
 
         uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[tokenIn]);
+        require(currentCollateralPrice > 0, "price of collateral unknown");
         uint expectedAmountOut = (amountIn * currentCollateralPrice) / ONE;
 
+        // ensure the amount received is withing allowed range per maxAllowedPegSlippagePercentage
         require(
             amountOut <= (expectedAmountOut * (ONE + (maxAllowedPegSlippagePercentage))) / ONE,
             "Amount above max allowed peg slippage"
@@ -180,6 +192,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         amountOut = swapRouter.exactInput(params);
 
         uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[tokenIn]);
+        require(currentCollateralPrice > 0, "price of collateral unknown");
+
         uint expectedAmountOut = (amountIn * currentCollateralPrice) / ONE;
 
         require(
@@ -201,6 +215,9 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         return 0;
     }
 
+    /////////// read methods
+
+    /// @notice return the guaranteed payout for the given collateral and amount
     function getMinimumReceived(address collateral, uint amount) public view returns (uint minReceived) {
         if (_mapCollateralToCurveIndex(collateral) > 0) {
             uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt ? amount * (1e12) : amount;
@@ -211,38 +228,47 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         }
     }
 
-    /// @notice setSupportedCollateral
+    //////////////// setters
+
+    /// @notice setSupportedCollateral which can be used for onramp
     function setSupportedCollateral(address collateral, bool supported) external onlyOwner {
         collateralSupported[collateral] = supported;
+        emit SetSupportedCollateral(collateral, supported);
     }
 
-    /// @notice setSupportedAMM
+    /// @notice setSupportedAMM which can call the onramp method
     function setSupportedAMM(address amm, bool supported) external onlyOwner {
         ammsSupported[amm] = supported;
+        emit SetSupportedAMM(amm, supported);
     }
 
     /// @notice setWETH
     function setWETH(address _weth) external onlyOwner {
         WETH9 = _weth;
+        emit SetWETH(_weth);
     }
 
     /// @notice setUSD
     function setSUSD(address _usd) external onlyOwner {
         sUSD = IERC20Upgradeable(_usd);
+        emit SetSUSD(_usd);
     }
 
     /// @notice setSwapRouter
     function setSwapRouter(address _router) external onlyOwner {
         swapRouter = ISwapRouter(_router);
+        emit SetSwapRouter(_router);
     }
 
     /// @notice setPriceFeed
     function setPriceFeed(address _priceFeed) external onlyOwner {
         priceFeed = IPriceFeed(_priceFeed);
+        emit SetPriceFeed(_priceFeed);
     }
 
     function setPriceFeedKeyPerAsset(bytes32 key, address asset) external onlyOwner {
         priceFeedKeyPerCollateral[asset] = key;
+        emit SetPriceFeedKeyPerAsset(key, asset);
     }
 
     /// @notice Updates contract parametars
@@ -271,5 +297,25 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         //sUSD.approve(_curveSUSD, type(uint256).max);
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
+        emit CurveSUSDSet(_curveSUSD, _dai, _usdc, _usdt, _curveOnrampEnabled, _maxAllowedPegSlippagePercentage);
     }
+
+    ////////////////events
+    event CurveSUSDSet(
+        address _curveSUSD,
+        address _dai,
+        address _usdc,
+        address _usdt,
+        bool _curveOnrampEnabled,
+        uint _maxAllowedPegSlippagePercentage
+    );
+    event SetPriceFeedKeyPerAsset(bytes32 key, address asset);
+    event SetPriceFeed(address _priceFeed);
+    event SetSwapRouter(address _router);
+    event SetSUSD(address _usd);
+    event SetWETH(address _weth);
+    event SetSupportedAMM(address amm, bool supported);
+    event SetSupportedCollateral(address collateral, bool supported);
+    event Onramped(address collateral, uint amount);
+    event OnrampedEth(uint amount);
 }

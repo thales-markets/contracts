@@ -195,11 +195,11 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 			console.log('Balance exoticUSD user before ' + balance / 1e18);
 
 			await expect(
-				multiCollateralOnOffRamp.onrampWithEth({ from: user, value: toUnit('1') })
+				multiCollateralOnOffRamp.onrampWithEth(toUnit('1'), { from: user, value: toUnit('1') })
 			).to.be.revertedWith('Amount above max allowed peg slippage');
 
 			await swapRouterMock.setMultiplier(1);
-			await multiCollateralOnOffRamp.onrampWithEth({ from: user, value: toUnit('1') });
+			await multiCollateralOnOffRamp.onrampWithEth(toUnit('1'), { from: user, value: toUnit('1') });
 
 			balance = await exoticUSD.balanceOf(user);
 			console.log('Balance exoticUSD user after ' + balance / 1e18);

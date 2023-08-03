@@ -150,9 +150,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     ) internal returns (uint buyinAmount) {
         uint convertedAmount;
         if (isEth) {
-            convertedAmount = multiCollateralOnOffRamp.onrampWithEth{value: msg.value}();
+            convertedAmount = multiCollateralOnOffRamp.onrampWithEth{value: msg.value}(collateralAmount);
         } else {
             IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
+            IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralAmount);
             convertedAmount = multiCollateralOnOffRamp.onramp(collateral, collateralAmount);
         }
         buyinAmount = (convertedAmount * (ONE - safeBoxImpact - lpFee)) / ONE;
@@ -447,6 +448,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetSupportedAsset(asset, _supported);
     }
 
+    /// @notice set multicollateral onramp contract
+    function setMultiCollateralOnOffRamp(address _onramper) external onlyOwner {
+        multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(_onramper);
+        emit SetMultiCollateralOnOffRamp(_onramper);
+    }
+
     /// @notice adding/removing whitelist address depending on a flag
     /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
     /// @param _flag adding or removing from whitelist (true: add, false: remove)
@@ -488,4 +495,5 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetStakingThales(address _stakingThales);
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
+    event SetMultiCollateralOnOffRamp(address _onramper);
 }

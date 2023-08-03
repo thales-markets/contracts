@@ -98,18 +98,19 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     /// @notice use native eth as a collateral to buy sUSD
     /// @return convertedAmount The amount of sUSD received.
-    function onrampWithEth() external payable nonReentrant notPaused returns (uint convertedAmount) {
+    function onrampWithEth(uint amount) external payable nonReentrant notPaused returns (uint convertedAmount) {
         require(msg.value > 0, "Can not exchange 0 ETH");
+        require(msg.value >= amount, "Amount ETH has to be larger than specified amount");
 
-        WethLike(WETH9).deposit{value: msg.value}();
+        WethLike(WETH9).deposit{value: amount}();
 
-        require(IERC20Upgradeable(WETH9).balanceOf(address(this)) == msg.value);
+        require(IERC20Upgradeable(WETH9).balanceOf(address(this)) == amount);
 
-        convertedAmount = _swapExactSingle(msg.value, WETH9);
+        convertedAmount = _swapExactSingle(amount, WETH9);
 
         sUSD.safeTransfer(msg.sender, convertedAmount);
 
-        emit OnrampedEth(msg.value);
+        emit OnrampedEth(amount);
     }
 
     ///////////////////////Curve related code///////////////////

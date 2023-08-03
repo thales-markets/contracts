@@ -716,6 +716,11 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
+    function isKnownMarket(address market) external view returns (bool) {
+    return _knownMarkets.contains(market);
+}
+
+
     modifier knownRangedMarket(address market) {
         require(_knownMarkets.contains(market), "Not a known ranged market");
         _;

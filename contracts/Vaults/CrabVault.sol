@@ -269,7 +269,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         require(vaultStarted, "Vault has not started");
         require(amount >= minTradeAmount, "Amount less than minimum");
         require(position == RangedMarket.Position.In, "Invalid position");
-        require(rangedAMM.availableToBuyFromAMM(market, position) > 0, "Market not known or no options available to buy");
+        require(rangedAMM.isKnownMarket(address(market)), "Market not known or no options available to buy");
 
         uint sUSDPaid = rangedAMM.buyFromAmmQuote(market, position, amount);
 

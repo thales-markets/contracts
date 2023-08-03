@@ -132,6 +132,9 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                     address child = mainMarketChildMarketPerPlayerAndOptionIndex[_main][_result.playerId][
                         _result.options[i]
                     ][j];
+                    if (invalidOddsForPlayerProps[_result.gameId][_result.playerId][_result.options[i]]) {
+                        consumer.pauseOrUnpauseMarket(child, false);
+                    }
                     _resolveMarketForPlayer(child, _result.scores[i]);
                 }
                 resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.options[i]] = true;
@@ -371,11 +374,17 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         returns (
             uint16,
             int24,
-            int24
+            int24,
+            bool
         )
     {
         IGamesPlayerProps.PlayerProps memory currentProp = playerProp[_gameId][_playerId][_option];
-        return (currentProp.line, currentProp.overOdds, currentProp.underOdds);
+        return (
+            currentProp.line,
+            currentProp.overOdds,
+            currentProp.underOdds,
+            invalidOddsForPlayerProps[_gameId][_playerId][_option]
+        );
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */

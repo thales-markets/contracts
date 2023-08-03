@@ -46,6 +46,7 @@ interface IGamesPlayerProps {
         returns (
             uint16,
             int24,
-            int24
+            int24,
+            bool
         );
 }

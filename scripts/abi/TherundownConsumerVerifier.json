@@ -873,6 +873,11 @@
         "internalType": "uint16[]",
         "name": "lines",
         "type": "uint16[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "invalidOddsArray",
+        "type": "bool[]"
       }
     ],
     "stateMutability": "view",

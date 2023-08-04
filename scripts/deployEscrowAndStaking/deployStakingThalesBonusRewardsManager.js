@@ -89,12 +89,12 @@ async function main() {
 	);
 
 	setTargetAddress(
-		'ThalesAMMStakingThalesBonusRewardsManager',
+		'StakingThalesBonusRewardsManager',
 		network,
 		StakingThalesBonusRewardsManagerDeployed.address
 	);
 	setTargetAddress(
-		'ThalesAMMStakingThalesBonusRewardsManagerImplementation',
+		'StakingThalesBonusRewardsManagerImplementation',
 		network,
 		StakingThalesBonusRewardsManagerImplementation
 	);

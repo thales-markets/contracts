@@ -24,7 +24,12 @@ interface IGamesPlayerProps {
 
     function resolvePlayerProps(PlayerPropsResolver memory _result) external;
 
-    function pauseAllPlayerPropsMarketForMain(address _main, bool _flag) external;
+    function pauseAllPlayerPropsMarketForMain(
+        address _main,
+        bool _flag,
+        bool _invalidOddsOnMain,
+        bool _circuitBreakerMain
+    ) external;
 
     function cancelPlayerPropsMarketForMain(address _main) external;
 
@@ -35,6 +40,10 @@ interface IGamesPlayerProps {
     function numberOfChildMarkets(address _main) external view returns (uint);
 
     function doesSportSupportPlayerProps(uint _sportId) external view returns (bool);
+
+    function pausedByInvalidOddsOnMain(address _main) external view returns (bool);
+
+    function pausedByCircuitBreakerOnMain(address _main) external view returns (bool);
 
     function getPlayerPropForOption(
         bytes32 gameId,

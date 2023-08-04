@@ -128,6 +128,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 )
             ) {
                 _pauseOrUnpauseMarkets(_game, _main, true, true);
+                _pauseOrUnpausePlayerProps(_main, true, false, true);
                 backupOdds[_game.gameId] = currentOddsBeforeSave;
                 emit OddsCircuitBreaker(_main, _game.gameId);
             }
@@ -137,6 +138,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             if (!sportsManager.isMarketPaused(_main)) {
                 invalidOdds[_main] = true;
                 _pauseOrUnpauseMarkets(_game, _main, true, true);
+                _pauseOrUnpausePlayerProps(_main, true, true, false);
             }
 
             emit InvalidOddsForMarket(requestId, _main, _game.gameId, _game);
@@ -454,6 +456,15 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             consumer.pauseOrUnpauseMarket(currentActiveChildMarket, false);
             _setNormalizedOdds(currentActiveChildMarket, _game.gameId, false);
         }
+    }
+
+    function _pauseOrUnpausePlayerProps(
+        address _market,
+        bool _pause,
+        bool _invalidOdds,
+        bool _circuitBreaker
+    ) internal {
+        consumer.pauseOrUnpauseMarketForPlayerProps(_market, _pause, _invalidOdds, _circuitBreaker);
     }
 
     function _setNormalizedOdds(

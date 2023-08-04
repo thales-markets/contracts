@@ -1753,6 +1753,34 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_pause",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_invalidOdds",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_circuitBreaker",
+        "type": "bool"
+      }
+    ],
+    "name": "pauseOrUnpauseMarketForPlayerProps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_market",
         "type": "address"
       },

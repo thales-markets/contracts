@@ -182,7 +182,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                         } else {
                             _pauseOrUnpauseMarket(marketPerGameId[gameForProcessing.gameId], true);
                             oddsObtainer.pauseUnpauseChildMarkets(marketPerGameId[gameForProcessing.gameId], true);
-                            playerProps.pauseAllPlayerPropsMarketForMain(marketPerGameId[gameForProcessing.gameId], true);
+                            _pauseOrUnpausePlayerProps(marketPerGameId[gameForProcessing.gameId], true, false, false);
                         }
                     }
                     // checking time
@@ -205,7 +205,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                         ) {
                             _pauseOrUnpauseMarket(marketPerGameId[gameForProcessing.gameId], true);
                             oddsObtainer.pauseUnpauseChildMarkets(marketPerGameId[gameForProcessing.gameId], true);
-                            playerProps.pauseAllPlayerPropsMarketForMain(marketPerGameId[gameForProcessing.gameId], true);
+                            _pauseOrUnpausePlayerProps(marketPerGameId[gameForProcessing.gameId], true, false, false);
                             emit GameTimeMovedAhead(
                                 marketPerGameId[gameForProcessing.gameId],
                                 gameForProcessing.gameId,
@@ -336,6 +336,20 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _pause flag true/false
     function pauseOrUnpauseMarket(address _market, bool _pause) external canExecute {
         _pauseOrUnpauseMarket(_market, _pause);
+    }
+
+    /// @notice pause market from obtainer see @GamesOddsObtainer
+    /// @param _main market address
+    /// @param _pause flag true/false
+    /// @param _invalidOdds flag true/false for invalid odds
+    /// @param _circuitBreaker flag true/false for circuit breaker
+    function pauseOrUnpauseMarketForPlayerProps(
+        address _main,
+        bool _pause,
+        bool _invalidOdds,
+        bool _circuitBreaker
+    ) external canExecute {
+        _pauseOrUnpausePlayerProps(_main, _pause, _invalidOdds, _circuitBreaker);
     }
 
     /// @notice setting gameid per market
@@ -488,7 +502,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             isPausedByCanceledStatus[marketPerGameId[_game.gameId]] = true;
             _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
             oddsObtainer.pauseUnpauseChildMarkets(marketPerGameId[_game.gameId], true);
-            playerProps.pauseAllPlayerPropsMarketForMain(marketPerGameId[_game.gameId], true);
+            _pauseOrUnpausePlayerProps(marketPerGameId[_game.gameId], true, false, false);
         }
     }
 
@@ -532,7 +546,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             if (oddsObtainer.invalidOdds(marketPerGameId[game.gameId])) {
                 _pauseOrUnpauseMarket(marketPerGameId[game.gameId], false);
                 oddsObtainer.pauseUnpauseChildMarkets(marketPerGameId[game.gameId], false);
-                playerProps.pauseAllPlayerPropsMarketForMain(marketPerGameId[game.gameId], false);
+                _pauseOrUnpausePlayerProps(marketPerGameId[game.gameId], false, false, false);
             }
 
             (uint _outcome, uint8 _homeScore, uint8 _awayScore) = _calculateOutcome(game);
@@ -582,7 +596,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         _pauseOrUnpauseMarket(_market, false);
         oddsObtainer.pauseUnpauseChildMarkets(_market, false);
-        playerProps.pauseAllPlayerPropsMarketForMain(_market, false);
+        _pauseOrUnpausePlayerProps(_market, false, false, false);
         _setMarketCancelOrResolved(
             _market,
             _outcome,
@@ -616,6 +630,15 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function _pauseOrUnpauseMarketManually(address _market, bool _pause) internal {
         _pauseOrUnpauseMarket(_market, _pause);
         oddsObtainer.pauseUnpauseCurrentActiveChildMarket(gameIdPerMarket[_market], _market, _pause);
+    }
+
+    function _pauseOrUnpausePlayerProps(
+        address _market,
+        bool _pause,
+        bool _invalidOdds,
+        bool _circuitBreaker
+    ) internal {
+        playerProps.pauseAllPlayerPropsMarketForMain(_market, _pause, _invalidOdds, _circuitBreaker);
     }
 
     function _pauseOrUnpauseMarket(address _market, bool _pause) internal {

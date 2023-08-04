@@ -59,6 +59,9 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => mapping(bytes32 => mapping(uint8 => bool))) public invalidOddsForPlayerProps;
     mapping(bytes32 => mapping(bytes32 => mapping(uint8 => bool))) public createFulfilledForPlayerProps;
     mapping(bytes32 => mapping(bytes32 => mapping(uint8 => bool))) public resolveFulfilledForPlayerProps;
+    mapping(address => bool) public pausedByInvalidOddsOnMain;
+    mapping(address => bool) public pausedByCircuitBreakerOnMain;
+    mapping(address => bool) public playerPropsAddedForMain;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -91,13 +94,20 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         // if main is created and not paused and also sport support player props
         if (_main != address(0) && doesSportSupportPlayerProps[_sportId]) {
             if (_areOddsAndLinesValidForPlayer(_player)) {
-                if (invalidOddsForPlayerProps[_player.gameId][_player.playerId][_player.option]) {
+                if (
+                    invalidOddsForPlayerProps[_player.gameId][_player.playerId][_player.option] ||
+                    pausedByInvalidOddsOnMain[_main] ||
+                    pausedByCircuitBreakerOnMain[_main]
+                ) {
                     invalidOddsForPlayerProps[_player.gameId][_player.playerId][_player.option] = false;
+                    pausedByInvalidOddsOnMain[_main] = false;
+                    pausedByCircuitBreakerOnMain[_main] = false;
                 }
                 address playerPropsMarket = _obtainPlayerProps(_player, _main);
                 playerProp[_player.gameId][_player.playerId][_player.option] = _player;
                 mainMarketPausedPlayerProps[_main] = false;
                 createFulfilledForPlayerProps[_player.gameId][_player.playerId][_player.option] = true;
+                playerPropsAddedForMain[_main] = true;
 
                 emit PlayerPropsAdded(
                     _player.gameId,
@@ -145,9 +155,20 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     /// @notice pause/unpause all markets for game
     /// @param _main parent market for which we are pause/unpause child markets
     /// @param _flag pause -> true, unpause -> false
-    function pauseAllPlayerPropsMarketForMain(address _main, bool _flag) external onlyConsumer {
-        mainMarketPausedPlayerProps[_main] = _flag;
-        _pauseAllPlayerPropsMarket(_main, _flag);
+    /// @param _invalidOddsMain are paused by invalid odds on main
+    /// @param _circuitBreakerOnMain are paused by circuit breaker on main
+    function pauseAllPlayerPropsMarketForMain(
+        address _main,
+        bool _flag,
+        bool _invalidOddsMain,
+        bool _circuitBreakerOnMain
+    ) external onlyConsumer {
+        if (playerPropsAddedForMain[_main]) {
+            mainMarketPausedPlayerProps[_main] = _flag;
+            pausedByInvalidOddsOnMain[_main] = _invalidOddsMain;
+            pausedByCircuitBreakerOnMain[_main] = _circuitBreakerOnMain;
+            _pauseAllPlayerPropsMarket(_main, _flag);
+        }
     }
 
     /// @notice pause/unpause current active child markets

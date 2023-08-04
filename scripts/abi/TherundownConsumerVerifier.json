@@ -878,6 +878,16 @@
         "internalType": "bool[]",
         "name": "invalidOddsArray",
         "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "pausedByInvalidOddsMainArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "pausedByCircuitBreakerMainArray",
+        "type": "bool[]"
       }
     ],
     "stateMutability": "view",

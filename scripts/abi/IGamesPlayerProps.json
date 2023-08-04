@@ -203,11 +203,59 @@
         "internalType": "bool",
         "name": "_flag",
         "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_invalidOddsOnMain",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_circuitBreakerMain",
+        "type": "bool"
       }
     ],
     "name": "pauseAllPlayerPropsMarketForMain",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      }
+    ],
+    "name": "pausedByCircuitBreakerOnMain",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      }
+    ],
+    "name": "pausedByInvalidOddsOnMain",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

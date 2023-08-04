@@ -69,6 +69,13 @@ interface ITherundownConsumer {
 
     function pauseOrUnpauseMarket(address _market, bool _pause) external;
 
+    function pauseOrUnpauseMarketForPlayerProps(
+        address _market,
+        bool _pause,
+        bool _invalidOdds,
+        bool _circuitBreakerMain
+    ) external;
+
     function setChildMarkets(
         bytes32 _gameId,
         address _main,

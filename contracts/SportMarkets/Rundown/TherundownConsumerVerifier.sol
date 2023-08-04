@@ -285,13 +285,18 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         returns (
             int24[] memory odds,
             uint16[] memory lines,
-            bool[] memory invalidOddsArray
+            bool[] memory invalidOddsArray,
+            bool[] memory pausedByInvalidOddsMainArray,
+            bool[] memory pausedByCircuitBreakerMainArray
         )
     {
         odds = new int24[](2 * _gameIds.length);
         lines = new uint16[](_gameIds.length);
         invalidOddsArray = new bool[](_gameIds.length);
+        pausedByInvalidOddsMainArray = new bool[](_gameIds.length);
+        pausedByCircuitBreakerMainArray = new bool[](_gameIds.length);
         for (uint i = 0; i < _gameIds.length; i++) {
+            address marketAddress = consumer.marketPerGameId(_gameIds[i]);
             (uint16 line, int24 overOdds, int24 underOdds, bool invalidOdds) = playerProps.getPlayerPropForOption(
                 _gameIds[i],
                 _playerIds[i],
@@ -299,6 +304,8 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             );
             lines[i] = line;
             invalidOddsArray[i] = invalidOdds;
+            pausedByInvalidOddsMainArray[i] = playerProps.pausedByInvalidOddsOnMain(marketAddress);
+            pausedByCircuitBreakerMainArray[i] = playerProps.pausedByCircuitBreakerOnMain(marketAddress);
             odds[i * 2 + 0] = overOdds; // 0 2 4 ...
             odds[i * 2 + 1] = underOdds; // 1 3 5 ...
         }

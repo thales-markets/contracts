@@ -149,8 +149,10 @@
 		"ParlayAMMLiquidityPoolDataImplementation": "0xaA7aD7b27Fc419d00B4Bef275E7F6020953a824F",
 		"ParlayDefaultLiquidityProviderImplementation": "0xA20Ed099894dcfC46AF290705Ff5aE4d318B0235",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
-		"MultiCollateralOnOffRamp": "0xFFBd1c988B2cAd06b80dCc07fF9187963A01149d",
-		"MultiCollateralOnOffRampImplementation": "0x0221240a18D3118400f07d15Df34FF460dA10A47"
+		"MultiCollateralOnOffRamp": "0x6F5A76423396Bf39F64F8c51C0B3dEb24990b116",
+		"MultiCollateralOnOffRampImplementation": "0xa68034fc725fA0E6AE2e5260c18efb78F27a96FC",
+		"SpeedMarketsAMM": "0xE16B8a01490835EC1e76bAbbB3Cadd8921b32001",
+		"SpeedMarketsAMMImplementation": "0x365d7334f2C079DF86B5E6AAA80D5Ce896F498C9"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",

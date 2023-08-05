@@ -241,6 +241,12 @@
         "internalType": "address",
         "name": "_onramper",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
       }
     ],
     "name": "SetMultiCollateralOnOffRamp",
@@ -919,6 +925,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "multicollateralEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1239,6 +1258,11 @@
         "internalType": "address",
         "name": "_onramper",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
       }
     ],
     "name": "setMultiCollateralOnOffRamp",

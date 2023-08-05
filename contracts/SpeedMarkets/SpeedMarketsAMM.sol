@@ -35,7 +35,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     AddressSetLib.AddressSet internal _maturedMarkets;
 
     uint private constant ONE = 1e18;
-    uint private constant ONE_PERCENT = 1e16;
 
     IERC20Upgradeable public sUSD;
 
@@ -85,6 +84,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     mapping(address => bool) public whitelistedAddresses;
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
+    bool public multicollateralEnabled;
 
     function initialize(
         address _owner,
@@ -126,6 +126,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint collateralAmount,
         bool isEth
     ) external payable nonReentrant notPaused {
+        require(multicollateralEnabled, "Multicollateral onramp not enabled");
         uint buyinAmount = _convertCollateral(collateral, collateralAmount, isEth);
         _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData, false);
     }
@@ -139,6 +140,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint collateralAmount,
         bool isEth
     ) external payable nonReentrant notPaused {
+        require(multicollateralEnabled, "Multicollateral onramp not enabled");
         uint buyinAmount = _convertCollateral(collateral, collateralAmount, isEth);
         _createNewMarket(asset, uint64(block.timestamp + delta), direction, buyinAmount, priceUpdateData, false);
     }
@@ -449,9 +451,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     /// @notice set multicollateral onramp contract
-    function setMultiCollateralOnOffRamp(address _onramper) external onlyOwner {
+    function setMultiCollateralOnOffRamp(address _onramper, bool enabled) external onlyOwner {
         multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(_onramper);
-        emit SetMultiCollateralOnOffRamp(_onramper);
+        multicollateralEnabled = enabled;
+        emit SetMultiCollateralOnOffRamp(_onramper, enabled);
     }
 
     /// @notice adding/removing whitelist address depending on a flag
@@ -495,5 +498,5 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetStakingThales(address _stakingThales);
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
-    event SetMultiCollateralOnOffRamp(address _onramper);
+    event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
 }

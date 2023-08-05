@@ -112,7 +112,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMM.address, true);
 
-			await speedMarketsAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address);
+			await speedMarketsAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true);
 
 			await exoticOP.setDefaultAmount(toUnit(100));
 			await exoticOP.mintForUser(user);

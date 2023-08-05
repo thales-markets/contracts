@@ -35,7 +35,6 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     uint private constant ONE = 1e18;
-    uint private constant ONE_PERCENT = 1e16;
 
     IERC20Upgradeable public sUSD;
 

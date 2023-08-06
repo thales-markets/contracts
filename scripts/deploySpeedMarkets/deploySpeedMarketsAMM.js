@@ -41,7 +41,7 @@ async function main() {
 
 	if (networkObj.chainId == 8453) {
 		networkObj.name = 'baseMainnet';
-		network = 'base';
+		network = 'baseMainnet';
 		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
 

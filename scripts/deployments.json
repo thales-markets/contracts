@@ -266,7 +266,11 @@
 		"ParlayAMMLiquidityPoolData": "0xB5F1924136d7A72C3E5E746Ba2E23A3bfd499097",
 		"ParlayAMMLiquidityPoolDataImplementation": "0x0281B682Fb5Ee287B5DB7519BE9425b34Fb11503",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa475e7314f41D77FB800245DAC18Ee8a760a491F",
-		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C"
+		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
+		"SpeedMarketsAMM": "0x02D0123a89Ae6ef27419d5EBb158d1ED4Cf24FA3",
+		"SpeedMarketsAMMImplementation": "0x9839BEa51BBaD32Af0de41bEB74b637f188FfC2D",
+		"MultiCollateralOnOffRamp": "0x7b065dE3fd7190A6C2CB6D51E946e82B6b2C4358",
+		"MultiCollateralOnOffRampImplementation": "0x96AcFf912a80E78C2f622a2AD1C0238e1160b56f"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -332,6 +336,11 @@
 		"ThalesAMMLiquidityPoolImplementation": "",
 		"ThalesAMMLiquidityPoolRoundMastercopy": "",
 		"ThalesAMMDefaultLiquidityProviderImplementation": ""
+	},
+	"base": {
+		"sUSD": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+		"ProxyUSDC": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C"
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",

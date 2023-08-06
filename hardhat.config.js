@@ -214,6 +214,11 @@ module.exports = {
 			url: 'https://goerli.optimism.io',
 			accounts: [PRIVATE_KEY],
 		},
+		'base-mainnet': {
+			url: 'https://mainnet.base.org',
+			accounts: [PRIVATE_KEY],
+			gasPrice: 1000000000,
+		},
 	},
 
 	gasReporter: {

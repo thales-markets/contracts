@@ -337,10 +337,12 @@
 		"ThalesAMMLiquidityPoolRoundMastercopy": "",
 		"ThalesAMMDefaultLiquidityProviderImplementation": ""
 	},
-	"base": {
+	"baseMainnet": {
 		"sUSD": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"ProxyUSDC": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
-		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C"
+		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
+		"SpeedMarketsAMM": "0x85b827d133FEDC36B844b20f4a198dA583B25BAA",
+		"SpeedMarketsAMMImplementation": "0x72ca0765d4bE0529377d656c9645600606214610"
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",

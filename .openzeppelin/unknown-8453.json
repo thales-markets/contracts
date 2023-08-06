@@ -34,7 +34,13 @@
       "chainId": 8453
     }
   },
-  "proxies": [],
+  "proxies": [
+    {
+      "address": "0x85b827d133FEDC36B844b20f4a198dA583B25BAA",
+      "txHash": "0x07c54c1789b24fe9aabb52306caf7cc986832d2ea43e130007e8dd06b3f024ea",
+      "kind": "transparent"
+    }
+  ],
   "impls": {
     "4ee4608867a4f3eb50922a70a34c0640761566038f951b1d3aa47dd157f9ab6e": {
       "address": "0x72ca0765d4bE0529377d656c9645600606214610",

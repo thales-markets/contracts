@@ -28,6 +28,12 @@
       },
       {
         "indexed": false,
+        "internalType": "string",
+        "name": "_playerName",
+        "type": "string"
+      },
+      {
+        "indexed": false,
         "internalType": "uint16",
         "name": "_line",
         "type": "uint16"

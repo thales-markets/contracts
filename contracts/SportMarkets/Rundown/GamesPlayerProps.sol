@@ -280,6 +280,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
             _playerMarket,
             _player.line,
             _player.playerId,
+            _player.playerName,
             _player.option,
             tags[2]
         );
@@ -312,6 +313,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         address _child,
         uint16 _line,
         bytes32 _playerId,
+        string memory _playerName,
         uint8 _option,
         uint _type
     ) internal {
@@ -335,6 +337,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
             _child,
             _gameId,
             _playerId,
+            _playerName,
             _line,
             _option,
             getNormalizedChildOdds(_child),
@@ -458,6 +461,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         address _child,
         bytes32 _gameId,
         bytes32 _playerId,
+        string _playerName,
         uint16 _line,
         uint8 _option,
         uint[] _normalizedOdds,

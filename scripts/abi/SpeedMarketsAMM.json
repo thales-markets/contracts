@@ -1110,6 +1110,24 @@
         "type": "address[]"
       },
       {
+        "internalType": "int64[]",
+        "name": "finalPrices",
+        "type": "int64[]"
+      }
+    ],
+    "name": "resolveMarketManuallyBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "markets",
+        "type": "address[]"
+      },
+      {
         "internalType": "bytes[]",
         "name": "priceUpdateData",
         "type": "bytes[]"

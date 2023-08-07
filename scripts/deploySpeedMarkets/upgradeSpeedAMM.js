@@ -51,6 +51,12 @@ async function main() {
 		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+
 	const SpeedMarketsAMMAddress = getTargetAddress('SpeedMarketsAMM', network);
 	const SpeedMarketsAMM = await ethers.getContractFactory('SpeedMarketsAMM');
 
@@ -76,7 +82,7 @@ async function main() {
 		}
 	}
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 8453) {
 		const implementation = await upgrades.prepareUpgrade(SpeedMarketsAMMAddress, SpeedMarketsAMM);
 		await delay(5000);
 

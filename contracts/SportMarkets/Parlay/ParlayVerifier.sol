@@ -16,6 +16,7 @@ import "../../interfaces/IParlayPolicy.sol";
 
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
+    uint private constant ONE_PERCENT = 1e16;
 
     uint private constant TAG_F1 = 9445;
     uint private constant TAG_MOTOGP = 9497;
@@ -181,11 +182,19 @@ contract ParlayVerifier {
                         revert("SameTeamOnParlay");
                     }
                     cachedTeams[j].gameCounter += 1;
-                    (odds[i], odds[j / 2], sgpFees[i], sgpFees[j / 2]) = _getSGPSingleOdds(
-                        params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[i], params.positions[i]),
-                        params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[j / 2], params.positions[j / 2]),
-                        sgpFee
-                    );
+                    if (params.tag2[j / 2] == 0) {
+                        (odds[j / 2], odds[i], sgpFees[j / 2], sgpFees[i]) = _getSGPSingleOdds(
+                            params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[j / 2], params.positions[j / 2]),
+                            params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[i], params.positions[i]),
+                            sgpFee
+                        );
+                    } else {
+                        (odds[i], odds[j / 2], sgpFees[i], sgpFees[j / 2]) = _getSGPSingleOdds(
+                            params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[i], params.positions[i]),
+                            params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[j / 2], params.positions[j / 2]),
+                            sgpFee
+                        );
+                    }
                 }
             }
             cachedTeams[lastCachedIdx++].gameId = homeId;
@@ -212,12 +221,49 @@ contract ParlayVerifier {
     {
         resultOdds1 = odds1;
         resultOdds2 = odds2;
+
         if (odds1 > 0 && odds2 > 0) {
-            if (odds1 > odds2) {
-                sgpFee2 = sgpFee;
-            } else {
-                sgpFee1 = sgpFee;
+            if (odds2 >= (50 * ONE_PERCENT)) {
+                // calculate the fee
+                uint multiplied = (odds1 * odds2) / ONE;
+                uint discountedQuote = ONE - multiplied;
+                uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
+                if (oddsDiff > 0) {
+                    oddsDiff = (oddsDiff - (5 * ONE_PERCENT) / (90 * ONE_PERCENT));
+                    oddsDiff = (10 * ONE_PERCENT * oddsDiff) / ONE;
+                    discountedQuote = (discountedQuote * (ONE + oddsDiff)) / ONE;
+                    if (discountedQuote < ONE) {
+                        sgpFee2 = ((ONE * ONE * (ONE - discountedQuote)) / multiplied) / ONE;
+                    }
+                } else {
+                    sgpFee2 = sgpFee;
+                }
             }
+
+            // uint multiplied = (odds1 * odds2) / ONE;
+            // // uint discountedQuote = ((multiplied * ONE * ONE) / sgpFee) / ONE;
+            // uint discountedQuote = ONE - multiplied;
+            // if(discountedQuote > 50 * ONE_PERCENT ) {
+            //     if (odds1 > odds2) {
+            //         sgpFee2 = sgpFee;
+            //     } else {
+            //         sgpFee1 = sgpFee;
+            //     }
+            // }
+            // else {
+            //     discountedQuote = (discountedQuote * sgpFee) / ONE;
+            //     uint finalOdds = ONE - discountedQuote;
+            //     if (odds1 > odds2) {
+            //         if(finalOdds < odds2) {
+            //             sgpFee2 = ((finalOdds * ONE * ONE) / multiplied) / ONE;
+            //         }
+            //     } else {
+            //         if(finalOdds < odds1) {
+            //             sgpFee1 = ((finalOdds * ONE * ONE) / multiplied) / ONE;
+            //         }
+            //     }
+
+            // }
         }
     }
 

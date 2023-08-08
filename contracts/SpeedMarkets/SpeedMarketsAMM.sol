@@ -485,7 +485,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     //////////////////modifiers/////////////////
 
     modifier isAddressWhitelisted() {
-        require(whitelistedAddresses[msg.sender], "ID10");
+        require(whitelistedAddresses[msg.sender], "Resolver not whitelisted");
         _;
     }
 

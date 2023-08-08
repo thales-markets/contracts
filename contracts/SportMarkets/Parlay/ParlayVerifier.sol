@@ -14,6 +14,8 @@ import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/IParlayPolicy.sol";
 
+// import "hardhat/console.sol";
+
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
@@ -211,7 +213,7 @@ contract ParlayVerifier {
         uint sgpFee
     )
         internal
-        pure
+        view
         returns (
             uint resultOdds1,
             uint resultOdds2,
@@ -225,19 +227,32 @@ contract ParlayVerifier {
         if (odds1 > 0 && odds2 > 0) {
             if (odds2 >= (50 * ONE_PERCENT)) {
                 // calculate the fee
+                // console.log(">>>> odds1: ", odds1);
+                // console.log(">>>> odds2: ", odds2);
                 uint multiplied = (odds1 * odds2) / ONE;
                 uint discountedQuote = ONE - multiplied;
                 uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
                 if (oddsDiff > 0) {
                     oddsDiff = (oddsDiff - (5 * ONE_PERCENT) / (90 * ONE_PERCENT));
-                    oddsDiff = (10 * ONE_PERCENT * oddsDiff) / ONE;
-                    discountedQuote = (discountedQuote * (ONE + oddsDiff)) / ONE;
-                    if (discountedQuote < ONE) {
-                        sgpFee2 = ((ONE * ONE * (ONE - discountedQuote)) / multiplied) / ONE;
-                    }
+                    // console.log(">>>> discountedQuote before: ", discountedQuote);
+                    // console.log(">>>> sgpFee before: ", sgpFee);
+                    // console.log(">>>> oddsDiff before: ", oddsDiff);
+                    // oddsDiff = (10 * ONE_PERCENT * oddsDiff) / ONE;
+                    oddsDiff = ((ONE - sgpFee) * oddsDiff) / ONE;
+                    // console.log(">>>> oddsDiff after: ", oddsDiff);
+
+                    sgpFee2 = (sgpFee * (ONE + oddsDiff)) / ONE;
+                    // console.log(">>>> sgpFee2: ", sgpFee2);
+                    // if (discountedQuote < ONE) {
+                    //     sgpFee2 = ((ONE * ONE * (ONE - discountedQuote)) / multiplied) / ONE;
+                    // console.log(">>>> sgpFee after: ", sgpFee2);
+
+                    // }
                 } else {
                     sgpFee2 = sgpFee;
                 }
+            } else if (odds1 < sgpFee) {
+                sgpFee2 = ONE - (sgpFee - odds1);
             }
 
             // uint multiplied = (odds1 * odds2) / ONE;

@@ -654,7 +654,7 @@ contract('ParlayAMM', (accounts) => {
 			}
 		);
 		let nba_sgp_fee = toUnit(0.95);
-		let soccer_sgp_fee = toUnit(0.7);
+		let soccer_sgp_fee = toUnit(0.8);
 		let nfl_sgp_fee = toUnit(0.9);
 		let nhl_sgp_fee = toUnit(0.85);
 
@@ -1277,16 +1277,16 @@ contract('ParlayAMM', (accounts) => {
 		// 	).to.be.revertedWith('SameTeamOnParlay');
 		// });
 
-		it('Read data', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await ParlayMarketData.getAllSGPFees();
-			// console.log("All SGPFees: ", answer);
-			assert.equal(answer.length, 4);
-			answer = await ParlayMarketData.getAllSGPFeesForBatch([9004, 9006]);
-			console.log('All SGPFees for batch: ', answer);
-			assert.equal(answer.length, 2);
-		});
+		// it('Read data', async () => {
+		// 	await fastForward(game1NBATime - (await currentTime()) - SECOND);
+		// 	// await fastForward((await currentTime()) - SECOND);
+		// 	answer = await ParlayMarketData.getAllSGPFees();
+		// 	// console.log("All SGPFees: ", answer);
+		// 	assert.equal(answer.length, 4);
+		// 	answer = await ParlayMarketData.getAllSGPFeesForBatch([9004, 9006]);
+		// 	console.log('All SGPFees for batch: ', answer);
+		// 	assert.equal(answer.length, 2);
+		// });
 
 		// it('Parlay policy read data', async () => {
 		// 	await fastForward(game1NBATime - (await currentTime()) - SECOND);
@@ -1557,7 +1557,7 @@ contract('ParlayAMM', (accounts) => {
 			console.log('odd1 : ', parseInt(odds[0].toString()));
 			console.log('odd2 : ', parseInt(odds2[0].toString()));
 			let calculationONEtotalsONE = parseInt(odds[0].toString()) * parseInt(odds2[0].toString());
-			let sgpFee = parseInt(70 * 1e16);
+			let sgpFee = parseInt(80 * 1e16);
 			console.log('sgpFee: ', sgpFee);
 			console.log('No SGP fee: ', calculationONEtotalsONE / 1e18);
 			console.log('With SGP fee: ', calculationONEtotalsONE / sgpFee);

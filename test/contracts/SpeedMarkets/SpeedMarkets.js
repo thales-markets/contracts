@@ -157,8 +157,10 @@ contract('SpeedMarkets', (accounts) => {
 			console.log('market created');
 
 			let numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
-
 			console.log('numActiveMarkets ' + numActiveMarkets);
+
+			let numActiveMarketsPerUser = await speedMarketsAMM.numActiveMarketsPerUser(user);
+			console.log('numActiveMarketsPerUser ' + numActiveMarketsPerUser);
 
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
@@ -178,10 +180,17 @@ contract('SpeedMarkets', (accounts) => {
 			let market = markets[0];
 			console.log('market is ' + market);
 
+			let marketsPerUser = await speedMarketsAMM.activeMarketsPerUser(0, 1, user);
+			let marketPerUser = marketsPerUser[0];
+			console.log('marketPerUser is ' + marketPerUser);
+
 			let SpeedMarket = artifacts.require('SpeedMarket');
 			let speedMarket = await SpeedMarket.at(market);
 			let strikeTime = await speedMarket.strikeTime();
 			console.log('Strike time is ' + strikeTime);
+
+			let marketData = await speedMarketsAMM.getMarketsData([market]);
+			console.log('marketData ' + marketData);
 
 			now = await currentTime();
 			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
@@ -274,6 +283,12 @@ contract('SpeedMarkets', (accounts) => {
 
 			let balanceSafeBox = await exoticUSD.balanceOf(safeBox);
 			console.log('balanceSafeBox ' + balanceSafeBox / 1e18);
+
+			let numMaturedMarkets = await speedMarketsAMM.numMaturedMarkets();
+			console.log('numMaturedMarkets before resolve ' + numMaturedMarkets);
+
+			let numMaturedMarketsPerUser = await speedMarketsAMM.numMaturedMarketsPerUser(user);
+			console.log('numMaturedMarketsPerUser ' + numMaturedMarketsPerUser);
 		});
 	});
 });

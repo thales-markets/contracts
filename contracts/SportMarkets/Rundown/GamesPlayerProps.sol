@@ -129,26 +129,23 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     function resolvePlayerProps(IGamesPlayerProps.PlayerPropsResolver memory _result) external canExecute {
         // get main market
         address _main = consumer.marketPerGameId(_result.gameId);
-        // all options for player
-        for (uint i = 0; i < _result.options.length; i++) {
-            //number of childs per option
-            uint numberOfChildsPerOptions = numberOfChildMarketsPerPlayerAndOption[_main][_result.playerId][
-                _result.options[i]
-            ];
-            // if it is resolved skip it
-            if (!resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.options[i]]) {
-                // resolve all per option
-                for (uint j = 0; j < numberOfChildsPerOptions; j++) {
-                    address child = mainMarketChildMarketPerPlayerAndOptionIndex[_main][_result.playerId][
-                        _result.options[i]
-                    ][j];
-                    if (invalidOddsForPlayerProps[_result.gameId][_result.playerId][_result.options[i]]) {
-                        consumer.pauseOrUnpauseMarket(child, false);
-                    }
-                    _resolveMarketForPlayer(child, _result.scores[i]);
+        //number of childs per option
+        uint numberOfChildsPerOptions = numberOfChildMarketsPerPlayerAndOption[_main][_result.playerId][_result.options];
+        // if it is resolved skip it
+        if (!resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.options]) {
+            // resolve
+            for (uint j = 0; j < numberOfChildsPerOptions; j++) {
+                address child = mainMarketChildMarketPerPlayerAndOptionIndex[_main][_result.playerId][_result.options][j];
+                if (invalidOddsForPlayerProps[_result.gameId][_result.playerId][_result.options]) {
+                    consumer.pauseOrUnpauseMarket(child, false);
                 }
-                resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.options[i]] = true;
+                if (_result.statusIds == CANCELLED) {
+                    _resolveMarket(child, uint16(CANCELLED), CANCELLED);
+                } else {
+                    _resolveMarketForPlayer(child, _result.scores);
+                }
             }
+            resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.options] = true;
         }
     }
 
@@ -350,8 +347,16 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
 
         uint outcome = _score * 100 > line ? HOME_WIN : _score * 100 < line ? AWAY_WIN : CANCELLED;
 
-        sportsManager.resolveMarket(_child, outcome);
-        emit ResolveChildMarket(_child, outcome, childMarketMainMarket[_child], _score);
+        _resolveMarket(_child, _score, outcome);
+    }
+
+    function _resolveMarket(
+        address _child,
+        uint16 _score,
+        uint _outcome
+    ) internal {
+        sportsManager.resolveMarket(_child, _outcome);
+        emit ResolveChildMarket(_child, _outcome, childMarketMainMarket[_child], _score);
     }
 
     /* ========== VIEW FUNCTIONS ========== */

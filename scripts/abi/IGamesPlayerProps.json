@@ -34,6 +34,19 @@
   {
     "inputs": [
       {
+        "internalType": "bytes[]",
+        "name": "_playerProps",
+        "type": "bytes[]"
+      }
+    ],
+    "name": "fulfillPlayerPropsCLResolved",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_market",
         "type": "address"
@@ -273,14 +286,19 @@
             "type": "bytes32"
           },
           {
-            "internalType": "uint8[]",
+            "internalType": "uint8",
             "name": "options",
-            "type": "uint8[]"
+            "type": "uint8"
           },
           {
-            "internalType": "uint16[]",
+            "internalType": "uint16",
             "name": "scores",
-            "type": "uint16[]"
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint8",
+            "name": "statusIds",
+            "type": "uint8"
           }
         ],
         "internalType": "struct IGamesPlayerProps.PlayerPropsResolver",

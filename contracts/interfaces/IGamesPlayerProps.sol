@@ -16,8 +16,9 @@ interface IGamesPlayerProps {
     struct PlayerPropsResolver {
         bytes32 gameId;
         bytes32 playerId;
-        uint8[] options;
-        uint16[] scores;
+        uint8 options;
+        uint16 scores;
+        uint8 statusIds;
     }
 
     function obtainPlayerProps(PlayerProps memory _player, uint _sportId) external;
@@ -58,4 +59,6 @@ interface IGamesPlayerProps {
             int24,
             bool
         );
+
+    function fulfillPlayerPropsCLResolved(bytes[] memory _playerProps) external;
 }

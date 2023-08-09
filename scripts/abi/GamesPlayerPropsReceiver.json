@@ -75,6 +75,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_wrapper",
+        "type": "address"
+      }
+    ],
+    "name": "NewWrapperAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -193,6 +206,19 @@
   {
     "inputs": [
       {
+        "internalType": "bytes[]",
+        "name": "_playerProps",
+        "type": "bytes[]"
+      }
+    ],
+    "name": "fulfillPlayerPropsCLResolved",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32[]",
         "name": "_gameIds",
         "type": "bytes32[]"
@@ -204,11 +230,6 @@
       },
       {
         "internalType": "uint8[]",
-        "name": "_numOfOptionsPerPlayers",
-        "type": "uint8[]"
-      },
-      {
-        "internalType": "uint8[]",
         "name": "_options",
         "type": "uint8[]"
       },
@@ -216,6 +237,11 @@
         "internalType": "uint16[]",
         "name": "_scores",
         "type": "uint16[]"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "_statuses",
+        "type": "uint8[]"
       }
     ],
     "name": "fulfillResultOfPlayerProps",
@@ -451,6 +477,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_wrapper",
+        "type": "address"
+      }
+    ],
+    "name": "setWrapperAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "proxyAddress",
         "type": "address"
       }
@@ -474,6 +513,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wrapperAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

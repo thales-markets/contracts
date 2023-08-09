@@ -23,6 +23,8 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
     mapping(uint => mapping(uint8 => bool)) public isValidOptionPerSport;
     mapping(uint => uint) public numberOfOptionsPerSport;
 
+    address public wrapperAddress;
+
     /// @notice public initialize proxy method
     /// @param _owner future owner of a contract
     function initialize(
@@ -80,31 +82,46 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
     /// @notice receive resolve properties for markets
     /// @param _gameIds for which gameids market is resolving (Boston vs Miami etc.)
     /// @param _playerIds for which playerids market is resolving (12345, 678910 etc.)
-    /// @param _numOfOptionsPerPlayers number of options per player (Jimmy buttler - 2 assists and points)
     /// @param _options options (assists, points etc.)
     /// @param _scores number of points assists etc. which player had
+    /// @param _statuses resolved statuses
     function fulfillResultOfPlayerProps(
         bytes32[] memory _gameIds,
         bytes32[] memory _playerIds,
-        uint8[] memory _numOfOptionsPerPlayers,
         uint8[] memory _options,
-        uint16[] memory _scores
+        uint16[] memory _scores,
+        uint8[] memory _statuses
     ) external isAddressWhitelisted {
-        uint lastProcessedNumber = 0;
         for (uint i = 0; i < _gameIds.length; i++) {
             uint sportId = consumer.sportsIdPerGame(_gameIds[i]);
             if (isValidOptionPerSport[sportId][_options[i]]) {
                 IGamesPlayerProps.PlayerPropsResolver memory playerResult = _castToPlayerPropsResolver(
                     _gameIds[i],
                     _playerIds[i],
-                    _options,
-                    _scores,
-                    _numOfOptionsPerPlayers[i],
-                    lastProcessedNumber
+                    _options[i],
+                    _scores[i],
+                    _statuses[i]
                 );
-                lastProcessedNumber = lastProcessedNumber + _numOfOptionsPerPlayers[i];
                 // game needs to be resolved or canceled
                 if (consumer.isGameResolvedOrCanceled(_gameIds[i])) {
+                    playerProps.resolvePlayerProps(playerResult);
+                }
+            }
+        }
+    }
+
+    /// @notice fulfill all data necessary to resolve player props markets with CL node
+    /// @param _playerProps array player Props
+    function fulfillPlayerPropsCLResolved(bytes[] memory _playerProps) external onlyWrapper {
+        for (uint i = 0; i < _playerProps.length; i++) {
+            IGamesPlayerProps.PlayerPropsResolver memory playerResult = abi.decode(
+                _playerProps[i],
+                (IGamesPlayerProps.PlayerPropsResolver)
+            );
+            uint sportId = consumer.sportsIdPerGame(playerResult.gameId);
+            if (isValidOptionPerSport[sportId][playerResult.options]) {
+                // game needs to be resolved or canceled
+                if (consumer.isGameResolvedOrCanceled(playerResult.gameId)) {
                     playerProps.resolvePlayerProps(playerResult);
                 }
             }
@@ -137,18 +154,11 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
     function _castToPlayerPropsResolver(
         bytes32 _gameId,
         bytes32 _playerId,
-        uint8[] memory _options,
-        uint16[] memory _scores,
-        uint _numOfOptionsPerPlayers,
-        uint _lastProcessed
+        uint8 _option,
+        uint16 _score,
+        uint8 _statusId
     ) internal returns (IGamesPlayerProps.PlayerPropsResolver memory) {
-        uint8[] memory options = new uint8[](_numOfOptionsPerPlayers);
-        uint16[] memory scores = new uint16[](_numOfOptionsPerPlayers);
-        for (uint i = 0; i < _numOfOptionsPerPlayers; i++) {
-            options[i] = _options[_lastProcessed + i];
-            scores[i] = _scores[_lastProcessed + i];
-        }
-        return IGamesPlayerProps.PlayerPropsResolver(_gameId, _playerId, options, scores);
+        return IGamesPlayerProps.PlayerPropsResolver(_gameId, _playerId, _option, _score, _statusId);
     }
 
     /* ========== OWNER MANAGEMENT FUNCTIONS ========== */
@@ -185,6 +195,14 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
         emit NewConsumerAddress(_consumer);
     }
 
+    /// @notice sets the wrepper address
+    /// @param _wrapper address of a wrapper contract
+    function setWrapperAddress(address _wrapper) external onlyOwner {
+        require(_wrapper != address(0), "Invalid address");
+        wrapperAddress = _wrapper;
+        emit NewWrapperAddress(_wrapper);
+    }
+
     /// @notice sets the PlayerProps contract address, which only owner can execute
     /// @param _playerProps address of a player props contract
     function setPlayerPropsAddress(address _playerProps) external onlyOwner {
@@ -215,8 +233,14 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
         _;
     }
 
+    modifier onlyWrapper() {
+        require(msg.sender == wrapperAddress, "Invalid wrapper");
+        _;
+    }
+
     /* ========== EVENTS ========== */
 
+    event NewWrapperAddress(address _wrapper);
     event NewPlayerPropsAddress(address _playerProps);
     event NewConsumerAddress(address _consumer);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);

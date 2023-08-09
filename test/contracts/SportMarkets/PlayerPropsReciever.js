@@ -2344,7 +2344,7 @@ contract('PlayerProps', (accounts) => {
 				);
 
 			assert.equal(true, await childMarket.resolved());
-			assert.equal(1, await childMarket.finalResult());
+			assert.equal(0, await childMarket.finalResult());
 		});
 
 		it('Create game and create player props for game, resolve player as over', async () => {

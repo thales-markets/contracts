@@ -174,6 +174,13 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         _cancelPlayerPropsMarket(_main);
     }
 
+    /// @notice view function which returns normalized odds up to 100 (Example: 50-50)
+    /// @param _market market
+    /// @return uint[] odds array normalized
+    function getNormalizedOddsForMarket(address _market) public view returns (uint[] memory) {
+        return getNormalizedChildOdds(_market);
+    }
+
     /* ========== INTERNALS ========== */
 
     function _areOddsAndLinesValidForPlayer(IGamesPlayerProps.PlayerProps memory _player) internal view returns (bool) {

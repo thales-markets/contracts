@@ -251,7 +251,17 @@ contract ParlayVerifier {
                 } else {
                     sgpFee2 = sgpFee;
                 }
-            } else if (odds1 < sgpFee) {
+            } else if (odds2 >= (46 * ONE_PERCENT)) {
+                uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
+                if (oddsDiff > 0) {
+                    oddsDiff = (oddsDiff - (5 * ONE_PERCENT) / (90 * ONE_PERCENT));
+                    oddsDiff = ((ONE - sgpFee + (ONE - sgpFee)/2) * oddsDiff) / ONE;
+
+                    sgpFee2 = (sgpFee * (ONE + oddsDiff)) / ONE;
+                } else {
+                    sgpFee2 = sgpFee;
+                }
+            } else if (odds1+(5*ONE_PERCENT) > sgpFee) {
                 sgpFee2 = ONE - (sgpFee - odds1);
             }
 

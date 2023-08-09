@@ -90121,7 +90121,6 @@
         }
       }
     },
-
     "002571ebaa7ca0edcbc271e359e89098d75858680f43fce9f7d1d9b9af80ac52": {
       "address": "0x44AB6573beef3483CDE5B0bc1D25127ff89C6947",
       "txHash": "0x5ad5393ef2654b5f67f53dff92fdb9242cad53dc77fa593c5c6b2a4ade8d8b1d",
@@ -91272,7 +91271,7 @@
           {
             "contract": "MultiCollateralOnOffRamp",
             "label": "priceFeed",
-            "type": "t_contract(IPriceFeed)85394",
+            "type": "t_contract(IPriceFeed)85435",
             "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:47"
           },
           {
@@ -91314,7 +91313,7 @@
           {
             "contract": "MultiCollateralOnOffRamp",
             "label": "curveSUSD",
-            "type": "t_contract(ICurveSUSD)84394",
+            "type": "t_contract(ICurveSUSD)84418",
             "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:58"
           },
           {
@@ -91346,13 +91345,13 @@
           "t_contract(ISwapRouter)13358": {
             "label": "contract ISwapRouter"
           },
-          "t_contract(IPriceFeed)85394": {
+          "t_contract(IPriceFeed)85435": {
             "label": "contract IPriceFeed"
           },
           "t_uint256": {
             "label": "uint256"
           },
-          "t_contract(ICurveSUSD)84394": {
+          "t_contract(ICurveSUSD)84418": {
             "label": "contract ICurveSUSD"
           },
           "t_mapping(t_address,t_bytes_storage)": {
@@ -91635,6 +91634,196 @@
           },
           "t_contract(IMultiCollateralOnOffRamp)84815": {
             "label": "contract IMultiCollateralOnOffRamp"
+          }
+        }
+      }
+    },
+    "6f4398f3855fb2186baffc2affbe01fde2ab8b427a680c9d7982f149473bd401": {
+      "address": "0xFfbFb9694c960C5d04f95dc907Bb8a58Fae0f969",
+      "txHash": "0xee8676050b5033f4dbe3b781194c653e1f2bea282b1598ea042d62df63a5afda",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)8234",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:39"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "collateralSupported",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:41"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "ammsSupported",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:43"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "swapRouter",
+            "type": "t_contract(ISwapRouter)13358",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:45"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "priceFeed",
+            "type": "t_contract(IPriceFeed)85435",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:47"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "WETH9",
+            "type": "t_address",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:49"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "usdc",
+            "type": "t_address",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:50"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "usdt",
+            "type": "t_address",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:51"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "dai",
+            "type": "t_address",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:52"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "curveOnrampEnabled",
+            "type": "t_bool",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:54"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "maxAllowedPegSlippagePercentage",
+            "type": "t_uint256",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:56"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "curveSUSD",
+            "type": "t_contract(ICurveSUSD)84418",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:58"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "pathPerCollateral",
+            "type": "t_mapping(t_address,t_bytes_storage)",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:60"
+          },
+          {
+            "contract": "MultiCollateralOnOffRamp",
+            "label": "priceFeedKeyPerCollateral",
+            "type": "t_mapping(t_address,t_bytes32)",
+            "src": "contracts\\SpeedMarkets\\MultiCollateralOnOffRamp.sol:62"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)8234": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(ISwapRouter)13358": {
+            "label": "contract ISwapRouter"
+          },
+          "t_contract(IPriceFeed)85435": {
+            "label": "contract IPriceFeed"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_contract(ICurveSUSD)84418": {
+            "label": "contract ICurveSUSD"
+          },
+          "t_mapping(t_address,t_bytes_storage)": {
+            "label": "mapping(address => bytes)"
+          },
+          "t_bytes_storage": {
+            "label": "bytes"
+          },
+          "t_mapping(t_address,t_bytes32)": {
+            "label": "mapping(address => bytes32)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
           }
         }
       }

@@ -175,7 +175,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
         bytes memory pathToUse = pathPerCollateral[tokenIn];
         if (pathToUse.length == 0) {
-            uint fee = 3000;
+            uint24 fee = 3000;
             pathToUse = abi.encodePacked(address(tokenIn), fee, WETH9, fee, address(sUSD));
         }
 

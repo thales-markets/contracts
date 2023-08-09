@@ -759,9 +759,9 @@ contract('PlayerProps', (accounts) => {
 				GamesPlayerPropsReceiverDeployed.fulfillResultOfPlayerProps(
 					[gameid1],
 					[gameid1],
-					[1],
 					[28],
 					[250],
+					[1],
 					{
 						from: first,
 					}
@@ -2132,9 +2132,212 @@ contract('PlayerProps', (accounts) => {
 				await GamesPlayerPropsReceiverDeployed.fulfillResultOfPlayerProps(
 					['0x6536306366613738303834366166363839373862343935373965356366333936'],
 					['0x3431373836333400000000000000000000000000000000000000000000000000'],
-					[1],
 					[37],
 					[290],
+					[1],
+					{
+						from: third,
+					}
+				);
+
+			assert.equal(true, await childMarket.resolved());
+			assert.equal(1, await childMarket.finalResult());
+		});
+
+		it('Create game and create player props for game, resolve player as canceled', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
+
+			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-20700, result[0]);
+			assert.bnEqual(17700, result[1]);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			assert.equal('Atlanta Hawks', game.homeTeam);
+			assert.equal('Charlotte Hornets', game.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdCreate,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			// invalid odds zero as draw
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				{
+					from: third,
+				}
+			);
+
+			let result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(10300, result_final[0]);
+			assert.bnEqual(-11300, result_final[1]);
+			assert.bnEqual(0, result_final[2]);
+
+			// adding player props
+
+			assert.bnEqual(0, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
+
+			const tx_playerProps = await GamesPlayerPropsReceiverDeployed.fulfillPlayerProps(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				['0x3431373836333400000000000000000000000000000000000000000000000000'],
+				[37],
+				['Nikola Jokic'],
+				[285],
+				[-11500, 11500],
+				{
+					from: third,
+				}
+			);
+
+			assert.bnEqual(1, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
+			let mainMarketPlayerPropsChild =
+				await GamesPlayerPropsDeployed.mainMarketPlayerOptionLineChildMarket(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37,
+					285
+				);
+			assert.bnEqual(
+				mainMarketPlayerPropsChild,
+				await GamesPlayerPropsDeployed.currentActiveChildMarketPerPlayerAndOption(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+			assert.bnEqual(
+				marketAdd,
+				await GamesPlayerPropsDeployed.childMarketMainMarket(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.normalizedOddsForMarketFulfilled(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.childMarketCreated(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				285,
+				await GamesPlayerPropsDeployed.childMarketLine(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				mainMarketPlayerPropsChild,
+				await GamesPlayerPropsDeployed.mainMarketChildMarketIndex(marketAdd, 0)
+			);
+			assert.bnEqual(
+				1,
+				await GamesPlayerPropsDeployed.numberOfChildMarketsPerPlayerAndOption(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+
+			let childMarket = await SportPositionalMarketContract.at(mainMarketPlayerPropsChild);
+
+			assert.equal(9004, await childMarket.tags(0));
+			assert.bnEqual(10010, await childMarket.tags(1));
+			assert.bnEqual(11037, await childMarket.tags(2));
+			let gameD = await childMarket.getGameDetails();
+			assert.bnEqual('Nikola Jokic - 37 - 285', gameD[1]);
+
+			assert.equal(false, await childMarket.canResolve());
+			await fastForward(await currentTime());
+			assert.equal(true, await childMarket.canResolve());
+			assert.equal(false, await childMarket.resolved());
+
+			// main market not resolved do nothing
+			await GamesPlayerPropsReceiverDeployed.fulfillResultOfPlayerProps(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				['0x3431373836333400000000000000000000000000000000000000000000000000'],
+				[37],
+				[290],
+				[1],
+				{
+					from: third,
+				}
+			);
+
+			assert.equal(false, await childMarket.resolved());
+			assert.equal(0, await childMarket.finalResult());
+
+			const tx_2 = await TherundownConsumerDeployed.resolveMarketManually(
+				marketAdd,
+				1,
+				120,
+				60,
+				false,
+				{
+					from: third,
+				}
+			);
+			assert.equal(
+				true,
+				await await TherundownConsumerDeployed.isGameResolvedOrCanceled(
+					'0x6536306366613738303834366166363839373862343935373965356366333936'
+				)
+			);
+
+			const tx_playerPropsResolve =
+				await GamesPlayerPropsReceiverDeployed.fulfillResultOfPlayerProps(
+					['0x6536306366613738303834366166363839373862343935373965356366333936'],
+					['0x3431373836333400000000000000000000000000000000000000000000000000'],
+					[37],
+					[0],
+					[0],
 					{
 						from: third,
 					}
@@ -2303,9 +2506,9 @@ contract('PlayerProps', (accounts) => {
 			await GamesPlayerPropsReceiverDeployed.fulfillResultOfPlayerProps(
 				['0x6536306366613738303834366166363839373862343935373965356366333936'],
 				['0x3431373836333400000000000000000000000000000000000000000000000000'],
-				[1],
 				[37],
 				[290],
+				[1],
 				{
 					from: third,
 				}
@@ -2329,9 +2532,9 @@ contract('PlayerProps', (accounts) => {
 				await GamesPlayerPropsReceiverDeployed.fulfillResultOfPlayerProps(
 					['0x6536306366613738303834366166363839373862343935373965356366333936'],
 					['0x3431373836333400000000000000000000000000000000000000000000000000'],
-					[1],
 					[37],
 					[290],
+					[1],
 					{
 						from: third,
 					}
@@ -2499,9 +2702,9 @@ contract('PlayerProps', (accounts) => {
 			await GamesPlayerPropsReceiverDeployed.fulfillResultOfPlayerProps(
 				['0x6536306366613738303834366166363839373862343935373965356366333936'],
 				['0x3431373836333400000000000000000000000000000000000000000000000000'],
-				[1],
 				[37],
 				[28],
+				[1],
 				{
 					from: third,
 				}
@@ -2534,9 +2737,9 @@ contract('PlayerProps', (accounts) => {
 				await GamesPlayerPropsReceiverDeployed.fulfillResultOfPlayerProps(
 					['0x6536306366613738303834366166363839373862343935373965356366333936'],
 					['0x3431373836333400000000000000000000000000000000000000000000000000'],
-					[1],
 					[37],
 					[28],
+					[1],
 					{
 						from: third,
 					}
@@ -2751,9 +2954,9 @@ contract('PlayerProps', (accounts) => {
 						'0x3431373836333400000000000000000000000000000000000000000000000000',
 						'0x3431373836333100000000000000000000000000000000000000000000000000',
 					],
-					[1, 1],
 					[37, 37],
 					[28, 29],
+					[1, 1],
 					{
 						from: third,
 					}

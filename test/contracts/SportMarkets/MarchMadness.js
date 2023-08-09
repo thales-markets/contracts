@@ -40,7 +40,7 @@ contract('MarchMadness', (accounts) => {
 			// Initial value not provided
 			assert.bnEqual(await marchMadness.canNotMintOrUpdateAfter(), 0);
 
-			const dateTo = new Date('01-12-2023').getTime();
+			const dateTo = new Date('01-12-2033').getTime();
 
 			await expect(
 				marchMadness.setFinalDateForPositioning(dateTo, { from: first })
@@ -51,7 +51,7 @@ contract('MarchMadness', (accounts) => {
 			// Initial value not provided
 			assert.bnEqual(await marchMadness.canNotMintOrUpdateAfter(), 0);
 
-			const dateTo = new Date('01-12-2023').getTime();
+			const dateTo = new Date('01-12-2033').getTime();
 
 			const tx = await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
@@ -100,10 +100,10 @@ contract('MarchMadness', (accounts) => {
 
 	describe('Minting', () => {
 		it('Should revert minting, not in date range', async () => {
-			const currentBlockTime = new Date('02-17-2023').getTime() / 1000;
+			const currentBlockTime = new Date('02-17-2033').getTime() / 1000;
 			await network.provider.send('evm_setNextBlockTimestamp', [currentBlockTime]);
 
-			const dateTo = new Date('02-15-2023').getTime() / 1000;
+			const dateTo = new Date('02-15-2033').getTime() / 1000;
 
 			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
@@ -113,7 +113,7 @@ contract('MarchMadness', (accounts) => {
 		});
 
 		it('Should mint', async () => {
-			const dateTo = new Date('02-25-2023').getTime() / 1000;
+			const dateTo = new Date('02-25-2033').getTime() / 1000;
 
 			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
@@ -125,7 +125,7 @@ contract('MarchMadness', (accounts) => {
 		});
 
 		it('Should revert, already minted from address', async () => {
-			const dateTo = new Date('02-25-2023').getTime() / 1000;
+			const dateTo = new Date('02-25-2033').getTime() / 1000;
 
 			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
@@ -141,7 +141,7 @@ contract('MarchMadness', (accounts) => {
 
 	describe('Updating minted positions/Getting correct positions', () => {
 		it('Should update already minted position, before that testing reverting on update brackets', async () => {
-			const dateTo = new Date('02-25-2023').getTime() / 1000;
+			const dateTo = new Date('02-25-2033').getTime() / 1000;
 
 			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
@@ -174,7 +174,7 @@ contract('MarchMadness', (accounts) => {
 		});
 
 		it('Should display count of correct positions', async () => {
-			const dateTo = new Date('02-25-2023').getTime() / 1000;
+			const dateTo = new Date('02-25-2033').getTime() / 1000;
 
 			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
@@ -207,7 +207,7 @@ contract('MarchMadness', (accounts) => {
 
 		it('Should display count of correct positions from round, also show display points for that round', async () => {
 			// Setting the final date for positioning
-			const dateTo = new Date('02-25-2023').getTime() / 1000;
+			const dateTo = new Date('02-25-2033').getTime() / 1000;
 			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
 			// Setting gameIds for round
@@ -249,7 +249,7 @@ contract('MarchMadness', (accounts) => {
 	describe('Multiple rounds final testing', () => {
 		it('Should return count of correct positions and total points', async () => {
 			// Setting the final date for positioning
-			const dateTo = new Date('02-25-2023').getTime() / 1000;
+			const dateTo = new Date('02-25-2033').getTime() / 1000;
 			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
 
 			// Setting gameIds for round

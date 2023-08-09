@@ -302,7 +302,7 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     function getAllSGPFees() external view returns (SGPFees[] memory sgpFees) {
         uint numberOfFeesSet;
         uint[] memory indexes = new uint[](100);
-        for (uint i = 9001; i < 9999; i++) {
+        for (uint i = 9001; i < 19999; i++) {
             if (
                 IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 0, 10002, 3, 3) > 0 ||
                 IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 0, 10001, 3, 3) > 0 ||

@@ -147,7 +147,13 @@
 		"ParlayAMMLiquidityPoolRoundMastercopy": "0xa01AD492B19314bEfBcE4891B927A030d660ffA5",
 		"ParlayAMMLiquidityPoolData": "0x6d4393FAd7A2928c10cdD0bcdd7702B39086d8b2",
 		"ParlayAMMLiquidityPoolDataImplementation": "0xaA7aD7b27Fc419d00B4Bef275E7F6020953a824F",
-		"ParlayDefaultLiquidityProviderImplementation": "0xA20Ed099894dcfC46AF290705Ff5aE4d318B0235"
+		"ParlayDefaultLiquidityProviderImplementation": "0xA20Ed099894dcfC46AF290705Ff5aE4d318B0235",
+		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
+		"MultiCollateralOnOffRamp": "0x6F5A76423396Bf39F64F8c51C0B3dEb24990b116",
+		"MultiCollateralOnOffRampImplementation": "0xa68034fc725fA0E6AE2e5260c18efb78F27a96FC",
+		"SpeedMarketsAMM": "0xE16B8a01490835EC1e76bAbbB3Cadd8921b32001",
+		"SpeedMarketsAMMImplementation": "0xd2103833656218C6Fb0f5742B48678aB217F4f1F",
+		"SpeedMarketMastercopy": "0xce674bA3Bb5128a43717282e54831d769d5baf69"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -260,7 +266,13 @@
 		"ParlayAMMLiquidityPoolRoundMastercopy": "0x65eBe63c2C0717aC76698e675dA58A1361B85Aa7",
 		"ParlayAMMLiquidityPoolData": "0xB5F1924136d7A72C3E5E746Ba2E23A3bfd499097",
 		"ParlayAMMLiquidityPoolDataImplementation": "0x0281B682Fb5Ee287B5DB7519BE9425b34Fb11503",
-		"ParlayDefaultLiquidityProviderImplementation": "0xa475e7314f41D77FB800245DAC18Ee8a760a491F"
+		"ParlayDefaultLiquidityProviderImplementation": "0xa475e7314f41D77FB800245DAC18Ee8a760a491F",
+		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
+		"SpeedMarketsAMM": "0x02D0123a89Ae6ef27419d5EBb158d1ED4Cf24FA3",
+		"SpeedMarketsAMMImplementation": "0x794D5BD24c832c867Ed8E798f49F93a55cc16710",
+		"MultiCollateralOnOffRamp": "0x7b065dE3fd7190A6C2CB6D51E946e82B6b2C4358",
+		"MultiCollateralOnOffRampImplementation": "0x96AcFf912a80E78C2f622a2AD1C0238e1160b56f",
+		"SpeedMarketMastercopy": "0x23885A1ee8F72984d83207119A2CC85A22d4F5d8"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

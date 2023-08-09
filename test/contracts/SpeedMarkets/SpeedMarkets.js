@@ -205,7 +205,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			await expect(
 				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
-			).to.be.revertedWith('Not ready to be resolved');
+			).to.be.revertedWith('Can not resolve');
 
 			await fastForward(86400);
 

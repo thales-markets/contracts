@@ -182,7 +182,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         PythStructs.Price memory price = pyth.getPrice(assetToPythId[asset]);
 
-        require((price.publishTime + maximumPriceDelay) > block.timestamp, "Stale price");
+        require((price.publishTime + maximumPriceDelay) > block.timestamp && price.price > 0, "Stale price");
 
         if (transferSusd) {
             uint totalAmountToTransfer = (buyinAmount * (ONE + safeBoxImpact + lpFee)) / ONE;
@@ -234,9 +234,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     function _resolveMarket(address market, bytes[] memory priceUpdateData) internal {
-        require(_activeMarkets.contains(market), "Not an active market");
-        require(SpeedMarket(market).strikeTime() < block.timestamp, "Not ready to be resolved");
-        require(!SpeedMarket(market).resolved(), "Already resolved");
+        require(canResolveMarket(market), "Can not resolve");
 
         uint fee = pyth.getUpdateFee(priceUpdateData);
 
@@ -250,6 +248,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         );
 
         PythStructs.Price memory price = prices[0].price;
+
+        require(price.price > 0, "invalid price");
 
         _resolveMarketWithPrice(market, price.price);
     }
@@ -272,9 +272,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     function _resolveMarketManually(address _market, int64 _finalPrice) internal {
-        require(_activeMarkets.contains(_market), "Not an active market");
-        require(SpeedMarket(_market).strikeTime() < block.timestamp, "Not ready to be resolved");
-        require(!SpeedMarket(_market).resolved(), "Already resolved");
+        require(canResolveMarket(_market), "Can not resolve");
         _resolveMarketWithPrice(_market, _finalPrice);
     }
 

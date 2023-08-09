@@ -293,8 +293,6 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         IERC20Upgradeable(dai).approve(_curveSUSD, type(uint256).max);
         IERC20Upgradeable(usdc).approve(_curveSUSD, type(uint256).max);
         IERC20Upgradeable(usdt).approve(_curveSUSD, type(uint256).max);
-        // not needed unless selling into different collateral is enabled
-        //sUSD.approve(_curveSUSD, type(uint256).max);
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
         emit CurveSUSDSet(_curveSUSD, _dai, _usdc, _usdt, _curveOnrampEnabled, _maxAllowedPegSlippagePercentage);

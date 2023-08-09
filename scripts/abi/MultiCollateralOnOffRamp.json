@@ -48,6 +48,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "manager",
+        "type": "address"
+      }
+    ],
+    "name": "ManagerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "collateral",
         "type": "address"
       },
@@ -329,6 +342,45 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "inToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint24",
+        "name": "feeIn",
+        "type": "uint24"
+      },
+      {
+        "internalType": "address",
+        "name": "proxy",
+        "type": "address"
+      },
+      {
+        "internalType": "uint24",
+        "name": "feeOut",
+        "type": "uint24"
+      },
+      {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      }
+    ],
+    "name": "getEncodedPacked",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "encoded",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "collateral",
         "type": "address"
       },
@@ -382,6 +434,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "manager",
+    "outputs": [
+      {
+        "internalType": "contract IPositionalMarketManagerTruncated",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -593,6 +658,19 @@
       }
     ],
     "name": "setCurveSUSD",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "setManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

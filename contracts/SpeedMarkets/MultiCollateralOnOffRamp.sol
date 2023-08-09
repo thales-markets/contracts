@@ -23,6 +23,7 @@ import "../utils/libraries/UniswapMath.sol";
 // interfaces
 import "../interfaces/ICurveSUSD.sol";
 import "../interfaces/IPriceFeed.sol";
+import "../interfaces/IPositionalMarketManagerTruncated.sol";
 
 interface WethLike {
     function deposit() external payable;
@@ -60,6 +61,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     mapping(address => bytes) public pathPerCollateral;
 
     mapping(address => bytes32) public priceFeedKeyPerCollateral;
+
+    IPositionalMarketManagerTruncated public manager;
 
     function initialize(address _owner, IERC20Upgradeable _sUSD) public initializer {
         setOwner(_owner);
@@ -226,6 +229,24 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
             minReceived = (((amount * currentCollateralPrice) / ONE) * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
         }
+        if (address(manager) != address(0)) {
+            minReceived = manager.transformCollateral(minReceived);
+        }
+    }
+
+    /// @notice utility method to pack best path
+    function getEncodedPacked(
+        address inToken,
+        uint24 feeIn,
+        address proxy,
+        uint24 feeOut,
+        address target
+    ) external view returns (bytes memory encoded) {
+        if (target != address(0)) {
+            encoded = abi.encodePacked(inToken, feeIn, proxy, feeOut, target);
+        } else {
+            encoded = abi.encodePacked(inToken, feeIn, target);
+        }
     }
 
     //////////////// setters
@@ -269,6 +290,11 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     function setPriceFeedKeyPerAsset(bytes32 key, address asset) external onlyOwner {
         priceFeedKeyPerCollateral[asset] = key;
         emit SetPriceFeedKeyPerAsset(key, asset);
+    }
+
+    function setManager(address _manager) external onlyOwner {
+        manager = IPositionalMarketManagerTruncated(_manager);
+        emit ManagerChanged(_manager);
     }
 
     /// @notice Updates contract parametars
@@ -316,4 +342,5 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     event SetSupportedCollateral(address collateral, bool supported);
     event Onramped(address collateral, uint amount);
     event OnrampedEth(uint amount);
+    event ManagerChanged(address manager);
 }

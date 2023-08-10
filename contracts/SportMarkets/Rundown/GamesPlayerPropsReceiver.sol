@@ -119,7 +119,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
                 (IGamesPlayerProps.PlayerPropsResolver)
             );
             uint sportId = consumer.sportsIdPerGame(playerResult.gameId);
-            if (isValidOptionPerSport[sportId][playerResult.options]) {
+            if (isValidOptionPerSport[sportId][playerResult.option]) {
                 // game needs to be resolved or canceled
                 if (consumer.isGameResolvedOrCanceled(playerResult.gameId)) {
                     playerProps.resolvePlayerProps(playerResult);

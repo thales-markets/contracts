@@ -1271,17 +1271,17 @@
           },
           {
             "internalType": "uint8",
-            "name": "options",
+            "name": "option",
             "type": "uint8"
           },
           {
             "internalType": "uint16",
-            "name": "scores",
+            "name": "score",
             "type": "uint16"
           },
           {
             "internalType": "uint8",
-            "name": "statusIds",
+            "name": "statusId",
             "type": "uint8"
           }
         ],

@@ -130,22 +130,22 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         // get main market
         address _main = consumer.marketPerGameId(_result.gameId);
         //number of childs per option
-        uint numberOfChildsPerOptions = numberOfChildMarketsPerPlayerAndOption[_main][_result.playerId][_result.options];
+        uint numberOfChildsPerOptions = numberOfChildMarketsPerPlayerAndOption[_main][_result.playerId][_result.option];
         // if it is resolved skip it
-        if (!resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.options]) {
+        if (!resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.option]) {
             // resolve
             for (uint j = 0; j < numberOfChildsPerOptions; j++) {
-                address child = mainMarketChildMarketPerPlayerAndOptionIndex[_main][_result.playerId][_result.options][j];
-                if (invalidOddsForPlayerProps[_result.gameId][_result.playerId][_result.options]) {
+                address child = mainMarketChildMarketPerPlayerAndOptionIndex[_main][_result.playerId][_result.option][j];
+                if (invalidOddsForPlayerProps[_result.gameId][_result.playerId][_result.option]) {
                     consumer.pauseOrUnpauseMarket(child, false);
                 }
-                if (_result.statusIds == CANCELLED) {
+                if (_result.statusId == CANCELLED) {
                     _resolveMarket(child, uint16(CANCELLED), CANCELLED);
                 } else {
-                    _resolveMarketForPlayer(child, _result.scores);
+                    _resolveMarketForPlayer(child, _result.score);
                 }
             }
-            resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.options] = true;
+            resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.option] = true;
         }
     }
 

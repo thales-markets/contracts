@@ -57,6 +57,11 @@ async function main() {
 		network = 'bsc';
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
+
 	const ammUtils = await ethers.getContractFactory('ThalesAMMUtils');
 	const ThalesAMMUtilsDeployed = await ammUtils.deploy();
 	await ThalesAMMUtilsDeployed.deployed();

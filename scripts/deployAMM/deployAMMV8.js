@@ -51,6 +51,11 @@ async function main() {
 		network = 'optimisticGoerli';
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
+
 	if (networkObj.chainId == 10) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else if (networkObj.chainId == 69) {
@@ -59,7 +64,8 @@ async function main() {
 	} else if (
 		networkObj.chainId == 80001 ||
 		networkObj.chainId == 137 ||
-		networkObj.chainId == 42161
+		networkObj.chainId == 42161 ||
+		networkObj.chainId == 8453
 	) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
 	} else if (networkObj.chainId == 56) {

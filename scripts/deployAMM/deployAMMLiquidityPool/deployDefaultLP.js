@@ -57,6 +57,12 @@ async function main() {
 		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 

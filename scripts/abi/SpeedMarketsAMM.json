@@ -258,6 +258,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_pyth",
+        "type": "address"
+      }
+    ],
+    "name": "SetPyth",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_safeBox",
         "type": "address"
       },
@@ -1310,6 +1323,19 @@
       }
     ],
     "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_pyth",
+        "type": "address"
+      }
+    ],
+    "name": "setPyth",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

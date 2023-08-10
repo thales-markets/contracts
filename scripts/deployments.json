@@ -337,7 +337,11 @@
 		"ThalesAMMLiquidityPoolImplementation": "",
 		"ThalesAMMLiquidityPoolRoundMastercopy": "",
 		"ThalesAMMDefaultLiquidityProviderImplementation": "",
-		"PositionalMarketDataImplementation": "0xC0EeFDCF5A815ed7ac1ef1b8Ae8302AC502f3005"
+		"PositionalMarketDataImplementation": "0xC0EeFDCF5A815ed7ac1ef1b8Ae8302AC502f3005",
+		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
+		"SpeedMarketsAMM": "0x4B1aED25f1877E1E9fBECBd77EeE95BB1679c361",
+		"SpeedMarketsAMMImplementation": "0x8a52A6d9A5451594868652B420fCd8118A760B6B",
+		"SpeedMarketMastercopy": "0x1957097E4C485D5c4ced40102653024766a7ecc1"
 	},
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
@@ -368,7 +372,11 @@
 		"ThalesAMMDefaultLiquidityProvider": "",
 		"ThalesAMMLiquidityPoolImplementation": "",
 		"ThalesAMMLiquidityPoolRoundMastercopy": "",
-		"ThalesAMMDefaultLiquidityProviderImplementation": ""
+		"ThalesAMMDefaultLiquidityProviderImplementation": "",
+		"Pyth": "0x4D7E825f80bDf85e913E0DD2A2D54927e9dE1594",
+		"SpeedMarketsAMM": "0x72ca0765d4bE0529377d656c9645600606214610",
+		"SpeedMarketsAMMImplementation": "0xece0eEFFF3003d23e366C917104C6CF5Cdb404F1",
+		"SpeedMarketMastercopy": "0x8FE726b27e89Cd484981B2D27160186920Af2d17"
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",

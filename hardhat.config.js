@@ -29,6 +29,7 @@ const OP_ETHERSCAN_KEY = process.env.OP_ETHERSCAN_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 const BSC_API_KEY = process.env.BSC_API_KEY;
 const ARBITRUM_API_KEY = process.env.ARBITRUM_API_KEY;
+const BASESCAN_API_KEY = process.env.BASESCAN_API_KEY;
 const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : 'http://127.0.0.1:8545';
 
 module.exports = {
@@ -41,6 +42,14 @@ module.exports = {
 				urls: {
 					apiURL: 'https://api-goerli-optimism.etherscan.io/api',
 					browserURL: 'https://goerli-optimism.etherscan.io/',
+				},
+			},
+			{
+				network: 'baseMainnet',
+				chainId: 8453,
+				urls: {
+					apiURL: 'https://api.basescan.org/api',
+					browserURL: 'https://basescan.org/',
 				},
 			},
 		],
@@ -60,6 +69,7 @@ module.exports = {
 			polygonMumbai: POLYGONSCAN_API_KEY,
 			bsc: BSC_API_KEY,
 			arbitrumOne: ARBITRUM_API_KEY,
+			baseMainnet: BASESCAN_API_KEY,
 		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
@@ -209,10 +219,11 @@ module.exports = {
 			//gasPrice: 5000000000,
 			accounts: [PRIVATE_KEY],
 		},
-		optimisticGoerli: {
-			gasPrice: 10000,
-			url: 'https://goerli.optimism.io',
+		baseMainnet: {
+			url: 'https://mainnet.base.org',
+			chainId: 8453,
 			accounts: [PRIVATE_KEY],
+			gasPrice: 1000000000,
 		},
 	},
 

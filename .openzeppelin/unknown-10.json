@@ -1,7 +1,7 @@
 {
   "manifestVersion": "3.2",
   "admin": {
-    "address": "0x57fAaDA9E5A3098a38151E4DE8426135B0fA4fd0",
+      "address": "0x57fAaDA9E5A3098a38151E4DE8426135B0fA4fd0",
     "txHash": "0x0757521724fdb1d80defed70c429fc6cffdc364a0ea2dd1fc091020c28480114",
     "deployTransaction": {
       "hash": "0x0757521724fdb1d80defed70c429fc6cffdc364a0ea2dd1fc091020c28480114",

@@ -138,6 +138,31 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "path",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "doReset",
+        "type": "bool"
+      }
+    ],
+    "name": "SetPathPerCollateral",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_priceFeed",
         "type": "address"
       }
@@ -372,6 +397,30 @@
         "internalType": "bytes",
         "name": "encoded",
         "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMaximumReceived",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "maxReceived",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -684,6 +733,29 @@
       }
     ],
     "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "path",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bool",
+        "name": "doReset",
+        "type": "bool"
+      }
+    ],
+    "name": "setPathPerCollateral",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

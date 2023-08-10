@@ -45,6 +45,11 @@
         "internalType": "address",
         "name": "_verifier",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_playerPropsReciever",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -186,6 +191,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_playerPropsReciever",
+        "type": "address"
+      }
+    ],
+    "name": "NewPlayerPropsReciever",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_sportsAmm",
         "type": "address"
       }
@@ -304,6 +322,25 @@
       }
     ],
     "name": "areOddsRequestIdsFulFilled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "_requestsIds",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "areResolvedPlayerPropsRequestIdsFulFilled",
     "outputs": [
       {
         "internalType": "bool",
@@ -450,6 +487,24 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "_playerProps",
+        "type": "bytes[]"
+      }
+    ],
+    "name": "fulfillPlayerPropsResolved",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
@@ -578,6 +633,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "playerPropsReciever",
+    "outputs": [
+      {
+        "internalType": "contract IGamesPlayerPropsReciever",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -789,6 +857,49 @@
     "inputs": [
       {
         "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "requestIdPlayerPropsResolved",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "requestIdPlayerPropsResolvedFulFilled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
         "name": "_specId",
         "type": "bytes32"
       },
@@ -809,6 +920,44 @@
       }
     ],
     "name": "requestOddsWithFilters",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_specId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_market",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_gameIds",
+        "type": "string[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_playerIds",
+        "type": "string[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_optionIds",
+        "type": "string[]"
+      }
+    ],
+    "name": "requestPlayerPropsResolveWithFilters",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -918,6 +1067,19 @@
       }
     ],
     "name": "setPaymentResolve",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_playerPropsReciever",
+        "type": "address"
+      }
+    ],
+    "name": "setPlayerPropsRecieverAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

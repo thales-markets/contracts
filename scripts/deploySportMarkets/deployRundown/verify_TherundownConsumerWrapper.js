@@ -58,6 +58,8 @@ async function main() {
 	let sportsAMMAddress = getTargetAddress('SportsAMM', network);
 	const verifier = await ethers.getContractFactory('TherundownConsumerVerifier');
 	let verifierAddress = getTargetAddress('TherundownConsumerVerifier', network);
+	const playerPropsR = await ethers.getContractFactory('GamesPlayerPropsReceiver');
+	let playerPropsRAddress = getTargetAddress('GamesPlayerPropsReceiver', network);
 
 	console.log('TherundownConsumer address: ', consumerAddress);
 
@@ -86,6 +88,7 @@ async function main() {
 				oddsSpecId,
 				sportsAMMAddress,
 				verifierAddress,
+				playerPropsRAddress,
 			],
 		});
 	} catch (e) {

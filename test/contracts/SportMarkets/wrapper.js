@@ -11,7 +11,7 @@ const { toUnit } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 
 contract('TherundownConsumerWrapper', (accounts) => {
-	const [first, owner, second, third, manager] = accounts;
+	const [first, owner, second, third, fourth, manager] = accounts;
 	const SportPositionContract = artifacts.require('SportPosition');
 	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
 	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
@@ -38,6 +38,8 @@ contract('TherundownConsumerWrapper', (accounts) => {
 		SportPositionalMarket,
 		SportPositionalMarketMastercopy,
 		SportPositionMastercopy,
+		GamesPlayerPropsReceiverDeployed,
+		GamesPlayerPropsDeployed,
 		SportsAMM;
 
 	beforeEach(async () => {
@@ -95,6 +97,29 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			}
 		);
 
+		let GamesPlayerProps = artifacts.require('GamesPlayerProps');
+		GamesPlayerPropsDeployed = await GamesPlayerProps.new({ from: owner });
+		await GamesPlayerPropsDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			fourth, // dummy at beggining
+			fourth, // dummy at beggining
+			[4, 16],
+			{ from: owner }
+		);
+
+		let GamesPlayerPropsReceiver = artifacts.require('GamesPlayerPropsReceiver');
+		GamesPlayerPropsReceiverDeployed = await GamesPlayerPropsReceiver.new({ from: owner });
+
+		await GamesPlayerPropsReceiverDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			GamesPlayerPropsDeployed.address,
+			[fourth],
+			{ from: owner }
+		);
+
 		TherundownConsumerWrapper = artifacts.require('TherundownConsumerWrapper');
 		TherundownConsumerWrapperDeployed = await TherundownConsumerWrapper.new(
 			ThalesDeployed.address,
@@ -106,6 +131,7 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			'0x3465326264623338336437393962343662653663656562336463366465306363',
 			third,
 			verifier.address,
+			GamesPlayerPropsReceiverDeployed.address,
 			{ from: owner }
 		);
 
@@ -146,6 +172,7 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			assert.bnEqual(false, await wrapper.areOddsRequestIdsFulFilled([dummyReqId]));
 			assert.bnEqual(false, await wrapper.areCreatedRequestIdsFulFilled([dummyReqId]));
 			assert.bnEqual(false, await wrapper.areResolvedRequestIdsFulFilled([dummyReqId]));
+			assert.bnEqual(false, await wrapper.areResolvedPlayerPropsRequestIdsFulFilled([dummyReqId]));
 			assert.bnEqual(paymentCreate, await wrapper.paymentCreate());
 			assert.bnEqual(paymentResolve, await wrapper.paymentResolve());
 			assert.bnEqual(paymentOdds, await wrapper.paymentOdds());
@@ -282,6 +309,19 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			// check if event is emited
 			assert.eventEqual(tx_odds_spec.logs[0], 'NewOddsSpecId', {
 				_specId: `0x3465326264623338336437393962343662653663656562336463366465306364`,
+			});
+
+			const tx_player = await wrapper.setPlayerPropsRecieverAddress(first, {
+				from: owner,
+			});
+
+			await expect(
+				wrapper.setPlayerPropsRecieverAddress(first, { from: first })
+			).to.be.revertedWith('Ownable: caller is not the owner');
+
+			// check if event is emited
+			assert.eventEqual(tx_player.logs[0], 'NewPlayerPropsReciever', {
+				_playerPropsReciever: first,
 			});
 		});
 

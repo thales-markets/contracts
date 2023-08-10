@@ -110,7 +110,11 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
     }
 
     function balanceOf(address _recipient) public view returns (uint) {
-        return _totalVestedOf(_recipient, block.timestamp) - totalClaimed[_recipient];
+        uint timestamp = pausedAt[_recipient];
+        if (timestamp == 0) {
+            timestamp = block.timestamp;
+        }
+        return _totalVestedOf(_recipient, timestamp) - totalClaimed[_recipient];
     }
 
     function lockedOf(address _recipient) public view returns (uint) {

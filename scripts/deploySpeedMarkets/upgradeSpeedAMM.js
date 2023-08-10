@@ -60,7 +60,12 @@ async function main() {
 	const SpeedMarketsAMMAddress = getTargetAddress('SpeedMarketsAMM', network);
 	const SpeedMarketsAMM = await ethers.getContractFactory('SpeedMarketsAMM');
 
-	if (networkObj.chainId == 42 || networkObj.chainId == 5 || networkObj.chainId == 420) {
+	if (
+		networkObj.chainId == 42 ||
+		networkObj.chainId == 5 ||
+		networkObj.chainId == 420 ||
+		networkObj.chainId == 8453
+	) {
 		await upgrades.upgradeProxy(SpeedMarketsAMMAddress, SpeedMarketsAMM);
 		await delay(15000);
 
@@ -82,7 +87,7 @@ async function main() {
 		}
 	}
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 8453) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
 		const implementation = await upgrades.prepareUpgrade(SpeedMarketsAMMAddress, SpeedMarketsAMM);
 		await delay(5000);
 

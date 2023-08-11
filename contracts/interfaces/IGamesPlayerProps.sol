@@ -46,6 +46,11 @@ interface IGamesPlayerProps {
 
     function pausedByCircuitBreakerOnMain(address _main) external view returns (bool);
 
+    function getAllOptionsWithPlayersForGameId(bytes32 _gameId)
+        external
+        view
+        returns (bytes32[] memory _playerIds, uint8[] memory _options);
+
     function getPlayerPropForOption(
         bytes32 gameId,
         bytes32 playerId,

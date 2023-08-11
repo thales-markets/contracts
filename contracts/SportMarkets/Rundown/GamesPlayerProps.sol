@@ -63,6 +63,10 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public pausedByCircuitBreakerOnMain;
     mapping(address => bool) public playerPropsAddedForMain;
 
+    mapping(bytes32 => bytes32[]) public playersInAGame;
+    mapping(bytes32 => mapping(bytes32 => bool)) public playersInAGameFulfilled;
+    mapping(bytes32 => mapping(bytes32 => uint8[])) public allOptionsPerPlayer;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -106,8 +110,17 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                 address playerPropsMarket = _obtainPlayerProps(_player, _main);
                 playerProp[_player.gameId][_player.playerId][_player.option] = _player;
                 mainMarketPausedPlayerProps[_main] = false;
-                createFulfilledForPlayerProps[_player.gameId][_player.playerId][_player.option] = true;
                 playerPropsAddedForMain[_main] = true;
+
+                if (!playersInAGameFulfilled[_player.gameId][_player.playerId]) {
+                    playersInAGameFulfilled[_player.gameId][_player.playerId] = true;
+                    playersInAGame[_player.gameId].push(_player.playerId);
+                }
+
+                if (!createFulfilledForPlayerProps[_player.gameId][_player.playerId][_player.option]) {
+                    createFulfilledForPlayerProps[_player.gameId][_player.playerId][_player.option] = true;
+                    allOptionsPerPlayer[_player.gameId][_player.playerId].push(_player.option);
+                }
 
                 emit PlayerPropsAdded(
                     _player.gameId,
@@ -421,6 +434,44 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
             currentProp.underOdds,
             invalidOddsForPlayerProps[_gameId][_playerId][_option]
         );
+    }
+
+    function getAllOptionsWithPlayersForGameId(bytes32 _gameId)
+        external
+        view
+        returns (
+            bytes32[] memory _playerIds,
+            uint8[] memory _options,
+            bool[] memory _isResolved
+        )
+    {
+        uint256 totalCombinations = 0;
+
+        for (uint256 i = 0; i < playersInAGame[_gameId].length; i++) {
+            bytes32 playerId = playersInAGame[_gameId][i];
+            totalCombinations += allOptionsPerPlayer[_gameId][playerId].length;
+        }
+
+        _playerIds = new bytes32[](totalCombinations);
+        _options = new uint8[](totalCombinations);
+        _isResolved = new bool[](totalCombinations);
+
+        uint256 index = 0;
+        for (uint256 i = 0; i < playersInAGame[_gameId].length; i++) {
+            bytes32 playerId = playersInAGame[_gameId][i];
+            uint8[] memory playerOptions = allOptionsPerPlayer[_gameId][playerId];
+
+            for (uint256 j = 0; j < playerOptions.length; j++) {
+                uint8 optionId = playerOptions[j];
+
+                if (createFulfilledForPlayerProps[_gameId][playerId][optionId]) {
+                    _playerIds[index] = playerId;
+                    _options[index] = optionId;
+                    _isResolved[index] = resolveFulfilledForPlayerProps[_gameId][playerId][optionId];
+                    index++;
+                }
+            }
+        }
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */

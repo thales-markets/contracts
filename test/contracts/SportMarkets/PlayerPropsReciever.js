@@ -1661,6 +1661,19 @@ contract('PlayerProps', (accounts) => {
 				}
 			);
 
+			let getAllOptionsWithPlayersForGameId =
+				await GamesPlayerPropsDeployed.getAllOptionsWithPlayersForGameId(
+					'0x6536306366613738303834366166363839373862343935373965356366333936'
+				);
+
+			let playerids = getAllOptionsWithPlayersForGameId[0];
+			let optionids = getAllOptionsWithPlayersForGameId[1];
+			assert.bnEqual(
+				'0x3431373836333400000000000000000000000000000000000000000000000000',
+				playerids[0]
+			);
+			assert.bnEqual(37, optionids[0]);
+
 			assert.bnEqual(2, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
 			let mainMarketPlayerPropsChildCatchAgain =
 				await GamesPlayerPropsDeployed.mainMarketPlayerOptionLineChildMarket(

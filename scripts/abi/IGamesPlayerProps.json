@@ -47,6 +47,30 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getAllOptionsWithPlayersForGameId",
+    "outputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "_playerIds",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "_options",
+        "type": "uint8[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_market",
         "type": "address"

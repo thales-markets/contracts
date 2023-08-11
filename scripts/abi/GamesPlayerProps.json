@@ -560,6 +560,11 @@
         "internalType": "uint8[]",
         "name": "_options",
         "type": "uint8[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isResolved",
+        "type": "bool[]"
       }
     ],
     "stateMutability": "view",

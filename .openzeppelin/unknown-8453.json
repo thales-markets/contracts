@@ -84,6 +84,16 @@
       "address": "0x33bf0378242c7C814942197ea4AE584b52681197",
       "txHash": "0x0b3073fd59f5514b6793f977e7633e9bb317e5535885bcd88a80319f046ffae0",
       "kind": "transparent"
+    },
+    {
+      "address": "0x5C64A0bE3cf1f5655d28C80353eE7f5Bd8326a83",
+      "txHash": "0x2174ed96ff0cf16926fe63aef390ae37ddef5e0f152c8acf03785d010a0e6923",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x42792eFed59F628495dD9F5E2190819468ce0934",
+      "txHash": "0x56eee04881605547befe329b87d740291da7aa35ae5bd586e957a6a3db485408",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -2462,6 +2472,148 @@
           },
           "t_address": {
             "label": "address"
+          }
+        }
+      }
+    },
+    "ecd9e13988bb9e30552f69766e14d43e83b834d8315a7d6fcf9e52e3ad246fe9": {
+      "address": "0xE6BFFd75906E2B23ACe1cFdDDF106BD6dC4b71B5",
+      "txHash": "0x5a35f3ef5b6e29a3348ad6b42a82cf11fd55a89a90f884dc333f482a68682511",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "Referrals",
+            "label": "whitelistedAddresses",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\AMM\\Referrals.sol:21"
+          },
+          {
+            "contract": "Referrals",
+            "label": "referrals",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts\\AMM\\Referrals.sol:22"
+          },
+          {
+            "contract": "Referrals",
+            "label": "referralStarted",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\AMM\\Referrals.sol:23"
+          },
+          {
+            "contract": "Referrals",
+            "label": "tradedBefore",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\AMM\\Referrals.sol:25"
+          },
+          {
+            "contract": "Referrals",
+            "label": "sportReferrals",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts\\AMM\\Referrals.sol:27"
+          },
+          {
+            "contract": "Referrals",
+            "label": "sportReferralStarted",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\AMM\\Referrals.sol:28"
+          },
+          {
+            "contract": "Referrals",
+            "label": "sportTradedBefore",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\AMM\\Referrals.sol:29"
+          },
+          {
+            "contract": "Referrals",
+            "label": "sportsAMM",
+            "type": "t_address",
+            "src": "contracts\\AMM\\Referrals.sol:30"
+          },
+          {
+            "contract": "Referrals",
+            "label": "parlayAMM",
+            "type": "t_address",
+            "src": "contracts\\AMM\\Referrals.sol:31"
+          }
+        ],
+        "types": {
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
           }
         }
       }

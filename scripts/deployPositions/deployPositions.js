@@ -176,12 +176,6 @@ async function main() {
 		PositionalMarketFactoryImplementation
 	);
 
-	const PositionalMarketData = await ethers.getContractFactory('PositionalMarketData');
-	const positionalMarketData = await PositionalMarketData.deploy();
-
-	console.log('PositionalMarketData deployed to:', positionalMarketData.address);
-	setTargetAddress('PositionalMarketData', network, positionalMarketData.address);
-
 	//let LimitOrderProviderAddress = getTargetAddress('LimitOrderProvider', network);
 
 	let tx = await PositionalMarketFactoryDeployed.setPositionalMarketManager(
@@ -235,11 +229,6 @@ async function main() {
 		});
 
 		await hre.run('verify:verify', {
-			address: positionalMarketData.address,
-			constructorArguments: [],
-		});
-
-		await hre.run('verify:verify', {
 			address: PositionalMarketManagerDeployed.address,
 		});
 	}
@@ -250,11 +239,6 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: PositionalMarketFactoryImplementation,
-	});
-
-	await hre.run('verify:verify', {
-		address: positionalMarketData.address,
-		constructorArguments: [],
 	});
 
 	await hre.run('verify:verify', {

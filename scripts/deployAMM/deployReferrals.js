@@ -61,6 +61,12 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
+
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 
@@ -92,12 +98,12 @@ async function main() {
 	setTargetAddress('ReferralsImplementation', network, ReferralsImplementation);
 
 	//TODO: add fillip up already traded addresses
-	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
-	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
-	await ReferralsDeployed.setSportsAMM(SportsAMMAddress, ParlayAMMAddress, {
-		from: owner.address,
-	});
-	console.log('Sports and Parlay updated');
+	// const SportsAMMAddress = getTargetAddress('SportsAMM', network);
+	// const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
+	// await ReferralsDeployed.setSportsAMM(SportsAMMAddress, ParlayAMMAddress, {
+	// 	from: owner.address,
+	// });
+	// console.log('Sports and Parlay updated');
 
 	try {
 		await hre.run('verify:verify', {

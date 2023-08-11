@@ -84,6 +84,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
 
         // use direct path for WETH
+        //TODO: consider mapping other collateral for direct swap
         if (collateral == WETH9) {
             convertedAmount = _swapExactSingle(collateralAmount, collateral);
         } else if (curveOnrampEnabled && (collateral == usdc || collateral == dai || collateral == usdt)) {
@@ -127,15 +128,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
             getMinimumReceived(collateral, collateralQuote) // the minimum received is predefined
         );
 
-        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
-            ? collateralQuote * (1e12)
-            : collateralQuote;
-
         // ensure the amount received is withing allowed range per maxAllowedPegSlippagePercentage
-        require(
-            amountOut <= (transformedCollateralForPegCheck * (ONE + maxAllowedPegSlippagePercentage)) / ONE,
-            "Amount above max allowed peg slippage"
-        );
+        require(amountOut <= getMaximumReceived(collateral, collateralQuote), "Amount above max allowed peg slippage");
     }
 
     ///////////////////////UNISWAP related code///////////////////
@@ -158,15 +152,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         // The call to `exactInputSingle` executes the swap.
         amountOut = swapRouter.exactInputSingle(params);
 
-        uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[tokenIn]);
-        require(currentCollateralPrice > 0, "price of collateral unknown");
-        uint expectedAmountOut = (amountIn * currentCollateralPrice) / ONE;
-
         // ensure the amount received is withing allowed range per maxAllowedPegSlippagePercentage
-        require(
-            amountOut <= (expectedAmountOut * (ONE + (maxAllowedPegSlippagePercentage))) / ONE,
-            "Amount above max allowed peg slippage"
-        );
+        require(amountOut <= getMaximumReceived(tokenIn, amountIn), "Amount above max allowed peg slippage");
     }
 
     /// @notice _swapExactInput swaps a fixed amount of tokenIn for a maximum possible amount of tokenOut
@@ -194,15 +181,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         // The call to `exactInput` executes the swap.
         amountOut = swapRouter.exactInput(params);
 
-        uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[tokenIn]);
-        require(currentCollateralPrice > 0, "price of collateral unknown");
-
-        uint expectedAmountOut = (amountIn * currentCollateralPrice) / ONE;
-
-        require(
-            amountOut <= (expectedAmountOut * (ONE + (maxAllowedPegSlippagePercentage))) / ONE,
-            "Amount above max allowed peg slippage"
-        );
+        // ensure the amount received is withing allowed range per maxAllowedPegSlippagePercentage
+        require(amountOut <= getMaximumReceived(tokenIn, amountIn), "Amount above max allowed peg slippage");
     }
 
     function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
@@ -234,6 +214,20 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         }
     }
 
+    /// @notice return the guaranteed largest payout for the given collateral and amount
+    function getMaximumReceived(address collateral, uint amount) public view returns (uint maxReceived) {
+        if (_mapCollateralToCurveIndex(collateral) > 0) {
+            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt ? amount * (1e12) : amount;
+            maxReceived = (transformedCollateralForPegCheck * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
+        } else {
+            uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
+            maxReceived = (((amount * currentCollateralPrice) / ONE) * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
+        }
+        if (address(manager) != address(0)) {
+            maxReceived = manager.transformCollateral(maxReceived);
+        }
+    }
+
     /// @notice utility method to pack best path
     function getEncodedPacked(
         address inToken,
@@ -242,10 +236,10 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         uint24 feeOut,
         address target
     ) external view returns (bytes memory encoded) {
-        if (target != address(0)) {
+        if (proxy != address(0)) {
             encoded = abi.encodePacked(inToken, feeIn, proxy, feeOut, target);
         } else {
-            encoded = abi.encodePacked(inToken, feeIn, target);
+            encoded = abi.encodePacked(inToken, feeOut, target);
         }
     }
 
@@ -287,11 +281,28 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         emit SetPriceFeed(_priceFeed);
     }
 
+    /// @notice map a key to an asset for price feed
     function setPriceFeedKeyPerAsset(bytes32 key, address asset) external onlyOwner {
         priceFeedKeyPerCollateral[asset] = key;
         emit SetPriceFeedKeyPerAsset(key, asset);
     }
 
+    /// @notice map a path for a given collateral
+    function setPathPerCollateral(
+        address asset,
+        bytes calldata path,
+        bool doReset
+    ) external onlyOwner {
+        if (doReset) {
+            bytes memory resetVar;
+            pathPerCollateral[asset] = resetVar;
+        } else {
+            pathPerCollateral[asset] = path;
+        }
+        emit SetPathPerCollateral(asset, path, doReset);
+    }
+
+    /// @notice set manager to use collateral transformations as needed
     function setManager(address _manager) external onlyOwner {
         manager = IPositionalMarketManagerTruncated(_manager);
         emit ManagerChanged(_manager);
@@ -343,4 +354,5 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     event Onramped(address collateral, uint amount);
     event OnrampedEth(uint amount);
     event ManagerChanged(address manager);
+    event SetPathPerCollateral(address asset, bytes path, bool doReset);
 }

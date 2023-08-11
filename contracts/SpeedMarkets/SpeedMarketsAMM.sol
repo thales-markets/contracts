@@ -458,6 +458,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetStakingThales(_stakingThales);
     }
 
+    /// @notice Set pyth
+    function setPyth(address _pyth) external onlyOwner {
+        pyth = IPyth(_pyth);
+        emit SetPyth(_pyth);
+    }
+
     /// @notice set whether an asset is supported
     function setSupportedAsset(bytes32 asset, bool _supported) external onlyOwner {
         supportedAsset[asset] = _supported;
@@ -510,6 +516,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
     event SetLPFee(uint _lpFee);
     event SetStakingThales(address _stakingThales);
+    event SetPyth(address _pyth);
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);

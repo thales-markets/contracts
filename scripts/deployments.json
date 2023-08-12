@@ -152,7 +152,7 @@
 		"ParlayDefaultLiquidityProviderImplementation": "0xA20Ed099894dcfC46AF290705Ff5aE4d318B0235",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"MultiCollateralOnOffRampImplementation": "0xFfbFb9694c960C5d04f95dc907Bb8a58Fae0f969",
-		"SpeedMarketsAMMImplementation": "0xd2103833656218C6Fb0f5742B48678aB217F4f1F",
+		"SpeedMarketsAMMImplementation": "0x95a38B4cA5C9187eCfbDFB501Ef61D46755BC075",
 		"SpeedMarketMastercopy": "0xce674bA3Bb5128a43717282e54831d769d5baf69"
 	},
 	"arbitrumOne": {
@@ -270,7 +270,7 @@
 		"ParlayAMMLiquidityPoolDataImplementation": "0x0281B682Fb5Ee287B5DB7519BE9425b34Fb11503",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa475e7314f41D77FB800245DAC18Ee8a760a491F",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
-		"SpeedMarketsAMMImplementation": "0x794D5BD24c832c867Ed8E798f49F93a55cc16710",
+		"SpeedMarketsAMMImplementation": "0x919A79177f267C8873f9bf8f9F720530588B6F02",
 		"MultiCollateralOnOffRampImplementation": "0x0Eb894b1CF3415538b9D64f12a3B3Ab013966f50",
 		"SpeedMarketMastercopy": "0x23885A1ee8F72984d83207119A2CC85A22d4F5d8"
 	},

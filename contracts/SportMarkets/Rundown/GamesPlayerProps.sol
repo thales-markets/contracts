@@ -26,6 +26,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     uint public constant CANCELLED = 0;
     uint public constant HOME_WIN = 1;
     uint public constant AWAY_WIN = 2;
+    uint public constant CANCELLED_STATUS = 255;
 
     /* ========== CONSUMER STATE VARIABLES ========== */
 
@@ -152,7 +153,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                 if (invalidOddsForPlayerProps[_result.gameId][_result.playerId][_result.option]) {
                     consumer.pauseOrUnpauseMarket(child, false);
                 }
-                if (_result.statusId == CANCELLED) {
+                if (_result.statusId == CANCELLED_STATUS) {
                     _resolveMarket(child, uint16(CANCELLED), CANCELLED);
                 } else {
                     _resolveMarketForPlayer(child, _result.score);

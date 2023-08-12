@@ -252,6 +252,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_sportsId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getOptionsPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -346,9 +365,14 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
-    "name": "numberOfOptionsPerSport",
+    "name": "optionsPerSport",
     "outputs": [
       {
         "internalType": "uint256",

@@ -1162,6 +1162,9 @@ contract('TheRundownConsumer', (accounts) => {
 				_outcome: 2,
 			});
 
+			let invalidOdds = await verifier.areInvalidOdds(gameFootballid1);
+			assert.equal(false, invalidOdds);
+
 			verifier_output_game = await verifier.getGameProperties(gameFootballid1);
 
 			assert.equal(marketAdd, verifier_output_game[0]);

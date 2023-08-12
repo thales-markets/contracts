@@ -741,7 +741,61 @@ contract('PlayerProps', (accounts) => {
 			assert.equal(false, await GamesPlayerPropsReceiverDeployed.isValidOptionPerSport(3, 3));
 			assert.equal(true, await GamesPlayerPropsReceiverDeployed.isValidOptionPerSport(4, 37));
 			assert.equal(true, await GamesPlayerPropsReceiverDeployed.isValidOptionPerSport(4, 38));
-			assert.equal(2, await GamesPlayerPropsReceiverDeployed.numberOfOptionsPerSport(4));
+
+			let optionsPerSport = await GamesPlayerPropsReceiverDeployed.getOptionsPerSport(4);
+			assert.equal(optionsPerSport.length, 2);
+			assert.equal(optionsPerSport[0], 37);
+			assert.equal(optionsPerSport[1], 38);
+
+			await GamesPlayerPropsReceiverDeployed.setValidOptionsPerSport(4, [37], false, {
+				from: owner,
+			});
+
+			optionsPerSport = await GamesPlayerPropsReceiverDeployed.getOptionsPerSport(4);
+			assert.equal(optionsPerSport.length, 1);
+			assert.equal(optionsPerSport[0], 38);
+
+			await GamesPlayerPropsReceiverDeployed.setValidOptionsPerSport(4, [37], true, {
+				from: owner,
+			});
+
+			optionsPerSport = await GamesPlayerPropsReceiverDeployed.getOptionsPerSport(4);
+			assert.equal(optionsPerSport.length, 2);
+			assert.equal(optionsPerSport[0], 38);
+			assert.equal(optionsPerSport[1], 37);
+
+			await GamesPlayerPropsReceiverDeployed.setValidOptionsPerSport(4, [38], true, {
+				from: owner,
+			});
+
+			optionsPerSport = await GamesPlayerPropsReceiverDeployed.getOptionsPerSport(4);
+			assert.equal(optionsPerSport.length, 2);
+			assert.equal(optionsPerSport[0], 38);
+			assert.equal(optionsPerSport[1], 37);
+
+			await GamesPlayerPropsReceiverDeployed.setValidOptionsPerSport(4, [39], true, {
+				from: owner,
+			});
+
+			optionsPerSport = await GamesPlayerPropsReceiverDeployed.getOptionsPerSport(4);
+			assert.equal(optionsPerSport.length, 3);
+			assert.equal(optionsPerSport[0], 38);
+			assert.equal(optionsPerSport[1], 37);
+			assert.equal(optionsPerSport[2], 39);
+
+			await GamesPlayerPropsReceiverDeployed.setValidOptionsPerSport(4, [37], false, {
+				from: owner,
+			});
+
+			optionsPerSport = await GamesPlayerPropsReceiverDeployed.getOptionsPerSport(4);
+			assert.equal(optionsPerSport.length, 2);
+			assert.equal(optionsPerSport[0], 38);
+			assert.equal(optionsPerSport[1], 39);
+
+			let getOptionsPerSport = await GamesPlayerPropsReceiverDeployed.getOptionsPerSport(4);
+			assert.equal(getOptionsPerSport.length, 2);
+			assert.equal(getOptionsPerSport[0], 38);
+			assert.equal(getOptionsPerSport[1], 39);
 
 			assert.equal(true, await GamesPlayerPropsDeployed.doesSportSupportPlayerProps(4));
 			assert.equal(false, await GamesPlayerPropsDeployed.doesSportSupportPlayerProps(2));
@@ -2376,7 +2430,7 @@ contract('PlayerProps', (accounts) => {
 					['0x3431373836333400000000000000000000000000000000000000000000000000'],
 					[37],
 					[0],
-					[0],
+					[255],
 					{
 						from: third,
 					}

@@ -938,6 +938,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "_date",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
       },

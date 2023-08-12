@@ -715,9 +715,9 @@
 		"ParlayDefaultLiquidityProvider": "0xE2c8EC9F0aF39530f00F13214ce9BA933034E59f",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27",
 		"GamesPlayerProps": "0x738D5996f9E87A238EbCa7352909c20EF27c54d0",
-		"GamesPlayerPropsImplementation": "0x0769934Bc52bEd6ef1c6f5c080314e761842304E",
-		"GamesPlayerPropsReceiver": "0xBE876F48f062BE294eB21A4787559CBa99196d9A",
-		"GamesPlayerPropsReceiverImplementation": "0x28505901500b3Fc4379076790Ba753647f1F307f"
+		"GamesPlayerPropsImplementation": "0x89B0b807f2976F37f3851dF880940Ee6886f415F",
+		"GamesPlayerPropsReceiver": "0xCEfdad247275b0657b2275DF05B677938dd6a43F",
+		"GamesPlayerPropsReceiverImplementation": "0xD462BbB072812c0017caF0465eB385e65629A1d6"
 	},
 	"localhost": {
 		"Airdrop": "",

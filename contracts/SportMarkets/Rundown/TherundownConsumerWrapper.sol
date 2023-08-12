@@ -113,6 +113,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @notice request of resolve player props for sport/game/player/option
     /// @param _specId specification id which is provided by CL
     /// @param _market string which can be "create" or "resolve"
+    /// @param _date date on which game/games are played
     /// @param _sportId sports id which is provided from CL (Example: NBA = 4)
     /// @param _gameIds game which player is playing
     /// @param _playerIds player id as string
@@ -120,6 +121,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     function requestPlayerPropsResolveWithFilters(
         bytes32 _specId,
         string memory _market,
+        uint256 _date,
         uint256 _sportId,
         string[] memory _gameIds,
         string[] memory _playerIds,
@@ -132,6 +134,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         payment = paymentResolve;
 
         req.add("market", _market);
+        req.addUint("date", _date);
         req.addUint("sportId", _sportId);
         req.addStringArray("gameIds", _gameIds);
         req.addStringArray("playerIds", _playerIds);
@@ -141,6 +144,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
         bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
+        datePerRequest[requestId] = _date;
     }
 
     /// @notice request of create/resolve games on a specific date with specific sport without filters

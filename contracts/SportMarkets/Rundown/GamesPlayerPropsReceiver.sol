@@ -21,7 +21,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
 
     mapping(address => bool) public whitelistedAddresses;
     mapping(uint => mapping(uint8 => bool)) public isValidOptionPerSport;
-    mapping(uint => uint) public numberOfOptionsPerSport;
+    mapping(uint => uint[]) public optionsPerSport;
 
     address public wrapperAddress;
 
@@ -128,6 +128,12 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    /* ========== VIEWS ========== */
+
+    function getOptionsPerSport(uint _sportsId) public view returns (uint[] memory) {
+        return optionsPerSport[_sportsId];
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _castToPlayerProps(
@@ -163,10 +169,10 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== OWNER MANAGEMENT FUNCTIONS ========== */
 
-    /// @notice sets valid/invalid options per sport
-    /// @param _sportId sport id
-    /// @param _options options ids
-    /// @param _flag invalid/valid
+    /// @notice Sets valid/invalid options per sport
+    /// @param _sportId Sport id
+    /// @param _options Option ids
+    /// @param _flag Invalid/valid flag
     function setValidOptionsPerSport(
         uint _sportId,
         uint8[] memory _options,
@@ -174,14 +180,28 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
     ) external onlyOwner {
         require(consumer.supportedSport(_sportId), "SportId is not supported");
         for (uint index = 0; index < _options.length; index++) {
-            // only if current flag is different, if same skip it
+            // Only if current flag is different, if same, skip it
             if (isValidOptionPerSport[_sportId][_options[index]] != _flag) {
-                // add number of options per sport
-                numberOfOptionsPerSport[_sportId] = _flag
-                    ? numberOfOptionsPerSport[_sportId] + 1
-                    : numberOfOptionsPerSport[_sportId] - 1;
-                // set flag
+                // Update the option validity flag
                 isValidOptionPerSport[_sportId][_options[index]] = _flag;
+
+                // Update the options array
+                if (_flag) {
+                    optionsPerSport[_sportId].push(_options[index]);
+                } else {
+                    // Find and remove the option from the array
+                    uint[] storage optionsArray = optionsPerSport[_sportId];
+                    for (uint i = 0; i < optionsArray.length; i++) {
+                        if (optionsArray[i] == _options[index]) {
+                            // Swap with the last element and remove
+                            optionsArray[i] = optionsArray[optionsArray.length - 1];
+                            optionsArray.pop();
+                            break;
+                        }
+                    }
+                }
+
+                // Emit the event
                 emit IsValidOptionPerSport(_sportId, _options[index], _flag);
             }
         }

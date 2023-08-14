@@ -72,7 +72,7 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         uint tag1Count,
         uint tag2Count
     ) external onlyOwner {
-        if (tag1Count > 0 && tag2Count > 0) {
+        if (tag1Count > 0 || tag2Count > 0) {
             bytes32 tagHash = keccak256(abi.encode(tag1, tag2));
             restrictedTagCombination[tag1][tag2] = true;
             restrictedTagComboCount[tagHash][tag1] = tag1Count;

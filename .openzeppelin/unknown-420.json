@@ -58977,13 +58977,13 @@
           {
             "contract": "ParlayPolicy",
             "label": "parlayMarketsAMM",
-            "type": "t_contract(IParlayMarketsAMM)82194",
+            "type": "t_contract(IParlayMarketsAMM)82429",
             "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:18"
           },
           {
             "contract": "ParlayPolicy",
             "label": "sportsAMM",
-            "type": "t_contract(ISportsAMM)83250",
+            "type": "t_contract(ISportsAMM)83485",
             "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:19"
           },
           {
@@ -59024,10 +59024,10 @@
           }
         ],
         "types": {
-          "t_contract(IParlayMarketsAMM)82194": {
+          "t_contract(IParlayMarketsAMM)82429": {
             "label": "contract IParlayMarketsAMM"
           },
-          "t_contract(ISportsAMM)83250": {
+          "t_contract(ISportsAMM)83485": {
             "label": "contract ISportsAMM"
           },
           "t_address": {
@@ -59999,6 +59999,142 @@
           },
           "t_bool": {
             "label": "bool"
+          }
+        }
+      }
+    },
+    "10595e4d1dd43f171cd5755b811c813f4302d4a5b8d6aea8b3f70bb255820c94": {
+      "address": "0xAcEeC7B04b1188CEc192dFC7Fd10bD935Ab196f8",
+      "txHash": "0xc94e5c98feb10609018a7a1e96e0834da06d47318e5d9554e811bb660dd6587c",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ParlayPolicy",
+            "label": "parlayMarketsAMM",
+            "type": "t_contract(IParlayMarketsAMM)82429",
+            "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:18"
+          },
+          {
+            "contract": "ParlayPolicy",
+            "label": "sportsAMM",
+            "type": "t_contract(ISportsAMM)83485",
+            "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:19"
+          },
+          {
+            "contract": "ParlayPolicy",
+            "label": "consumer",
+            "type": "t_address",
+            "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:20"
+          },
+          {
+            "contract": "ParlayPolicy",
+            "label": "restrictedMarketsCount",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:21"
+          },
+          {
+            "contract": "ParlayPolicy",
+            "label": "isRestrictedToBeCombined",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:22"
+          },
+          {
+            "contract": "ParlayPolicy",
+            "label": "restrictedTagCombination",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_bool))",
+            "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:23"
+          },
+          {
+            "contract": "ParlayPolicy",
+            "label": "restrictedTagComboCount",
+            "type": "t_mapping(t_bytes32,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:24"
+          },
+          {
+            "contract": "ParlayPolicy",
+            "label": "restrictedTag1Combo",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_bool))",
+            "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:25"
+          }
+        ],
+        "types": {
+          "t_contract(IParlayMarketsAMM)82429": {
+            "label": "contract IParlayMarketsAMM"
+          },
+          "t_contract(ISportsAMM)83485": {
+            "label": "contract ISportsAMM"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(uint256 => mapping(uint256 => bool))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(bytes32 => mapping(uint256 => uint256))"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
           }
         }
       }

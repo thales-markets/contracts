@@ -659,7 +659,7 @@
 		"ParlayDefaultLiquidityProvider": "0xE2c8EC9F0aF39530f00F13214ce9BA933034E59f",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27",
 		"ParlayPolicy": "0x0Df0FA512a1d9335d7CfDdDb1C890a5514367E95",
-		"ParlayPolicyImplementation": "0x7F92081612E3f95847b27deCDb0c2c8CB87A6b0b"
+		"ParlayPolicyImplementation": "0xAcEeC7B04b1188CEc192dFC7Fd10bD935Ab196f8"
 	},
 	"localhost": {
 		"Airdrop": "",

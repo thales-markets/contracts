@@ -213,7 +213,7 @@ contract ParlayVerifier {
         uint sgpFee
     )
         internal
-        view
+        pure
         returns (
             uint resultOdds1,
             uint resultOdds2,
@@ -227,27 +227,13 @@ contract ParlayVerifier {
         if (odds1 > 0 && odds2 > 0) {
             if (odds2 >= (50 * ONE_PERCENT)) {
                 // calculate the fee
-                // console.log(">>>> odds1: ", odds1);
-                // console.log(">>>> odds2: ", odds2);
                 uint multiplied = (odds1 * odds2) / ONE;
                 uint discountedQuote = ONE - multiplied;
                 uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
                 if (oddsDiff > 0) {
                     oddsDiff = (oddsDiff - (5 * ONE_PERCENT) / (90 * ONE_PERCENT));
-                    // console.log(">>>> discountedQuote before: ", discountedQuote);
-                    // console.log(">>>> sgpFee before: ", sgpFee);
-                    // console.log(">>>> oddsDiff before: ", oddsDiff);
-                    // oddsDiff = (10 * ONE_PERCENT * oddsDiff) / ONE;
                     oddsDiff = ((ONE - sgpFee) * oddsDiff) / ONE;
-                    // console.log(">>>> oddsDiff after: ", oddsDiff);
-
                     sgpFee2 = (sgpFee * (ONE + oddsDiff)) / ONE;
-                    // console.log(">>>> sgpFee2: ", sgpFee2);
-                    // if (discountedQuote < ONE) {
-                    //     sgpFee2 = ((ONE * ONE * (ONE - discountedQuote)) / multiplied) / ONE;
-                    // console.log(">>>> sgpFee after: ", sgpFee2);
-
-                    // }
                 } else {
                     sgpFee2 = sgpFee;
                 }
@@ -255,40 +241,15 @@ contract ParlayVerifier {
                 uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
                 if (oddsDiff > 0) {
                     oddsDiff = (oddsDiff - (5 * ONE_PERCENT) / (90 * ONE_PERCENT));
-                    oddsDiff = ((ONE - sgpFee + (ONE - sgpFee)/2) * oddsDiff) / ONE;
+                    oddsDiff = ((ONE - sgpFee + (ONE - sgpFee) / 2) * oddsDiff) / ONE;
 
                     sgpFee2 = (sgpFee * (ONE + oddsDiff)) / ONE;
                 } else {
                     sgpFee2 = sgpFee;
                 }
-            } else if (odds1+(5*ONE_PERCENT) > sgpFee) {
+            } else if (odds1 + (5 * ONE_PERCENT) > sgpFee) {
                 sgpFee2 = ONE - (sgpFee - odds1);
             }
-
-            // uint multiplied = (odds1 * odds2) / ONE;
-            // // uint discountedQuote = ((multiplied * ONE * ONE) / sgpFee) / ONE;
-            // uint discountedQuote = ONE - multiplied;
-            // if(discountedQuote > 50 * ONE_PERCENT ) {
-            //     if (odds1 > odds2) {
-            //         sgpFee2 = sgpFee;
-            //     } else {
-            //         sgpFee1 = sgpFee;
-            //     }
-            // }
-            // else {
-            //     discountedQuote = (discountedQuote * sgpFee) / ONE;
-            //     uint finalOdds = ONE - discountedQuote;
-            //     if (odds1 > odds2) {
-            //         if(finalOdds < odds2) {
-            //             sgpFee2 = ((finalOdds * ONE * ONE) / multiplied) / ONE;
-            //         }
-            //     } else {
-            //         if(finalOdds < odds1) {
-            //             sgpFee1 = ((finalOdds * ONE * ONE) / multiplied) / ONE;
-            //         }
-            //     }
-
-            // }
         }
     }
 
@@ -359,8 +320,6 @@ contract ParlayVerifier {
         uint _sUSDInRisky,
         address _parlayAMM
     ) internal view returns (bool riskFree) {
-        // address[] memory sortedAddresses = new address[](_sportMarkets.length);
-        // sortedAddresses = _sort(_sportMarkets);
         require(_checkRisk(_sportMarkets, _sUSDInRisky, _parlayAMM), "RiskPerComb exceeded");
         riskFree = true;
     }
@@ -527,20 +486,21 @@ contract ParlayVerifier {
         uint _totalQuote,
         uint _oldSkew
     ) external view returns (uint resultSkewImpact) {
-        uint newBuyAmount;
-        //todo refactor this part
-        uint sgpFee = 5 * 1e16;
-        // (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
-        if (sgpFee > 0) {
-            _totalQuote = (_totalQuote * sgpFee) / ONE;
-            newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
-        } else {
-            newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
-        }
-        resultSkewImpact = newBuyAmount > _totalBuyAmount
-            ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
-            : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
-        resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : 0;
+        resultSkewImpact = _oldSkew;
+        // //todo refactor this part
+        // uint newBuyAmount;
+        // uint sgpFee = 5 * 1e16;
+        // // (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
+        // if (sgpFee > 0) {
+        //     _totalQuote = (_totalQuote * sgpFee) / ONE;
+        //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
+        // } else {
+        //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
+        // }
+        // resultSkewImpact = newBuyAmount > _totalBuyAmount
+        //     ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
+        //     : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
+        // resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : 0;
     }
 
     function _checkRisk(

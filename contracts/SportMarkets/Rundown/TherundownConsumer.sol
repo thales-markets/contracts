@@ -447,7 +447,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return
             oddsObtainer.childMarketCreated(_market)
                 ? oddsObtainer.getNormalizedChildOdds(_market)
-                : playerProps.getNormalizedChildOdds(_market);
+                : playerProps.getNormalizedOddsForMarket(_market);
     }
 
     /* ========== INTERNALS ========== */

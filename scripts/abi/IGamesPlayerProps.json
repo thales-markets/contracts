@@ -76,7 +76,7 @@
         "type": "address"
       }
     ],
-    "name": "getNormalizedChildOdds",
+    "name": "getNormalizedOddsForMarket",
     "outputs": [
       {
         "internalType": "uint256[]",

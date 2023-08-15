@@ -188,13 +188,6 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         _cancelPlayerPropsMarket(_main);
     }
 
-    /// @notice view function which returns normalized odds up to 100 (Example: 50-50)
-    /// @param _market market
-    /// @return uint[] odds array normalized
-    function getNormalizedOddsForMarket(address _market) public view returns (uint[] memory) {
-        return getNormalizedChildOdds(_market);
-    }
-
     /* ========== INTERNALS ========== */
 
     function _areOddsAndLinesValidForPlayer(IGamesPlayerProps.PlayerProps memory _player) internal view returns (bool) {
@@ -268,7 +261,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         bytes32 _playerId,
         uint8 _option
     ) internal {
-        normalizedOddsForMarket[_market] = getNormalizedOddsForPlayerProps(_gameId, _playerId, _option);
+        normalizedOddsForMarket[_market] = _getNormalizedOddsForPlayerProps(_gameId, _playerId, _option);
         normalizedOddsForMarketFulfilled[_market] = true;
     }
 
@@ -304,7 +297,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         );
     }
 
-    function _append(IGamesPlayerProps.PlayerProps memory _player) internal view returns (string memory) {
+    function _append(IGamesPlayerProps.PlayerProps memory _player) internal pure returns (string memory) {
         return
             string(
                 abi.encodePacked(
@@ -358,7 +351,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
             _playerName,
             _line,
             _option,
-            getNormalizedChildOdds(_child),
+            _getNormalizedChildOdds(_child),
             _type
         );
     }
@@ -380,38 +373,40 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         emit ResolveChildMarket(_child, _outcome, childMarketMainMarket[_child], _score);
     }
 
-    /* ========== VIEW FUNCTIONS ========== */
-
-    /// @param _gameId game id for which game is looking
-    /// @return uint[] odds array normalized
-    function getNormalizedOddsForPlayerProps(
+    function _getNormalizedOddsForPlayerProps(
         bytes32 _gameId,
         bytes32 _playerId,
         uint8 _option
-    ) public view returns (uint[] memory) {
+    ) internal view returns (uint[] memory) {
         int[] memory odds = new int[](2);
         odds[0] = playerProp[_gameId][_playerId][_option].overOdds;
         odds[1] = playerProp[_gameId][_playerId][_option].underOdds;
         return verifier.calculateAndNormalizeOdds(odds);
     }
 
-    /// @notice view function which returns normalized odds (spread or total) up to 100 (Example: 55-45)
-    /// @param _market market
-    /// @return uint[] odds array normalized
-    function getNormalizedChildOddsFromGameOddsStruct(address _market) public view returns (uint[] memory) {
+    function _getNormalizedChildOddsFromGameOddsStruct(address _market) internal view returns (uint[] memory) {
         return
-            getNormalizedOddsForPlayerProps(
+            _getNormalizedOddsForPlayerProps(
                 gameIdPerChildMarket[_market],
                 playerIdPerChildMarket[_market],
                 optionIdPerChildMarket[_market]
             );
     }
 
-    function getNormalizedChildOdds(address _market) public view returns (uint[] memory) {
+    function _getNormalizedChildOdds(address _market) internal view returns (uint[] memory) {
         return
             normalizedOddsForMarketFulfilled[_market]
                 ? normalizedOddsForMarket[_market]
-                : getNormalizedChildOddsFromGameOddsStruct(_market);
+                : _getNormalizedChildOddsFromGameOddsStruct(_market);
+    }
+
+    /* ========== VIEW FUNCTIONS ========== */
+
+    /// @notice view function which returns normalized odds up to 100 (Example: 50-50)
+    /// @param _market market
+    /// @return uint[] odds array normalized
+    function getNormalizedOddsForMarket(address _market) external view returns (uint[] memory) {
+        return _getNormalizedChildOdds(_market);
     }
 
     function getPlayerPropForOption(

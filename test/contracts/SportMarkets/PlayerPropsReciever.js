@@ -1774,29 +1774,18 @@ contract('PlayerProps', (accounts) => {
 					37
 				)
 			);
-			let normalizedById1 = await GamesPlayerPropsDeployed.getNormalizedOddsForPlayerProps(
-				'0x6536306366613738303834366166363839373862343935373965356366333936',
-				'0x3431373836333400000000000000000000000000000000000000000000000000',
-				37
-			);
 
-			let normalizedByAddress1 = await GamesPlayerPropsDeployed.getNormalizedChildOdds(
+			let getNormalizedOddsForMarket = await GamesPlayerPropsDeployed.getNormalizedOddsForMarket(
 				mainMarketPlayerPropsChild
 			);
 
-			let normalizedByStruct =
-				await GamesPlayerPropsDeployed.getNormalizedChildOddsFromGameOddsStruct(
-					mainMarketPlayerPropsChild
-				);
-
-			const bnString = normalizedByStruct[0].toString();
-			const numberValue = BigInt(bnString);
+			var bnString = getNormalizedOddsForMarket[0].toString();
+			var numberValue = BigInt(bnString);
 			assert.notEqual(0, numberValue);
 
-			assert.bnEqual(normalizedByAddress1[0], normalizedByStruct[0]);
-			assert.bnEqual(normalizedByAddress1[0], normalizedById1[0]);
-			assert.bnEqual(normalizedByAddress1[1], normalizedByStruct[1]);
-			assert.bnEqual(normalizedByAddress1[1], normalizedById1[1]);
+			bnString = getNormalizedOddsForMarket[1].toString();
+			numberValue = BigInt(bnString);
+			assert.notEqual(0, numberValue);
 		});
 
 		it('Create game and create player props for game, pause with invalid odds or line, unpause when odds appear', async () => {

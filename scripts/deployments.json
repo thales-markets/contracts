@@ -612,7 +612,7 @@
 		"GamesQueueImplementation": "0xde0e98D7A46D16Ea51D0825b6d972C71BD2d260F",
 		"TherundownConsumer": "0xdB6EB989127D0c33bC630d7b5B53f87ceCED3ce1",
 		"TherundownConsumerWrapper": "0x56FD4Fc9E40c89F2a1CCDc4c9b8213EC5c6F880B",
-		"TherundownConsumerImplementation": "0xB5d35F338e020D30ffDd903BB34FC2E837bDC7be",
+		"TherundownConsumerImplementation": "0xbe89361BE491659966151243eb5219947375Adaf",
 		"SportPositionalMarketManager": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
 		"SportPositionalMarketManagerImplementation": "0xb471823522C9f8A3d1D214829A1F285eDfEc92F8",
 		"SportPositionalMarketFactory": "0xB72f87AA15E8FE50Ed364eB4A94486A578fc1556",
@@ -715,7 +715,7 @@
 		"ParlayDefaultLiquidityProvider": "0xE2c8EC9F0aF39530f00F13214ce9BA933034E59f",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27",
 		"GamesPlayerProps": "0x738D5996f9E87A238EbCa7352909c20EF27c54d0",
-		"GamesPlayerPropsImplementation": "0x89B0b807f2976F37f3851dF880940Ee6886f415F",
+		"GamesPlayerPropsImplementation": "0x114589ccE5bb63f6a288B8Ff50954391c85D0bfA",
 		"GamesPlayerPropsReceiver": "0xCEfdad247275b0657b2275DF05B677938dd6a43F",
 		"GamesPlayerPropsReceiverImplementation": "0xD462BbB072812c0017caF0465eB385e65629A1d6"
 	},

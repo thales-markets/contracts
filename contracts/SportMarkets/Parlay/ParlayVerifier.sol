@@ -404,6 +404,7 @@ contract ParlayVerifier {
         uint[] memory buyQuoteAmountPerMarket = new uint[](params.sportMarkets.length);
         buyAmountPerMarket = params.buyQuoteAmounts;
         finalQuotes = new uint[](params.sportMarkets.length);
+        uint feesIncluded;
         for (uint i = 0; i < params.sportMarkets.length; i++) {
             totalBuyAmount += params.buyQuoteAmounts[i];
             // buyQuote always calculated with added SportsAMM fees
@@ -422,6 +423,9 @@ contract ParlayVerifier {
             finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / params.buyQuoteAmounts[i]) / ONE;
             if (params.sgpFees[i] > 0) {
                 finalQuotes[i] = ((finalQuotes[i] * ONE * ONE) / params.sgpFees[i]) / ONE;
+                if (feesIncluded == 0) {
+                    feesIncluded = ONE - params.sgpFees[i];
+                }
             }
             totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
@@ -437,6 +441,13 @@ contract ParlayVerifier {
             buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
             totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
             _calculateRisk(params.sportMarkets, (totalBuyAmount - params.sUSDAfterFees), params.sportsAmm.parlayAMM());
+            if (feesIncluded > 0) {
+                if (skewImpact > feesIncluded) {
+                    skewImpact = skewImpact - feesIncluded;
+                } else {
+                    skewImpact = feesIncluded - skewImpact;
+                }
+            }
         } else {
             totalBuyAmount = 0;
         }
@@ -489,8 +500,7 @@ contract ParlayVerifier {
         resultSkewImpact = _oldSkew;
         // //todo refactor this part
         // uint newBuyAmount;
-        // uint sgpFee = 5 * 1e16;
-        // // (, uint sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
+        // (, , uint[] memory sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
         // if (sgpFee > 0) {
         //     _totalQuote = (_totalQuote * sgpFee) / ONE;
         //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;

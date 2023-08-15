@@ -90,11 +90,11 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function setRestrictedTagToBeCombined(uint tag, bool restricted) external onlyOwner {
-        if (tag > 0) {
-            isRestrictedToBeCombined[tag] = restricted;
-        }
-    }
+    // function setRestrictedTagToBeCombined(uint tag, bool restricted) external onlyOwner {
+    //     if (tag > 0) {
+    //         isRestrictedToBeCombined[tag] = restricted;
+    //     }
+    // }
 
     function setRestrictedTag1Combo(
         uint _tag1,

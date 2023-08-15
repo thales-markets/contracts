@@ -370,16 +370,9 @@ contract ParlayMarket is OwnedWithInit {
 
     function _getCancellQuotesForMarketIndex(uint _index) internal view returns (uint discountedQuote, uint newNoSkewQuote) {
         newNoSkewQuote = ((noSkewTotalQuote * ONE * ONE) / sportMarket[_index].odd) / ONE;
-        // if(newNoSkewQuote > noSkewTotalQuote) {
-            discountedQuote =
-                totalResultQuote +
-                (((ONE - totalResultQuote) * (newNoSkewQuote - noSkewTotalQuote)) / (ONE - noSkewTotalQuote));
-        // }
-        // else {
-        //     discountedQuote =
-        //         totalResultQuote +
-        //         (((ONE - totalResultQuote) * (noSkewTotalQuote - newNoSkewQuote)) / (ONE - newNoSkewQuote));
-        // }
+        discountedQuote =
+            totalResultQuote +
+            (((ONE - totalResultQuote) * (newNoSkewQuote - noSkewTotalQuote)) / (ONE - noSkewTotalQuote));
     }
 
     //============================== ON EXPIRY FUNCTIONS ===================================

@@ -152,7 +152,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     ) internal returns (uint buyinAmount) {
         uint convertedAmount;
         if (isEth) {
-            convertedAmount = multiCollateralOnOffRamp.onrampWithEth{value: msg.value}(collateralAmount);
+            convertedAmount = multiCollateralOnOffRamp.onrampWithEth{value: collateralAmount}(collateralAmount);
         } else {
             IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
             IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralAmount);

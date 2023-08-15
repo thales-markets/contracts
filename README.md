@@ -15,7 +15,6 @@ Everything about the [THALES token](https://thalesmarket.io/article/token)
 ## DApps
 
 - [Thales Market](https://thalesmarket.io/)
-- [Exotic Markets](https://exoticmarkets.xyz/#/)
 - [Overtime (Sport) Markets](https://overtimemarkets.xyz/#/)
 
 ### Community

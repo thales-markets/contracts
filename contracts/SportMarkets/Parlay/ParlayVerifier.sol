@@ -300,8 +300,6 @@ contract ParlayVerifier {
         if (odds1 > 0 && odds2 > 0) {
             if (odds2 >= (50 * ONE_PERCENT)) {
                 // calculate the fee
-                uint multiplied = (odds1 * odds2) / ONE;
-                uint discountedQuote = ONE - multiplied;
                 uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
                 if (oddsDiff > 0) {
                     oddsDiff = (oddsDiff - (5 * ONE_PERCENT) / (90 * ONE_PERCENT));

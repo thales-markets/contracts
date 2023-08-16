@@ -2,6 +2,35 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_skewImpact",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_addition",
+        "type": "bool"
+      }
+    ],
+    "name": "applySkewImpact",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "newValue",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "_sportMarkets",
         "type": "address[]"

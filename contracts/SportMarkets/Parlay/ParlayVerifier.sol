@@ -310,7 +310,7 @@ contract ParlayVerifier {
                 } else {
                     sgpFee2 = sgpFee;
                 }
-            } else if (odds2 >= (46 * ONE_PERCENT)) {
+            } else if (odds2 >= (43 * ONE_PERCENT)) {
                 uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
                 if (oddsDiff > 0) {
                     oddsDiff = (oddsDiff - (5 * ONE_PERCENT) / (90 * ONE_PERCENT));

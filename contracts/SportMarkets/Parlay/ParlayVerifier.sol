@@ -423,9 +423,7 @@ contract ParlayVerifier {
             finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / params.buyQuoteAmounts[i]) / ONE;
             if (params.sgpFees[i] > 0) {
                 finalQuotes[i] = ((finalQuotes[i] * ONE * ONE) / params.sgpFees[i]) / ONE;
-                if (feesIncluded == 0) {
-                    feesIncluded = ONE - params.sgpFees[i];
-                }
+                feesIncluded += (ONE - params.sgpFees[i]);
             }
             totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }

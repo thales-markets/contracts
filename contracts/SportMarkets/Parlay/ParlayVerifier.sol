@@ -68,6 +68,68 @@ contract ParlayVerifier {
         IParlayPolicy parlayPolicy;
     }
 
+    function _verifyMarkets(VerifyMarket memory params)
+        internal
+        view
+        returns (
+            bool eligible,
+            uint[] memory odds,
+            uint[] memory sgpFees
+        )
+    {
+        eligible = true;
+        uint[] memory tags1;
+        uint[] memory tags2;
+        IParlayPolicy parlayPolicy = IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy());
+        (tags1, tags2) = _obtainAllTags(params.sportMarkets, parlayPolicy);
+        (odds, sgpFees) = _checkNamesAndGetOdds(
+            CheckNames(params.sportMarkets, params.positions, tags1, tags2, parlayPolicy)
+        );
+        // eligible = true;
+        // ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
+        // CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
+        // uint lastCachedIdx = 0;
+        // bytes32 gameIdHome;
+        // bytes32 gameIdAway;
+        // uint tag1;
+        // uint tag2;
+        // address sportMarket;
+        // uint motoCounter = 0;
+        // for (uint i = 0; i < params.sportMarkets.length; i++) {
+        //     sportMarket = params.sportMarkets[i];
+        //     (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
+        //     tag1 = ISportPositionalMarket(sportMarket).tags(0);
+        //     tag2 = consumer.isChildMarket(sportMarket) ? ISportPositionalMarket(sportMarket).tags(1) : 0;
+        //     motoCounter = (tag1 == TAG_F1 || tag1 == TAG_MOTOGP || tag1 == TAG_GOLF) ? ++motoCounter : motoCounter;
+        // require(motoCounter <= 1, "2xMotosport");
+        // // check if game IDs already exist
+        // for (uint j = 0; j < lastCachedIdx; j++) {
+        //     if (
+        //         (cachedTeams[j].gameId == gameIdHome ||
+        //             (j > 1 && cachedTeams[j].gameId == gameIdAway && cachedTeams[j - 1].gameId != gameIdHome))
+        //         // && cachedTeams[j].tag1 == tag1
+        //     ) {
+        //         uint feeToApply = IParlayMarketsAMM(params.parlayAMM).getSgpFeePerCombination(
+        //             tag1,
+        //             tag2,
+        //             cachedTeams[j].tag2,
+        //             100 + (10 * position[i] + position[j / 2])
+        //         );
+        //         if (cachedTeams[j].gameCounter > 0 || feeToApply == 0) {
+        //             revert("SameTeamOnParlay");
+        //         }
+        //         cachedTeams[j].gameCounter += 1;
+        //         sgpFee = sgpFee > 0 ? (sgpFee * feeToApply) / ONE : feeToApply;
+        //     }
+        // }
+
+        //     (cachedTeams[lastCachedIdx].tag1, cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
+        //     cachedTeams[lastCachedIdx++].gameId = gameIdHome;
+        //     (cachedTeams[lastCachedIdx].tag1, cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
+        //     cachedTeams[lastCachedIdx++].gameId = gameIdAway;
+        // }
+    }
+
     function _obtainAllTags(address[] memory sportMarkets, IParlayPolicy _parlayPolicy)
         internal
         view
@@ -207,6 +269,17 @@ contract ParlayVerifier {
         }
     }
 
+    function _getGameIds(ITherundownConsumer consumer, address sportMarket)
+        internal
+        view
+        returns (bytes32 home, bytes32 away)
+    {
+        ITherundownConsumer.GameCreate memory game = consumer.getGameCreatedById(consumer.gameIdPerMarket(sportMarket));
+
+        home = keccak256(abi.encodePacked(game.homeTeam));
+        away = keccak256(abi.encodePacked(game.awayTeam));
+    }
+
     function _getSGPSingleOdds(
         uint odds1,
         uint odds2,
@@ -251,77 +324,6 @@ contract ParlayVerifier {
                 sgpFee2 = ONE - (sgpFee - odds1);
             }
         }
-    }
-
-    function _verifyMarkets(VerifyMarket memory params)
-        internal
-        view
-        returns (
-            bool eligible,
-            uint[] memory odds,
-            uint[] memory sgpFees
-        )
-    {
-        eligible = true;
-        uint[] memory tags1;
-        uint[] memory tags2;
-        IParlayPolicy parlayPolicy = IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy());
-        (tags1, tags2) = _obtainAllTags(params.sportMarkets, parlayPolicy);
-        (odds, sgpFees) = _checkNamesAndGetOdds(
-            CheckNames(params.sportMarkets, params.positions, tags1, tags2, parlayPolicy)
-        );
-        // eligible = true;
-        // ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
-        // CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
-        // uint lastCachedIdx = 0;
-        // bytes32 gameIdHome;
-        // bytes32 gameIdAway;
-        // uint tag1;
-        // uint tag2;
-        // address sportMarket;
-        // uint motoCounter = 0;
-        // for (uint i = 0; i < params.sportMarkets.length; i++) {
-        //     sportMarket = params.sportMarkets[i];
-        //     (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
-        //     tag1 = ISportPositionalMarket(sportMarket).tags(0);
-        //     tag2 = consumer.isChildMarket(sportMarket) ? ISportPositionalMarket(sportMarket).tags(1) : 0;
-        //     motoCounter = (tag1 == TAG_F1 || tag1 == TAG_MOTOGP || tag1 == TAG_GOLF) ? ++motoCounter : motoCounter;
-        // require(motoCounter <= 1, "2xMotosport");
-        // // check if game IDs already exist
-        // for (uint j = 0; j < lastCachedIdx; j++) {
-        //     if (
-        //         (cachedTeams[j].gameId == gameIdHome ||
-        //             (j > 1 && cachedTeams[j].gameId == gameIdAway && cachedTeams[j - 1].gameId != gameIdHome))
-        //         // && cachedTeams[j].tag1 == tag1
-        //     ) {
-        //         uint feeToApply = IParlayMarketsAMM(params.parlayAMM).getSgpFeePerCombination(
-        //             tag1,
-        //             tag2,
-        //             cachedTeams[j].tag2,
-        //             100 + (10 * position[i] + position[j / 2])
-        //         );
-        //         if (cachedTeams[j].gameCounter > 0 || feeToApply == 0) {
-        //             revert("SameTeamOnParlay");
-        //         }
-        //         cachedTeams[j].gameCounter += 1;
-        //         sgpFee = sgpFee > 0 ? (sgpFee * feeToApply) / ONE : feeToApply;
-        //     }
-        // }
-
-        //     (cachedTeams[lastCachedIdx].tag1, cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
-        //     cachedTeams[lastCachedIdx++].gameId = gameIdHome;
-        //     (cachedTeams[lastCachedIdx].tag1, cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
-        //     cachedTeams[lastCachedIdx++].gameId = gameIdAway;
-        // }
-    }
-
-    function _calculateRisk(
-        address[] memory _sportMarkets,
-        uint _sUSDInRisky,
-        address _parlayAMM
-    ) internal view returns (bool riskFree) {
-        require(_checkRisk(_sportMarkets, _sUSDInRisky, _parlayAMM), "RiskPerComb exceeded");
-        riskFree = true;
     }
 
     function calculateInitialQuotesForParlay(InitialQuoteParameters memory params)
@@ -437,7 +439,7 @@ contract ParlayVerifier {
                 ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
                 : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
             buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
-            totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
+            totalBuyAmount = _applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
             _calculateRisk(params.sportMarkets, (totalBuyAmount - params.sUSDAfterFees), params.sportsAmm.parlayAMM());
             if (feesIncluded > 0) {
                 if (skewImpact > feesIncluded) {
@@ -451,11 +453,11 @@ contract ParlayVerifier {
         }
     }
 
-    function applySkewImpact(
+    function _applySkewImpact(
         uint _value,
         uint _skewImpact,
         bool _addition
-    ) public pure returns (uint newValue) {
+    ) internal pure returns (uint newValue) {
         newValue = _addition ? (((ONE + _skewImpact) * _value) / ONE) : (((ONE - _skewImpact) * _value) / ONE);
     }
 
@@ -466,7 +468,7 @@ contract ParlayVerifier {
     ) internal pure returns (uint[] memory newValues) {
         newValues = new uint[](_values.length);
         for (uint i = 0; i < _values.length; i++) {
-            newValues[i] = applySkewImpact(_values[i], _skewImpact, _addition);
+            newValues[i] = _applySkewImpact(_values[i], _skewImpact, _addition);
         }
     }
 
@@ -479,36 +481,13 @@ contract ParlayVerifier {
         return ISportsAMM.Position.Draw;
     }
 
-    function calculateCombinationKey(address[] memory _sportMarkets) public pure returns (bytes32) {
-        address[] memory sortedAddresses = new address[](_sportMarkets.length);
-        sortedAddresses = _sort(_sportMarkets);
-        return keccak256(abi.encodePacked(sortedAddresses));
-    }
-
-    function getSkewImpact(
+    function _calculateRisk(
         address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _sUSDAfterFees,
-        ISportsAMM _sportsAMM,
-        address _parlayAMM,
-        uint _totalBuyAmount,
-        uint _totalQuote,
-        uint _oldSkew
-    ) external view returns (uint resultSkewImpact) {
-        resultSkewImpact = _oldSkew;
-        // //todo refactor this part
-        // uint newBuyAmount;
-        // (, , uint[] memory sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
-        // if (sgpFee > 0) {
-        //     _totalQuote = (_totalQuote * sgpFee) / ONE;
-        //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
-        // } else {
-        //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
-        // }
-        // resultSkewImpact = newBuyAmount > _totalBuyAmount
-        //     ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
-        //     : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
-        // resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : 0;
+        uint _sUSDInRisky,
+        address _parlayAMM
+    ) internal view returns (bool riskFree) {
+        require(_checkRisk(_sportMarkets, _sUSDInRisky, _parlayAMM), "RiskPerComb exceeded");
+        riskFree = true;
     }
 
     function _checkRisk(
@@ -518,15 +497,16 @@ contract ParlayVerifier {
     ) internal view returns (bool riskFree) {
         if (_sportMarkets.length > 1 && _sportMarkets.length <= IParlayMarketsAMM(_parlayAMM).parlaySize()) {
             uint riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerPackedGamesCombination(
-                calculateCombinationKey(_sportMarkets)
+                _calculateCombinationKey(_sportMarkets)
             );
             riskFree = (riskCombination + _sUSDInRisk) <= IParlayMarketsAMM(_parlayAMM).maxAllowedRiskPerCombination();
         }
     }
 
-    function sort(address[] memory data) external pure returns (address[] memory) {
-        _quickSort(data, int(0), int(data.length - 1));
-        return data;
+    function _calculateCombinationKey(address[] memory _sportMarkets) internal pure returns (bytes32) {
+        address[] memory sortedAddresses = new address[](_sportMarkets.length);
+        sortedAddresses = _sort(_sportMarkets);
+        return keccak256(abi.encodePacked(sortedAddresses));
     }
 
     function _sort(address[] memory data) internal pure returns (address[] memory) {
@@ -556,14 +536,46 @@ contract ParlayVerifier {
         if (i < right) _quickSort(arr, i, right);
     }
 
-    function _getGameIds(ITherundownConsumer consumer, address sportMarket)
-        internal
-        view
-        returns (bytes32 home, bytes32 away)
-    {
-        ITherundownConsumer.GameCreate memory game = consumer.getGameCreatedById(consumer.gameIdPerMarket(sportMarket));
+    function getSkewImpact(
+        address[] memory _sportMarkets,
+        uint[] memory _positions,
+        uint _sUSDAfterFees,
+        ISportsAMM _sportsAMM,
+        address _parlayAMM,
+        uint _totalBuyAmount,
+        uint _totalQuote,
+        uint _oldSkew
+    ) external view returns (uint resultSkewImpact) {
+        resultSkewImpact = _oldSkew;
+        // //todo refactor this part
+        // uint newBuyAmount;
+        // (, , uint[] memory sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
+        // if (sgpFee > 0) {
+        //     _totalQuote = (_totalQuote * sgpFee) / ONE;
+        //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
+        // } else {
+        //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
+        // }
+        // resultSkewImpact = newBuyAmount > _totalBuyAmount
+        //     ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
+        //     : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
+        // resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : 0;
+    }
 
-        home = keccak256(abi.encodePacked(game.homeTeam));
-        away = keccak256(abi.encodePacked(game.awayTeam));
+    function sort(address[] memory data) external pure returns (address[] memory) {
+        _quickSort(data, int(0), int(data.length - 1));
+        return data;
+    }
+
+    function applySkewImpact(
+        uint _value,
+        uint _skewImpact,
+        bool _addition
+    ) external pure returns (uint newValue) {
+        newValue = _applySkewImpact(_value, _skewImpact, _addition);
+    }
+
+    function calculateCombinationKey(address[] memory _sportMarkets) external pure returns (bytes32) {
+        return _calculateCombinationKey(_sportMarkets);
     }
 }

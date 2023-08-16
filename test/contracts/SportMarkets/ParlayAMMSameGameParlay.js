@@ -1297,7 +1297,7 @@ contract('ParlayAMM', (accounts) => {
 			answer = await ParlayPolicy.isTags1ComboRestricted(9004, 9016);
 
 			await ParlayPolicy.setRestrictedMarketsCountPerTag(9004, 2, { from: owner });
-			await ParlayPolicy.setRestrictedTagToBeCombined(9004, true, { from: owner });
+			// await ParlayPolicy.setRestrictedTagToBeCombined(9004, true, { from: owner });
 
 			answer = await ParlayMarketData.getAllSGPFees();
 			// console.log("All SGPFees: ", answer);

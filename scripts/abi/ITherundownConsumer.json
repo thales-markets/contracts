@@ -261,64 +261,7 @@
         "type": "address"
       }
     ],
-    "name": "getNormalizedChildOdds",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getNormalizedOdds",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
     "name": "getNormalizedOddsForMarket",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getNormalizedOddsForTwoPosition",
     "outputs": [
       {
         "internalType": "uint256[]",

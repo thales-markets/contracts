@@ -32,6 +32,12 @@ interface IGamesPlayerProps {
         bool _circuitBreakerMain
     ) external;
 
+    function createFulfilledForPlayerProps(
+        bytes32 gameId,
+        bytes32 playerId,
+        uint8 option
+    ) external view returns (bool);
+
     function cancelPlayerPropsMarketForMain(address _main) external;
 
     function getNormalizedOddsForMarket(address _market) external view returns (uint[] memory);

@@ -38,7 +38,7 @@ interface IGamesOddsObtainer {
 
     function getNormalizedOdds(bytes32 _gameId) external view returns (uint[] memory);
 
-    function getNormalizedChildOdds(address _market) external view returns (uint[] memory);
+    function getNormalizedOddsForMarket(address _market) external view returns (uint[] memory);
 
     function getOddsForGames(bytes32[] memory _gameIds) external view returns (int24[] memory odds);
 

@@ -612,7 +612,7 @@
 		"GamesQueueImplementation": "0xde0e98D7A46D16Ea51D0825b6d972C71BD2d260F",
 		"TherundownConsumer": "0xdB6EB989127D0c33bC630d7b5B53f87ceCED3ce1",
 		"TherundownConsumerWrapper": "0x56FD4Fc9E40c89F2a1CCDc4c9b8213EC5c6F880B",
-		"TherundownConsumerImplementation": "0xbe89361BE491659966151243eb5219947375Adaf",
+		"TherundownConsumerImplementation": "0x02cc6F4F3a30c167229f7F61711F37EA8F0b83d0",
 		"SportPositionalMarketManager": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
 		"SportPositionalMarketManagerImplementation": "0xb471823522C9f8A3d1D214829A1F285eDfEc92F8",
 		"SportPositionalMarketFactory": "0xB72f87AA15E8FE50Ed364eB4A94486A578fc1556",
@@ -682,7 +682,7 @@
 		"ThalesAMMUtils": "0xF18b1CA861cB1614550fd8edE15E87E55E915109",
 		"OvertimeWorldCupZebro": "0xD66eE2D0F8810304402F6bE0E57E7C0a261b54A3",
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
-		"GamesOddsObtainerImplementation": "0x18E401f1F988E9c943C940dCD999DEaaF7B5D81D",
+		"GamesOddsObtainerImplementation": "0xd56FAEf5Cf06d76c589036Fb1A3562aF145FD63a",
 		"MarchMadness": "0x81FB5DAb46Ba7fb5b85D7fcBbF019a400a2000FD",
 		"ParlayVault": "0x7e415D74eb5B01531B2059D1901aCe751c6B26B3",
 		"ParlayVaultImplementation": "0xf932D24Eb62fEFfe7A929E7Fc206B6EBB4B2A22a",
@@ -715,9 +715,9 @@
 		"ParlayDefaultLiquidityProvider": "0xE2c8EC9F0aF39530f00F13214ce9BA933034E59f",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27",
 		"GamesPlayerProps": "0x738D5996f9E87A238EbCa7352909c20EF27c54d0",
-		"GamesPlayerPropsImplementation": "0x114589ccE5bb63f6a288B8Ff50954391c85D0bfA",
+		"GamesPlayerPropsImplementation": "0xEa80c4D4776248d8554590966Bf8fC9d6211e5A4",
 		"GamesPlayerPropsReceiver": "0xCEfdad247275b0657b2275DF05B677938dd6a43F",
-		"GamesPlayerPropsReceiverImplementation": "0xD462BbB072812c0017caF0465eB385e65629A1d6"
+		"GamesPlayerPropsReceiverImplementation": "0xD6f056F715bD67E840db39394A4f7A98fC8A4114"
 	},
 	"localhost": {
 		"Airdrop": "",

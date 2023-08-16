@@ -93,8 +93,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
         uint8[] memory _statuses
     ) external isAddressWhitelisted {
         for (uint i = 0; i < _gameIds.length; i++) {
-            uint sportId = consumer.sportsIdPerGame(_gameIds[i]);
-            if (isValidOptionPerSport[sportId][_options[i]]) {
+            if (playerProps.createFulfilledForPlayerProps(_gameIds[i], _playerIds[i], _options[i])) {
                 IGamesPlayerProps.PlayerPropsResolver memory playerResult = _castToPlayerPropsResolver(
                     _gameIds[i],
                     _playerIds[i],
@@ -118,8 +117,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
                 _playerProps[i],
                 (IGamesPlayerProps.PlayerPropsResolver)
             );
-            uint sportId = consumer.sportsIdPerGame(playerResult.gameId);
-            if (isValidOptionPerSport[sportId][playerResult.option]) {
+            if (playerProps.createFulfilledForPlayerProps(playerResult.gameId, playerResult.playerId, playerResult.option)) {
                 // game needs to be resolved or canceled
                 if (consumer.isGameResolvedOrCanceled(playerResult.gameId)) {
                     playerProps.resolvePlayerProps(playerResult);

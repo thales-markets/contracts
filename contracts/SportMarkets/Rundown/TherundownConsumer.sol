@@ -419,35 +419,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return oddsObtainer.childMarketMainMarket(_market) != address(0);
     }
 
-    /// @notice view function which returns if game is resolved
-    /// @param _gameId game id for which game is looking
-    /// @return bool is game resolved true/false
-    function isGameInResolvedStatus(bytes32 _gameId) public view returns (bool) {
-        return _isGameStatusResolved(gameResolved[_gameId]);
-    }
-
-    /// @notice view function which returns normalized odds up to 100 (Example: 50-40-10)
-    /// @param _gameId game id for which game is looking
-    /// @return uint[] odds array normalized
-    function getNormalizedOdds(bytes32 _gameId) public view returns (uint[] memory) {
-        return oddsObtainer.getNormalizedOdds(_gameId);
-    }
-
     /// @notice view function which returns normalized odds up to 100 (Example: 50-40-10)
     /// @param _market market
     /// @return uint[] odds array normalized
-    function getNormalizedOddsForMarket(address _market) public view returns (uint[] memory) {
-        return marketCreated[_market] ? getNormalizedOdds(gameIdPerMarket[_market]) : getNormalizedChildOdds(_market);
-    }
-
-    /// @notice view function which returns normalized odds up to 100 (Example: 50-40-10)
-    /// @param _market market
-    /// @return uint[] odds array normalized
-    function getNormalizedChildOdds(address _market) public view returns (uint[] memory) {
-        return
-            oddsObtainer.childMarketCreated(_market)
-                ? oddsObtainer.getNormalizedChildOdds(_market)
-                : playerProps.getNormalizedOddsForMarket(_market);
+    function getNormalizedOddsForMarket(address _market) external view returns (uint[] memory) {
+        return marketCreated[_market] ? _getNormalizedOdds(gameIdPerMarket[_market]) : _getNormalizedChildOdds(_market);
     }
 
     /* ========== INTERNALS ========== */
@@ -463,14 +439,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         gameFulfilledCreated[_game.gameId] = true;
         oddsObtainer.setFirstOdds(_game.gameId, _game.homeOdds, _game.awayOdds, _game.drawOdds);
 
-        emit GameCreated(
-            requestId,
-            _sportId,
-            _game.gameId,
-            _game,
-            queues.lastCreated(),
-            oddsObtainer.getNormalizedOdds(_game.gameId)
-        );
+        emit GameCreated(requestId, _sportId, _game.gameId, _game, queues.lastCreated(), _getNormalizedOdds(_game.gameId));
     }
 
     function _resolveGameFulfill(
@@ -532,7 +501,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             queues.dequeueGamesCreated();
 
-            emit CreateSportsMarket(address(market), game.gameId, game, tags, oddsObtainer.getNormalizedOdds(game.gameId));
+            emit CreateSportsMarket(address(market), game.gameId, game, tags, _getNormalizedOdds(game.gameId));
         } else {
             queues.dequeueGamesCreated();
         }
@@ -718,6 +687,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             gamesPerDatePerSport[_sportId][_date].push(_gameId);
             gameOnADate[_gameId] = _date;
         }
+    }
+
+    function _getNormalizedOdds(bytes32 _gameId) internal view returns (uint[] memory) {
+        return oddsObtainer.getNormalizedOdds(_gameId);
+    }
+
+    function _getNormalizedChildOdds(address _market) internal view returns (uint[] memory) {
+        return
+            oddsObtainer.childMarketCreated(_market)
+                ? oddsObtainer.getNormalizedOddsForMarket(_market)
+                : playerProps.getNormalizedOddsForMarket(_market);
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */

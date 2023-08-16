@@ -108,8 +108,8 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                     pausedByInvalidOddsOnMain[_main] = false;
                     pausedByCircuitBreakerOnMain[_main] = false;
                 }
-                address playerPropsMarket = _obtainPlayerProps(_player, _main);
                 playerProp[_player.gameId][_player.playerId][_player.option] = _player;
+                address playerPropsMarket = _obtainPlayerProps(_player, _main);
                 mainMarketPausedPlayerProps[_main] = false;
                 playerPropsAddedForMain[_main] = true;
 

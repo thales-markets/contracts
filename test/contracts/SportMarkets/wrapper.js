@@ -384,6 +384,36 @@ contract('TherundownConsumerWrapper', (accounts) => {
 					from: second,
 				})
 			).to.be.revertedWith('Only Sports AMM can call this function');
+
+			await expect(
+				wrapper.requestPlayerPropsResolveWithFilters(
+					toBytes32('RSX'),
+					'create1',
+					1655215501,
+					4,
+					emptyArray,
+					emptyArray,
+					emptyArray,
+					{
+						from: second,
+					}
+				)
+			).to.be.revertedWith('Market is not supported');
+
+			await expect(
+				wrapper.requestPlayerPropsResolveWithFilters(
+					toBytes32('RSX'),
+					'create',
+					1655215501,
+					5,
+					emptyArray,
+					emptyArray,
+					emptyArray,
+					{
+						from: second,
+					}
+				)
+			).to.be.revertedWith('SportId is not supported');
 		});
 	});
 });

@@ -1097,7 +1097,10 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(true, await deployedMarket.canResolve());
 
-			assert.equal(false, await TherundownConsumerDeployed.isGameInResolvedStatus(gameFootballid1));
+			assert.equal(
+				false,
+				await TherundownConsumerDeployed.isGameResolvedOrCanceled(gameFootballid1)
+			);
 
 			let verifier_output_game = await verifier.getGameProperties(gameFootballid1);
 
@@ -1129,7 +1132,10 @@ contract('TheRundownConsumer', (accounts) => {
 			// resolve markets
 			const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameFootballid1);
 
-			assert.equal(true, await TherundownConsumerDeployed.isGameInResolvedStatus(gameFootballid1));
+			assert.equal(
+				true,
+				await TherundownConsumerDeployed.isGameResolvedOrCanceled(gameFootballid1)
+			);
 
 			// check if event is emited
 			assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
@@ -1857,13 +1863,13 @@ contract('TheRundownConsumer', (accounts) => {
 				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
 			);
 
-			let getNormalizedChildOdds = await TherundownConsumerDeployed.getNormalizedChildOdds(
+			let getNormalizedChildOdds = await TherundownConsumerDeployed.getNormalizedOddsForMarket(
 				mainMarketTotalChildMarket
 			);
 			assert.notEqual(0, getNormalizedChildOdds[0]);
 			assert.notEqual(0, getNormalizedChildOdds[1]);
 
-			let getNormalizedChildOddsS = await TherundownConsumerDeployed.getNormalizedChildOdds(
+			let getNormalizedChildOddsS = await TherundownConsumerDeployed.getNormalizedOddsForMarket(
 				mainMarketSpreadChildMarket
 			);
 			assert.notEqual(0, getNormalizedChildOddsS[0]);
@@ -2010,13 +2016,13 @@ contract('TheRundownConsumer', (accounts) => {
 				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
 			);
 
-			let getNormalizedChildOdds = await TherundownConsumerDeployed.getNormalizedChildOdds(
+			let getNormalizedChildOdds = await TherundownConsumerDeployed.getNormalizedOddsForMarket(
 				mainMarketTotalChildMarket
 			);
 			assert.notEqual(0, getNormalizedChildOdds[0]);
 			assert.notEqual(0, getNormalizedChildOdds[1]);
 
-			let getNormalizedChildOddsS = await TherundownConsumerDeployed.getNormalizedChildOdds(
+			let getNormalizedChildOddsS = await TherundownConsumerDeployed.getNormalizedOddsForMarket(
 				mainMarketSpreadChildMarket
 			);
 			assert.notEqual(0, getNormalizedChildOddsS[0]);
@@ -2800,7 +2806,7 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(false, await deployedMarket.canResolve());
 			assert.equal(9004, await deployedMarket.tags(0));
 
-			assert.equal(false, await TherundownConsumerDeployed.isGameInResolvedStatus(gameid1));
+			assert.equal(false, await TherundownConsumerDeployed.isGameResolvedOrCanceled(gameid1));
 
 			await fastForward(await currentTime());
 

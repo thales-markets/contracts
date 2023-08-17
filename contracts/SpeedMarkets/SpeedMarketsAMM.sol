@@ -288,8 +288,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         _maturedMarketsPerUser[user].add(market);
 
         if (!SpeedMarket(market).isUserWinner()) {
-            if (currentRiskPerAsset[SpeedMarket(market).asset()] > SpeedMarket(market).buyinAmount()) {
-                currentRiskPerAsset[SpeedMarket(market).asset()] -= (SpeedMarket(market).buyinAmount());
+            if (currentRiskPerAsset[SpeedMarket(market).asset()] > 2 * SpeedMarket(market).buyinAmount()) {
+                currentRiskPerAsset[SpeedMarket(market).asset()] -= (2 * SpeedMarket(market).buyinAmount());
             } else {
                 currentRiskPerAsset[SpeedMarket(market).asset()] = 0;
             }

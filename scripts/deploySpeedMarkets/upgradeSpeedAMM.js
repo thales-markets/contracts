@@ -57,6 +57,17 @@ async function main() {
 		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
 
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+		proxySUSD = getTargetAddress('BUSD', network);
+	}
+
 	const SpeedMarketsAMMAddress = getTargetAddress('SpeedMarketsAMM', network);
 	const SpeedMarketsAMM = await ethers.getContractFactory('SpeedMarketsAMM');
 
@@ -87,7 +98,12 @@ async function main() {
 		}
 	}
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
+	if (
+		networkObj.chainId == 10 ||
+		networkObj.chainId == 42161 ||
+		networkObj.chainId == 137 ||
+		networkObj.chainId == 56
+	) {
 		const implementation = await upgrades.prepareUpgrade(SpeedMarketsAMMAddress, SpeedMarketsAMM);
 		await delay(5000);
 

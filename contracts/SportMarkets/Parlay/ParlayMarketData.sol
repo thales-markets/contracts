@@ -14,6 +14,9 @@ import "./ParlayMarket.sol";
 contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     using AddressSetLib for AddressSetLib.AddressSet;
     AddressSetLib.AddressSet internal _knownMarkets;
+
+    uint private constant ONE = 1e18;
+
     struct ParlayDetails {
         uint amount;
         uint sUSDPaid;
@@ -367,6 +370,15 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
                 3
             );
         }
+    }
+
+    function getCombinedMarketOdd(
+        address[] memory _sportMarkets,
+        uint[] memory _positions
+        ) external view returns(uint quote) {
+            if(_sportMarkets.length == 2 && _positions.length == 2) {
+                ( , , quote, , , , ) = IParlayMarketsAMM(parlayMarketsAMM).buyQuoteFromParlay(_sportMarkets, _positions, ONE);
+            }
     }
 
     function _getAllParlaysForGamePosition(address _sportMarket, uint _position)

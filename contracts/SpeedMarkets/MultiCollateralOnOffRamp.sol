@@ -84,7 +84,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
 
         // use direct path for WETH
-        //TODO: consider mapping other collateral for direct swap
+        //TODO: not needed as we can set path for a direct swap
         if (collateral == WETH9) {
             convertedAmount = _swapExactSingle(collateralAmount, collateral);
         } else if (curveOnrampEnabled && (collateral == usdc || collateral == dai || collateral == usdt)) {

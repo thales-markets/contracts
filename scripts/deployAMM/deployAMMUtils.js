@@ -13,9 +13,6 @@ async function main() {
 		network = 'mainnet';
 	}
 
-	console.log('Account is:' + owner.address);
-	console.log('Network name:' + networkObj.name);
-
 	if (network === 'unknown') {
 		network = 'localhost';
 	}
@@ -61,6 +58,14 @@ async function main() {
 		networkObj.name = 'baseMainnet';
 		network = 'baseMainnet';
 	}
+
+	if (networkObj.chainId == 5611) {
+		networkObj.name = 'opbnbtest';
+		network = 'opbnbtest';
+	}
+
+	console.log('Account is:' + owner.address);
+	console.log('Network name:' + networkObj.name);
 
 	const ammUtils = await ethers.getContractFactory('ThalesAMMUtils');
 	const ThalesAMMUtilsDeployed = await ammUtils.deploy();

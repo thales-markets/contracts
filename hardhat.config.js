@@ -30,6 +30,7 @@ const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 const BSC_API_KEY = process.env.BSC_API_KEY;
 const ARBITRUM_API_KEY = process.env.ARBITRUM_API_KEY;
 const BASESCAN_API_KEY = process.env.BASESCAN_API_KEY;
+const OPBNBTEST_API_KEY = '3a71564bd18447f2a67ce23d745117b8';
 const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : 'http://127.0.0.1:8545';
 
 module.exports = {
@@ -52,6 +53,15 @@ module.exports = {
 					browserURL: 'https://basescan.org/',
 				},
 			},
+			{
+				network: 'opbnbtest',
+				chainId: 5611, // Replace with the correct chainId for the "opbnb" network
+				urls: {
+					apiURL:
+						'https://open-platform.nodereal.io/3a71564bd18447f2a67ce23d745117b8/op-bnb-testnet/contract/',
+					browserURL: 'https://opbnbscan.com/',
+				},
+			},
 		],
 		// Your API key for Etherscan
 		// Obtain one at https://etherscan.io/
@@ -70,6 +80,7 @@ module.exports = {
 			bsc: BSC_API_KEY,
 			arbitrumOne: ARBITRUM_API_KEY,
 			baseMainnet: BASESCAN_API_KEY,
+			opbnbtest: OPBNBTEST_API_KEY,
 		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
@@ -224,6 +235,12 @@ module.exports = {
 			chainId: 8453,
 			accounts: [PRIVATE_KEY],
 			gasPrice: 1000000000,
+		},
+		opbnbtest: {
+			url: 'https://opbnb-testnet.nodereal.io/v1/c899a4723fa044a88aa44648920defeb',
+			chainId: 5611, // Replace with the correct chainId for the "opbnb" network
+			accounts: [PRIVATE_KEY],
+			gasPrice: 20000000000,
 		},
 	},
 

@@ -67,6 +67,11 @@ async function main() {
 		PaymentToken = getTargetAddress('ProxyUSDC', network);
 	}
 
+	if (networkObj.chainId == 5611) {
+		networkObj.name = 'opbnbtest';
+		network = 'opbnbtest';
+	}
+
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 
@@ -74,8 +79,8 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	let thalesAMM = getTargetAddress('ThalesAMM', network);
-	let rangedAMM = getTargetAddress('RangedAMM', network);
+	// let thalesAMM = getTargetAddress('ThalesAMM', network);
+	// let rangedAMM = getTargetAddress('RangedAMM', network);
 
 	const Referrals = await ethers.getContractFactory('Referrals');
 	let ReferralsDeployed = await upgrades.deployProxy(Referrals, [

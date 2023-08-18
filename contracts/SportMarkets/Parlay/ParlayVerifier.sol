@@ -298,9 +298,11 @@ contract ParlayVerifier {
         resultOdds2 = odds2;
 
         if (odds1 > 0 && odds2 > 0) {
-            if (odds1 < (6 * ONE_PERCENT)) {                
+            if (odds1 < (6 * ONE_PERCENT)) {
                 sgpFee2 = sgpFee - (ONE - sgpFee);
-            } else if(odds2 >= (50 * ONE_PERCENT)) {
+            } else if (odds1 >= (93 * ONE_PERCENT)) {
+                sgpFee2 = sgpFee + ((ONE - sgpFee) * 75 * ONE_PERCENT) / ONE;
+            } else if (odds2 >= (50 * ONE_PERCENT)) {
                 // calculate the fee
                 uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
                 if (oddsDiff > 0) {

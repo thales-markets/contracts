@@ -19,6 +19,7 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     ISportsAMM public sportsAMM;
     address public consumer;
     mapping(uint => uint) public restrictedMarketsCount;
+    // toBeRemoved:
     mapping(uint => bool) public isRestrictedToBeCombined;
     mapping(uint => mapping(uint => bool)) public restrictedTagCombination;
     mapping(bytes32 => mapping(uint => uint)) public restrictedTagComboCount;

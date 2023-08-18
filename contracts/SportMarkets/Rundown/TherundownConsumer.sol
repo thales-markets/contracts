@@ -104,6 +104,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     IGamesOddsObtainer public oddsObtainer;
     uint public maxNumberOfMarketsToResolve;
     IGamesPlayerProps public playerProps;
+    mapping(uint => bool) public ignoreChildCancellationPerSportIfDraw;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -522,7 +523,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             // if result is draw and game is two positional
             if (_outcome == RESULT_DRAW && twoPositionSport[sportsIdPerGame[game.gameId]]) {
-                _cancelMarket(game.gameId, !_resolveMarketWithoutQueue);
+                if (ignoreChildCancellationPerSportIfDraw[sportsIdPerGame[game.gameId]]) {
+                    _cancelMainResolveChild(
+                        marketPerGameId[game.gameId],
+                        _outcome,
+                        _homeScore,
+                        _awayScore,
+                        !_resolveMarketWithoutQueue
+                    );
+                } else {
+                    _cancelMarket(game.gameId, !_resolveMarketWithoutQueue);
+                }
             } else {
                 // if market is paused only remove from queue
                 if (!sportsManager.isMarketPaused(marketPerGameId[game.gameId])) {
@@ -646,6 +657,23 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         marketResolved[_market] = _outcome != CANCELLED;
     }
 
+    function _cancelMainResolveChild(
+        address _market,
+        uint _outcome,
+        uint8 _homeScore,
+        uint8 _awayScore,
+        bool _cleanStorage
+    ) internal {
+        sportsManager.resolveMarket(_market, 0); // cancel main
+        oddsObtainer.resolveChildMarkets(_market, _outcome, _homeScore, _awayScore);
+        marketCanceled[_market] = false;
+        marketResolved[_market] = true; // must be true because of player props resolve
+        if (_cleanStorage) {
+            _cleanStorageQueue();
+        }
+        emit CancelSportsMarket(_market, gameIdPerMarket[_market]);
+    }
+
     function _cleanStorageQueue() internal {
         queues.dequeueGamesResolved();
     }
@@ -727,6 +755,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(cancelGameStatuses[_status] != _isSupported);
         cancelGameStatuses[_status] = _isSupported;
         emit SupportedCancelStatusChanged(_status, _isSupported);
+    }
+
+    /// @notice sets ignoring children cancelation
+    /// @param _sportId sport if
+    /// @param _flag true/false
+    function setIgnoreChildCancellationPerSportIfDraw(uint _sportId, bool _flag) external onlyOwner {
+        ignoreChildCancellationPerSportIfDraw[_sportId] = _flag;
+        emit IgnoreChildCancellationPerSportIfDraw(_sportId, _flag);
     }
 
     /// @notice sets if sport is two positional (Example: NBA)
@@ -845,4 +881,5 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event OddsCircuitBreaker(address _marketAddress, bytes32 _id); // deprecated see GamesOddsObtainer
     event NewMaxNumberOfMarketsToResolve(uint _maxNumber);
     event GameTimeMovedAhead(address _market, bytes32 _gameId, uint _oldStartTime, uint _newStartTime);
+    event IgnoreChildCancellationPerSportIfDraw(uint _sportId, bool _flag);
 }

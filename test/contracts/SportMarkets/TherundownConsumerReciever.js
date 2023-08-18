@@ -84,6 +84,7 @@ contract('TheRundownConsumer', (accounts) => {
 	let game_1_update_after;
 	let game_1_update_before;
 	let game_1_resolve;
+	let game_1_resolve_draw;
 	let fightId;
 	let fightIdTime;
 	let fight_create;
@@ -148,6 +149,7 @@ contract('TheRundownConsumer', (accounts) => {
 	let game1UpdatedAfter;
 	let game1UpdatedBefore;
 	let gamesResolved;
+	let gamesResolved_draw;
 	let reqIdCreate;
 	let reqId1UpdateAfter;
 	let reqId1UpdateBefore;
@@ -325,6 +327,10 @@ contract('TheRundownConsumer', (accounts) => {
 		game_2_resolve =
 			'0x393734653366303638623333376431323965643563313364663237613332666200000000000000000000000000000000000000000000000000000000000000660000000000000000000000000000000000000000000000000000000000000071000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000622a9808';
 		gamesResolved = [game_1_resolve, game_2_resolve];
+
+		game_1_resolve_draw =
+			'0x653630636661373830383436616636383937386234393537396535636633393600000000000000000000000000000000000000000000000000000000000000780000000000000000000000000000000000000000000000000000000000000078000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000625755f0';
+		gamesResolved_draw = [game_1_resolve_draw];
 
 		game_1_resolve_spread_total_1 =
 			'0x653630636661373830383436616636383937386234393537396535636633393600000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000622a9808';
@@ -1948,6 +1954,169 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(true, await deployedMarket.resolved());
 			assert.equal(true, await childMarket1.resolved());
 			assert.equal(true, await childMarket2.resolved());
+		});
+
+		it('Fulfill Games Resolved DRAW ALLOWED - NBA, resolve markets, and check children, check results', async () => {
+			await TherundownConsumerDeployed.setIgnoreChildCancellationPerSportIfDraw(4, true, {
+				from: owner,
+			});
+
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated_single,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
+
+			assert.equal(1, await gamesQueue.firstCreated());
+			assert.equal(1, await gamesQueue.lastCreated());
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			assert.equal('Atlanta Hawks', game.homeTeam);
+			assert.equal('Charlotte Hornets', game.awayTeam);
+
+			let arrayOfOdds = await verifier.getOddsForGames([gameid1]);
+			assert.equal(3, arrayOfOdds.length);
+			assert.bnEqual(-20700, arrayOfOdds[0]);
+			assert.bnEqual(17700, arrayOfOdds[1]);
+			assert.bnEqual(0, arrayOfOdds[2]);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdCreate,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			assert.equal(2, await gamesQueue.firstCreated());
+			assert.equal(1, await gamesQueue.lastCreated());
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			let game_prop = await TherundownConsumerDeployed.getGamePropsForOdds(marketAdd);
+			assert.equal(4, game_prop[0]);
+			assert.equal(game1NBATime, game_prop[1]);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[-20700, 17000, 0],
+				[550, -550],
+				[-120, 120],
+				[20000, 20000],
+				[-120, 120],
+				{
+					from: third,
+				}
+			);
+			assert.bnEqual(2, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+			let mainMarketSpreadChildMarket = await GamesOddsObtainerDeployed.mainMarketSpreadChildMarket(
+				marketAdd,
+				550
+			);
+			let mainMarketTotalChildMarket = await GamesOddsObtainerDeployed.mainMarketTotalChildMarket(
+				marketAdd,
+				20000
+			);
+			assert.bnEqual(
+				mainMarketSpreadChildMarket,
+				await GamesOddsObtainerDeployed.currentActiveSpreadChildMarket(marketAdd)
+			);
+			assert.bnEqual(
+				mainMarketTotalChildMarket,
+				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
+			);
+
+			let getNormalizedChildOdds = await TherundownConsumerDeployed.getNormalizedOddsForMarket(
+				mainMarketTotalChildMarket
+			);
+			assert.notEqual(0, getNormalizedChildOdds[0]);
+			assert.notEqual(0, getNormalizedChildOdds[1]);
+
+			let getNormalizedChildOddsS = await TherundownConsumerDeployed.getNormalizedOddsForMarket(
+				mainMarketSpreadChildMarket
+			);
+			assert.notEqual(0, getNormalizedChildOddsS[0]);
+			assert.notEqual(0, getNormalizedChildOddsS[1]);
+
+			await fastForward(await currentTime());
+
+			assert.equal(true, await deployedMarket.canResolve());
+
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolve,
+				gamesResolved_draw,
+				sportId_4,
+				{ from: wrapper }
+			);
+
+			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
+			assert.equal(120, gameR.homeScore);
+			assert.equal(120, gameR.awayScore);
+			assert.equal(8, gameR.statusId);
+
+			assert.eventEqual(tx_2.logs[0], 'GameResolved', {
+				_requestId: reqIdResolve,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: gameR,
+			});
+
+			let childMarket1 = await SportPositionalMarketContract.at(mainMarketSpreadChildMarket);
+			let childMarket2 = await SportPositionalMarketContract.at(mainMarketTotalChildMarket);
+
+			assert.equal(false, await deployedMarket.resolved());
+			assert.equal(false, await deployedMarket.cancelled());
+			assert.equal(false, await childMarket1.resolved());
+			assert.equal(false, await childMarket2.resolved());
+
+			// resolve markets
+			const tx_resolve = await TherundownConsumerDeployed.resolveAllMarketsForGames([gameid1]);
+
+			// check if event is emited
+			assert.eventEqual(tx_resolve.logs[0], 'CancelSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+			});
+
+			assert.equal(true, await deployedMarket.resolved());
+			assert.equal(true, await deployedMarket.cancelled());
+			assert.equal(true, await childMarket1.resolved());
+			assert.equal(false, await childMarket1.cancelled());
+			assert.equal(true, await childMarket2.resolved());
+			assert.equal(false, await childMarket2.cancelled());
+
+			await TherundownConsumerDeployed.setIgnoreChildCancellationPerSportIfDraw(4, false, {
+				from: owner,
+			});
 		});
 
 		it('Fulfill Games Resolved - NBA, resolve markets, and check children, negative spread, check results', async () => {
@@ -4297,6 +4466,27 @@ contract('TheRundownConsumer', (accounts) => {
 
 	describe('Consumer management', () => {
 		it('Test owner functions', async () => {
+			const tx_setIgnoreChildCancellationPerSportIfDraw =
+				await TherundownConsumerDeployed.setIgnoreChildCancellationPerSportIfDraw(15, true, {
+					from: owner,
+				});
+
+			await expect(
+				TherundownConsumerDeployed.setIgnoreChildCancellationPerSportIfDraw(15, false, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(
+				tx_setIgnoreChildCancellationPerSportIfDraw.logs[0],
+				'IgnoreChildCancellationPerSportIfDraw',
+				{
+					_sportId: 15,
+					_flag: true,
+				}
+			);
+
 			await expect(
 				TherundownConsumerDeployed.setPausedByCanceledStatus(dummyAddress, true, {
 					from: wrapper,

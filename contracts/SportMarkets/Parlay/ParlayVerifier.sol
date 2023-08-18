@@ -68,6 +68,11 @@ contract ParlayVerifier {
         IParlayPolicy parlayPolicy;
     }
 
+    /// @notice Verifying if given parlay is able to be created given the policies in state
+    /// @param params VerifyMarket parameters
+    /// @return eligible if the parlay can be created
+    /// @return odds the odds for each position
+    /// @return sgpFees the fees applied per position in case of SameGameParlay
     function _verifyMarkets(VerifyMarket memory params)
         internal
         view
@@ -85,6 +90,8 @@ contract ParlayVerifier {
         (odds, sgpFees) = _checkNamesAndGetOdds(
             CheckNames(params.sportMarkets, params.positions, tags1, tags2, parlayPolicy)
         );
+
+        // The old implementation kept:
         // eligible = true;
         // ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
         // CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
@@ -130,6 +137,11 @@ contract ParlayVerifier {
         // }
     }
 
+    /// @notice Obtain all the tags for each position and calculate unique ones
+    /// @param sportMarkets the sport markets for the parlay
+    /// @param _parlayPolicy the parlay policy contract
+    /// @return tag1 all the tags 1 per market
+    /// @return tag2 all the tags 2 per market
     function _obtainAllTags(address[] memory sportMarkets, IParlayPolicy _parlayPolicy)
         internal
         view
@@ -179,6 +191,12 @@ contract ParlayVerifier {
         }
     }
 
+    /// @notice Check the policies regarding restricted counts and restricted combinations for unique tags
+    /// @param _uniqueTags all the unique tags in parlay
+    /// @param _uniqueTagsCount all the counts for each of the unique tags
+    /// @param _uniqueTagsCounter number of unique tags
+    /// @param _parlayPolicy the Policy Market contract
+    /// @return eligible returns if the parlay satisfies all the policies
     function _getRestrictedCounts(
         uint[] memory _uniqueTags,
         uint[] memory _uniqueTagsCount,
@@ -209,6 +227,10 @@ contract ParlayVerifier {
         }
     }
 
+    /// @notice Check the names, check if any markets are SGPs, obtain odds and apply fees if needed
+    /// @param params all the parameters to calculate the fees and odds per position
+    /// @return odds all the odds per position
+    /// @return sgpFees all the fees per position
     function _checkNamesAndGetOdds(CheckNames memory params)
         internal
         view
@@ -269,6 +291,11 @@ contract ParlayVerifier {
         }
     }
 
+    /// @notice Get the Game ids and calculate the hash of each team name
+    /// @param consumer the Therundownconsumer contract
+    /// @param sportMarket The sport market to obtain the teams details
+    /// @return home the hash of the name of the home team
+    /// @return away the hash of the name of the away team
     function _getGameIds(ITherundownConsumer consumer, address sportMarket)
         internal
         view
@@ -280,6 +307,14 @@ contract ParlayVerifier {
         away = keccak256(abi.encodePacked(game.awayTeam));
     }
 
+    /// @notice Calculate the sgpFees for the positions of two sport markets, given their odds and default sgpfee
+    /// @param odds1 the odd of position 1 (usually the moneyline odd)
+    /// @param odds2 the odd of position 2 (usually the totals/spreads odd)
+    /// @param sgpFee the default sgp fee
+    /// @return resultOdds1 the odd1
+    /// @return resultOdds2 the odd2
+    /// @return sgpFee1 the fee for position 1 or odd1
+    /// @return sgpFee2 the fee for position 2 or odd2
     function _getSGPSingleOdds(
         uint odds1,
         uint odds2,

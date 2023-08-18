@@ -396,6 +396,8 @@
 		"PositionalMarketManagerImplementation": "0x5B5DbF38a1fcf63B58d263648EBb63b53c1de3E7",
 		"PositionalMarketFactory": "0x503e7F2C19384Ff68B445E21850fDC61f34434e6",
 		"PositionalMarketFactoryImplementation": "0xD2b907a94E33BFe0371B8dcbFAcf1a319b13d609",
+		"PositionalMarketData": "0xf854caE2ED8ab612262b07472173A432fd59028B",
+		"PositionalMarketDataImplementation": "0x94Ae3c106F63266719bf8316235BA644d15CA73c",
 		"Referrals": "0xB2947FC03d8Ee002726F4e28C42D513f7B6D6788",
 		"ReferralsImplementation": "0x943fb0D6CDeB373D4384f617887EB557855B815d",
 		"ThalesAMM": "0x2Bb7D689780e7a34dD365359bD7333ab24903268",

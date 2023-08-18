@@ -40,6 +40,10 @@ async function main() {
 		networkObj.name = 'baseMainnet';
 		network = 'baseMainnet';
 	}
+	if (networkObj.chainId == 5611) {
+		networkObj.name = 'opbnbtest';
+		network = 'opbnbtest';
+	}
 
 	const MarketData = await ethers.getContractFactory('PositionalMarketData');
 	const MarketManagerAddress = getTargetAddress('PositionalMarketManager', network);

@@ -94,6 +94,11 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
 
     mapping(address => uint) public withdrawalShare;
 
+    uint public utilizationRate;
+
+    address public safeBox;
+    uint public safeBoxImpact;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
@@ -186,6 +191,11 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
         if (marketRound == round) {
+            require(
+                (allocationPerRound[round] - (sUSD.balanceOf(liquidityPoolRound) - amountToMint)) <
+                    ((allocationPerRound[round] * utilizationRate) / ONE),
+                "Amount exceeds available utilization for round"
+            );
             sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
         } else {
             uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
@@ -311,6 +321,14 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         address roundPool = roundPools[round];
         // final balance is the final amount of sUSD in the round pool
         uint currentBalance = sUSD.balanceOf(roundPool);
+
+        // send profit reserved for SafeBox if positive round
+        if (currentBalance > allocationPerRound[round]) {
+            uint safeBoxAmount = ((currentBalance - allocationPerRound[round]) * safeBoxImpact) / ONE;
+            sUSD.safeTransferFrom(roundPool, safeBox, safeBoxAmount);
+            currentBalance = currentBalance - safeBoxAmount;
+        }
+
         // calculate PnL
 
         // if no allocation for current round
@@ -739,6 +757,22 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         }
     }
 
+    /// @notice set utilization rate parameter
+    /// @param _utilizationRate value as percentage
+    function setUtilizationRate(uint _utilizationRate) external onlyOwner {
+        utilizationRate = _utilizationRate;
+        emit UtilizationRateChanged(_utilizationRate);
+    }
+
+    /// @notice set SafeBox params
+    /// @param _safeBox where to send a profit reserved for protocol from each round
+    /// @param _safeBoxImpact how much is the SafeBox percentage
+    function setSafeBoxParams(address _safeBox, uint _safeBoxImpact) external onlyOwner {
+        safeBox = _safeBox;
+        safeBoxImpact = _safeBoxImpact;
+        emit SetSafeBoxParams(_safeBox, _safeBoxImpact);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier canDeposit(uint amount) {
@@ -789,4 +823,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     event SetOnlyWhitelistedStakersAllowed(bool flagToSet);
     event RoundClosingPrepared(uint round);
     event RoundClosingBatchProcessed(uint round, uint batchSize);
+    event UtilizationRateChanged(uint utilizationRate);
+    event SetSafeBoxParams(address safeBox, uint safeBoxImpact);
 }

@@ -199,7 +199,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         if (marketRound == round) {
             if ((allocationPerRound[round] + amountToMint) >= sUSD.balanceOf(liquidityPoolRound)) {
                 require(
-                    (allocationPerRound[round] + amountToMint - sUSD.balanceOf(liquidityPoolRound)) <
+                    (allocationPerRound[round] + amountToMint - sUSD.balanceOf(liquidityPoolRound)) <=
                         ((allocationPerRound[round] * utilizationRate) / ONE),
                     "Amount exceeds available utilization for round"
                 );

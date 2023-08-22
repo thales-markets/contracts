@@ -193,7 +193,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         if (marketRound == round) {
             if ((allocationPerRound[round] + amountToMint) >= sUSD.balanceOf(liquidityPoolRound)) {
                 require(
-                    (allocationPerRound[round] + amountToMint - sUSD.balanceOf(liquidityPoolRound)) <
+                    (allocationPerRound[round] + amountToMint - sUSD.balanceOf(liquidityPoolRound)) <=
                         ((allocationPerRound[round] * utilizationRate) / ONE),
                     "Amount exceeds available utilization for round"
                 );

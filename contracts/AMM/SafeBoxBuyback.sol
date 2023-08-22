@@ -31,6 +31,8 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
 
     uint256 public minAccepted;
 
+    bytes public pathToUse;
+
     function initialize(address _owner, IERC20Upgradeable _sUSD) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -69,17 +71,21 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
         TransferHelper.safeApprove(tokenIn, address(swapRouter), amountIn);
 
         uint256 _minAccepted = minAccepted == 0 ? 95 : minAccepted;
-
-        uint256 ratio = _getRatio(tokenIn, tokenOut, poolFee);
+        uint256 ratio;
+        if (pathToUse.length == 0) {
+            ratio = _getRatio(tokenIn, tokenOut, poolFee);
+        }
 
         // Multiple pool swaps are encoded through bytes called a `path`. A path is a sequence of token addresses and poolFees that define the pools used in the swaps.
         // The format for pool encoding is (tokenIn, fee, tokenOut/tokenIn, fee, tokenOut) where tokenIn/tokenOut parameter is the shared token across the pools.
         ISwapRouter.ExactInputParams memory params = ISwapRouter.ExactInputParams({
-            path: abi.encodePacked(address(tokenIn), poolFee, WETH9, poolFee, address(tokenOut)),
+            path: pathToUse.length == 0
+                ? abi.encodePacked(address(tokenIn), poolFee, WETH9, poolFee, address(tokenOut))
+                : pathToUse,
             recipient: address(this),
             deadline: block.timestamp + 15,
             amountIn: amountIn,
-            amountOutMinimum: (amountIn * ratio * _minAccepted) / (100 * 10**18)
+            amountOutMinimum: pathToUse.length == 0 ? (amountIn * ratio * _minAccepted) / (100 * 10**18) : minAccepted
         });
 
         // The call to `exactInput` executes the swap.
@@ -206,6 +212,11 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
     /// @param amount how much to retrieve
     function retrieveThalesAmount(address payable account, uint amount) external onlyOwner {
         thalesToken.transfer(account, amount);
+    }
+
+    /// @notice sets path
+    function setPath(bytes calldata path) external onlyOwner {
+        pathToUse = path;
     }
 
     event TickRateChanged(uint256 _sUSDperTick);

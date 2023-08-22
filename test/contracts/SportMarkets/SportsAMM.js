@@ -447,7 +447,7 @@ contract('SportsAMM', (accounts) => {
 				_sportsAmm: SportsAMM.address,
 				_sUSD: Thales.address,
 				_roundLength: WEEK,
-				_maxAllowedDeposit: toUnit(1000).toString(),
+				_maxAllowedDeposit: toUnit(10000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
 				_needsTransformingCollateral: false,
@@ -483,7 +483,7 @@ contract('SportsAMM', (accounts) => {
 		await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
 			from: owner,
 		});
-		await SportAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+		await SportAMMLiquidityPool.deposit(toUnit(10000), { from: firstLiquidityProvider });
 		await SportAMMLiquidityPool.start({ from: owner });
 		await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
 			from: owner,

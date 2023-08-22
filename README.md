@@ -28,6 +28,7 @@ Everything about the [THALES token](https://thalesmarket.io/article/token)
 
 ### Audits
 
+- https://github.com/decurity/audits/blob/master/ThalesMarket/thales-market-speedmarkets-audit-report-1.1.pdf
 - https://github.com/Decurity/audits/blob/master/ThalesMarket/thales-market-liquidity-pool-audit-report-1.1.pdf
 - https://iosiro.com/audits/thales-parlay-market-amm-smart-contract-audit
 - https://iosiro.com/audits/thales-amm-smart-contract-audit

@@ -148,7 +148,9 @@ contract('SportsAMM', (accounts) => {
 		testDAI,
 		Referrals,
 		SportsAMM,
-		SportAMMLiquidityPool;
+		SportAMMLiquidityPool,
+		SportAMMRiskManager;
+	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -219,15 +221,9 @@ contract('SportsAMM', (accounts) => {
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
-		await SportsAMM.initialize(
-			owner,
-			Thales.address,
-			toUnit('5000'),
-			toUnit('0.02'),
-			toUnit('0.2'),
-			DAY,
-			{ from: owner }
-		);
+		await SportsAMM.initialize(owner, Thales.address, toUnit('0.02'), toUnit('0.2'), DAY, {
+			from: owner,
+		});
 
 		await SportsAMM.setParameters(
 			DAY,
@@ -235,7 +231,6 @@ contract('SportsAMM', (accounts) => {
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
-			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
 			toUnit('500'),
@@ -455,6 +450,24 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		let SportAMMRiskManagerContract = artifacts.require('SportAMMRiskManager');
+		SportAMMRiskManager = await SportAMMRiskManagerContract.new();
+
+		await SportAMMRiskManager.initialize(
+			owner,
+			SportPositionalMarketManager.address,
+			toUnit('5000'),
+			[tagID_4],
+			[toUnit('50000')],
+			emptyArray,
+			emptyArray,
+			emptyArray,
+			3,
+			[tagID_4],
+			[5],
+			{ from: owner }
+		);
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -464,6 +477,7 @@ contract('SportsAMM', (accounts) => {
 			ZERO_ADDRESS,
 			wrapper,
 			SportAMMLiquidityPool.address,
+			SportAMMRiskManager.address,
 			{ from: owner }
 		);
 
@@ -493,7 +507,6 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
-		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 	});
 
 	describe('Init', () => {
@@ -693,10 +706,7 @@ contract('SportsAMM', (accounts) => {
 		it('Checking SportsAMM variables', async () => {
 			assert.bnEqual(await SportsAMM.min_spread(), toUnit('0.04'));
 			assert.bnEqual(await SportsAMM.max_spread(), toUnit('0.2'));
-			assert.bnEqual(await SportsAMM.defaultCapPerGame(), toUnit('5000'));
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
-			assert.bnEqual(await SportsAMM.capPerSport(tagID_4), toUnit('50000'));
-			assert.bnEqual(await SportsAMM.capPerSport(tagID_16), toUnit('0'));
 		});
 
 		it('Market data test', async () => {
@@ -722,7 +732,6 @@ contract('SportsAMM', (accounts) => {
 				toUnit('0.2'),
 				toUnit('0.001'),
 				toUnit('0.9'),
-				toUnit('5000'),
 				toUnit('0.01'),
 				toUnit('0.005'),
 				toUnit('500'),
@@ -804,6 +813,31 @@ contract('SportsAMM', (accounts) => {
 			console.log('cost: ', fromUnit(before_balance.sub(answer)));
 			let options = await deployedMarket.balancesOf(first);
 			console.log('Balances', options[0].toString(), fromUnit(options[1]), options[2].toString());
+		});
+		it('Buy from SportsAMM, position 1, value: 100, risk test', async () => {
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
+			answer = await Thales.balanceOf(first);
+			let before_balance = answer;
+			console.log('acc balance: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			await SportAMMRiskManager.setDefaultRiskMultiplier(0, {
+				from: owner,
+			});
+			await SportAMMRiskManager.setRiskMultiplierPerSport(tagID_4, 0, {
+				from: owner,
+			});
+			await expect(
+				SportsAMM.buyFromAMM(
+					deployedMarket.address,
+					1,
+					toUnit(100),
+					buyFromAmmQuote,
+					additionalSlippage,
+					{ from: first }
+				)
+			).to.be.revertedWith('Risk is to high!');
 		});
 		it('Buy from SportsAMM, position ' + position + ', value: ' + value, async () => {
 			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
@@ -1640,7 +1674,6 @@ contract('SportsAMM', (accounts) => {
 		it('Checking SportsAMM variables', async () => {
 			assert.bnEqual(await SportsAMM.min_spread(), toUnit('0.04'));
 			assert.bnEqual(await SportsAMM.max_spread(), toUnit('0.2'));
-			assert.bnEqual(await SportsAMM.defaultCapPerGame(), toUnit('5000'));
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
 		});
 

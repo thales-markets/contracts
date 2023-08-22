@@ -1,0 +1,45 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "calculateCapToBeUsed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "toReturn",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_totalSpent",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "isTotalSpendingLessThanTotalRisk",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "_isNotRisky",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

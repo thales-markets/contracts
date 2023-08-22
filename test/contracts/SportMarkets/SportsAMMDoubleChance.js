@@ -455,6 +455,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1));
 
 		await SportsAMM.setAddresses(
 			owner,

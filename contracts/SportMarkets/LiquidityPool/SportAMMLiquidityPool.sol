@@ -191,11 +191,13 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
         if (marketRound == round) {
-            require(
-                (allocationPerRound[round] - (sUSD.balanceOf(liquidityPoolRound) - amountToMint)) <
-                    ((allocationPerRound[round] * utilizationRate) / ONE),
-                "Amount exceeds available utilization for round"
-            );
+            if ((allocationPerRound[round] + amountToMint) >= sUSD.balanceOf(liquidityPoolRound)) {
+                require(
+                    (allocationPerRound[round] + amountToMint - sUSD.balanceOf(liquidityPoolRound)) <
+                        ((allocationPerRound[round] * utilizationRate) / ONE),
+                    "Amount exceeds available utilization for round"
+                );
+            }
             sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), amountToMint);
         } else {
             uint poolBalance = sUSD.balanceOf(liquidityPoolRound);

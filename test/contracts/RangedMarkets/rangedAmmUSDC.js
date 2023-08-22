@@ -232,6 +232,7 @@ contract('RangedAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await ThalesAMMLiquidityPool.setUtilizationRate(toUnit(1));
 
 		await thalesAMM.setLiquidityPool(ThalesAMMLiquidityPool.address, {
 			from: owner,

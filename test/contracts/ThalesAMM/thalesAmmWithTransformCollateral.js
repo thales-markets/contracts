@@ -195,7 +195,9 @@ contract('ThalesAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
-		await ThalesAMMLiquidityPool.setUtilizationRate(toUnit(1));
+		await ThalesAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
 
 		await thalesAMM.setLiquidityPool(ThalesAMMLiquidityPool.address, {
 			from: owner,

@@ -1350,6 +1350,55 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "name": "resolvedPlayerProps",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "playerId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "option",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint16",
+        "name": "score",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint8",
+        "name": "statusId",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_consumer",
         "type": "address"

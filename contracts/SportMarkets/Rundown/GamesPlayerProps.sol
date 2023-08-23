@@ -67,6 +67,8 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => bytes32[]) public playersInAGame;
     mapping(bytes32 => mapping(bytes32 => bool)) public playersInAGameFulfilled;
     mapping(bytes32 => mapping(bytes32 => uint8[])) public allOptionsPerPlayer;
+    mapping(bytes32 => mapping(bytes32 => mapping(uint8 => IGamesPlayerProps.PlayerPropsResolver)))
+        public resolvedPlayerProps;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -159,6 +161,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                     _resolveMarketForPlayer(child, _result.score);
                 }
             }
+            resolvedPlayerProps[_result.gameId][_result.playerId][_result.option] = _result;
             resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.option] = true;
         }
     }

@@ -361,7 +361,10 @@
 		"ParlayAMMLiquidityPoolRoundMastercopy": "0x5D569144289eaF351B474E138B588eCc886064d2",
 		"ParlayDefaultLiquidityProviderImplementation": "0x576292A8fF82f3fA9639668bE352f00bFeA4302c",
 		"ParlayAMMLiquidityPoolData": "0xd7718Fb45Df5Cef74793444DAC32EB43ab9C41E8",
-		"ParlayAMMLiquidityPoolDataImplementation": "0xf0F85d927bfc2703db470918Db10d7590705850c"
+		"ParlayAMMLiquidityPoolDataImplementation": "0xf0F85d927bfc2703db470918Db10d7590705850c",
+		"OvertimeVoucher": "0x58050F0c63ad9ecaeEbbB002F305aF1dF0C92333",
+		"OvertimeVoucherEscrow": "0x9e244C353145018DA0885E5405f680f27F8eB0Fa",
+		"OvertimeVoucherEscrowImplementation": "0x31EAeCc94e837f05615510e7b9D2f056401A8bCE"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

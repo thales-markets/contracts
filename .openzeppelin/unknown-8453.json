@@ -219,6 +219,16 @@
       "address": "0xd7718Fb45Df5Cef74793444DAC32EB43ab9C41E8",
       "txHash": "0x99c66c8b845afbabc103aeb71e2fb17373c5465c0560fc8bb8647ac4f02efe84",
       "kind": "transparent"
+    },
+    {
+      "address": "0x27ee8c0044696CEf5B390FEbf08F732446b13FA1",
+      "txHash": "0xe0f20a0eed278dc859aea54c76d60c74dcec9a396d93e80d5a8de8d96e1a48ef",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9e244C353145018DA0885E5405f680f27F8eB0Fa",
+      "txHash": "0x728a6ee6311e4f6ef4794614d6064e18c1dc0fa269a9c9bb87619cdde9b3e721",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -7881,6 +7891,154 @@
           },
           "t_address": {
             "label": "address"
+          }
+        }
+      }
+    },
+    "208b0777c68b4065665d6cadcfd0da67cd5f63ca33633e72ba1e2ff835c3daaa": {
+      "address": "0x31EAeCc94e837f05615510e7b9D2f056401A8bCE",
+      "txHash": "0xe7181033b005b01d09862ac0352926af00d2db7cc5c132817b07cdaa0379764d",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)8234",
+            "src": "contracts\\SportMarkets\\Voucher\\OvertimeVoucherEscrow.sol:24"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "overtimeVoucher",
+            "type": "t_contract(OvertimeVoucher)81461",
+            "src": "contracts\\SportMarkets\\Voucher\\OvertimeVoucherEscrow.sol:27"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "whitelistedAddressesPerPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts\\SportMarkets\\Voucher\\OvertimeVoucherEscrow.sol:30"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "addressClaimedVoucherPerPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts\\SportMarkets\\Voucher\\OvertimeVoucherEscrow.sol:33"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "voucherAmount",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\Voucher\\OvertimeVoucherEscrow.sol:36"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "periodEnd",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\SportMarkets\\Voucher\\OvertimeVoucherEscrow.sol:39"
+          },
+          {
+            "contract": "OvertimeVoucherEscrow",
+            "label": "period",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\Voucher\\OvertimeVoucherEscrow.sol:42"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)8234": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(OvertimeVoucher)81461": {
+            "label": "contract OvertimeVoucher"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
           }
         }
       }

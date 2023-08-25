@@ -57,6 +57,10 @@ async function main() {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
 
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 

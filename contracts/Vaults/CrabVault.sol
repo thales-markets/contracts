@@ -12,7 +12,8 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IStakingThales.sol";
 
-import "../RangedMarkets/RangedMarketsAMM.sol";
+import "../interfaces/IRangedMarketsAMM.sol";
+import "../interfaces/IRangedMarket.sol";
 
 contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     /* ========== LIBRARIES ========== */
@@ -25,7 +26,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     struct InitParams {
         address _owner;
-        RangedMarketsAMM _rangedMarketAmm;
+        IRangedMarketsAMM _rangedMarketAmm;
         IERC20Upgradeable _sUSD;
         uint _roundLength;
         uint _priceLowerLimit;
@@ -45,7 +46,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /* ========== STATE VARIABLES ========== */
 
-    RangedMarketsAMM public rangedAMM;
+    IRangedMarketsAMM public rangedAMM;
     IERC20Upgradeable public sUSD;
 
     bool public vaultStarted;
@@ -64,7 +65,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     mapping(uint => uint) public allocationPerRound;
 
     mapping(uint => address[]) public tradingMarketsPerRound;
-    mapping(uint => mapping(RangedMarket => RangedMarket.Position)) public tradingMarketPositionPerRound;
+    mapping(uint => mapping(IRangedMarket => IRangedMarket.Position)) public tradingMarketPositionPerRound;
     mapping(uint => mapping(address => bool)) public isTradingMarketInARound;
 
     mapping(uint => uint) public profitAndLossPerRound;
@@ -99,7 +100,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function __BaseVault_init(
         address _owner,
-        RangedMarketsAMM _rangedMarketAmm,
+        IRangedMarketsAMM _rangedMarketAmm,
         IERC20Upgradeable _sUSD,
         uint _roundLength,
         uint _maxAllowedDeposit,
@@ -109,7 +110,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal onlyInitializing {
         setOwner(_owner);
         initNonReentrant();
-        rangedAMM = RangedMarketsAMM(_rangedMarketAmm);
+        rangedAMM = IRangedMarketsAMM(_rangedMarketAmm);
 
         sUSD = _sUSD;
         roundLength = _roundLength;
@@ -262,13 +263,13 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param amount number of options to be bought
     /// @param position to buy options for
     function trade(
-        RangedMarket market,
+        IRangedMarket market,
         uint amount,
-        RangedMarket.Position position
+        IRangedMarket.Position position
     ) external nonReentrant whenNotPaused {
         require(vaultStarted, "Vault has not started");
         require(amount >= minTradeAmount, "Amount less than minimum");
-        require(position == RangedMarket.Position.In, "Invalid position");
+        require(position == IRangedMarket.Position.In, "Invalid position");
         require(rangedAMM.isKnownMarket(address(market)), "Market not known or no options available to buy");
 
         uint sUSDPaid = rangedAMM.buyFromAmmQuote(market, position, amount);
@@ -295,7 +296,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @notice Set rangedAMM contract
     /// @param _rangedMarketAmm rangedAMM address
-    function setRangedAmm(RangedMarketsAMM _rangedMarketAmm) external onlyOwner {
+    function setRangedAmm(IRangedMarketsAMM _rangedMarketAmm) external onlyOwner {
         rangedAMM = _rangedMarketAmm;
         sUSD.approve(address(rangedAMM), type(uint256).max);
         emit RangedAMMChanged(address(_rangedMarketAmm));
@@ -388,8 +389,8 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param position position to be bought
     /// @param amount amount of positions to be bought
     function _buyFromAmm(
-        RangedMarket market,
-        RangedMarket.Position position,
+        IRangedMarket market,
+        IRangedMarket.Position position,
         uint amount
     ) internal {
         uint quote = rangedAMM.buyFromAmmQuote(market, position, amount);
@@ -430,7 +431,7 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             return false;
         }
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            RangedMarket market = RangedMarket(tradingMarketsPerRound[round][i]);
+            IRangedMarket market = IRangedMarket(tradingMarketsPerRound[round][i]);
             if ((!market.leftMarket().resolved() || !market.rightMarket().resolved())) {
                 return false;
             }
@@ -509,5 +510,5 @@ contract CrabVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetPriceLimits(uint priceLowerLimit, uint priceUpperLimit);
     event SetSkewImpactLimit(int skewImpact);
     event SetMinTradeAmount(uint SetMinTradeAmount);
-    event TradeExecuted(RangedMarket market, RangedMarket.Position position, uint amount, uint quote);
+    event TradeExecuted(IRangedMarket market, IRangedMarket.Position position, uint amount, uint quote);
 }

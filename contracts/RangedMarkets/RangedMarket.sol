@@ -5,27 +5,30 @@ import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
 // Internal references
-import "./RangedPosition.sol";
-import "./RangedMarketsAMM.sol";
+import "../interfaces/IRangedMarketsAMM.sol";
+import "../interfaces/IRangedPosition.sol";
 import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IPositionalMarketManager.sol";
 
 contract RangedMarket {
     using SafeERC20 for IERC20;
 
-    enum Position {In, Out}
+    enum Position {
+        In,
+        Out
+    }
 
     IPositionalMarket public leftMarket;
     IPositionalMarket public rightMarket;
 
     struct Positions {
-        RangedPosition inp;
-        RangedPosition outp;
+        IRangedPosition inp;
+        IRangedPosition outp;
     }
 
     Positions public positions;
 
-    RangedMarketsAMM public rangedMarketsAMM;
+    IRangedMarketsAMM public rangedMarketsAMM;
 
     bool public resolved = false;
 
@@ -46,9 +49,9 @@ contract RangedMarket {
         initialized = true;
         leftMarket = IPositionalMarket(_leftMarket);
         rightMarket = IPositionalMarket(_rightMarket);
-        positions.inp = RangedPosition(_in);
-        positions.outp = RangedPosition(_out);
-        rangedMarketsAMM = RangedMarketsAMM(_rangedMarketsAMM);
+        positions.inp = IRangedPosition(_in);
+        positions.outp = IRangedPosition(_out);
+        rangedMarketsAMM = IRangedMarketsAMM(_rangedMarketsAMM);
     }
 
     function mint(
@@ -213,7 +216,7 @@ contract RangedMarket {
         rangedMarketsAMM.sUSD().transfer(recipient, rangedMarketsAMM.sUSD().balanceOf(address(this)));
     }
 
-    modifier onlyAMM {
+    modifier onlyAMM() {
         require(msg.sender == address(rangedMarketsAMM), "only the AMM may perform these methods");
         _;
     }

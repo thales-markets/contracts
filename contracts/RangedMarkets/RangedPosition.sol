@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "../interfaces/IPosition.sol";
 
 // Internal references
-import "./RangedMarket.sol";
+import "../interfaces/IRangedMarket.sol";
 
 contract RangedPosition is IERC20 {
     /* ========== STATE VARIABLES ========== */
@@ -17,7 +17,7 @@ contract RangedPosition is IERC20 {
     string public symbol;
     uint8 public constant decimals = 18;
 
-    RangedMarket public rangedMarket;
+    IRangedMarket public rangedMarket;
 
     mapping(address => uint) public override balanceOf;
     uint public override totalSupply;
@@ -41,7 +41,7 @@ contract RangedPosition is IERC20 {
     ) external {
         require(!initialized, "Ranged Market already initialized");
         initialized = true;
-        rangedMarket = RangedMarket(market);
+        rangedMarket = IRangedMarket(market);
         name = _name;
         symbol = _symbol;
         thalesRangedAMM = _thalesRangedAMM;
@@ -121,7 +121,7 @@ contract RangedPosition is IERC20 {
         return totalSupply;
     }
 
-    modifier onlyRangedMarket {
+    modifier onlyRangedMarket() {
         require(msg.sender == address(rangedMarket), "only the Ranged Market may perform these methods");
         _;
     }

@@ -21,9 +21,8 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../utils/libraries/AddressSetLib.sol";
 
-import "./RangedPosition.sol";
-import "./RangedPosition.sol";
-import "./RangedMarket.sol";
+import "../interfaces/IRangedMarket.sol";
+import "../interfaces/IRangedPosition.sol";
 import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IReferrals.sol";
@@ -137,7 +136,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function availableToBuyFromAMM(RangedMarket rangedMarket, RangedMarket.Position position)
+    function availableToBuyFromAMM(IRangedMarket rangedMarket, IRangedMarket.Position position)
         public
         view
         knownRangedMarket(address(rangedMarket))
@@ -145,18 +144,18 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     {
         uint availableLeft = thalesAmm.availableToBuyFromAMM(
             address(rangedMarket.leftMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up
         );
         uint availableRight = thalesAmm.availableToBuyFromAMM(
             address(rangedMarket.rightMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down
         );
         return availableLeft < availableRight ? availableLeft : availableRight;
     }
 
     function buyFromAmmQuote(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount
     ) public view knownRangedMarket(address(rangedMarket)) returns (uint sUSDPaid) {
         (sUSDPaid, , ) = buyFromAmmQuoteDetailed(rangedMarket, position, amount);
@@ -167,8 +166,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function buyFromAmmQuoteDetailed(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount
     )
         public
@@ -180,23 +179,23 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint rightQuote
         )
     {
-        amount = position == RangedMarket.Position.Out ? amount : amount / 2;
+        amount = position == IRangedMarket.Position.Out ? amount : amount / 2;
         leftQuote = thalesAmm.buyFromAmmQuote(
             address(rangedMarket.leftMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
             amount
         );
         rightQuote = thalesAmm.buyFromAmmQuote(
             address(rangedMarket.rightMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
             amount
         );
         quoteWithFees = _buyFromAmmQuoteWithLeftAndRightQuote(position, amount, leftQuote, rightQuote);
     }
 
     function buyFromAmmQuoteWithDifferentCollateral(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount,
         address collateral
     ) public view returns (uint collateralQuote, uint sUSDToPay) {
@@ -210,8 +209,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function buyFromAMMWithReferrer(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage,
@@ -224,8 +223,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function buyFromAMMWithDifferentCollateralAndReferrer(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage,
@@ -264,8 +263,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function buyFromAMM(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
@@ -274,14 +273,14 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function _buyFromAmmQuoteWithLeftAndRightQuote(
-        RangedMarket.Position position,
+        IRangedMarket.Position position,
         uint amount,
         uint leftQuote,
         uint rightQuote
     ) internal view returns (uint quoteWithFees) {
         if (leftQuote > 0 && rightQuote > 0) {
             uint summedQuotes = leftQuote + rightQuote;
-            if (position == RangedMarket.Position.Out) {
+            if (position == IRangedMarket.Position.Out) {
                 quoteWithFees = (summedQuotes * (rangedAmmFee + ONE)) / ONE;
             } else {
                 if (
@@ -298,8 +297,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function _buyFromAMM(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage,
@@ -309,13 +308,21 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         uint sUSDPaid;
         address target;
-        (RangedPosition inp, RangedPosition outp) = rangedMarket.positions();
 
-        if (position == RangedMarket.Position.Out) {
-            target = address(outp);
+        //(IRangedPosition inp, IRangedPosition outp) = rangedMarket.positions();
+
+        IRangedMarket.Positions memory positions = rangedMarket.positions();
+        // (IRangedPosition inp, IRangedPosition outp) = positions;
+        //IRangedPosition inp = positions.inp;
+        //IRangedPosition outp = positions.outp;
+
+        if (position == IRangedMarket.Position.Out) {
+            //target = address(outp);
+            target = address(positions.outp);
             sUSDPaid = _buyOUT(rangedMarket, amount);
         } else {
-            target = address(inp);
+            //target = address(inp);
+            target = address(positions.inp);
             sUSDPaid = _buyIN(rangedMarket, amount);
             _handleSafeBoxFeeOnBuy(address(rangedMarket), amount, sUSDPaid);
         }
@@ -341,37 +348,28 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         (bytes32 leftkey, uint leftstrikePrice, ) = IPositionalMarket(rangedMarket.leftMarket()).getOracleDetails();
         (, uint rightstrikePrice, ) = IPositionalMarket(rangedMarket.rightMarket()).getOracleDetails();
         uint currentAssetPrice = thalesAmm.priceFeed().rateForCurrency(leftkey);
-        bool inTheMoney = position == RangedMarket.Position.In
+        bool inTheMoney = position == IRangedMarket.Position.In
             ? currentAssetPrice >= leftstrikePrice && currentAssetPrice < rightstrikePrice
             : currentAssetPrice < leftstrikePrice || currentAssetPrice >= rightstrikePrice;
         emit BoughtOptionType(msg.sender, sUSDPaid, inTheMoney);
     }
 
-    function _buyOUT(RangedMarket rangedMarket, uint amount) internal returns (uint) {
-        uint paidLeft = thalesAmm.buyFromAMM(
-            address(rangedMarket.leftMarket()),
-            IThalesAMM.Position.Down,
-            amount,
-            type(uint256).max,
-            0
-        );
+    function _buyOUT(IRangedMarket rangedMarket, uint amount) internal returns (uint) {
+        IPositionalMarket leftMarket = rangedMarket.leftMarket();
+        IPositionalMarket rightMarket = rangedMarket.rightMarket();
 
-        uint paidRight = thalesAmm.buyFromAMM(
-            address(rangedMarket.rightMarket()),
-            IThalesAMM.Position.Up,
-            amount,
-            type(uint256).max,
-            0
-        );
-        (, IPosition down) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
+        uint paidLeft = thalesAmm.buyFromAMM(address(leftMarket), IThalesAMM.Position.Down, amount, type(uint256).max, 0);
+
+        uint paidRight = thalesAmm.buyFromAMM(address(rightMarket), IThalesAMM.Position.Up, amount, type(uint256).max, 0);
+        (, IPosition down) = leftMarket.getOptions();
         IERC20Upgradeable(address(down)).safeTransfer(address(rangedMarket), amount);
 
-        (IPosition up1, ) = IPositionalMarket(rangedMarket.rightMarket()).getOptions();
+        (IPosition up1, ) = rightMarket.getOptions();
         IERC20Upgradeable(address(up1)).safeTransfer(address(rangedMarket), amount);
-        return _buyFromAmmQuoteWithLeftAndRightQuote(RangedMarket.Position.Out, amount, paidLeft, paidRight);
+        return _buyFromAmmQuoteWithLeftAndRightQuote(IRangedMarket.Position.Out, amount, paidLeft, paidRight);
     }
 
-    function _buyIN(RangedMarket rangedMarket, uint amount) internal returns (uint) {
+    function _buyIN(IRangedMarket rangedMarket, uint amount) internal returns (uint) {
         uint paidLeft = thalesAmm.buyFromAMM(
             address(rangedMarket.leftMarket()),
             IThalesAMM.Position.Up,
@@ -393,10 +391,10 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         (, IPosition down1) = IPositionalMarket(rangedMarket.rightMarket()).getOptions();
         IERC20Upgradeable(address(down1)).safeTransfer(address(rangedMarket), amount / 2);
 
-        return _buyFromAmmQuoteWithLeftAndRightQuote(RangedMarket.Position.In, amount / 2, paidLeft, paidRight);
+        return _buyFromAmmQuoteWithLeftAndRightQuote(IRangedMarket.Position.In, amount / 2, paidLeft, paidRight);
     }
 
-    function availableToSellToAMM(RangedMarket rangedMarket, RangedMarket.Position position)
+    function availableToSellToAMM(IRangedMarket rangedMarket, IRangedMarket.Position position)
         public
         view
         knownRangedMarket(address(rangedMarket))
@@ -404,30 +402,30 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     {
         uint availableLeft = thalesAmm.availableToSellToAMM(
             address(rangedMarket.leftMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up
         );
         uint availableRight = thalesAmm.availableToSellToAMM(
             address(rangedMarket.rightMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down
         );
 
         _available = availableLeft < availableRight ? availableLeft : availableRight;
-        if (position == RangedMarket.Position.In) {
+        if (position == IRangedMarket.Position.In) {
             _available = _available * 2;
         }
     }
 
     function sellToAmmQuote(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount
     ) public view knownRangedMarket(address(rangedMarket)) returns (uint pricePaid) {
         (pricePaid, , ) = sellToAmmQuoteDetailed(rangedMarket, position, amount);
     }
 
     function sellToAmmQuoteDetailed(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount
     )
         public
@@ -439,23 +437,23 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint rightQuote
         )
     {
-        amount = position == RangedMarket.Position.Out ? amount : amount / 2;
+        amount = position == IRangedMarket.Position.Out ? amount : amount / 2;
         leftQuote = thalesAmm.sellToAmmQuote(
             address(rangedMarket.leftMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
             amount
         );
         rightQuote = thalesAmm.sellToAmmQuote(
             address(rangedMarket.rightMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
             amount
         );
         quoteWithFees = _sellToAmmQuoteDetailedWithLeftAndRightQuotes(position, amount, leftQuote, rightQuote);
     }
 
     function sellToAMM(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
@@ -464,7 +462,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         _handleApprovals(rangedMarket);
 
-        if (position == RangedMarket.Position.Out) {
+        if (position == IRangedMarket.Position.Out) {
             rangedMarket.burnOut(amount, msg.sender);
         } else {
             rangedMarket.burnIn(amount, msg.sender);
@@ -473,7 +471,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         pricePaid = _handleSellToAmm(rangedMarket, position, amount);
         require(pricePaid > 0 && (expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "ID2");
 
-        if (position == RangedMarket.Position.In) {
+        if (position == IRangedMarket.Position.In) {
             _handleSafeBoxFeeOnSell(amount, rangedMarket, pricePaid);
         }
 
@@ -485,8 +483,12 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             stakingThales.updateVolume(msg.sender, pricePaid);
         }
 
-        (RangedPosition inp, RangedPosition outp) = rangedMarket.positions();
-        address target = position == RangedMarket.Position.Out ? address(outp) : address(inp);
+        //(IRangedPosition inp, IRangedPosition outp) = rangedMarket.positions();
+        IRangedMarket.Positions memory positions = rangedMarket.positions();
+        IRangedPosition inp = positions.inp;
+        IRangedPosition outp = positions.outp;
+
+        address target = position == IRangedMarket.Position.Out ? address(outp) : address(inp);
         emit SoldToAMM(msg.sender, address(rangedMarket), position, amount, pricePaid, address(sUSD), target);
     }
 
@@ -495,39 +497,43 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function resolveRangedMarketsBatch(address[] calldata markets) external {
         for (uint i = 0; i < markets.length; i++) {
             address market = markets[i];
-            if (_knownMarkets.contains(market) && !RangedMarket(market).resolved()) {
-                RangedMarket(market).resolveMarket();
+            if (_knownMarkets.contains(market) && !IRangedMarket(market).resolved()) {
+                IRangedMarket(market).resolveMarket();
             }
         }
     }
 
-    function getPriceImpact(RangedMarket rangedMarket, RangedMarket.Position position) external view returns (int _impact) {
+    function getPriceImpact(IRangedMarket rangedMarket, IRangedMarket.Position position)
+        external
+        view
+        returns (int _impact)
+    {
         int buyPriceImpactLeft = thalesAmm.buyPriceImpact(
             address(rangedMarket.leftMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
             ONE
         );
         int buyPriceImpactRight = thalesAmm.buyPriceImpact(
             address(rangedMarket.rightMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
             ONE
         );
 
         _impact = buyPriceImpactLeft + buyPriceImpactRight;
-        if (position == RangedMarket.Position.Out) {
+        if (position == IRangedMarket.Position.Out) {
             _impact = _impact / 2;
         }
     }
 
     function _sellToAmmQuoteDetailedWithLeftAndRightQuotes(
-        RangedMarket.Position position,
+        IRangedMarket.Position position,
         uint amount,
         uint leftQuote,
         uint rightQuote
     ) internal view returns (uint quoteWithFees) {
         if (leftQuote > 0 && rightQuote > 0) {
             uint summedQuotes = leftQuote + rightQuote;
-            if (position == RangedMarket.Position.Out) {
+            if (position == IRangedMarket.Position.Out) {
                 quoteWithFees = (summedQuotes * (ONE - rangedAmmFee)) / ONE;
             } else {
                 uint amountTransformed = _transformCollateral(amount, false);
@@ -545,14 +551,14 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function _handleSellToAmm(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
+        IRangedMarket rangedMarket,
+        IRangedMarket.Position position,
         uint amount
     ) internal returns (uint) {
-        uint baseAMMAmount = position == RangedMarket.Position.Out ? amount : amount / 2;
+        uint baseAMMAmount = position == IRangedMarket.Position.Out ? amount : amount / 2;
         uint sellLeft = thalesAmm.sellToAMM(
             address(rangedMarket.leftMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
             baseAMMAmount,
             0,
             0
@@ -560,7 +566,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         uint sellRight = thalesAmm.sellToAMM(
             address(rangedMarket.rightMarket()),
-            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
+            position == IRangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
             baseAMMAmount,
             0,
             0
@@ -569,7 +575,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         return _sellToAmmQuoteDetailedWithLeftAndRightQuotes(position, baseAMMAmount, sellLeft, sellRight);
     }
 
-    function _handleApprovals(RangedMarket rangedMarket) internal {
+    function _handleApprovals(IRangedMarket rangedMarket) internal {
         (IPosition up, IPosition down) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
         (IPosition up1, IPosition down1) = IPositionalMarket(rangedMarket.rightMarket()).getOptions();
         IERC20Upgradeable(address(up)).approve(address(thalesAmm), type(uint256).max);
@@ -616,7 +622,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function _handleSafeBoxFeeOnSell(
         uint amount,
-        RangedMarket rangedMarket,
+        IRangedMarket rangedMarket,
         uint sUSDPaid
     ) internal {
         uint safeBoxShare = 0;
@@ -630,13 +636,13 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function _createRangedMarket(address leftMarket, address rightMarket) internal {
         require(canCreateRangedMarket(leftMarket, rightMarket), "Can't create such a ranged market!");
 
-        RangedMarket rm = RangedMarket(Clones.clone(rangedMarketMastercopy));
+        IRangedMarket rm = IRangedMarket(Clones.clone(rangedMarketMastercopy));
         createdRangedMarkets[leftMarket][rightMarket] = address(rm);
 
-        RangedPosition inp = RangedPosition(Clones.clone(rangedPositionMastercopy));
+        IRangedPosition inp = IRangedPosition(Clones.clone(rangedPositionMastercopy));
         inp.initialize(address(rm), "Position IN", "IN", address(this));
 
-        RangedPosition outp = RangedPosition(Clones.clone(rangedPositionMastercopy));
+        IRangedPosition outp = IRangedPosition(Clones.clone(rangedPositionMastercopy));
         outp.initialize(address(rm), "Position OUT", "OUT", address(this));
 
         rm.initialize(leftMarket, rightMarket, address(inp), address(outp), address(this));
@@ -717,9 +723,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function isKnownMarket(address market) external view returns (bool) {
-    return _knownMarkets.contains(market);
-}
-
+        return _knownMarkets.contains(market);
+    }
 
     modifier knownRangedMarket(address market) {
         require(_knownMarkets.contains(market), "Not a known ranged market");
@@ -729,7 +734,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event SoldToAMM(
         address seller,
         address market,
-        RangedMarket.Position position,
+        IRangedMarket.Position position,
         uint amount,
         uint sUSDPaid,
         address susd,
@@ -738,7 +743,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event BoughtFromAmm(
         address buyer,
         address market,
-        RangedMarket.Position position,
+        IRangedMarket.Position position,
         uint amount,
         uint sUSDPaid,
         address susd,

@@ -327,6 +327,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             uint safeBoxAmount = ((currentBalance - allocationPerRound[round]) * safeBoxImpact) / ONE;
             sUSD.safeTransferFrom(roundPool, safeBox, safeBoxAmount);
             currentBalance = currentBalance - safeBoxAmount;
+            emit SafeBoxSharePaid(safeBoxImpact, safeBoxAmount);
         }
 
         // calculate PnL
@@ -825,4 +826,5 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     event RoundClosingBatchProcessed(uint round, uint batchSize);
     event UtilizationRateChanged(uint utilizationRate);
     event SetSafeBoxParams(address safeBox, uint safeBoxImpact);
+    event SafeBoxSharePaid(uint safeBoxShare, uint safeBoxAmount);
 }

@@ -285,6 +285,25 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "SafeBoxSharePaid",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bool",
         "name": "flagToSet",
         "type": "bool"

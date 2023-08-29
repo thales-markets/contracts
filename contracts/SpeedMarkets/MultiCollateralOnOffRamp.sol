@@ -217,6 +217,20 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         }
     }
 
+    function getMinimumNeeded(address collateral, uint amount) public view returns (uint minNeeded) {
+        //TODO return minimum amount of collateral needed to receive amount of target
+        if (_mapCollateralToCurveIndex(collateral) > 0) {
+            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt ? amount * (1e12) : amount;
+            minNeeded = (transformedCollateralForPegCheck * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
+        } else {
+            uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
+            minNeeded = (((amount * currentCollateralPrice) / ONE) * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
+        }
+        if (address(manager) != address(0)) {
+            minNeeded = manager.transformCollateral(minNeeded);
+        }
+    }
+
     /// @notice return the guaranteed largest payout for the given collateral and amount
     function getMaximumReceived(address collateral, uint amount) public view returns (uint maxReceived) {
         if (_mapCollateralToCurveIndex(collateral) > 0) {

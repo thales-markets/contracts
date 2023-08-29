@@ -25,6 +25,8 @@ import "../interfaces/ITherundownConsumerWrapper.sol";
 import "./SportsAMMUtils.sol";
 import "./LiquidityPool/SportAMMLiquidityPool.sol";
 
+import "../interfaces/IMultiCollateralOnOffRamp.sol";
+
 /// @title Sports AMM contract
 /// @author kirilaa
 contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
@@ -167,6 +169,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @return The maximum supported odd for sport
     mapping(uint => uint) public maxSpreadPerSport;
+
+    IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
+    bool public multicollateralEnabled;
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
@@ -450,13 +455,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount,
         address collateral
     ) public view returns (uint collateralQuote, uint sUSDToPay) {
-        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        if (curveIndex > 0 && curveOnrampEnabled) {
-            sUSDToPay = buyFromAmmQuote(market, position, amount);
-            //cant get a quote on how much collateral is needed from curve for sUSD,
-            //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-            collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay) * (ONE + (ONE_PERCENT / 5))) / ONE;
-        }
+        sUSDToPay = buyFromAmmQuote(market, position, amount);
+        collateralQuote = multiCollateralOnOffRamp.getMinimumNeeded(collateral, sUSDToPay);
     }
 
     /// @notice Calculates the buy price impact for given position amount. Changes with every new purchase.
@@ -675,6 +675,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _referrals contract for referrals storage
     /// @param _wrapper contract for calling wrapper contract
     /// @param _lp contract for managing liquidity pools
+    /// @param _manager Sport Positional market manager
     function setAddresses(
         address _safeBox,
         IERC20Upgradeable _sUSD,
@@ -683,7 +684,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _referrals,
         address _parlayAMM,
         address _wrapper,
-        address _lp
+        address _lp,
+        address _manager
     ) external onlyOwner {
         safeBox = _safeBox;
         sUSD = _sUSD;
@@ -694,18 +696,23 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         wrapper = ITherundownConsumerWrapper(_wrapper);
         liquidityPool = SportAMMLiquidityPool(_lp);
 
-        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper, _lp);
-    }
-
-    /// @notice Setting the Sport Positional Manager contract address
-    /// @param _manager Address of Staking contract
-    function setSportsPositionalMarketManager(address _manager) external onlyOwner {
         if (address(_manager) != address(0)) {
             sUSD.approve(address(_manager), 0);
         }
         manager = _manager;
         sUSD.approve(manager, MAX_APPROVAL);
-        emit SetSportsPositionalMarketManager(_manager);
+
+        emit AddressesUpdated(
+            _safeBox,
+            _sUSD,
+            _theRundownConsumer,
+            _stakingThales,
+            _referrals,
+            _parlayAMM,
+            _wrapper,
+            _lp,
+            _manager
+        );
     }
 
     /// @notice Updates contract parametars
@@ -719,34 +726,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) external onlyOwner {
         safeBoxFeePerAddress[_address] = newSBFee;
         min_spreadPerAddress[_address] = newMSFee;
-    }
-
-    /// @notice Setting the Curve collateral addresses for all collaterals
-    /// @param _curveSUSD Address of the Curve contract
-    /// @param _dai Address of the DAI contract
-    /// @param _usdc Address of the USDC contract
-    /// @param _usdt Address of the USDT (Tether) contract
-    /// @param _curveOnrampEnabled Enabling or restricting the use of multicollateral
-    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
-    function setCurveSUSD(
-        address _curveSUSD,
-        address _dai,
-        address _usdc,
-        address _usdt,
-        bool _curveOnrampEnabled,
-        uint _maxAllowedPegSlippagePercentage
-    ) external onlyOwner {
-        curveSUSD = ICurveSUSD(_curveSUSD);
-        dai = _dai;
-        usdc = _usdc;
-        usdt = _usdt;
-        IERC20Upgradeable(dai).approve(_curveSUSD, MAX_APPROVAL);
-        IERC20Upgradeable(usdc).approve(_curveSUSD, MAX_APPROVAL);
-        IERC20Upgradeable(usdt).approve(_curveSUSD, MAX_APPROVAL);
-        // not needed unless selling into different collateral is enabled
-        //sUSD.approve(_curveSUSD, MAX_APPROVAL);
-        curveOnrampEnabled = _curveOnrampEnabled;
-        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
     function setPaused(bool _setPausing) external onlyOwner {
@@ -835,6 +814,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         sportAmmUtils = _ammUtils;
     }
 
+    /// @notice set multicollateral onramp contract
+    function setMultiCollateralOnOffRamp(address _onramper, bool enabled) external onlyOwner {
+        multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(_onramper);
+        multicollateralEnabled = enabled;
+        emit SetMultiCollateralOnOffRamp(_onramper, enabled);
+    }
+
     // Internal
 
     /// @notice calculate which cap needs to be applied to the given market
@@ -863,9 +849,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint additionalSlippage,
         address collateral
     ) internal {
-        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
-
         (uint collateralQuote, uint susdQuote) = buyFromAmmQuoteWithDifferentCollateral(
             market,
             position,
@@ -873,20 +856,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             collateral
         );
 
-        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
-            ? collateralQuote * (1e12)
-            : collateralQuote;
-        require(
-            maxAllowedPegSlippagePercentage > 0 &&
-                transformedCollateralForPegCheck >= (susdQuote * (ONE - (maxAllowedPegSlippagePercentage))) / ONE,
-            "Max peg slippage"
-        );
+        IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
+        IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralQuote);
+        uint exactReceived = multiCollateralOnOffRamp.onramp(collateral, collateralQuote);
 
-        require((collateralQuote * ONE) / (expectedPayout) <= (ONE + additionalSlippage), "High slippage");
+        require(exactReceived > susdQuote, "Not enough sUSD received");
 
-        IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
-        collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
-        curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, susdQuote);
+        //send the surplus to SB
+        if (exactReceived > susdQuote) {
+            sUSD.safeTransfer(safeBox, exactReceived - susdQuote);
+        }
 
         return _buyFromAMM(BuyFromAMMParams(market, position, amount, susdQuote, additionalSlippage, false, susdQuote));
     }
@@ -1212,18 +1191,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
-    function _mapCollateralToCurveIndex(address collateral) internal view returns (int128 mappedValue) {
-        if (collateral == dai) {
-            mappedValue = 1;
-        }
-        if (collateral == usdc) {
-            mappedValue = 2;
-        }
-        if (collateral == usdt) {
-            mappedValue = 3;
-        }
-    }
-
     // events
     event BoughtFromAmm(
         address buyer,
@@ -1254,7 +1221,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _referrals,
         address _parlayAMM,
         address _wrapper,
-        address _lp
+        address _lp,
+        address manager
     );
 
     event SetSportsPositionalMarketManager(address _manager);
@@ -1265,4 +1233,5 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetCapPerMarket(address _market, uint _cap);
     event SetCapPerSportAndChild(uint _sport, uint _child, uint _cap);
     event SetMinSupportedOddsAndMaxSpreadPerSport(uint _sport, uint _minSupportedOddsPerSport, uint _maxSpreadPerSport);
+    event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
 }

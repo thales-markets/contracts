@@ -439,6 +439,30 @@
         "type": "uint256"
       }
     ],
+    "name": "getMinimumNeeded",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "minNeeded",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
     "name": "getMinimumReceived",
     "outputs": [
       {

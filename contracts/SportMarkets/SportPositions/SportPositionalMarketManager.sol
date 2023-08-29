@@ -307,6 +307,30 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         );
     }
 
+    function getMintsAndMaturityDatesForParent(address[] memory _markets)
+        external
+        returns (uint[] memory _mintAmounts, uint[] memory _maturities)
+    {
+        _mintAmounts = new uint[](_markets.length);
+        _maturities = new uint[](_markets.length);
+        for (uint i = 0; i < _markets.length; i++) {
+            ISportPositionalMarket marketContract = ISportPositionalMarket(_markets[i]);
+            (uint maturity, ) = marketContract.times();
+            _mintAmounts[i] = marketContract.deposited() + _collectMintAmountForAllChilds(_markets[i]);
+            _maturities[i] = maturity;
+        }
+    }
+
+    function _collectMintAmountForAllChilds(address _market) internal returns (uint _amount) {
+        // number of child T and H
+        uint numberOfChildMarkets = IGamesOddsObtainer(oddsObtainer).numberOfChildMarkets(_market);
+        for (uint i = 0; i < numberOfChildMarkets; i++) {
+            address child = IGamesOddsObtainer(oddsObtainer).mainMarketChildMarketIndex(_market, i);
+            _amount += ISportPositionalMarket(child).deposited();
+        }
+        // todo playerprops when come
+    }
+
     function _createMarket(SportPositionalMarketFactory.SportPositionCreationMarketParameters memory parameters)
         internal
         returns (ISportPositionalMarket)

@@ -171,6 +171,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     ISportAMMRiskManager public riskManager;
 
+    /// @return The sUSD amount bought from AMM by users for the parent
+    mapping(address => uint) public spentOnParent;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -847,11 +850,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return _buyFromAMM(BuyFromAMMParams(market, position, amount, susdQuote, additionalSlippage, false, susdQuote));
     }
 
-    function _buyFromAMM(BuyFromAMMParams memory params) internal {
-        require(isMarketInAMMTrading(params.market), "Not trading");
+    function _checkMarketValidityAndOptionsCount(address market, ISportsAMM.Position position) internal view {
+        require(isMarketInAMMTrading(market), "Not trading");
+        uint optionsCount = ISportPositionalMarket(market).optionsCount();
+        require(optionsCount > uint(position), "Invalid pos");
+    }
 
-        uint optionsCount = ISportPositionalMarket(params.market).optionsCount();
-        require(optionsCount > uint(params.position), "Invalid pos");
+    function _buyFromAMM(BuyFromAMMParams memory params) internal {
+        _checkMarketValidityAndOptionsCount(params.market, params.position);
 
         DoubleChanceStruct memory dcs = _getDoubleChanceStruct(params.market);
         require(!dcs.isDoubleChance || params.position == ISportsAMM.Position.Home, "Invalid pos");
@@ -892,6 +898,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             sUSD.safeTransferFrom(msg.sender, address(this), params.sUSDPaid);
         }
 
+        address parent = dcs.isDoubleChance || ISportPositionalMarket(params.market).isChild()
+            ? address(ISportPositionalMarket(params.market).parentMarket())
+            : params.market;
+
         if (dcs.isDoubleChance) {
             ISportPositionalMarket(params.market).mint(params.amount);
             _mintParentPositions(params.market, params.amount, dcs);
@@ -911,6 +921,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 liquidityPool.commitTrade(params.market, toMint);
                 ISportPositionalMarket(params.market).mint(toMint);
                 spentOnGame[params.market] = spentOnGame[params.market] + toMint;
+                spentOnParent[parent] += toMint;
             }
             liquidityPool.getOptionsForBuy(params.market, params.amount - toMint, params.position);
         }
@@ -929,19 +940,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         _updateSpentOnMarketOnBuy(
             dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market,
+            parent,
             params.sUSDPaid,
             msg.sender
         );
 
-        require(
-            riskManager.isTotalSpendingLessThanTotalRisk(
-                spentOnGame[
-                    dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market
-                ],
-                dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market
-            ),
-            "Risk is to high!"
-        );
+        require(riskManager.isTotalSpendingLessThanTotalRisk(spentOnParent[parent], parent), "Risk is to high!");
 
         _sendMintedPositionsAndUSDToLiquidityPool(
             dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market
@@ -1088,6 +1092,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _updateSpentOnMarketOnBuy(
         address market,
+        address parent,
         uint sUSDPaid,
         address buyer
     ) internal {
@@ -1103,6 +1108,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         spentOnGame[market] = spentOnGame[market] <= toSubtract
             ? 0
             : (spentOnGame[market] = spentOnGame[market] - toSubtract);
+
+        spentOnParent[parent] = spentOnParent[parent] <= toSubtract
+            ? 0
+            : (spentOnParent[parent] = spentOnParent[parent] - toSubtract);
 
         if (referrerFee > 0 && referrals != address(0)) {
             uint referrerShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + referrerFee));
@@ -1165,6 +1174,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             liquidityPool.commitTrade(dcs.parentMarket, toMint);
             ISportPositionalMarket(dcs.parentMarket).mint(toMint);
             spentOnGame[dcs.parentMarket] = spentOnGame[dcs.parentMarket] + toMint;
+            spentOnParent[dcs.parentMarket] += toMint;
         }
     }
 

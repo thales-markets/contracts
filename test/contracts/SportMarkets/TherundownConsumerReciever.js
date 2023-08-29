@@ -695,6 +695,7 @@ contract('TheRundownConsumer', (accounts) => {
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 		await verifier.setObtainer(GamesOddsObtainerDeployed.address, { from: owner });
 		await verifier.setSportsManager(SportPositionalMarketManager.address, { from: owner });
+		await verifier.setPlayerPropsAddress(GamesPlayerPropsDeployed.address, { from: owner });
 		await GamesOddsReceiverDeployed.addToWhitelist([third], true, { from: owner });
 
 		await GamesOddsObtainerDeployed.setContracts(

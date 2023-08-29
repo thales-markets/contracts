@@ -3,6 +3,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "cancelMarketFromManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_main",
         "type": "address"
       }

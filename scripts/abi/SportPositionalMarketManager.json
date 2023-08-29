@@ -482,6 +482,32 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_parents",
+        "type": "address[]"
+      }
+    ],
+    "name": "cancelMarketsForParents",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_playerPropsMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "cancelMarketsForPlayerProps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "cancelTimeout",
     "outputs": [
@@ -1045,6 +1071,64 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_parents",
+        "type": "address[]"
+      }
+    ],
+    "name": "queryMintsAndMaturityStatusForParents",
+    "outputs": [
+      {
+        "internalType": "bool[]",
+        "name": "_hasAnyMintsArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isMaturedArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isResolvedArray",
+        "type": "bool[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_playerPropsMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "queryMintsAndMaturityStatusForPlayerProps",
+    "outputs": [
+      {
+        "internalType": "bool[]",
+        "name": "_hasAnyMintsArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isMaturedArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isResolvedArray",
+        "type": "bool[]"
       }
     ],
     "stateMutability": "view",

@@ -922,6 +922,11 @@
         "internalType": "bytes32[]",
         "name": "_gameIds",
         "type": "bytes32[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_supportPlayerProps",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

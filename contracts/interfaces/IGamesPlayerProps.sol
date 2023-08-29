@@ -25,6 +25,8 @@ interface IGamesPlayerProps {
 
     function resolvePlayerProps(PlayerPropsResolver memory _result) external;
 
+    function cancelMarketFromManager(address _market) external;
+
     function pauseAllPlayerPropsMarketForMain(
         address _main,
         bool _flag,

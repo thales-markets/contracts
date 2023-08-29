@@ -422,13 +422,15 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         returns (
             bool _isSportOnADate,
             bool _twoPositional,
-            bytes32[] memory _gameIds
+            bytes32[] memory _gameIds,
+            bool _supportPlayerProps
         )
     {
         return (
             consumer.isSportOnADate(_date, _sportId),
             consumer.isSportTwoPositionsSport(_sportId),
-            consumer.getGamesPerDatePerSport(_sportId, _date)
+            consumer.getGamesPerDatePerSport(_sportId, _date),
+            playerProps.doesSportSupportPlayerProps(_sportId)
         );
     }
 

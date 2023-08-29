@@ -69,6 +69,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => mapping(bytes32 => uint8[])) public allOptionsPerPlayer;
     mapping(bytes32 => mapping(bytes32 => mapping(uint8 => IGamesPlayerProps.PlayerPropsResolver)))
         public resolvedPlayerProps;
+    mapping(address => bool) public childMarketResolved;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -152,17 +153,49 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
             // resolve
             for (uint j = 0; j < numberOfChildsPerOptions; j++) {
                 address child = mainMarketChildMarketPerPlayerAndOptionIndex[_main][_result.playerId][_result.option][j];
-                if (invalidOddsForPlayerProps[_result.gameId][_result.playerId][_result.option]) {
-                    consumer.pauseOrUnpauseMarket(child, false);
-                }
-                if (_result.statusId == CANCELLED_STATUS) {
-                    _resolveMarket(child, uint16(CANCELLED), CANCELLED);
-                } else {
-                    _resolveMarketForPlayer(child, _result.score);
+                if (!childMarketResolved[child]) {
+                    if (invalidOddsForPlayerProps[_result.gameId][_result.playerId][_result.option]) {
+                        consumer.pauseOrUnpauseMarket(child, false);
+                    }
+                    if (_result.statusId == CANCELLED_STATUS) {
+                        _resolveMarket(child, uint16(CANCELLED), CANCELLED);
+                    } else {
+                        _resolveMarketForPlayer(child, _result.score);
+                    }
+                    childMarketResolved[child] = true;
                 }
             }
             resolvedPlayerProps[_result.gameId][_result.playerId][_result.option] = _result;
             resolveFulfilledForPlayerProps[_result.gameId][_result.playerId][_result.option] = true;
+        }
+    }
+
+    /// @notice cancel playerProp
+    /// @param _market market for cancelation
+    function cancelMarketFromManager(address _market) external onlyManager {
+        address parent = childMarketMainMarket[_market];
+        bytes32 gameId = gameIdPerChildMarket[_market];
+        bytes32 playerId = playerIdPerChildMarket[_market];
+        uint8 option = optionIdPerChildMarket[_market];
+        uint numberOfChildsPerOptions = numberOfChildMarketsPerPlayerAndOption[parent][playerId][option];
+        if (!childMarketResolved[_market]) {
+            _resolveMarket(_market, uint16(CANCELLED), CANCELLED);
+            if (numberOfChildsPerOptions < 2) {
+                resolveFulfilledForPlayerProps[gameId][playerId][option] = true;
+            } else {
+                bool flagResolved = true;
+                for (uint j = 0; j < numberOfChildsPerOptions; j++) {
+                    address child = mainMarketChildMarketPerPlayerAndOptionIndex[parent][playerId][option][j];
+                    if (!childMarketResolved[child] && child != _market) {
+                        flagResolved = false;
+                        break;
+                    }
+                }
+                if (flagResolved) {
+                    resolveFulfilledForPlayerProps[gameId][playerId][option] = true;
+                }
+            }
+            childMarketResolved[_market] = true;
         }
     }
 
@@ -473,6 +506,25 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    function getAllChildMarketsForParents(address[] memory _parents) external view returns (address[] memory _children) {
+        uint totalChildren = 0;
+        for (uint i = 0; i < _parents.length; i++) {
+            totalChildren += numberOfChildMarkets[_parents[i]];
+        }
+
+        _children = new address[](totalChildren);
+        uint index = 0;
+
+        for (uint i = 0; i < _parents.length; i++) {
+            uint num = numberOfChildMarkets[_parents[i]];
+            for (uint j = 0; j < num; j++) {
+                address child = mainMarketChildMarketIndex[_parents[i]][j];
+                _children[index] = child;
+                index++;
+            }
+        }
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     /// @notice sets consumer, verifier, manager address
@@ -506,6 +558,11 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
 
     modifier canExecute() {
         require(msg.sender == playerPropsReceiver, "Invalid sender");
+        _;
+    }
+
+    modifier onlyManager() {
+        require(msg.sender == address(sportsManager), "Only manager");
         _;
     }
 

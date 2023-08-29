@@ -379,6 +379,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "cancelMarketFromManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_main",
         "type": "address"
       }
@@ -440,6 +453,25 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "childMarketResolved",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -549,6 +581,25 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_parents",
+        "type": "address[]"
+      }
+    ],
+    "name": "getAllChildMarketsForParents",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "_children",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",

@@ -195,16 +195,14 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
 
         if (marketRound == round) {
             sUSD.safeTransferFrom(liquidityPoolRound, address(thalesAMM), amountToMint);
+            require(
+                sUSD.balanceOf(liquidityPoolRound) >=
+                    (allocationPerRound[round] - ((allocationPerRound[round] * utilizationRate) / ONE)),
+                "Amount exceeds available utilization for round"
+            );
         } else {
             uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
             if (poolBalance >= amountToMint) {
-                if ((allocationPerRound[round] + amountToMint) >= sUSD.balanceOf(liquidityPoolRound)) {
-                    require(
-                        (allocationPerRound[round] + amountToMint - sUSD.balanceOf(liquidityPoolRound)) <=
-                            ((allocationPerRound[round] * utilizationRate) / ONE),
-                        "Amount exceeds available utilization for round"
-                    );
-                }
                 sUSD.safeTransferFrom(liquidityPoolRound, address(thalesAMM), amountToMint);
             } else {
                 uint differenceToLPAsDefault = amountToMint - poolBalance;

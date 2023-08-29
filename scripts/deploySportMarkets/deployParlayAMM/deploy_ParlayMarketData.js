@@ -54,6 +54,11 @@ async function main() {
 		network = 'arbitrumOne';
 		PaymentToken = getTargetAddress('ProxyUSDC', network);
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
 
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
@@ -88,7 +93,7 @@ async function main() {
 	let Referrals = getTargetAddress('Referrals', network);
 	let ParlayVerifier = getTargetAddress('ParlayVerifier', network);
 
-	if (networkObj.chainId != 10 || networkObj.chainId != 42161) {
+	if (networkObj.chainId != 10 || networkObj.chainId != 42161 || networkObj.chainId != 8453) {
 		await ParlayAMMDeployed.setAddresses(
 			SportsAMMContract,
 			SafeBox,

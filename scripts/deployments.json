@@ -153,7 +153,7 @@
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"MultiCollateralOnOffRampImplementation": "0x5c73AA8457861D07D60C16CfCE20e884BB6030FF",
 		"SpeedMarketsAMMImplementation": "0x4D040bbcB4A32cc1CC439B966F1330fcF0dc2238",
-		"SpeedMarketMastercopy": "0xce674bA3Bb5128a43717282e54831d769d5baf69"
+		"SpeedMarketMastercopy": "0x66F5D2cda6Ad805A5464dC676C4e1D65A52d4A50"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -272,7 +272,7 @@
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"SpeedMarketsAMMImplementation": "0x202209397e2A26dc3243bD4bF46480C1f6661032",
 		"MultiCollateralOnOffRampImplementation": "0x88d6F967bba9cf564F597912D182EcB6569F853c",
-		"SpeedMarketMastercopy": "0x23885A1ee8F72984d83207119A2CC85A22d4F5d8",
+		"SpeedMarketMastercopy": "0xBb8151F500b7FEF54b6da14aBD890b45dbDceF11",
 		"SafeBoxBuyback": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203",
 		"SafeBoxBuybackImplementation": "0xd406adCC2ef2fA7f7c33c0be1a9fDD5E473aa6E2"
 	},
@@ -292,7 +292,7 @@
 		"ProxyUSDC": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"Pyth": "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a",
 		"SpeedMarketsAMMImplementation": "0xe95C975ae8e37ab0bA6b9F78262977A59FcAABEB",
-		"SpeedMarketMastercopy": "0xdB6EB989127D0c33bC630d7b5B53f87ceCED3ce1",
+		"SpeedMarketMastercopy": "0xd406adCC2ef2fA7f7c33c0be1a9fDD5E473aa6E2",
 		"PositionMastercopy": "0xD2b907a94E33BFe0371B8dcbFAcf1a319b13d609",
 		"PositionalMarketMastercopy": "0x503e7F2C19384Ff68B445E21850fDC61f34434e6",
 		"PriceFeed": "0x5B5DbF38a1fcf63B58d263648EBb63b53c1de3E7",
@@ -404,7 +404,7 @@
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"SpeedMarketsAMM": "0x4B1aED25f1877E1E9fBECBd77EeE95BB1679c361",
 		"SpeedMarketsAMMImplementation": "0xa53134D8C42C44D13facdc2Dc6e535326b3B1BdB",
-		"SpeedMarketMastercopy": "0x1957097E4C485D5c4ced40102653024766a7ecc1"
+		"SpeedMarketMastercopy": "0xd406adCC2ef2fA7f7c33c0be1a9fDD5E473aa6E2"
 	},
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",

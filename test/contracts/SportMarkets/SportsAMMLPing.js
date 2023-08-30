@@ -448,6 +448,12 @@ contract('SportsAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(0.1), {
+			from: owner,
+		});
+		await SportAMMLiquidityPool.setSafeBoxParams(safeBox, toUnit(0.2), {
+			from: owner,
+		});
 
 		await SportsAMM.setAddresses(
 			owner,
@@ -1031,6 +1037,313 @@ contract('SportsAMM', (accounts) => {
 			await expect(
 				SportAMMLiquidityPool.deposit(toUnit(1), { from: firstLiquidityProvider })
 			).to.be.revertedWith('Amount less than minDepositAmount');
+		});
+
+		it('Utilization rate current round, SafeBox profit from positive round', async () => {
+			let additionalSlippage = toUnit(0.01);
+			let firstBalance = await Thales.balanceOf(first);
+			console.log('first account balance: ', fromUnit(firstBalance));
+
+			let ammLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
+
+			await SportAMMLiquidityPool.setPoolRoundMastercopy(ammLiquidityPoolRoundMastercopy.address, {
+				from: owner,
+			});
+
+			await Thales.transfer(firstLiquidityProvider, toUnit('1000'), { from: owner });
+			await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000'), {
+				from: firstLiquidityProvider,
+			});
+
+			await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+				from: owner,
+			});
+			await SportAMMLiquidityPool.deposit(toUnit(1000), { from: firstLiquidityProvider });
+			await SportAMMLiquidityPool.start({ from: owner });
+			await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+				from: owner,
+			});
+
+			await Thales.transfer(defaultLiquidityProvider, toUnit('100000'), { from: owner });
+			await Thales.approve(SportAMMLiquidityPool.address, toUnit('100000'), {
+				from: defaultLiquidityProvider,
+			});
+
+			let times = await deployedMarket.times();
+			var maturity = times[0];
+			console.log('Maturity: ' + parseInt(maturity));
+
+			let now = await currentTime();
+			console.log('Now: ' + parseInt(now));
+
+			let marketRound = await SportAMMLiquidityPool.getMarketRound(deployedMarket.address);
+			let round = await SportAMMLiquidityPool.round();
+			console.log('Market round: ' + marketRound);
+			console.log('Current round: ' + round);
+
+			let roundPool = await SportAMMLiquidityPool.roundPools(marketRound);
+			console.log('Market round pool: ' + roundPool);
+
+			let roundPoolBalanceBefore = await Thales.balanceOf(roundPool);
+			console.log('marketRoundPoolBalance in round 1: ' + roundPoolBalanceBefore / 1e18);
+
+			let canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound (round 1): ' + canCloseCurrentRound);
+
+			await fastForward(month + 1);
+
+			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound (round 1): ' + canCloseCurrentRound);
+
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(1);
+			await SportAMMLiquidityPool.closeRound();
+
+			console.log('Round 1 closed');
+
+			round = await SportAMMLiquidityPool.round();
+			console.log('Current round: ' + round);
+
+			roundPool = await SportAMMLiquidityPool.roundPools(marketRound);
+			console.log('Market round pool: ' + roundPool);
+			let roundPoolBalanceBeforeBuy = await Thales.balanceOf(roundPool);
+			console.log(
+				'marketRoundPoolBalance in round 2 before buy: ' + roundPoolBalanceBeforeBuy / 1e18
+			);
+
+			let buyFromAmmQuoteUtilizationRate = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				0,
+				toUnit(200)
+			);
+			console.log('buyQuote utilization rate: ', fromUnit(buyFromAmmQuoteUtilizationRate));
+			await expect(
+				SportsAMM.buyFromAMM(
+					deployedMarket.address,
+					1,
+					toUnit(200),
+					buyFromAmmQuoteUtilizationRate,
+					additionalSlippage,
+					{ from: first }
+				)
+			).to.be.revertedWith('Amount exceeds available utilization for round');
+
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 0);
+			console.log('availableToBuy: ', fromUnit(availableToBuy));
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(100));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				0,
+				toUnit(100),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			let roundPoolBalanceAfterBuy = await Thales.balanceOf(roundPool);
+			console.log(
+				'marketRoundPoolBalance in round 2 after buy: ' + roundPoolBalanceAfterBuy / 1e18
+			);
+
+			await fastForward(month);
+
+			await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolve,
+				gamesResolved,
+				sportId_4,
+				{ from: wrapper }
+			);
+
+			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
+			assert.equal(100, gameR.homeScore);
+			assert.equal(129, gameR.awayScore);
+
+			// resolve markets
+			await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
+
+			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound (round 2): ' + canCloseCurrentRound);
+
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(200);
+			await SportAMMLiquidityPool.closeRound();
+
+			console.log('Round 2 closed');
+
+			round = await SportAMMLiquidityPool.round();
+			console.log('Current round: ' + round);
+
+			let profit = roundPoolBalanceAfterBuy / 1e18 + 100 - roundPoolBalanceBeforeBuy / 1e18;
+			console.log('Round 2 profit: ' + profit);
+			let safeBoxBalance = await Thales.balanceOf(safeBox);
+			console.log('SafeBox balance: ' + safeBoxBalance / 1e18);
+			assert.equal((safeBoxBalance / 1e18).toFixed(4), (profit * 0.2).toFixed(4));
+
+			let profitAndLossPerRound = await SportAMMLiquidityPool.profitAndLossPerRound(2);
+			console.log('profitAndLossPerRound (round 2): ' + profitAndLossPerRound / 1e16 + '%');
+
+			roundPool = await SportAMMLiquidityPool.roundPools(round);
+			console.log('Current round pool: ' + roundPool);
+			let currentRoundPoolBalance = await Thales.balanceOf(roundPool);
+			console.log('currentRoundPoolBalance : ' + currentRoundPoolBalance / 1e18);
+			assert.equal(
+				(currentRoundPoolBalance / 1e18).toFixed(4),
+				(roundPoolBalanceBeforeBuy / 1e18 + profit * 0.8).toFixed(4)
+			);
+		});
+
+		it('Utilization rate future round, SafeBox profit from negative round', async () => {
+			let additionalSlippage = toUnit(0.01);
+			let firstBalance = await Thales.balanceOf(first);
+			console.log('first account balance: ', fromUnit(firstBalance));
+
+			let ammLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
+
+			await SportAMMLiquidityPool.setPoolRoundMastercopy(ammLiquidityPoolRoundMastercopy.address, {
+				from: owner,
+			});
+
+			await Thales.transfer(firstLiquidityProvider, toUnit('1000'), { from: owner });
+			await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000'), {
+				from: firstLiquidityProvider,
+			});
+
+			await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+				from: owner,
+			});
+			await SportAMMLiquidityPool.deposit(toUnit(1000), { from: firstLiquidityProvider });
+			await SportAMMLiquidityPool.start({ from: owner });
+			await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+				from: owner,
+			});
+
+			await Thales.transfer(defaultLiquidityProvider, toUnit('1000'), { from: owner });
+			await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000'), {
+				from: defaultLiquidityProvider,
+			});
+
+			let times = await deployedMarket.times();
+			var maturity = times[0];
+			console.log('Maturity: ' + parseInt(maturity));
+
+			let now = await currentTime();
+			console.log('Now: ' + parseInt(now));
+
+			let marketRound = await SportAMMLiquidityPool.getMarketRound(deployedMarket.address);
+			let round = await SportAMMLiquidityPool.round();
+			console.log('Market round: ' + marketRound);
+			console.log('Current round: ' + round);
+
+			let roundPool = await SportAMMLiquidityPool.roundPools(marketRound);
+			console.log('Market round pool: ' + roundPool);
+
+			let roundPoolBalanceBefore = await Thales.balanceOf(roundPool);
+			console.log('marketRoundPoolBalance in round 1 before buy: ' + roundPoolBalanceBefore / 1e18);
+
+			let defaultLiquidityProviderBalanceBeforeBuy = await Thales.balanceOf(
+				defaultLiquidityProvider
+			);
+			console.log(
+				'defaultLiquidityProviderBalance in round 1 before buy: ' +
+					defaultLiquidityProviderBalanceBeforeBuy / 1e18
+			);
+
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			console.log('availableToBuy: ', fromUnit(availableToBuy));
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(200));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				1,
+				toUnit(200),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			roundPool = await SportAMMLiquidityPool.roundPools(marketRound);
+			console.log('Market round pool: ' + roundPool);
+			let roundPoolBalanceAfterBuy = await Thales.balanceOf(roundPool);
+			console.log(
+				'marketRoundPoolBalance in round 1 after buy: ' + roundPoolBalanceAfterBuy / 1e18
+			);
+
+			let defaultLiquidityProviderBalanceAfterBuy = await Thales.balanceOf(
+				defaultLiquidityProvider
+			);
+			console.log(
+				'defaultLiquidityProvider balance in round 1 after buy: ' +
+					defaultLiquidityProviderBalanceAfterBuy / 1e18
+			);
+
+			let canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound (round 1): ' + canCloseCurrentRound);
+
+			await fastForward(month * 2);
+
+			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound (round 1): ' + canCloseCurrentRound);
+
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(1);
+			await SportAMMLiquidityPool.closeRound();
+
+			console.log('Round 1 closed');
+
+			round = await SportAMMLiquidityPool.round();
+			console.log('Current round: ' + round);
+
+			let allocationPerCurrentRound = await SportAMMLiquidityPool.allocationPerRound(round);
+			console.log('allocationPerRound in round 2: ' + allocationPerCurrentRound / 1e18);
+			let roundPoolBalanceEnd = await Thales.balanceOf(roundPool);
+			console.log('marketRoundPoolBalance in round 2: ' + roundPoolBalanceEnd / 1e18);
+
+			await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolve,
+				gamesResolved,
+				sportId_4,
+				{ from: wrapper }
+			);
+
+			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
+			assert.equal(100, gameR.homeScore);
+			assert.equal(129, gameR.awayScore);
+
+			// resolve markets
+			await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
+
+			canCloseCurrentRound = await SportAMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound (round 2): ' + canCloseCurrentRound);
+
+			await SportAMMLiquidityPool.prepareRoundClosing();
+			await SportAMMLiquidityPool.processRoundClosingBatch(200);
+			await SportAMMLiquidityPool.closeRound();
+
+			console.log('Round 2 closed');
+
+			round = await SportAMMLiquidityPool.round();
+			console.log('Current round: ' + round);
+
+			let profit = roundPoolBalanceEnd / 1e18 - allocationPerCurrentRound / 1e18;
+			console.log('Round 2 profit: ' + profit);
+			let safeBoxBalance = await Thales.balanceOf(safeBox);
+			console.log('SafeBox balance: ' + safeBoxBalance / 1e18);
+			assert.equal(safeBoxBalance / 1e18, 0);
+
+			let profitAndLossPerRound = await SportAMMLiquidityPool.profitAndLossPerRound(2);
+			console.log('profitAndLossPerRound (round 2): ' + profitAndLossPerRound / 1e16 + '%');
+
+			roundPool = await SportAMMLiquidityPool.roundPools(round);
+			console.log('Current round pool: ' + roundPool);
+			let currentRoundPoolBalance = await Thales.balanceOf(roundPool);
+			console.log('currentRoundPoolBalance : ' + currentRoundPoolBalance / 1e18);
+			assert.equal(
+				(currentRoundPoolBalance / 1e18).toFixed(4),
+				(roundPoolBalanceEnd / 1e18 - (200 * profitAndLossPerRound) / 1e18).toFixed(4)
+			);
 		});
 	});
 });

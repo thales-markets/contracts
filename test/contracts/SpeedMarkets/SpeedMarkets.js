@@ -1,19 +1,13 @@
 'use strict';
 
 const { artifacts, contract, web3 } = require('hardhat');
-const { toBN } = web3.utils;
 
 const { assert } = require('../../utils/common');
 
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
-const { toDecimal } = require('web3-utils');
-const { setupAllContracts } = require('../../utils/setup');
 
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
-
-const { fastForward, toUnit, fromUnit, currentTime } = require('../../utils')();
-const { encodeCall, convertToDecimals } = require('../../utils/helpers');
+const { fastForward, toUnit, currentTime } = require('../../utils')();
 
 contract('SpeedMarkets', (accounts) => {
 	const [owner, user, safeBox] = accounts;
@@ -61,7 +55,9 @@ contract('SpeedMarkets', (accounts) => {
 			await speedMarketsAMM.setTimes(3600, 86400);
 
 			await speedMarketsAMM.setMaximumPriceDelay(60);
+			await speedMarketsAMM.setMaximumPriceDelayForResolving(30);
 
+			await speedMarketsAMM.setMaxRiskPerHour(toUnit(2000));
 			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
 			await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.01));
 			await speedMarketsAMM.setLPFee(toUnit(0.01));
@@ -289,6 +285,189 @@ contract('SpeedMarkets', (accounts) => {
 
 			let numMaturedMarketsPerUser = await speedMarketsAMM.numMaturedMarketsPerUser(user);
 			console.log('numMaturedMarketsPerUser ' + numMaturedMarketsPerUser);
+		});
+
+		it('check hourly limit', async () => {
+			let SpeedMarketsAMMContract = artifacts.require('SpeedMarketsAMM');
+			let speedMarketsAMM = await SpeedMarketsAMMContract.new();
+
+			let ExoticUSD = artifacts.require('ExoticUSD');
+			let exoticUSD = await ExoticUSD.new();
+
+			await exoticUSD.setDefaultAmount(toUnit(100));
+
+			await exoticUSD.mintForUser(user);
+			let balance = await exoticUSD.balanceOf(user);
+			console.log('Balance of user is ' + balance / 1e18);
+
+			await exoticUSD.transfer(speedMarketsAMM.address, toUnit(100), { from: user });
+
+			await exoticUSD.mintForUser(owner);
+			balance = await exoticUSD.balanceOf(owner);
+			console.log('Balance of owner is ' + balance / 1e18);
+
+			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100));
+
+			let MockPriceFeed = artifacts.require('MockPriceFeed');
+			let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
+			await MockPriceFeedDeployed.setPricetoReturn(10000);
+
+			let MockPyth = artifacts.require('MockPythCustom');
+			let mockPyth = await MockPyth.new(60, 1e6);
+
+			await speedMarketsAMM.initialize(owner, exoticUSD.address, mockPyth.address);
+
+			let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
+			let speedMarketMastercopy = await SpeedMarketMastercopy.new();
+
+			await speedMarketsAMM.setMastercopy(speedMarketMastercopy.address);
+			await speedMarketsAMM.setAmounts(toUnit(5), toUnit(1000));
+			await speedMarketsAMM.setTimes(3600, 86400);
+			await speedMarketsAMM.setMaximumPriceDelay(60);
+			await speedMarketsAMM.setMaximumPriceDelayForResolving(30);
+			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
+			await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.02));
+			await speedMarketsAMM.setLPFee(toUnit(0.04));
+
+			await speedMarketsAMM.setAssetToPythID(
+				toBytes32('ETH'),
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace'
+			);
+
+			let now = await currentTime();
+
+			let priceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				186342931000,
+				74093100,
+				-8,
+				186342931000,
+				74093100,
+				now
+			);
+
+			let updateDataArray = [];
+			updateDataArray[0] = priceFeedUpdateData;
+
+			let fee = await mockPyth.getUpdateFee(updateDataArray);
+			console.log('Fee is ' + fee);
+
+			await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
+
+			////////////////////////////////////////////////////////////////////////////////////////
+			// Given max risk per hour 20
+			////////////////////////////////////////////////////////////////////////////////////////
+			await speedMarketsAMM.setMaxRiskPerHour(toUnit(20));
+			var maxRiskPerHour = await speedMarketsAMM.maxRiskPerHour();
+			console.log('maxRiskPerHour ' + maxRiskPerHour / 1e18);
+
+			////////////////////////////////////////////////////////////////////////////////////////
+			// When buy 20, Then creation failed with reason
+			////////////////////////////////////////////////////////////////////////////////////////
+			console.log('Scenario 1: buy max should fail');
+			await expect(
+				speedMarketsAMM.createNewMarket(
+					toBytes32('ETH'),
+					now + 36000,
+					0,
+					toUnit(20),
+					[priceFeedUpdateData],
+					{ value: fee }
+				)
+			).to.be.revertedWith('Risk per hour exceeded');
+
+			let strikeTime = now + 36000;
+			////////////////////////////////////////////////////////////////////////////////////////
+			// When buy 5
+			////////////////////////////////////////////////////////////////////////////////////////
+			console.log('Scenario 2: buy lower than max should succeed');
+			let buyinAmount = toUnit(5);
+			await speedMarketsAMM.createNewMarket(
+				toBytes32('ETH'),
+				strikeTime,
+				0,
+				buyinAmount,
+				[priceFeedUpdateData],
+				{ value: fee }
+			);
+
+			////////////////////////////////////////////////////////////////////////////////////////
+			// Then source and target hour risk is the same as buyin amount
+			////////////////////////////////////////////////////////////////////////////////////////
+			var sourceHourRiskPerAssetAndDirection =
+				await speedMarketsAMM.sourceHourRiskPerAssetAndDirection(
+					Math.trunc(now / 3600),
+					toBytes32('ETH'),
+					0
+				);
+			assert.bnEqual(sourceHourRiskPerAssetAndDirection, buyinAmount);
+
+			var targetHourRiskPerAssetAndDirection =
+				await speedMarketsAMM.targetHourRiskPerAssetAndDirection(
+					Math.trunc(strikeTime / 3600),
+					toBytes32('ETH'),
+					0
+				);
+			assert.bnEqual(targetHourRiskPerAssetAndDirection, buyinAmount);
+
+			////////////////////////////////////////////////////////////////////////////////////////
+			// When buy 15 more in the same hour
+			////////////////////////////////////////////////////////////////////////////////////////
+			console.log('Scenario 3: buy more to reach max should fail');
+			buyinAmount = toUnit(15);
+
+			////////////////////////////////////////////////////////////////////////////////////////
+			// Then creation failed with reason
+			////////////////////////////////////////////////////////////////////////////////////////
+			await expect(
+				speedMarketsAMM.createNewMarket(
+					toBytes32('ETH'),
+					strikeTime,
+					0,
+					buyinAmount,
+					[priceFeedUpdateData],
+					{ value: fee }
+				)
+			).to.be.revertedWith('Risk per hour exceeded');
+
+			////////////////////////////////////////////////////////////////////////////////////////
+			// When buy 15 more in the next hour
+			////////////////////////////////////////////////////////////////////////////////////////
+			console.log('Scenario 4: buy more in next hour should succeed');
+			buyinAmount = toUnit(15);
+			await fastForward(3600);
+			now = await currentTime();
+			strikeTime += 36000;
+
+			priceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				186342931000,
+				74093100,
+				-8,
+				186342931000,
+				74093100,
+				now
+			);
+
+			updateDataArray = [priceFeedUpdateData];
+			fee = await mockPyth.getUpdateFee(updateDataArray);
+
+			////////////////////////////////////////////////////////////////////////////////////////
+			// Then creation should succeed
+			////////////////////////////////////////////////////////////////////////////////////////
+			await speedMarketsAMM.createNewMarket(
+				toBytes32('ETH'),
+				strikeTime,
+				0,
+				buyinAmount,
+				[priceFeedUpdateData],
+				{ value: fee }
+			);
+
+			var markets = await speedMarketsAMM.activeMarkets(0, 1);
+			var market = markets[0];
+			var marketData = await speedMarketsAMM.getMarketsData([market]);
+			console.log('marketData ' + marketData);
 		});
 	});
 });

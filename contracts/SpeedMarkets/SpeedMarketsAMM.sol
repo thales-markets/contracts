@@ -20,6 +20,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../utils/libraries/AddressSetLib.sol";
+import "../utils/libraries/DateTime.sol";
 
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IMultiCollateralOnOffRamp.sol";
@@ -53,6 +54,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     uint public minBuyinAmount;
     uint public maxBuyinAmount;
 
+    uint public maxRiskPerHour;
+    mapping(uint => mapping(bytes32 => mapping(SpeedMarket.Direction => uint))) public sourceHourRiskPerAssetAndDirection;
+    mapping(uint => mapping(bytes32 => mapping(SpeedMarket.Direction => uint))) public targetHourRiskPerAssetAndDirection;
+
     mapping(bytes32 => uint) public maxRiskPerAsset;
     mapping(bytes32 => uint) public currentRiskPerAsset;
 
@@ -62,6 +67,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     IPyth public pyth;
 
     uint64 public maximumPriceDelay;
+    uint64 public maximumPriceDelayForResolving;
 
     /// @return The address of the Staking contract
     IStakingThales public stakingThales;
@@ -80,6 +86,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         int64 finalPrice;
         SpeedMarket.Direction result;
         bool isUserWinner;
+        uint256 createdAt;
     }
 
     mapping(address => bool) public whitelistedAddresses;
@@ -200,6 +207,16 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         _activeMarkets.add(address(srm));
         _activeMarketsPerUser[msg.sender].add(address(srm));
 
+        sourceHourRiskPerAssetAndDirection[block.timestamp / DateTime.SECONDS_PER_HOUR][asset][direction] += buyinAmount;
+        targetHourRiskPerAssetAndDirection[strikeTime / DateTime.SECONDS_PER_HOUR][asset][direction] += buyinAmount;
+        require(
+            sourceHourRiskPerAssetAndDirection[block.timestamp / DateTime.SECONDS_PER_HOUR][asset][direction] <
+                maxRiskPerHour &&
+                targetHourRiskPerAssetAndDirection[strikeTime / DateTime.SECONDS_PER_HOUR][asset][direction] <
+                maxRiskPerHour,
+            "Risk per hour exceeded"
+        );
+
         currentRiskPerAsset[asset] += buyinAmount;
         require(currentRiskPerAsset[asset] < maxRiskPerAsset[asset], "OI cap breached");
 
@@ -244,7 +261,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             priceUpdateData,
             priceIds,
             SpeedMarket(market).strikeTime(),
-            SpeedMarket(market).strikeTime() + maximumPriceDelay
+            SpeedMarket(market).strikeTime() + maximumPriceDelayForResolving
         );
 
         PythStructs.Price memory price = prices[0].price;
@@ -393,6 +410,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             markets[i].finalPrice = market.finalPrice();
             markets[i].result = market.result();
             markets[i].isUserWinner = market.isUserWinner();
+            markets[i].createdAt = market.createdAt();
         }
         return markets;
     }
@@ -430,6 +448,18 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     function setMaximumPriceDelay(uint64 _maximumPriceDelay) external onlyOwner {
         maximumPriceDelay = _maximumPriceDelay;
         emit SetMaximumPriceDelay(maximumPriceDelay);
+    }
+
+    /// @notice whats the longest a price can be delayed when resolving
+    function setMaximumPriceDelayForResolving(uint64 _maximumPriceDelayForResolving) external onlyOwner {
+        maximumPriceDelayForResolving = _maximumPriceDelayForResolving;
+        emit SetMaximumPriceDelayForResolving(maximumPriceDelayForResolving);
+    }
+
+    /// @notice maximum risk per hour
+    function setMaxRiskPerHour(uint _maxRiskPerHour) external onlyOwner {
+        maxRiskPerHour = _maxRiskPerHour;
+        emit SetMaxRiskPerHour(_maxRiskPerHour);
     }
 
     /// @notice maximum open interest per asset
@@ -512,6 +542,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event TimesChanged(uint _minimalTimeToMaturity, uint _maximalTimeToMaturity);
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event SetMaximumPriceDelay(uint _maximumPriceDelay);
+    event SetMaximumPriceDelayForResolving(uint _maximumPriceDelayForResolving);
+    event SetMaxRiskPerHour(uint _maxRiskPerHour);
     event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
     event SetLPFee(uint _lpFee);

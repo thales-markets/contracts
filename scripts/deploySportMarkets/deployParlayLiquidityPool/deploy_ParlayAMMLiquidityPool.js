@@ -53,6 +53,12 @@ async function main() {
 		proxySUSD = getTargetAddress('ProxyUSDC', network);
 		transformCollateral = true;
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+		transformCollateral = true;
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);

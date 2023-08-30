@@ -43,6 +43,7 @@ contract SpeedMarket {
 
     function initialize(InitParams calldata params) external {
         require(!initialized, "Speed  market already initialized");
+        initialized = true;
         speedMarketsAMM = SpeedMarketsAMM(params._speedMarketsAMM);
         user = params._user;
         asset = params._asset;

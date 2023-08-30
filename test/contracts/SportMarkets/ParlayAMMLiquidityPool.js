@@ -715,6 +715,12 @@ contract('ParlayAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
+		await SportAMMLiquidityPool.setSafeBoxParams(safeBox, toUnit(0.2), {
+			from: owner,
+		});
 
 		let SportAMMRiskManagerContract = artifacts.require('SportAMMRiskManager');
 		SportAMMRiskManager = await SportAMMRiskManagerContract.new();
@@ -801,6 +807,12 @@ contract('ParlayAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await ParlayAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
+		await ParlayAMMLiquidityPool.setSafeBoxParams(safeBox, toUnit(0.2), {
+			from: owner,
+		});
 		await ParlayAMM.setParlayLP(ParlayAMMLiquidityPool.address, { from: owner });
 
 		let parlayAMMLiquidityPoolRoundMastercopy = await ParlayAMMLiquidityPoolRoundMastercopy.new();

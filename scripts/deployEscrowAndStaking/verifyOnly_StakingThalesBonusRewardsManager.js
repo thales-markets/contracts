@@ -23,26 +23,24 @@ async function main() {
 	console.log('Owner is:' + owner.address);
 	console.log('Network name:' + network);
 
-	const StakingImplementation = getTargetAddress('StakingThalesImplementation', network);
-	const EscrowImplementation = getTargetAddress('EscrowThalesImplementation', network);
-	const ProxyStaking = getTargetAddress('StakingThales', network);
-	const ProxyEscrow = getTargetAddress('EscrowThales', network);
+	const StakingThalesBonusRewardsManagerImplementation = getTargetAddress(
+		'StakingThalesBonusRewardsManagerImplementation',
+		network
+	);
+	const ProxyStakingThalesBonusRewardsManager = getTargetAddress(
+		'StakingThalesBonusRewardsManager',
+		network
+	);
 
-	console.log('Implementation Escrow: ', EscrowImplementation);
-	console.log('Implementation Staking: ', StakingImplementation);
-	console.log('Escrow proxy:', ProxyEscrow);
-	console.log('Staking proxy:', ProxyStaking);
+	console.log(
+		'Implementation StakingThalesBonusRewardsManager: ',
+		StakingThalesBonusRewardsManagerImplementation
+	);
+	console.log('StakingThalesBonusRewardsManager proxy:', ProxyStakingThalesBonusRewardsManager);
 
 	try {
 		await hre.run('verify:verify', {
-			address: StakingImplementation,
-		});
-	} catch (e) {
-		console.log(e);
-	}
-	try {
-		await hre.run('verify:verify', {
-			address: EscrowImplementation,
+			address: StakingThalesBonusRewardsManagerImplementation,
 		});
 	} catch (e) {
 		console.log(e);
@@ -50,14 +48,7 @@ async function main() {
 
 	try {
 		await hre.run('verify:verify', {
-			address: ProxyEscrow,
-		});
-	} catch (e) {
-		console.log(e);
-	}
-	try {
-		await hre.run('verify:verify', {
-			address: ProxyStaking,
+			address: ProxyStakingThalesBonusRewardsManager,
 		});
 	} catch (e) {
 		console.log(e);

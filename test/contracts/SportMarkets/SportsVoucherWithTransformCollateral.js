@@ -412,6 +412,9 @@ contract('SportsVauchers', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
 
 		let SportAMMRiskManagerContract = artifacts.require('SportAMMRiskManager');
 		SportAMMRiskManager = await SportAMMRiskManagerContract.new();

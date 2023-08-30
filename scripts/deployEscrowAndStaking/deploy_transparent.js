@@ -47,6 +47,14 @@ async function main() {
 		// durationPeriod = MINUTE;
 		// unstakeDurationPeriod = MINUTE;
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		durationPeriod = WEEK;
+		unstakeDurationPeriod = WEEK;
+		thalesAddress = getTargetAddress('ThalesToken', network);
+		ProxyERC20sUSD_address = getTargetAddress('ProxyUSDC', network);
+	}
 
 	SNXIssuerAddress = getTargetAddress('SNXIssuer', network);
 	const owner = new ethers.Wallet(user_key1, ethers.provider);
@@ -143,35 +151,25 @@ async function main() {
 		ThalesStakingRewardsPoolImplementation
 	);
 
-	let StakingAddress = getTargetAddress('StakingThales', network);
-	let EscrowAddress = getTargetAddress('EscrowThales', network);
 	let ThalesAMMAddress = getTargetAddress('ThalesAMM', network);
 	let RangedAMMAddress = getTargetAddress('RangedAMM', network);
-	let PriceFeedAddress = getTargetAddress('PriceFeed', network);
-	let SportsAMMAddress = getTargetAddress('SportsAMM', network);
-	let ThalesBondsAddress = getTargetAddress('ThalesBonds', network);
-	let AddressResolverAddress = getTargetAddress('AddressResolver', network);
+	// let SportsAMMAddress = getTargetAddress('SportsAMM', network);
+	let ThalesAMMLiquidityPoolAddress = getTargetAddress('ThalesAMMLiquidityPool', network);
 	let ThalesStakingRewardsPoolAddress = getTargetAddress('ThalesStakingRewardsPool', network);
-	let EscrowContractAddress = getTargetAddress('EscrowThales', network);
 
-	// let ProxyStaking_deployed = await ProxyStaking.attach(StakingAddress);
-	// await delay(5000);
-
-	tx = await ProxyStaking_deployed.setThalesAMM(ThalesAMMAddress, { from: owner.address });
-	await tx.wait().then((e) => {
-		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
-	});
 	console.log('Setting addresses... ');
 
 	tx = await ProxyStaking_deployed.setAddresses(
 		ZERO_ADDRESS,
-		ZERO_ADDRESS,
 		ThalesAMMAddress,
 		RangedAMMAddress,
 		ZERO_ADDRESS,
-		SportsAMMAddress,
 		ZERO_ADDRESS,
 		ThalesStakingRewardsPoolAddress,
+		ZERO_ADDRESS,
+		ZERO_ADDRESS,
+		ThalesAMMLiquidityPoolAddress,
+		ZERO_ADDRESS,
 		ZERO_ADDRESS,
 		{ from: owner.address, gasLimit: 5000000 }
 	);
@@ -204,7 +202,7 @@ async function main() {
 	});
 	delay(1000);
 
-	tx = await StakingThales.setStakingParameters(true, false, WEEK, WEEK, false, {
+	tx = await ProxyStaking_deployed.setStakingParameters(true, false, WEEK, WEEK, false, {
 		from: owner.address,
 	});
 	await tx.wait().then((e) => {

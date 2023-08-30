@@ -65,6 +65,14 @@ async function main() {
 		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
 		SafeBox = getTargetAddress('SafeBox', network);
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+		SportsAMMContract = getTargetAddress('SportsAMM', network);
+		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
+		SafeBox = getTargetAddress('SafeBox', network);
+	}
 
 	const parlayAMMfee = w3utils.toWei('0.03');
 	const safeBoxImpact = w3utils.toWei('0.03');

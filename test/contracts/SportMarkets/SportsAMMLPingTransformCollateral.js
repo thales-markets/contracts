@@ -455,6 +455,12 @@ contract('SportsAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
+		await SportAMMLiquidityPool.setSafeBoxParams(safeBox, toUnit(0.2), {
+			from: owner,
+		});
 
 		await SportsAMM.setAddresses(
 			owner,

@@ -573,6 +573,9 @@ contract('ParlayAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
 
 		await SportsAMM.setAddresses(
 			owner,
@@ -642,6 +645,9 @@ contract('ParlayAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await ParlayAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
 		await ParlayAMM.setParlayLP(ParlayAMMLiquidityPool.address, { from: owner });
 
 		let parlayAMMLiquidityPoolRoundMastercopy = await ParlayAMMLiquidityPoolRoundMastercopy.new();

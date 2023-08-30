@@ -208,13 +208,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         _activeMarketsPerUser[msg.sender].add(address(srm));
 
         sourceHourRiskPerAssetAndDirection[block.timestamp / DateTime.SECONDS_PER_HOUR][asset][direction] += buyinAmount;
-        targetHourRiskPerAssetAndDirection[strikeTime / DateTime.SECONDS_PER_HOUR][asset][direction] += buyinAmount;
         require(
             sourceHourRiskPerAssetAndDirection[block.timestamp / DateTime.SECONDS_PER_HOUR][asset][direction] <
-                maxRiskPerHour &&
-                targetHourRiskPerAssetAndDirection[strikeTime / DateTime.SECONDS_PER_HOUR][asset][direction] <
                 maxRiskPerHour,
-            "Risk per hour exceeded"
+            "Risk per creation hour exceeded"
+        );
+        targetHourRiskPerAssetAndDirection[strikeTime / DateTime.SECONDS_PER_HOUR][asset][direction] += buyinAmount;
+        require(
+            targetHourRiskPerAssetAndDirection[strikeTime / DateTime.SECONDS_PER_HOUR][asset][direction] < maxRiskPerHour,
+            "Risk per strike hour exceeded"
         );
 
         currentRiskPerAsset[asset] += buyinAmount;

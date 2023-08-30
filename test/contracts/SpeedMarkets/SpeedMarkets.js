@@ -374,7 +374,7 @@ contract('SpeedMarkets', (accounts) => {
 					[priceFeedUpdateData],
 					{ value: fee }
 				)
-			).to.be.revertedWith('Risk per hour exceeded');
+			).to.be.revertedWith('Risk per creation hour exceeded');
 
 			let strikeTime = now + 36000;
 			////////////////////////////////////////////////////////////////////////////////////////
@@ -428,7 +428,7 @@ contract('SpeedMarkets', (accounts) => {
 					[priceFeedUpdateData],
 					{ value: fee }
 				)
-			).to.be.revertedWith('Risk per hour exceeded');
+			).to.be.revertedWith('Risk per creation hour exceeded');
 
 			////////////////////////////////////////////////////////////////////////////////////////
 			// When buy 15 more in the next hour

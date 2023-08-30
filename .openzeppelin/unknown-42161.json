@@ -279,6 +279,11 @@
       "address": "0x6848f7C1B5aa2da86F6529bed9d641A67663f0bE",
       "txHash": "0xf8896202c35bb29b5727f5febc8281e658844ec04581b893ef5ef9395af4db65",
       "kind": "transparent"
+    },
+    {
+      "address": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203",
+      "txHash": "0xdd2b733a6c6994092c7fc3b64a26e24df2a86d892c9c4f44fb4076563bb7db8b",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -39242,6 +39247,151 @@
           },
           "t_contract(IPositionalMarketManagerTruncated)3193": {
             "label": "contract IPositionalMarketManagerTruncated"
+          }
+        }
+      }
+    },
+    "7ff77c9eddaa2acbd8ffbc9a19fc56bc4889464a8aae2c6abb80d1dad065a388": {
+      "address": "0xd406adCC2ef2fA7f7c33c0be1a9fDD5E473aa6E2",
+      "txHash": "0xdfef50babbdce730c6046926b8877c271ecc16e2c7e288ffe6b13c1be78901df",
+      "layout": {
+        "storage": [
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)8234",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:19"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "thalesToken",
+            "type": "t_contract(IERC20Upgradeable)8234",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:20"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "WETH9",
+            "type": "t_address",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:21"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "swapRouter",
+            "type": "t_contract(ISwapRouter)13358",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:23"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "uniswapFactory",
+            "type": "t_contract(IUniswapV3Factory)12289",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:24"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "sUSDperTick",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:26"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "tickLength",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:27"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "lastBuyback",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:28"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "buybacksEnabled",
+            "type": "t_bool",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:30"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "minAccepted",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:32"
+          },
+          {
+            "contract": "SafeBoxBuyback",
+            "label": "pathToUse",
+            "type": "t_bytes_storage",
+            "src": "contracts\\AMM\\SafeBoxBuyback.sol:34"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)8234": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_contract(ISwapRouter)13358": {
+            "label": "contract ISwapRouter"
+          },
+          "t_contract(IUniswapV3Factory)12289": {
+            "label": "contract IUniswapV3Factory"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_bytes_storage": {
+            "label": "bytes"
           }
         }
       }

@@ -415,6 +415,9 @@ contract('SportsVauchers', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
 
 		await SportsAMM.setAddresses(
 			owner,

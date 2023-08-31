@@ -14,7 +14,11 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 /// @title Sports AMM Risk contract
 /// @author gruja
 contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
-    /* ========== CONSUMER STATE VARIABLES ========== */
+    /* ========== RISK MANAGER CONST VARIABLES ========== */
+    uint public constant MIN_TAG_NUMBER = 9000;
+    uint public constant MIN_CHILD_NUMBER = 10000;
+
+    /* ========== RISK MANAGER STATE VARIABLES ========== */
     address public manager;
     uint public defaultCapPerGame;
     mapping(uint => uint) public capPerSport;
@@ -24,6 +28,9 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     uint public defaultRiskMultiplier;
     mapping(uint => uint) public riskMultiplierForSport;
     mapping(address => uint) public riskMultiplierPerMarket;
+
+    uint public maxCap;
+    uint public maxRiskMultiplier;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -123,7 +130,9 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
             msg.sender == owner || ISportPositionalMarketManager(manager).isWhitelistedAddress(msg.sender),
             "Invalid sender"
         );
+        require(_capPerMarket <= maxCap, "Invalid cap");
         for (uint i; i < _markets.length; i++) {
+            require(_markets[i] != address(0), "Invalid address");
             capPerMarket[_markets[i]] = _capPerMarket;
             emit SetCapPerMarket(_markets[i], _capPerMarket);
         }
@@ -138,6 +147,10 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         uint _childID,
         uint _capPerChild
     ) external onlyOwner {
+        uint currentCapPerSport = capPerSport[_sportID] > 0 ? capPerSport[_sportID] : defaultCapPerGame;
+        require(_capPerChild <= currentCapPerSport, "Invalid cap");
+        require(_sportID > MIN_TAG_NUMBER, "Invalid tag for sport");
+        require(_childID > MIN_CHILD_NUMBER, "Invalid tag for child");
         capPerSportAndChild[_sportID][_childID] = _capPerChild;
         emit SetCapPerSportAndChild(_sportID, _childID, _capPerChild);
     }
@@ -146,6 +159,8 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     /// @param _sportID The tagID used for each market
     /// @param _capPerSport The cap amount used for the sportID
     function setCapPerSport(uint _sportID, uint _capPerSport) external onlyOwner {
+        require(_sportID > MIN_TAG_NUMBER, "Invalid tag for sport");
+        require(_capPerSport <= maxCap, "Invalid cap");
         capPerSport[_sportID] = _capPerSport;
         emit SetCapPerSport(_sportID, _capPerSport);
     }
@@ -153,6 +168,7 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     /// @notice Setting the Cap per game default value
     /// @param _capPerGame default cap
     function setDefaultCapPerGame(uint _capPerGame) external onlyOwner {
+        require(_capPerGame <= maxCap, "Invalid cap");
         defaultCapPerGame = _capPerGame;
         emit SetDefaultCapPerGame(_capPerGame);
     }
@@ -160,6 +176,7 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     /// @notice default risk multiplier
     /// @param _riskMultiplier risk multiplier
     function setDefaultRiskMultiplier(uint _riskMultiplier) external onlyOwner {
+        require(_riskMultiplier <= maxRiskMultiplier, "Invalid multiplier");
         defaultRiskMultiplier = _riskMultiplier;
         emit SetDefaultRiskMultiplier(_riskMultiplier);
     }
@@ -168,6 +185,8 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     /// @param _sportID The tagID used for each market
     /// @param _riskMultiplier The risk multiplier amount used for the sportID
     function setRiskMultiplierPerSport(uint _sportID, uint _riskMultiplier) external onlyOwner {
+        require(_sportID > MIN_TAG_NUMBER, "Invalid tag for sport");
+        require(_riskMultiplier <= maxRiskMultiplier, "Invalid multiplier");
         riskMultiplierForSport[_sportID] = _riskMultiplier;
         emit SetRiskMultiplierPerSport(_sportID, _riskMultiplier);
     }
@@ -180,7 +199,9 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
             msg.sender == owner || ISportPositionalMarketManager(manager).isWhitelistedAddress(msg.sender),
             "Invalid sender"
         );
+        require(_riskMultiplier <= maxRiskMultiplier, "Invalid multiplier");
         for (uint i; i < _markets.length; i++) {
+            require(_markets[i] != address(0), "Invalid address");
             riskMultiplierPerMarket[_markets[i]] = _riskMultiplier;
             emit SetRiskMultiplierPerMarket(_markets[i], _riskMultiplier);
         }
@@ -189,8 +210,19 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     /// @notice Setting the Sport Positional Manager contract address
     /// @param _manager Address of Staking contract
     function setSportsPositionalMarketManager(address _manager) external onlyOwner {
+        require(_manager != address(0), "Invalid address");
         manager = _manager;
         emit SetSportsPositionalMarketManager(_manager);
+    }
+
+    /// @notice Setting the max cap and risk per market
+    /// @param _maxCap max cap per market
+    /// @param _maxRisk max risk multiplier
+    function setMaxCapAndRisk(uint _maxCap, uint _maxRisk) external onlyOwner {
+        require(_maxCap > defaultCapPerGame && _maxRisk > defaultRiskMultiplier, "Invalid input");
+        maxCap = _maxCap;
+        maxRiskMultiplier = _maxRisk;
+        emit SetMaxCapAndRisk(_maxCap, _maxRisk);
     }
 
     /* ========== MODIFIERS ========== */
@@ -203,4 +235,5 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     event SetDefaultRiskMultiplier(uint _riskMultiplier);
     event SetRiskMultiplierPerSport(uint _sport, uint _riskMultiplier);
     event SetRiskMultiplierPerMarket(address _market, uint _riskMultiplier);
+    event SetMaxCapAndRisk(uint _maxCap, uint _maxRisk);
 }

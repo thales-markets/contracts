@@ -65,13 +65,15 @@ async function main() {
 
 	console.log('SportPositionalMarketManager address: ', managerAddress);
 
-	let defaultCapPerGame = w3utils.toWei('5000');
+	let maxCap = w3utils.toWei('20000');
+	let maxRisk = 5;
+	let defaultCapPerGame = w3utils.toWei('1000');
 	let defaultRiskMultiplier = 3;
 
 	let sportIds = [
 		9001, 9002, 9003, 9004, 9005, 9006, 9007, 9010, 9011, 9012, 9013, 9014, 9015, 9016, 9017, 9018,
 		9019, 9020, 9021, 9033, 9042, 9045, 9050, 9057, 9061, 9073, 9076, 9153, 9156, 9268, 9288, 9296,
-		9399, 9409, 9445, 9497, 9536, 18196, 18806, 18821, 18977, 18983, 19138, 19216, 109021,
+		9399, 9409, 9445, 9497, 9536, 18196, 18806, 18821, 18977, 18983, 19138, 19216, 109021, 109121,
 	];
 	let capsPerSportIds = [
 		w3utils.toWei('3000'),
@@ -119,6 +121,7 @@ async function main() {
 		w3utils.toWei('1000'),
 		w3utils.toWei('2000'),
 		w3utils.toWei('1000'),
+		w3utils.toWei('5000'),
 	];
 
 	let sportIdsForChilds = []; // TODO add if needed
@@ -157,7 +160,7 @@ async function main() {
 		const implementation = await getImplementationAddress(ethers.provider, riskManager.address);
 		console.log('SportAMMRiskManagerImplementation: ', implementation);
 		setTargetAddress('SportAMMRiskManagerImplementation', network, implementation);
-
+		await delay(2000);
 		await hre.run('verify:verify', {
 			address: implementation,
 		});

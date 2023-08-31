@@ -531,6 +531,9 @@ contract('SportsAMMRiskManager', (accounts) => {
 				from: owner,
 			}
 		);
+		await SportAMMRiskManager.setMaxCapAndRisk(toUnit(10000), 5, {
+			from: owner,
+		});
 	});
 
 	describe('Init', () => {
@@ -797,6 +800,28 @@ contract('SportsAMMRiskManager', (accounts) => {
 
 	describe('Risk management contract', () => {
 		it('Test owner functions', async () => {
+			const setMaxCapAndRisk = await SportAMMRiskManager.setMaxCapAndRisk(toUnit(22222), 4, {
+				from: owner,
+			});
+
+			await expect(
+				SportAMMRiskManager.setMaxCapAndRisk(3, 3, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid input');
+
+			await expect(
+				SportAMMRiskManager.setMaxCapAndRisk(3, 3, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(setMaxCapAndRisk.logs[0], 'SetMaxCapAndRisk', {
+				_maxCap: toUnit(22222),
+				_maxRisk: 4,
+			});
+
 			const tx_setDefaultRiskMultiplier = await SportAMMRiskManager.setDefaultRiskMultiplier(3, {
 				from: owner,
 			});
@@ -806,6 +831,12 @@ contract('SportsAMMRiskManager', (accounts) => {
 					from: wrapper,
 				})
 			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				SportAMMRiskManager.setDefaultRiskMultiplier(13, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid multiplier');
 
 			// check if event is emited
 			assert.eventEqual(tx_setDefaultRiskMultiplier.logs[0], 'SetDefaultRiskMultiplier', {
@@ -821,6 +852,18 @@ contract('SportsAMMRiskManager', (accounts) => {
 			);
 
 			await expect(
+				SportAMMRiskManager.setRiskMultiplierPerSport(1, 4, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for sport');
+
+			await expect(
+				SportAMMRiskManager.setRiskMultiplierPerSport(tagID_4, 8, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid multiplier');
+
+			await expect(
 				SportAMMRiskManager.setRiskMultiplierPerSport(tagID_16, 4, {
 					from: wrapper,
 				})
@@ -834,7 +877,7 @@ contract('SportsAMMRiskManager', (accounts) => {
 
 			const tx_setRiskMultiplierMarket = await SportAMMRiskManager.setRiskMultiplierMarket(
 				[first],
-				7,
+				4,
 				{
 					from: owner,
 				}
@@ -846,10 +889,22 @@ contract('SportsAMMRiskManager', (accounts) => {
 				})
 			).to.be.revertedWith('Invalid sender');
 
+			await expect(
+				SportAMMRiskManager.setRiskMultiplierMarket([ZERO_ADDRESS], 3, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid address');
+
+			await expect(
+				SportAMMRiskManager.setRiskMultiplierMarket([ZERO_ADDRESS], 8, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid multiplier');
+
 			// check if event is emited
 			assert.eventEqual(tx_setRiskMultiplierMarket.logs[0], 'SetRiskMultiplierPerMarket', {
 				_market: first,
-				_riskMultiplier: 7,
+				_riskMultiplier: 4,
 			});
 
 			const tx_setDefaultCapPerGame = await SportAMMRiskManager.setDefaultCapPerGame(
@@ -865,6 +920,12 @@ contract('SportsAMMRiskManager', (accounts) => {
 				})
 			).to.be.revertedWith('Only the contract owner may perform this action');
 
+			await expect(
+				SportAMMRiskManager.setDefaultCapPerGame(toUnit('122111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid cap');
+
 			// check if event is emited
 			assert.eventEqual(tx_setDefaultCapPerGame.logs[0], 'SetDefaultCapPerGame', {
 				_cap: toUnit('1111'),
@@ -879,6 +940,17 @@ contract('SportsAMMRiskManager', (accounts) => {
 					from: wrapper,
 				})
 			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				SportAMMRiskManager.setCapPerSport(tagID_16, toUnit('11222211'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid cap');
+			await expect(
+				SportAMMRiskManager.setCapPerSport(1, toUnit('1111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for sport');
 
 			// check if event is emited
 			assert.eventEqual(tx_setCapPerSport.logs[0], 'SetCapPerSport', {
@@ -901,6 +973,24 @@ contract('SportsAMMRiskManager', (accounts) => {
 				})
 			).to.be.revertedWith('Only the contract owner may perform this action');
 
+			await expect(
+				SportAMMRiskManager.setCapPerSportAndChild(tagID_16, tagIDChild, toUnit('1122221'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid cap');
+
+			await expect(
+				SportAMMRiskManager.setCapPerSportAndChild(tagID_16, 2, toUnit('1111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for child');
+
+			await expect(
+				SportAMMRiskManager.setCapPerSportAndChild(1, tagIDChild, toUnit('1111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for sport');
+
 			// check if event is emited
 			assert.eventEqual(tx_setCapPerSportAndChild.logs[0], 'SetCapPerSportAndChild', {
 				_sport: tagID_16,
@@ -922,6 +1012,17 @@ contract('SportsAMMRiskManager', (accounts) => {
 				})
 			).to.be.revertedWith('Invalid sender');
 
+			await expect(
+				SportAMMRiskManager.setCapPerMarket([first], toUnit('1222111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid cap');
+			await expect(
+				SportAMMRiskManager.setCapPerMarket([ZERO_ADDRESS], toUnit('1111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid address');
+
 			// check if event is emited
 			assert.eventEqual(tx_setCapPerMarket.logs[0], 'SetCapPerMarket', {
 				_market: first,
@@ -930,6 +1031,12 @@ contract('SportsAMMRiskManager', (accounts) => {
 			const tx_setContracts = await SportAMMRiskManager.setSportsPositionalMarketManager(first, {
 				from: owner,
 			});
+
+			await expect(
+				SportAMMRiskManager.setSportsPositionalMarketManager(ZERO_ADDRESS, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid address');
 
 			await expect(
 				SportAMMRiskManager.setSportsPositionalMarketManager(first, {

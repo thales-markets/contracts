@@ -99,11 +99,10 @@ contract('SpeedMarkets', (accounts) => {
 			let minimalTimeToMaturity = await speedMarketsAMM.minimalTimeToMaturity();
 			console.log('minimalTimeToMaturity ' + minimalTimeToMaturity);
 
-			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(10));
-
 			await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
-
 			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), 0, toUnit(100));
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), 1, toUnit(100));
 
 			await speedMarketsAMM.createNewMarketWithDelta(
 				toBytes32('ETH'),
@@ -113,6 +112,12 @@ contract('SpeedMarkets', (accounts) => {
 				[priceFeedUpdateData],
 				{ value: fee }
 			);
+
+			let currestRiskPerAssetAndDirection = await speedMarketsAMM.currentRiskPerAssetAndDirection(
+				toBytes32('ETH'),
+				0
+			);
+			assert.bnEqual(toUnit(10), currestRiskPerAssetAndDirection);
 
 			let price = await mockPyth.getPrice(pythId);
 			console.log('price of pyth Id is ' + price);
@@ -129,6 +134,12 @@ contract('SpeedMarkets', (accounts) => {
 
 			await speedMarketsAMM.addToWhitelist(user, true);
 			await speedMarketsAMM.resolveMarketManually(market, toUnit(1), { from: user });
+
+			currestRiskPerAssetAndDirection = await speedMarketsAMM.currentRiskPerAssetAndDirection(
+				toBytes32('ETH'),
+				0
+			);
+			assert.bnEqual(toUnit(0), currestRiskPerAssetAndDirection);
 
 			let numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
 			console.log('numActiveMarkets after resolve' + numActiveMarkets);

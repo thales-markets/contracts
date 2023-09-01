@@ -86,6 +86,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
     bool public multicollateralEnabled;
 
+    mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public maxRiskPerAssetAndDirection;
+    mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public currentRiskPerAssetAndDirection;
+
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
@@ -161,6 +164,14 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         buyinAmount = (convertedAmount * (ONE - safeBoxImpact - lpFee)) / ONE;
     }
 
+    function _getOppositeDirection(SpeedMarket.Direction direction) internal returns (SpeedMarket.Direction opposite) {
+        if (direction == SpeedMarket.Direction.Up) {
+            opposite = SpeedMarket.Direction.Down;
+        } else {
+            opposite = SpeedMarket.Direction.Up;
+        }
+    }
+
     function _createNewMarket(
         bytes32 asset,
         uint64 strikeTime,
@@ -176,6 +187,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             "time has to be in the future + minimalTimeToMaturity"
         );
         require(strikeTime <= block.timestamp + maximalTimeToMaturity, "time too far into the future");
+
+        currentRiskPerAsset[asset] += buyinAmount;
+        require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "OI cap breached");
+
+        currentRiskPerAssetAndDirection[asset][direction] += buyinAmount;
+        require(
+            currentRiskPerAssetAndDirection[asset][direction] <= maxRiskPerAssetAndDirection[asset][direction],
+            "Risk per direction exceeded"
+        );
 
         uint fee = pyth.getUpdateFee(priceUpdateData);
         pyth.updatePriceFeeds{value: fee}(priceUpdateData);
@@ -200,8 +220,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         _activeMarkets.add(address(srm));
         _activeMarketsPerUser[msg.sender].add(address(srm));
 
-        currentRiskPerAsset[asset] += buyinAmount;
-        require(currentRiskPerAsset[asset] < maxRiskPerAsset[asset], "OI cap breached");
+        SpeedMarket.Direction oppositeDirection = _getOppositeDirection(direction);
+        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
+            currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
+        } else {
+            currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
+        }
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, buyinAmount);
@@ -287,11 +311,21 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         }
         _maturedMarketsPerUser[user].add(market);
 
+        bytes32 asset = SpeedMarket(market).asset();
+        uint buyinAmount = SpeedMarket(market).buyinAmount();
+        SpeedMarket.Direction direction = SpeedMarket(market).direction();
+
+        if (currentRiskPerAssetAndDirection[asset][direction] > buyinAmount) {
+            currentRiskPerAssetAndDirection[asset][direction] -= buyinAmount;
+        } else {
+            currentRiskPerAssetAndDirection[asset][direction] = 0;
+        }
+
         if (!SpeedMarket(market).isUserWinner()) {
-            if (currentRiskPerAsset[SpeedMarket(market).asset()] > 2 * SpeedMarket(market).buyinAmount()) {
-                currentRiskPerAsset[SpeedMarket(market).asset()] -= (2 * SpeedMarket(market).buyinAmount());
+            if (currentRiskPerAsset[asset] > 2 * buyinAmount) {
+                currentRiskPerAsset[asset] -= (2 * buyinAmount);
             } else {
-                currentRiskPerAsset[SpeedMarket(market).asset()] = 0;
+                currentRiskPerAsset[asset] = 0;
             }
         }
 
@@ -438,6 +472,16 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetMaxRiskPerAsset(asset, _maxRiskPerAsset);
     }
 
+    /// @notice maximum risk per asset and direction
+    function setMaxRiskPerAssetAndDirection(
+        bytes32 asset,
+        SpeedMarket.Direction direction,
+        uint _maxRiskPerAssetAndDirection
+    ) external onlyOwner {
+        maxRiskPerAssetAndDirection[asset][direction] = _maxRiskPerAssetAndDirection;
+        emit SetMaxRiskPerAssetAndDirection(asset, direction, _maxRiskPerAssetAndDirection);
+    }
+
     /// @notice set SafeBox params
     function setSafeBoxParams(address _safeBox, uint _safeBoxImpact) external onlyOwner {
         safeBox = _safeBox;
@@ -513,6 +557,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event SetMaximumPriceDelay(uint _maximumPriceDelay);
     event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
+    event SetMaxRiskPerAssetAndDirection(bytes32 asset, SpeedMarket.Direction direction, uint _maxRiskPerAssetAndDirection);
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
     event SetLPFee(uint _lpFee);
     event SetStakingThales(address _stakingThales);

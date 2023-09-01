@@ -225,6 +225,31 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum SpeedMarket.Direction",
+        "name": "direction",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxRiskPerAssetAndDirection",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMaxRiskPerAssetAndDirection",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "_maximumPriceDelay",
         "type": "uint256"
@@ -625,6 +650,30 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "enum SpeedMarket.Direction",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "name": "currentRiskPerAssetAndDirection",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "marketsArray",
         "type": "address[]"
@@ -862,6 +911,30 @@
       }
     ],
     "name": "maxRiskPerAsset",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "enum SpeedMarket.Direction",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "name": "maxRiskPerAssetAndDirection",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1266,6 +1339,29 @@
       }
     ],
     "name": "setMaxRiskPerAsset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "enum SpeedMarket.Direction",
+        "name": "direction",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxRiskPerAssetAndDirection",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxRiskPerAssetAndDirection",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -152,7 +152,7 @@
 		"ParlayDefaultLiquidityProviderImplementation": "0xA20Ed099894dcfC46AF290705Ff5aE4d318B0235",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"MultiCollateralOnOffRampImplementation": "0x5c73AA8457861D07D60C16CfCE20e884BB6030FF",
-		"SpeedMarketsAMMImplementation": "0x4D040bbcB4A32cc1CC439B966F1330fcF0dc2238",
+		"SpeedMarketsAMMImplementation": "0xC21f5B332a3039E53215B6149DD96c36B22a04DB",
 		"SpeedMarketMastercopy": "0x66F5D2cda6Ad805A5464dC676C4e1D65A52d4A50"
 	},
 	"arbitrumOne": {
@@ -270,7 +270,7 @@
 		"ParlayAMMLiquidityPoolDataImplementation": "0x0281B682Fb5Ee287B5DB7519BE9425b34Fb11503",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa475e7314f41D77FB800245DAC18Ee8a760a491F",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
-		"SpeedMarketsAMMImplementation": "0x202209397e2A26dc3243bD4bF46480C1f6661032",
+		"SpeedMarketsAMMImplementation": "0xA30200A8eD9655d7096814D0cC1f76639aa42AED",
 		"MultiCollateralOnOffRampImplementation": "0x88d6F967bba9cf564F597912D182EcB6569F853c",
 		"SpeedMarketMastercopy": "0xBb8151F500b7FEF54b6da14aBD890b45dbDceF11",
 		"SafeBoxBuyback": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203",
@@ -291,7 +291,7 @@
 		"sUSD": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"ProxyUSDC": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"Pyth": "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a",
-		"SpeedMarketsAMMImplementation": "0xe95C975ae8e37ab0bA6b9F78262977A59FcAABEB",
+		"SpeedMarketsAMMImplementation": "0xCc6f2CfEAdE4F240FB9a3A8E39328E7E8A06Ba8c",
 		"SpeedMarketMastercopy": "0xd406adCC2ef2fA7f7c33c0be1a9fDD5E473aa6E2",
 		"PositionMastercopy": "0xD2b907a94E33BFe0371B8dcbFAcf1a319b13d609",
 		"PositionalMarketMastercopy": "0x503e7F2C19384Ff68B445E21850fDC61f34434e6",
@@ -405,7 +405,7 @@
 		"PositionalMarketDataImplementation": "0xC0EeFDCF5A815ed7ac1ef1b8Ae8302AC502f3005",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"SpeedMarketsAMM": "0x4B1aED25f1877E1E9fBECBd77EeE95BB1679c361",
-		"SpeedMarketsAMMImplementation": "0xa53134D8C42C44D13facdc2Dc6e535326b3B1BdB",
+		"SpeedMarketsAMMImplementation": "0xE2A98958E33E0110344DDeeF08eF42BA9D553050",
 		"SpeedMarketMastercopy": "0xd406adCC2ef2fA7f7c33c0be1a9fDD5E473aa6E2"
 	},
 	"bsc": {

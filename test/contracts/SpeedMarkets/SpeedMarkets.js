@@ -134,7 +134,7 @@ contract('SpeedMarkets', (accounts) => {
 					toBytes32('ETH'),
 					now + 36000,
 					0,
-					toUnit(10),
+					toUnit(11),
 					[priceFeedUpdateData],
 					{ value: fee }
 				)
@@ -147,7 +147,7 @@ contract('SpeedMarkets', (accounts) => {
 					toBytes32('ETH'),
 					now + 36000,
 					0,
-					toUnit(5),
+					toUnit(6),
 					[priceFeedUpdateData],
 					{ value: fee }
 				)
@@ -165,14 +165,14 @@ contract('SpeedMarkets', (accounts) => {
 				{ value: fee }
 			);
 
-			let currestRiskPerAsset = await speedMarketsAMM.currentRiskPerAsset(toBytes32('ETH'));
-			console.log('currestRiskPerAsset ' + currestRiskPerAsset / 1e18);
+			let currentRiskPerAsset = await speedMarketsAMM.currentRiskPerAsset(toBytes32('ETH'));
+			console.log('currentRiskPerAsset ' + currentRiskPerAsset / 1e18);
 
-			let currestRiskPerAssetAndDirection = await speedMarketsAMM.currentRiskPerAssetAndDirection(
+			let currentRiskPerAssetAndDirection = await speedMarketsAMM.currentRiskPerAssetAndDirection(
 				toBytes32('ETH'),
 				0
 			);
-			console.log('currestRiskPerAssetAndDirection ' + currestRiskPerAssetAndDirection / 1e18);
+			console.log('currentRiskPerAssetAndDirection ' + currentRiskPerAssetAndDirection / 1e18);
 
 			console.log('buy UP for the same amount as previous DOWN');
 			await speedMarketsAMM.createNewMarket(
@@ -184,15 +184,15 @@ contract('SpeedMarkets', (accounts) => {
 				{ value: fee }
 			);
 
-			let currestRiskPerAssetAndDirectionUp = await speedMarketsAMM.currentRiskPerAssetAndDirection(
+			let currentRiskPerAssetAndDirectionUp = await speedMarketsAMM.currentRiskPerAssetAndDirection(
 				toBytes32('ETH'),
 				0
 			);
-			let currestRiskPerAssetAndDirectionDown =
+			let currentRiskPerAssetAndDirectionDown =
 				await speedMarketsAMM.currentRiskPerAssetAndDirection(toBytes32('ETH'), 1);
 			console.log(
-				'currestRiskPerAssetAndDirectionUp ' + currestRiskPerAssetAndDirectionUp / 1e18,
-				'currestRiskPerAssetAndDirectionDown ' + currestRiskPerAssetAndDirectionDown / 1e18
+				'currentRiskPerAssetAndDirectionUp ' + currentRiskPerAssetAndDirectionUp / 1e18,
+				'currentRiskPerAssetAndDirectionDown ' + currentRiskPerAssetAndDirectionDown / 1e18
 			);
 
 			let price = await mockPyth.getPrice(pythId);

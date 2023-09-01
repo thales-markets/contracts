@@ -56,9 +56,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     mapping(bytes32 => uint) public maxRiskPerAsset;
     mapping(bytes32 => uint) public currentRiskPerAsset;
 
-    mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public maxRiskPerAssetAndDirection;
-    mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public currentRiskPerAssetAndDirection;
-
     mapping(bytes32 => bytes32) public assetToPythId;
 
     //eth 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace
@@ -88,6 +85,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     mapping(address => bool) public whitelistedAddresses;
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
     bool public multicollateralEnabled;
+
+    mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public maxRiskPerAssetAndDirection;
+    mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public currentRiskPerAssetAndDirection;
 
     function initialize(
         address _owner,
@@ -188,6 +188,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         );
         require(strikeTime <= block.timestamp + maximalTimeToMaturity, "time too far into the future");
 
+        currentRiskPerAsset[asset] += buyinAmount;
+        require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "OI cap breached");
+
+        currentRiskPerAssetAndDirection[asset][direction] += buyinAmount;
+        require(
+            currentRiskPerAssetAndDirection[asset][direction] <= maxRiskPerAssetAndDirection[asset][direction],
+            "Risk per direction exceeded"
+        );
+
         uint fee = pyth.getUpdateFee(priceUpdateData);
         pyth.updatePriceFeeds{value: fee}(priceUpdateData);
 
@@ -212,17 +221,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         _activeMarketsPerUser[msg.sender].add(address(srm));
 
         SpeedMarket.Direction oppositeDirection = _getOppositeDirection(direction);
-        currentRiskPerAssetAndDirection[asset][direction] += buyinAmount;
-        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] >= buyinAmount) {
+        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
             currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
+        } else {
+            currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
         }
-        require(
-            currentRiskPerAssetAndDirection[asset][direction] < maxRiskPerAssetAndDirection[asset][direction],
-            "Risk per direction exceeded"
-        );
-
-        currentRiskPerAsset[asset] += buyinAmount;
-        require(currentRiskPerAsset[asset] < maxRiskPerAsset[asset], "OI cap breached");
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, buyinAmount);
@@ -308,20 +311,21 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         }
         _maturedMarketsPerUser[user].add(market);
 
-        if (
-            currentRiskPerAssetAndDirection[SpeedMarket(market).asset()][SpeedMarket(market).direction()] >=
-            SpeedMarket(market).buyinAmount()
-        ) {
-            currentRiskPerAssetAndDirection[SpeedMarket(market).asset()][SpeedMarket(market).direction()] -= SpeedMarket(
-                market
-            ).buyinAmount();
+        bytes32 asset = SpeedMarket(market).asset();
+        uint buyinAmount = SpeedMarket(market).buyinAmount();
+        SpeedMarket.Direction direction = SpeedMarket(market).direction();
+
+        if (currentRiskPerAssetAndDirection[asset][direction] > buyinAmount) {
+            currentRiskPerAssetAndDirection[asset][direction] -= buyinAmount;
+        } else {
+            currentRiskPerAssetAndDirection[asset][direction] = 0;
         }
 
         if (!SpeedMarket(market).isUserWinner()) {
-            if (currentRiskPerAsset[SpeedMarket(market).asset()] > 2 * SpeedMarket(market).buyinAmount()) {
-                currentRiskPerAsset[SpeedMarket(market).asset()] -= (2 * SpeedMarket(market).buyinAmount());
+            if (currentRiskPerAsset[asset] > 2 * buyinAmount) {
+                currentRiskPerAsset[asset] -= (2 * buyinAmount);
             } else {
-                currentRiskPerAsset[SpeedMarket(market).asset()] = 0;
+                currentRiskPerAsset[asset] = 0;
             }
         }
 

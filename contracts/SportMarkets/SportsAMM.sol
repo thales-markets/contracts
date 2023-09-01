@@ -542,7 +542,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
-        _buyFromAMMWithDifferentCollateral(market, position, amount, expectedPayout, additionalSlippage, collateral);
+        _buyFromAMMWithDifferentCollateral(market, position, amount, expectedPayout, additionalSlippage, collateral, false);
     }
 
     /// @notice Buy amount of position for market/game from AMM using different collateral
@@ -560,7 +560,30 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint additionalSlippage,
         address collateral
     ) public nonReentrant whenNotPaused {
-        _buyFromAMMWithDifferentCollateral(market, position, amount, expectedPayout, additionalSlippage, collateral);
+        _buyFromAMMWithDifferentCollateral(market, position, amount, expectedPayout, additionalSlippage, collateral, false);
+    }
+
+    /// @notice Buy amount of position for market/game from AMM using ETH
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) to buy from AMM
+    /// @param amount The position amount to buy from AMM
+    /// @param expectedPayout The amount expected to pay in sUSD for the amount of position. Obtained by buyAMMQuote.
+    /// @param additionalSlippage The slippage percentage for the payout
+    /// @param collateral The address of the collateral used
+    /// @param _referrer who referred the buyer to SportsAMM
+    function buyFromAMMWithEthAndReferrer(
+        address market,
+        ISportsAMM.Position position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage,
+        address collateral,
+        address _referrer
+    ) external payable nonReentrant whenNotPaused {
+        if (_referrer != address(0)) {
+            IReferrals(referrals).setReferrer(_referrer, msg.sender);
+        }
+        _buyFromAMMWithDifferentCollateral(market, position, amount, expectedPayout, additionalSlippage, collateral, true);
     }
 
     /// @notice Buy amount of position for market/game from AMM using sUSD
@@ -599,27 +622,39 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         _buyFromAMM(BuyFromAMMParams(market, position, amount, expectedPayout, additionalSlippage, true, 0));
     }
 
-    /// @notice Send tokens from this contract to the destination address
-    /// @param tokens to iterate and transfer
-    /// @param account Address where to send the tokens
-    /// @param amount Amount of tokens to be sent
-    /// @param all ignore amount and send whole balance
-    function transferTokens(
-        address[] calldata tokens,
-        address payable account,
-        uint amount,
-        bool all
-    ) external onlyOwner {
-        require(tokens.length > 0, "tokens array cant be empty");
-        for (uint256 index = 0; index < tokens.length; index++) {
-            if (all) {
-                IERC20Upgradeable(tokens[index]).safeTransfer(
-                    account,
-                    IERC20Upgradeable(tokens[index]).balanceOf(address(this))
-                );
-            } else {
-                IERC20Upgradeable(tokens[index]).safeTransfer(account, amount);
-            }
+    function exerciseWithOfframp(
+        address market,
+        address collateral,
+        bool toEth
+    ) external {
+        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+
+        (uint homeBalance, uint awayBalance, uint drawBalance) = sportAmmUtils.getBalanceOfPositionsOnMarket(
+            market,
+            msg.sender
+        );
+
+        if (homeBalance > 0) {
+            IERC20Upgradeable(address(home)).safeTransferFrom(msg.sender, address(this), homeBalance);
+        }
+
+        if (awayBalance > 0) {
+            IERC20Upgradeable(address(away)).safeTransferFrom(msg.sender, address(this, awayBalance));
+        }
+        if (drawBalance > 0) {
+            IERC20Upgradeable(address(draw)).safeTransferFrom(msg.sender, address(this), drawBalance);
+        }
+
+        ISportPositionalMarket(market).exerciseOptions();
+
+        if (toEth) {
+            uint offramped = multiCollateralOnOffRamp.offrampIntoEth(sUSD.balanceOf(address(this)));
+            address payable _to = payable(msg.sender);
+            bool sent = _to.send(offramped);
+            require(sent, "Failed to send Ether");
+        } else {
+            uint offramped = multiCollateralOnOffRamp.offramp(collateral, sUSD.balanceOf(address(this)));
+            IERC20Upgradeable(collateral).safeTransfer(msg.sender, offramped);
         }
     }
 
@@ -675,7 +710,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _referrals contract for referrals storage
     /// @param _wrapper contract for calling wrapper contract
     /// @param _lp contract for managing liquidity pools
-    /// @param _manager Sport Positional market manager
     function setAddresses(
         address _safeBox,
         IERC20Upgradeable _sUSD,
@@ -684,8 +718,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _referrals,
         address _parlayAMM,
         address _wrapper,
-        address _lp,
-        address _manager
+        address _lp
     ) external onlyOwner {
         safeBox = _safeBox;
         sUSD = _sUSD;
@@ -696,23 +729,18 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         wrapper = ITherundownConsumerWrapper(_wrapper);
         liquidityPool = SportAMMLiquidityPool(_lp);
 
+        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper, _lp);
+    }
+
+    /// @notice Setting the Sport Positional Manager contract address
+    /// @param _manager Address of Staking contract
+    function setSportsPositionalMarketManager(address _manager) external onlyOwner {
         if (address(_manager) != address(0)) {
             sUSD.approve(address(_manager), 0);
         }
         manager = _manager;
         sUSD.approve(manager, MAX_APPROVAL);
-
-        emit AddressesUpdated(
-            _safeBox,
-            _sUSD,
-            _theRundownConsumer,
-            _stakingThales,
-            _referrals,
-            _parlayAMM,
-            _wrapper,
-            _lp,
-            _manager
-        );
+        emit SetSportsPositionalMarketManager(_manager);
     }
 
     /// @notice Updates contract parametars
@@ -847,7 +875,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount,
         uint expectedPayout,
         uint additionalSlippage,
-        address collateral
+        address collateral,
+        bool isEth
     ) internal {
         (uint collateralQuote, uint susdQuote) = buyFromAmmQuoteWithDifferentCollateral(
             market,
@@ -856,11 +885,20 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             collateral
         );
 
-        IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
-        IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralQuote);
-        uint exactReceived = multiCollateralOnOffRamp.onramp(collateral, collateralQuote);
+        require((collateralQuote * ONE) / (expectedPayout) <= (ONE + additionalSlippage), "Slippage too high!");
 
-        require(exactReceived > susdQuote, "Not enough sUSD received");
+        uint exactReceived;
+
+        if (isEth) {
+            require(collateral == multiCollateralOnOffRamp.WETH9(), "Wrong collateral sent");
+            exactReceived = multiCollateralOnOffRamp.onrampWithEth{value: collateralQuote}(collateralQuote);
+        } else {
+            IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
+            IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralQuote);
+            exactReceived = multiCollateralOnOffRamp.onramp(collateral, collateralQuote);
+        }
+
+        require(exactReceived >= susdQuote, "Not enough sUSD received");
 
         //send the surplus to SB
         if (exactReceived > susdQuote) {
@@ -1221,8 +1259,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _referrals,
         address _parlayAMM,
         address _wrapper,
-        address _lp,
-        address manager
+        address _lp
     );
 
     event SetSportsPositionalMarketManager(address _manager);

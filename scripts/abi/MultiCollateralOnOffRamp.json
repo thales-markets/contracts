@@ -71,6 +71,38 @@
         "type": "uint256"
       }
     ],
+    "name": "Offramped",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "OfframpedEth",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
     "name": "Onramped",
     "type": "event"
   },
@@ -155,6 +187,31 @@
       }
     ],
     "name": "SetPathPerCollateral",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "path",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "doReset",
+        "type": "bool"
+      }
+    ],
+    "name": "SetPathPerCollateralOfframp",
     "type": "event"
   },
   {
@@ -439,6 +496,30 @@
         "type": "uint256"
       }
     ],
+    "name": "getMaximumReceivedOfframp",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "minReceivedOfframp",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
     "name": "getMinimumNeeded",
     "outputs": [
       {
@@ -468,6 +549,30 @@
       {
         "internalType": "uint256",
         "name": "minReceived",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMinimumReceivedOfframp",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "minReceivedOfframp",
         "type": "uint256"
       }
     ],
@@ -573,6 +678,49 @@
       },
       {
         "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "offramp",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "convertedAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "offrampIntoEth",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "convertedAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
         "name": "collateralAmount",
         "type": "uint256"
       }
@@ -629,6 +777,25 @@
       }
     ],
     "name": "pathPerCollateral",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "pathPerCollateralOfframp",
     "outputs": [
       {
         "internalType": "bytes",
@@ -780,6 +947,29 @@
       }
     ],
     "name": "setPathPerCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "path",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bool",
+        "name": "doReset",
+        "type": "bool"
+      }
+    ],
+    "name": "setPathPerCollateralOfframp",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

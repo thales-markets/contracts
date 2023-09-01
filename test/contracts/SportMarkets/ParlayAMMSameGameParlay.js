@@ -611,16 +611,6 @@ contract('ParlayAMM', (accounts) => {
 			testDAI.address
 		);
 
-		await SportsAMM.setCurveSUSD(
-			curveSUSD.address,
-			testDAI.address,
-			testUSDC.address,
-			testUSDT.address,
-			true,
-			toUnit(0.02),
-			{ from: owner }
-		);
-
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });

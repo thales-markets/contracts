@@ -10,4 +10,6 @@ interface IMultiCollateralOnOffRamp {
     function getMinimumReceived(address collateral, uint amount) external view returns (uint);
 
     function getMinimumNeeded(address collateral, uint amount) external view returns (uint);
+
+    function WETH9() external view returns (address);
 }

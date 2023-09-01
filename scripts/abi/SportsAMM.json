@@ -49,12 +49,6 @@
         "internalType": "address",
         "name": "_lp",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "manager",
-        "type": "address"
       }
     ],
     "name": "AddressesUpdated",
@@ -579,6 +573,49 @@
     "name": "buyFromAMMWithDifferentCollateralAndReferrer",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "additionalSlippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
+      }
+    ],
+    "name": "buyFromAMMWithEthAndReferrer",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1391,11 +1428,6 @@
         "internalType": "address",
         "name": "_lp",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_manager",
-        "type": "address"
       }
     ],
     "name": "setAddresses",
@@ -1655,6 +1687,19 @@
       }
     ],
     "name": "setSportOnePositional",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "setSportsPositionalMarketManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

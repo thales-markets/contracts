@@ -35,8 +35,8 @@ contract CurveMock {
         uint256 _min_dy
     ) external returns (uint256 amountOut) {
         USDC.safeTransferFrom(msg.sender, address(this), _dx);
-        sUSD.safeTransfer(msg.sender, _min_dy * multiplier);
-        amountOut = _min_dy * multiplier;
+        sUSD.safeTransfer(msg.sender, (_min_dy * multiplier * (ONE + ONE_PERCENT)) / ONE);
+        amountOut = (_min_dy * multiplier * (ONE + ONE_PERCENT)) / ONE;
     }
 
     function setMultiplier(uint _multiplier) external {

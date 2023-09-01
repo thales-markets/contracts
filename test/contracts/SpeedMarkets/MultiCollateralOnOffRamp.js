@@ -206,6 +206,21 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 
 			userEthBalance = await web3.eth.getBalance(user);
 			console.log('userEthBalance after' + userEthBalance);
+
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(2));
+
+			let minimumNeeded = await multiCollateralOnOffRamp.getMinimumNeeded(
+				exoticOP.address,
+				toUnit(10)
+			);
+			console.log('minimumNeeded OP to receive 10 sUSD at rate 2 is ' + minimumNeeded / 1e18);
+
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(1));
+
+			minimumNeeded = await multiCollateralOnOffRamp.getMinimumNeeded(exoticOP.address, toUnit(10));
+			console.log('minimumNeeded OP to receive 10 sUSD is ' + minimumNeeded / 1e18);
+
+			assert.bnEqual(minimumNeeded, toUnit('10.1'));
 		});
 	});
 });

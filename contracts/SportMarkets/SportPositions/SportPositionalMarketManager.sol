@@ -243,6 +243,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function queryMintsAndMaturityStatusForPlayerProps(address[] memory _playerPropsMarkets)
         external
         view
+        override
         returns (
             bool[] memory _hasAnyMintsArray,
             bool[] memory _isMaturedArray,

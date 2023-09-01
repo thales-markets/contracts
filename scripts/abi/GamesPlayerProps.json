@@ -629,6 +629,11 @@
         "internalType": "bool[]",
         "name": "_isResolved",
         "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_hasMintsOnChildren",
+        "type": "bool[]"
       }
     ],
     "stateMutability": "view",

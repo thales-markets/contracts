@@ -436,6 +436,20 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                 : _getNormalizedChildOddsFromGameOddsStruct(_market);
     }
 
+    function _getAllChildMarketsForParentPlayerOption(
+        address _parent,
+        bytes32 _player,
+        uint8 _option
+    ) internal view returns (address[] memory _children) {
+        uint num = numberOfChildMarketsPerPlayerAndOption[_parent][_player][_option];
+        _children = new address[](num);
+
+        for (uint j = 0; j < num; j++) {
+            address child = mainMarketChildMarketPerPlayerAndOptionIndex[_parent][_player][_option][j];
+            _children[j] = child;
+        }
+    }
+
     /* ========== VIEW FUNCTIONS ========== */
 
     /// @notice view function which returns normalized odds up to 100 (Example: 50-50)
@@ -474,9 +488,13 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         returns (
             bytes32[] memory _playerIds,
             uint8[] memory _options,
-            bool[] memory _isResolved
+            bool[] memory _isResolved,
+            bool[] memory _hasMintsOnChildren
         )
     {
+        // get main market
+        address _main = consumer.marketPerGameId(_gameId);
+
         uint256 totalCombinations = 0;
 
         for (uint256 i = 0; i < playersInAGame[_gameId].length; i++) {
@@ -487,6 +505,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         _playerIds = new bytes32[](totalCombinations);
         _options = new uint8[](totalCombinations);
         _isResolved = new bool[](totalCombinations);
+        _hasMintsOnChildren = new bool[](totalCombinations);
 
         uint256 index = 0;
         for (uint256 i = 0; i < playersInAGame[_gameId].length; i++) {
@@ -500,6 +519,24 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                     _playerIds[index] = playerId;
                     _options[index] = optionId;
                     _isResolved[index] = resolveFulfilledForPlayerProps[_gameId][playerId][optionId];
+                    address[] memory _childArraysPerOption = _getAllChildMarketsForParentPlayerOption(
+                        _main,
+                        playerId,
+                        optionId
+                    );
+
+                    (bool[] memory _hasAnyMintsArray, , ) = sportsManager.queryMintsAndMaturityStatusForPlayerProps(
+                        _childArraysPerOption
+                    );
+
+                    _hasMintsOnChildren[index] = false;
+                    for (uint256 m = 0; m < _childArraysPerOption.length; m++) {
+                        if (_hasAnyMintsArray[m]) {
+                            _hasMintsOnChildren[index] = true;
+                            break;
+                        }
+                    }
+
                     index++;
                 }
             }

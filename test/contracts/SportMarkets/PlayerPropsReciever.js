@@ -2263,11 +2263,20 @@ contract('PlayerProps', (accounts) => {
 
 			let playerids = getAllOptionsWithPlayersForGameId[0];
 			let optionids = getAllOptionsWithPlayersForGameId[1];
+			let resolved = getAllOptionsWithPlayersForGameId[2];
+			let readyForResolved = getAllOptionsWithPlayersForGameId[3];
+
+			assert.bnEqual(1, playerids.length);
 			assert.bnEqual(
 				'0x3431373836333400000000000000000000000000000000000000000000000000',
 				playerids[0]
 			);
+			assert.bnEqual(1, optionids.length);
 			assert.bnEqual(37, optionids[0]);
+			assert.bnEqual(1, resolved.length);
+			assert.bnEqual(false, resolved[0]);
+			assert.bnEqual(1, readyForResolved.length);
+			assert.notEqual(true, readyForResolved[0]);
 
 			assert.bnEqual(2, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
 			let mainMarketPlayerPropsChildCatchAgain =

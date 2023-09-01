@@ -68621,19 +68621,19 @@
           {
             "contract": "GamesPlayerProps",
             "label": "consumer",
-            "type": "t_contract(ITherundownConsumer)91427",
+            "type": "t_contract(ITherundownConsumer)91503",
             "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:33"
           },
           {
             "contract": "GamesPlayerProps",
             "label": "verifier",
-            "type": "t_contract(ITherundownConsumerVerifier)91574",
+            "type": "t_contract(ITherundownConsumerVerifier)91650",
             "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:34"
           },
           {
             "contract": "GamesPlayerProps",
             "label": "sportsManager",
-            "type": "t_contract(ISportPositionalMarketManager)90510",
+            "type": "t_contract(ISportPositionalMarketManager)90586",
             "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:35"
           },
           {
@@ -68645,7 +68645,7 @@
           {
             "contract": "GamesPlayerProps",
             "label": "playerProp",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)89258_storage)))",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)89334_storage)))",
             "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:39"
           },
           {
@@ -68801,7 +68801,7 @@
           {
             "contract": "GamesPlayerProps",
             "label": "resolvedPlayerProps",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)89269_storage)))",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)89345_storage)))",
             "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:70"
           },
           {
@@ -68812,34 +68812,34 @@
           }
         ],
         "types": {
-          "t_contract(ITherundownConsumer)91427": {
+          "t_contract(ITherundownConsumer)91503": {
             "label": "contract ITherundownConsumer"
           },
-          "t_contract(ITherundownConsumerVerifier)91574": {
+          "t_contract(ITherundownConsumerVerifier)91650": {
             "label": "contract ITherundownConsumerVerifier"
           },
-          "t_contract(ISportPositionalMarketManager)90510": {
+          "t_contract(ISportPositionalMarketManager)90586": {
             "label": "contract ISportPositionalMarketManager"
           },
           "t_address": {
             "label": "address"
           },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)89258_storage)))": {
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)89334_storage)))": {
             "label": "mapping(bytes32 => mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerProps)))"
           },
           "t_bytes32": {
             "label": "bytes32"
           },
-          "t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)89258_storage))": {
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)89334_storage))": {
             "label": "mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerProps))"
           },
-          "t_mapping(t_uint8,t_struct(PlayerProps)89258_storage)": {
+          "t_mapping(t_uint8,t_struct(PlayerProps)89334_storage)": {
             "label": "mapping(uint8 => struct IGamesPlayerProps.PlayerProps)"
           },
           "t_uint8": {
             "label": "uint8"
           },
-          "t_struct(PlayerProps)89258_storage": {
+          "t_struct(PlayerProps)89334_storage": {
             "label": "struct IGamesPlayerProps.PlayerProps",
             "members": [
               {
@@ -68989,16 +68989,16 @@
           "t_array(t_uint8)dyn_storage": {
             "label": "uint8[]"
           },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)89269_storage)))": {
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)89345_storage)))": {
             "label": "mapping(bytes32 => mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerPropsResolver)))"
           },
-          "t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)89269_storage))": {
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)89345_storage))": {
             "label": "mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerPropsResolver))"
           },
-          "t_mapping(t_uint8,t_struct(PlayerPropsResolver)89269_storage)": {
+          "t_mapping(t_uint8,t_struct(PlayerPropsResolver)89345_storage)": {
             "label": "mapping(uint8 => struct IGamesPlayerProps.PlayerPropsResolver)"
           },
-          "t_struct(PlayerPropsResolver)89269_storage": {
+          "t_struct(PlayerPropsResolver)89345_storage": {
             "label": "struct IGamesPlayerProps.PlayerPropsResolver",
             "members": [
               {
@@ -70695,19 +70695,19 @@
           {
             "contract": "SportPositionalMarketManager",
             "label": "_activeMarkets",
-            "type": "t_struct(AddressSet)96762_storage",
+            "type": "t_struct(AddressSet)96916_storage",
             "src": "contracts/SportMarkets/SportPositions/SportPositionalMarketManager.sol:39"
           },
           {
             "contract": "SportPositionalMarketManager",
             "label": "_maturedMarkets",
-            "type": "t_struct(AddressSet)96762_storage",
+            "type": "t_struct(AddressSet)96916_storage",
             "src": "contracts/SportMarkets/SportPositions/SportPositionalMarketManager.sol:40"
           },
           {
             "contract": "SportPositionalMarketManager",
             "label": "_migratingManager",
-            "type": "t_contract(SportPositionalMarketManager)79254",
+            "type": "t_contract(SportPositionalMarketManager)79386",
             "src": "contracts/SportMarkets/SportPositions/SportPositionalMarketManager.sol:42"
           },
           {
@@ -70802,7 +70802,7 @@
           "t_bool": {
             "label": "bool"
           },
-          "t_struct(AddressSet)96762_storage": {
+          "t_struct(AddressSet)96916_storage": {
             "label": "struct AddressSetLib.AddressSet",
             "members": [
               {
@@ -70824,7 +70824,7 @@
           "t_mapping(t_address,t_uint256)": {
             "label": "mapping(address => uint256)"
           },
-          "t_contract(SportPositionalMarketManager)79254": {
+          "t_contract(SportPositionalMarketManager)79386": {
             "label": "contract SportPositionalMarketManager"
           },
           "t_contract(IERC20)4879": {
@@ -70838,6 +70838,928 @@
           },
           "t_mapping(t_uint256,t_bool)": {
             "label": "mapping(uint256 => bool)"
+          }
+        }
+      }
+    },
+    "2b7363ddfd979dcd4531600b06e3346b25f7fb042dbcaabb75452acb8224de4a": {
+      "address": "0xE36c8985c76E7024973A064BfC6f054ad2205d17",
+      "txHash": "0x6b421336a7437fd95c61d619827a1b7fe5e2e35b37afe34746ae4cf9ba166e4b",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "consumer",
+            "type": "t_contract(ITherundownConsumer)4078",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:33"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "verifier",
+            "type": "t_contract(ITherundownConsumerVerifier)4225",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:34"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "sportsManager",
+            "type": "t_contract(ISportPositionalMarketManager)3815",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:35"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playerPropsReceiver",
+            "type": "t_address",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:36"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playerProp",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)2968_storage)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:39"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "doesSportSupportPlayerProps",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:40"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "gameIdPerChildMarket",
+            "type": "t_mapping(t_address,t_bytes32)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:41"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playerIdPerChildMarket",
+            "type": "t_mapping(t_address,t_bytes32)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:42"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "optionIdPerChildMarket",
+            "type": "t_mapping(t_address,t_uint8)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:43"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "mainMarketChildMarketIndex",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_address))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:46"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "mainMarketPausedPlayerProps",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:47"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "numberOfChildMarkets",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:48"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "mainMarketChildMarketPerPlayerAndOptionIndex",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint256,t_address))))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:49"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "numberOfChildMarketsPerPlayerAndOption",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_uint256)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:51"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "mainMarketPlayerOptionLineChildMarket",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint16,t_address))))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:52"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "childMarketMainMarket",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:54"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "currentActiveChildMarketPerPlayerAndOption",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_address)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:55"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "normalizedOddsForMarket",
+            "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:56"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "normalizedOddsForMarketFulfilled",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:57"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "childMarketCreated",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:58"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "childMarketLine",
+            "type": "t_mapping(t_address,t_uint16)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:59"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "invalidOddsForPlayerProps",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_bool)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:60"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "createFulfilledForPlayerProps",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_bool)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:61"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "resolveFulfilledForPlayerProps",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_bool)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:62"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "pausedByInvalidOddsOnMain",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:63"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "pausedByCircuitBreakerOnMain",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:64"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playerPropsAddedForMain",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:65"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playersInAGame",
+            "type": "t_mapping(t_bytes32,t_array(t_bytes32)dyn_storage)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:67"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playersInAGameFulfilled",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_bool))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:68"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "allOptionsPerPlayer",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_array(t_uint8)dyn_storage))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:69"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "resolvedPlayerProps",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)2979_storage)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:70"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "childMarketResolved",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:72"
+          }
+        ],
+        "types": {
+          "t_contract(ITherundownConsumer)4078": {
+            "label": "contract ITherundownConsumer"
+          },
+          "t_contract(ITherundownConsumerVerifier)4225": {
+            "label": "contract ITherundownConsumerVerifier"
+          },
+          "t_contract(ISportPositionalMarketManager)3815": {
+            "label": "contract ISportPositionalMarketManager"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)2968_storage)))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerProps)))"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)2968_storage))": {
+            "label": "mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerProps))"
+          },
+          "t_mapping(t_uint8,t_struct(PlayerProps)2968_storage)": {
+            "label": "mapping(uint8 => struct IGamesPlayerProps.PlayerProps)"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_struct(PlayerProps)2968_storage": {
+            "label": "struct IGamesPlayerProps.PlayerProps",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "playerId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "option",
+                "type": "t_uint8"
+              },
+              {
+                "label": "playerName",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "line",
+                "type": "t_uint16"
+              },
+              {
+                "label": "overOdds",
+                "type": "t_int24"
+              },
+              {
+                "label": "underOdds",
+                "type": "t_int24"
+              }
+            ]
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_uint16": {
+            "label": "uint16"
+          },
+          "t_int24": {
+            "label": "int24"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_bytes32)": {
+            "label": "mapping(address => bytes32)"
+          },
+          "t_mapping(t_address,t_uint8)": {
+            "label": "mapping(address => uint8)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_address))": {
+            "label": "mapping(address => mapping(uint256 => address))"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint256,t_address))))": {
+            "label": "mapping(address => mapping(bytes32 => mapping(uint8 => mapping(uint256 => address))))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint256,t_address)))": {
+            "label": "mapping(bytes32 => mapping(uint8 => mapping(uint256 => address)))"
+          },
+          "t_mapping(t_uint8,t_mapping(t_uint256,t_address))": {
+            "label": "mapping(uint8 => mapping(uint256 => address))"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_uint256)))": {
+            "label": "mapping(address => mapping(bytes32 => mapping(uint8 => uint256)))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_uint256))": {
+            "label": "mapping(bytes32 => mapping(uint8 => uint256))"
+          },
+          "t_mapping(t_uint8,t_uint256)": {
+            "label": "mapping(uint8 => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint16,t_address))))": {
+            "label": "mapping(address => mapping(bytes32 => mapping(uint8 => mapping(uint16 => address))))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint16,t_address)))": {
+            "label": "mapping(bytes32 => mapping(uint8 => mapping(uint16 => address)))"
+          },
+          "t_mapping(t_uint8,t_mapping(t_uint16,t_address))": {
+            "label": "mapping(uint8 => mapping(uint16 => address))"
+          },
+          "t_mapping(t_uint16,t_address)": {
+            "label": "mapping(uint16 => address)"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_address)))": {
+            "label": "mapping(address => mapping(bytes32 => mapping(uint8 => address)))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_address))": {
+            "label": "mapping(bytes32 => mapping(uint8 => address))"
+          },
+          "t_mapping(t_uint8,t_address)": {
+            "label": "mapping(uint8 => address)"
+          },
+          "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(address => uint256[])"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_address,t_uint16)": {
+            "label": "mapping(address => uint16)"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_bool)))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => mapping(uint8 => bool)))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_bool))": {
+            "label": "mapping(bytes32 => mapping(uint8 => bool))"
+          },
+          "t_mapping(t_uint8,t_bool)": {
+            "label": "mapping(uint8 => bool)"
+          },
+          "t_mapping(t_bytes32,t_array(t_bytes32)dyn_storage)": {
+            "label": "mapping(bytes32 => bytes32[])"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_bool))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => bool))"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_array(t_uint8)dyn_storage))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => uint8[]))"
+          },
+          "t_mapping(t_bytes32,t_array(t_uint8)dyn_storage)": {
+            "label": "mapping(bytes32 => uint8[])"
+          },
+          "t_array(t_uint8)dyn_storage": {
+            "label": "uint8[]"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)2979_storage)))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerPropsResolver)))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)2979_storage))": {
+            "label": "mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerPropsResolver))"
+          },
+          "t_mapping(t_uint8,t_struct(PlayerPropsResolver)2979_storage)": {
+            "label": "mapping(uint8 => struct IGamesPlayerProps.PlayerPropsResolver)"
+          },
+          "t_struct(PlayerPropsResolver)2979_storage": {
+            "label": "struct IGamesPlayerProps.PlayerPropsResolver",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "playerId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "option",
+                "type": "t_uint8"
+              },
+              {
+                "label": "score",
+                "type": "t_uint16"
+              },
+              {
+                "label": "statusId",
+                "type": "t_uint8"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "656854e192242c775d23a38d6bd0fe4bb6d64837bc2ffe9726858a96f9aedae6": {
+      "address": "0xF2BDD97E4Fc848c8A6E3B5998f42E26959092586",
+      "txHash": "0x608eabf93db739293ccc9a2230351d6c7f1b6bbdc3516db6ed85cddc0b55ed4f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "consumer",
+            "type": "t_contract(ITherundownConsumer)91657",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:33"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "verifier",
+            "type": "t_contract(ITherundownConsumerVerifier)91804",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:34"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "sportsManager",
+            "type": "t_contract(ISportPositionalMarketManager)90740",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:35"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playerPropsReceiver",
+            "type": "t_address",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:36"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playerProp",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)89466_storage)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:39"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "doesSportSupportPlayerProps",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:40"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "gameIdPerChildMarket",
+            "type": "t_mapping(t_address,t_bytes32)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:41"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playerIdPerChildMarket",
+            "type": "t_mapping(t_address,t_bytes32)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:42"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "optionIdPerChildMarket",
+            "type": "t_mapping(t_address,t_uint8)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:43"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "mainMarketChildMarketIndex",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_address))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:46"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "mainMarketPausedPlayerProps",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:47"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "numberOfChildMarkets",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:48"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "mainMarketChildMarketPerPlayerAndOptionIndex",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint256,t_address))))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:49"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "numberOfChildMarketsPerPlayerAndOption",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_uint256)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:51"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "mainMarketPlayerOptionLineChildMarket",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint16,t_address))))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:52"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "childMarketMainMarket",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:54"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "currentActiveChildMarketPerPlayerAndOption",
+            "type": "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_address)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:55"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "normalizedOddsForMarket",
+            "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:56"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "normalizedOddsForMarketFulfilled",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:57"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "childMarketCreated",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:58"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "childMarketLine",
+            "type": "t_mapping(t_address,t_uint16)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:59"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "invalidOddsForPlayerProps",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_bool)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:60"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "createFulfilledForPlayerProps",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_bool)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:61"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "resolveFulfilledForPlayerProps",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_bool)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:62"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "pausedByInvalidOddsOnMain",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:63"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "pausedByCircuitBreakerOnMain",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:64"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playerPropsAddedForMain",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:65"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playersInAGame",
+            "type": "t_mapping(t_bytes32,t_array(t_bytes32)dyn_storage)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:67"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "playersInAGameFulfilled",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_bool))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:68"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "allOptionsPerPlayer",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_array(t_uint8)dyn_storage))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:69"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "resolvedPlayerProps",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)89477_storage)))",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:70"
+          },
+          {
+            "contract": "GamesPlayerProps",
+            "label": "childMarketResolved",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesPlayerProps.sol:72"
+          }
+        ],
+        "types": {
+          "t_contract(ITherundownConsumer)91657": {
+            "label": "contract ITherundownConsumer"
+          },
+          "t_contract(ITherundownConsumerVerifier)91804": {
+            "label": "contract ITherundownConsumerVerifier"
+          },
+          "t_contract(ISportPositionalMarketManager)90740": {
+            "label": "contract ISportPositionalMarketManager"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)89466_storage)))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerProps)))"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerProps)89466_storage))": {
+            "label": "mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerProps))"
+          },
+          "t_mapping(t_uint8,t_struct(PlayerProps)89466_storage)": {
+            "label": "mapping(uint8 => struct IGamesPlayerProps.PlayerProps)"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_struct(PlayerProps)89466_storage": {
+            "label": "struct IGamesPlayerProps.PlayerProps",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "playerId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "option",
+                "type": "t_uint8"
+              },
+              {
+                "label": "playerName",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "line",
+                "type": "t_uint16"
+              },
+              {
+                "label": "overOdds",
+                "type": "t_int24"
+              },
+              {
+                "label": "underOdds",
+                "type": "t_int24"
+              }
+            ]
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_uint16": {
+            "label": "uint16"
+          },
+          "t_int24": {
+            "label": "int24"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_bytes32)": {
+            "label": "mapping(address => bytes32)"
+          },
+          "t_mapping(t_address,t_uint8)": {
+            "label": "mapping(address => uint8)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_address))": {
+            "label": "mapping(address => mapping(uint256 => address))"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint256,t_address))))": {
+            "label": "mapping(address => mapping(bytes32 => mapping(uint8 => mapping(uint256 => address))))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint256,t_address)))": {
+            "label": "mapping(bytes32 => mapping(uint8 => mapping(uint256 => address)))"
+          },
+          "t_mapping(t_uint8,t_mapping(t_uint256,t_address))": {
+            "label": "mapping(uint8 => mapping(uint256 => address))"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_uint256)))": {
+            "label": "mapping(address => mapping(bytes32 => mapping(uint8 => uint256)))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_uint256))": {
+            "label": "mapping(bytes32 => mapping(uint8 => uint256))"
+          },
+          "t_mapping(t_uint8,t_uint256)": {
+            "label": "mapping(uint8 => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint16,t_address))))": {
+            "label": "mapping(address => mapping(bytes32 => mapping(uint8 => mapping(uint16 => address))))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_mapping(t_uint16,t_address)))": {
+            "label": "mapping(bytes32 => mapping(uint8 => mapping(uint16 => address)))"
+          },
+          "t_mapping(t_uint8,t_mapping(t_uint16,t_address))": {
+            "label": "mapping(uint8 => mapping(uint16 => address))"
+          },
+          "t_mapping(t_uint16,t_address)": {
+            "label": "mapping(uint16 => address)"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_mapping(t_address,t_mapping(t_bytes32,t_mapping(t_uint8,t_address)))": {
+            "label": "mapping(address => mapping(bytes32 => mapping(uint8 => address)))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_address))": {
+            "label": "mapping(bytes32 => mapping(uint8 => address))"
+          },
+          "t_mapping(t_uint8,t_address)": {
+            "label": "mapping(uint8 => address)"
+          },
+          "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(address => uint256[])"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_address,t_uint16)": {
+            "label": "mapping(address => uint16)"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_bool)))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => mapping(uint8 => bool)))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_bool))": {
+            "label": "mapping(bytes32 => mapping(uint8 => bool))"
+          },
+          "t_mapping(t_uint8,t_bool)": {
+            "label": "mapping(uint8 => bool)"
+          },
+          "t_mapping(t_bytes32,t_array(t_bytes32)dyn_storage)": {
+            "label": "mapping(bytes32 => bytes32[])"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_bool))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => bool))"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_array(t_uint8)dyn_storage))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => uint8[]))"
+          },
+          "t_mapping(t_bytes32,t_array(t_uint8)dyn_storage)": {
+            "label": "mapping(bytes32 => uint8[])"
+          },
+          "t_array(t_uint8)dyn_storage": {
+            "label": "uint8[]"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)89477_storage)))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerPropsResolver)))"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_uint8,t_struct(PlayerPropsResolver)89477_storage))": {
+            "label": "mapping(bytes32 => mapping(uint8 => struct IGamesPlayerProps.PlayerPropsResolver))"
+          },
+          "t_mapping(t_uint8,t_struct(PlayerPropsResolver)89477_storage)": {
+            "label": "mapping(uint8 => struct IGamesPlayerProps.PlayerPropsResolver)"
+          },
+          "t_struct(PlayerPropsResolver)89477_storage": {
+            "label": "struct IGamesPlayerProps.PlayerPropsResolver",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "playerId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "option",
+                "type": "t_uint8"
+              },
+              {
+                "label": "score",
+                "type": "t_uint16"
+              },
+              {
+                "label": "statusId",
+                "type": "t_uint8"
+              }
+            ]
           }
         }
       }

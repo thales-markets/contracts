@@ -57,7 +57,12 @@ interface IGamesPlayerProps {
     function getAllOptionsWithPlayersForGameId(bytes32 _gameId)
         external
         view
-        returns (bytes32[] memory _playerIds, uint8[] memory _options);
+        returns (
+            bytes32[] memory _playerIds,
+            uint8[] memory _options,
+            bool[] memory _isResolved,
+            address[][] memory _childMarketsPerOption
+        );
 
     function getPlayerPropForOption(
         bytes32 gameId,

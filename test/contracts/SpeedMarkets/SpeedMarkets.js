@@ -287,7 +287,7 @@ contract('SpeedMarkets', (accounts) => {
 			console.log('numMaturedMarketsPerUser ' + numMaturedMarketsPerUser);
 		});
 
-		it('check hourly limit', async () => {
+		it('test hourly limit', async () => {
 			let SpeedMarketsAMMContract = artifacts.require('SpeedMarketsAMM');
 			let speedMarketsAMM = await SpeedMarketsAMMContract.new();
 
@@ -469,5 +469,7 @@ contract('SpeedMarkets', (accounts) => {
 			var marketData = await speedMarketsAMM.getMarketsData([market]);
 			console.log('marketData ' + marketData);
 		});
+
+		it.only('test referrer', async () => {});
 	});
 });

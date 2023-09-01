@@ -63,6 +63,10 @@ contract('SpeedMarkets', (accounts) => {
 			await speedMarketsAMM.setMaximumPriceDelay(60);
 
 			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), 0, toUnit(100));
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), 1, toUnit(100));
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('BTC'), 0, toUnit(100));
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('BTC'), 1, toUnit(100));
 			await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.01));
 			await speedMarketsAMM.setLPFee(toUnit(0.01));
 
@@ -136,7 +140,21 @@ contract('SpeedMarkets', (accounts) => {
 				)
 			).to.be.revertedWith('OI cap breached');
 
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), 0, toUnit(5));
+
+			await expect(
+				speedMarketsAMM.createNewMarket(
+					toBytes32('ETH'),
+					now + 36000,
+					0,
+					toUnit(5),
+					[priceFeedUpdateData],
+					{ value: fee }
+				)
+			).to.be.revertedWith('Risk per direction exceeded');
+
 			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), 0, toUnit(100));
 
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
@@ -148,8 +166,34 @@ contract('SpeedMarkets', (accounts) => {
 			);
 
 			let currestRiskPerAsset = await speedMarketsAMM.currentRiskPerAsset(toBytes32('ETH'));
-
 			console.log('currestRiskPerAsset ' + currestRiskPerAsset / 1e18);
+
+			let currestRiskPerAssetAndDirection = await speedMarketsAMM.currentRiskPerAssetAndDirection(
+				toBytes32('ETH'),
+				0
+			);
+			console.log('currestRiskPerAssetAndDirection ' + currestRiskPerAssetAndDirection / 1e18);
+
+			console.log('buy UP for the same amount as previous DOWN');
+			await speedMarketsAMM.createNewMarket(
+				toBytes32('ETH'),
+				now + 36000,
+				1,
+				toUnit(10),
+				[priceFeedUpdateData],
+				{ value: fee }
+			);
+
+			let currestRiskPerAssetAndDirectionUp = await speedMarketsAMM.currentRiskPerAssetAndDirection(
+				toBytes32('ETH'),
+				0
+			);
+			let currestRiskPerAssetAndDirectionDown =
+				await speedMarketsAMM.currentRiskPerAssetAndDirection(toBytes32('ETH'), 1);
+			console.log(
+				'currestRiskPerAssetAndDirectionUp ' + currestRiskPerAssetAndDirectionUp / 1e18,
+				'currestRiskPerAssetAndDirectionDown ' + currestRiskPerAssetAndDirectionDown / 1e18
+			);
 
 			let price = await mockPyth.getPrice(pythId);
 			console.log('price of pyth Id is ' + price);

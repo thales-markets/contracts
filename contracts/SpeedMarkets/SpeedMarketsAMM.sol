@@ -56,6 +56,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     mapping(bytes32 => uint) public maxRiskPerAsset;
     mapping(bytes32 => uint) public currentRiskPerAsset;
 
+    mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public maxRiskPerAssetAndDirection;
+    mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public currentRiskPerAssetAndDirection;
+
     mapping(bytes32 => bytes32) public assetToPythId;
 
     //eth 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace
@@ -161,6 +164,14 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         buyinAmount = (convertedAmount * (ONE - safeBoxImpact - lpFee)) / ONE;
     }
 
+    function _getOppositeDirection(SpeedMarket.Direction direction) internal returns (SpeedMarket.Direction opposite) {
+        if (direction == SpeedMarket.Direction.Up) {
+            opposite = SpeedMarket.Direction.Down;
+        } else {
+            opposite = SpeedMarket.Direction.Up;
+        }
+    }
+
     function _createNewMarket(
         bytes32 asset,
         uint64 strikeTime,
@@ -199,6 +210,16 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         _activeMarkets.add(address(srm));
         _activeMarketsPerUser[msg.sender].add(address(srm));
+
+        SpeedMarket.Direction oppositeDirection = _getOppositeDirection(direction);
+        currentRiskPerAssetAndDirection[asset][direction] += buyinAmount;
+        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] >= buyinAmount) {
+            currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
+        }
+        require(
+            currentRiskPerAssetAndDirection[asset][direction] < maxRiskPerAssetAndDirection[asset][direction],
+            "Risk per direction exceeded"
+        );
 
         currentRiskPerAsset[asset] += buyinAmount;
         require(currentRiskPerAsset[asset] < maxRiskPerAsset[asset], "OI cap breached");
@@ -286,6 +307,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             _activeMarketsPerUser[user].remove(market);
         }
         _maturedMarketsPerUser[user].add(market);
+
+        if (
+            currentRiskPerAssetAndDirection[SpeedMarket(market).asset()][SpeedMarket(market).direction()] >=
+            SpeedMarket(market).buyinAmount()
+        ) {
+            currentRiskPerAssetAndDirection[SpeedMarket(market).asset()][SpeedMarket(market).direction()] -= SpeedMarket(
+                market
+            ).buyinAmount();
+        }
 
         if (!SpeedMarket(market).isUserWinner()) {
             if (currentRiskPerAsset[SpeedMarket(market).asset()] > 2 * SpeedMarket(market).buyinAmount()) {
@@ -438,6 +468,16 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetMaxRiskPerAsset(asset, _maxRiskPerAsset);
     }
 
+    /// @notice maximum risk per asset and direction
+    function setMaxRiskPerAssetAndDirection(
+        bytes32 asset,
+        SpeedMarket.Direction direction,
+        uint _maxRiskPerAssetAndDirection
+    ) external onlyOwner {
+        maxRiskPerAssetAndDirection[asset][direction] = _maxRiskPerAssetAndDirection;
+        emit SetMaxRiskPerAssetAndDirection(asset, direction, _maxRiskPerAssetAndDirection);
+    }
+
     /// @notice set SafeBox params
     function setSafeBoxParams(address _safeBox, uint _safeBoxImpact) external onlyOwner {
         safeBox = _safeBox;
@@ -513,6 +553,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event SetMaximumPriceDelay(uint _maximumPriceDelay);
     event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
+    event SetMaxRiskPerAssetAndDirection(bytes32 asset, SpeedMarket.Direction direction, uint _maxRiskPerAssetAndDirection);
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
     event SetLPFee(uint _lpFee);
     event SetStakingThales(address _stakingThales);

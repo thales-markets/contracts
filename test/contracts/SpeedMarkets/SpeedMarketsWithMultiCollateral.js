@@ -59,6 +59,8 @@ contract('SpeedMarkets', (accounts) => {
 			await speedMarketsAMM.setTimes(3600, 86400);
 			await speedMarketsAMM.setMaximumPriceDelay(60);
 			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), 0, toUnit(100));
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), 1, toUnit(100));
 			await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.01));
 			await speedMarketsAMM.setLPFee(toUnit(0.01));
 			await speedMarketsAMM.setAssetToPythID(

@@ -196,6 +196,13 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 
 			await expect(
 				multiCollateralOnOffRamp.onrampWithEth(toUnit('1'), { from: user, value: toUnit('1') })
+			).to.be.revertedWith('Unsupported collateral');
+
+			await multiCollateralOnOffRamp.setSupportedCollateral(mockWeth.address, true);
+
+			await swapRouterMock.setDefaults(mockWeth.address, exoticUSD.address);
+			await expect(
+				multiCollateralOnOffRamp.onrampWithEth(toUnit('1'), { from: user, value: toUnit('1') })
 			).to.be.revertedWith('Amount above max allowed peg slippage');
 
 			await swapRouterMock.setMultiplier(1);

@@ -101,6 +101,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     /// @notice use native eth as a collateral to buy sUSD
     /// @return convertedAmount The amount of sUSD received.
     function onrampWithEth(uint amount) external payable nonReentrant notPaused returns (uint convertedAmount) {
+        require(collateralSupported[address(WETH9)], "Unsupported collateral");
         require(ammsSupported[msg.sender], "Unsupported caller");
         require(msg.value > 0 && amount > 0, "Can not exchange 0 ETH");
         require(msg.value >= amount, "Amount ETH has to be larger than specified amount");
@@ -125,7 +126,6 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         require(ammsSupported[msg.sender], "Unsupported caller");
 
         sUSD.safeTransferFrom(msg.sender, address(this), amount);
-
         if (curveOnrampEnabled && (collateral == usdc || collateral == dai || collateral == usdt)) {
             // for stable coins use Curve
             convertedAmount = _swapViaCurveOfframp(collateral, amount);
@@ -172,6 +172,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     function _swapViaCurveOfframp(address collateral, uint amount) internal returns (uint256 amountOut) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
+
+        sUSD.approve(address(curveSUSD), amount);
 
         amountOut = curveSUSD.exchange_underlying(
             0,
@@ -270,15 +272,17 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     }
 
     function getMinimumNeeded(address collateral, uint amount) public view returns (uint minNeeded) {
+        if (address(manager) != address(0)) {
+            amount = manager.reverseTransformCollateral(amount);
+        }
         if (_mapCollateralToCurveIndex(collateral) > 0) {
-            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt ? amount / (1e12) : amount;
-            minNeeded = (transformedCollateralForPegCheck * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
+            minNeeded = (amount * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
+            if (collateral == usdc || collateral == usdt) {
+                minNeeded = minNeeded / 1e12;
+            }
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
             minNeeded = (((amount * ONE) / currentCollateralPrice) * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
-        }
-        if (address(manager) != address(0)) {
-            minNeeded = manager.transformCollateral(minNeeded);
         }
     }
 
@@ -297,29 +301,22 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     }
 
     function getMinimumReceivedOfframp(address collateral, uint amount) public view returns (uint minReceivedOfframp) {
+        if (address(manager) != address(0)) {
+            amount = manager.reverseTransformCollateral(amount);
+        }
         if (_mapCollateralToCurveIndex(collateral) > 0) {
-            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt ? amount / (1e12) : amount;
-            minReceivedOfframp = (transformedCollateralForPegCheck * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
+            minReceivedOfframp = (amount * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
+            if (collateral == usdc || collateral == usdt) {
+                minReceivedOfframp = minReceivedOfframp / 1e12;
+            }
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
             minReceivedOfframp = (((amount * ONE) / currentCollateralPrice) * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
         }
-        if (address(manager) != address(0)) {
-            minReceivedOfframp = manager.transformCollateral(minReceivedOfframp);
-        }
     }
 
-    function getMaximumReceivedOfframp(address collateral, uint amount) public view returns (uint minReceivedOfframp) {
-        if (_mapCollateralToCurveIndex(collateral) > 0) {
-            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt ? amount / (1e12) : amount;
-            minReceivedOfframp = (transformedCollateralForPegCheck * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
-        } else {
-            uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
-            minReceivedOfframp = (((amount * ONE) / currentCollateralPrice) * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
-        }
-        if (address(manager) != address(0)) {
-            minReceivedOfframp = manager.transformCollateral(minReceivedOfframp);
-        }
+    function getMaximumReceivedOfframp(address collateral, uint amount) public view returns (uint maxReceivedOfframp) {
+        maxReceivedOfframp = getMinimumNeeded(collateral, amount);
     }
 
     /// @notice utility method to pack best path

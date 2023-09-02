@@ -639,7 +639,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
 
         if (awayBalance > 0) {
-            IERC20Upgradeable(address(away)).safeTransferFrom(msg.sender, address(this, awayBalance));
+            IERC20Upgradeable(address(away)).safeTransferFrom(msg.sender, address(this), awayBalance);
         }
         if (drawBalance > 0) {
             IERC20Upgradeable(address(draw)).safeTransferFrom(msg.sender, address(this), drawBalance);

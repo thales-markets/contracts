@@ -12,4 +12,8 @@ interface IMultiCollateralOnOffRamp {
     function getMinimumNeeded(address collateral, uint amount) external view returns (uint);
 
     function WETH9() external view returns (address);
+
+    function offrampIntoEth(uint amount) external returns (uint);
+
+    function offramp(address collateral, uint amount) external returns (uint);
 }

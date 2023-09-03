@@ -155,8 +155,140 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 
 			balance = await exoticUSD.balanceOf(user);
 			console.log('Balance exoticUSD user after ' + balance / 1e18);
+			assert.bnEqual(balance, toUnit('90'));
+
 			balance = await exoticUSDC.balanceOf(user);
 			console.log('Balance exoticUSDC user after ' + balance / 1e6);
+			assert.bnEqual(balance, toUnitSix('109.999'));
+
+			console.log('TEST OP OFFRAMP!!!!!!!!!!!!!!!!!!!');
+
+			await exoticOP.mintForUser(proxyUser);
+			await exoticOP.transfer(swapRouterMock.address, toUnit(100), { from: proxyUser });
+
+			balance = await exoticUSD.balanceOf(user);
+			console.log('Balance exoticUSD user before ' + balance / 1e18);
+			balance = await exoticOP.balanceOf(user);
+			console.log('Balance exoticOP user before ' + balance / 1e18);
+
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(1));
+			await swapRouterMock.setMultiplier(1);
+
+			minimumReceivedOfframp = await multiCollateralOnOffRamp.getMinimumReceivedOfframp(
+				exoticOP.address,
+				toUnit(10)
+			);
+			console.log('minimumReceivedOfframp OP for 10 sUSD is ' + minimumReceivedOfframp / 1e18);
+
+			await multiCollateralOnOffRamp.setSupportedCollateral(exoticOP.address, true);
+			await swapRouterMock.setDefaults(exoticUSD.address, exoticOP.address);
+
+			await multiCollateralOnOffRamp.offramp(exoticOP.address, toUnit(10), { from: user });
+
+			balance = await exoticUSD.balanceOf(user);
+			console.log('Balance exoticUSD user after ' + balance / 1e18);
+			assert.bnEqual(balance, toUnit('80'));
+			balance = await exoticOP.balanceOf(user);
+			console.log('Balance exoticOP user after ' + balance / 1e18);
+			assert.bnEqual(balance, toUnit('109.9'));
+
+			console.log('TEST OP OFFRAMP rate 0.5!!!!!!!!!!!!!!!!!!!');
+
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(0.5));
+
+			minimumReceivedOfframp = await multiCollateralOnOffRamp.getMinimumReceivedOfframp(
+				exoticOP.address,
+				toUnit(10)
+			);
+			console.log('minimumReceivedOfframp OP for 10 sUSD is ' + minimumReceivedOfframp / 1e18);
+
+			let maximumReceivedOfframp = await multiCollateralOnOffRamp.getMaximumReceivedOfframp(
+				exoticOP.address,
+				toUnit(10)
+			);
+			console.log('maximumReceivedOfframp OP for 10 sUSD is ' + maximumReceivedOfframp / 1e18);
+
+			await multiCollateralOnOffRamp.offramp(exoticOP.address, toUnit(10), { from: user });
+
+			balance = await exoticUSD.balanceOf(user);
+			console.log('Balance exoticUSD user after ' + balance / 1e18);
+			assert.bnEqual(balance, toUnit('70'));
+			balance = await exoticOP.balanceOf(user);
+			console.log('Balance exoticOP user after ' + balance / 1e18);
+			assert.bnEqual(balance, toUnit('129.7'));
+
+			console.log('TEST ETH OFFRAMP at rate 100!!!!!!!!!!!!!!!!!!!');
+
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(100));
+
+			let userEthBalance = await web3.eth.getBalance(user);
+			console.log('userEthBalance ' + userEthBalance);
+
+			await mockWeth.deposit({ value: toUnit(1), from: user });
+
+			userEthBalance = await web3.eth.getBalance(user);
+			console.log('userEthBalance ' + userEthBalance);
+
+			let userWethBalance = await mockWeth.balanceOf(user);
+			console.log('userWethBalance ' + userWethBalance / 1e18);
+
+			let mockWethBalanceETH = await web3.eth.getBalance(mockWeth.address);
+			console.log('mockWethBalanceETH ' + mockWethBalanceETH);
+
+			await mockWeth.withdraw(toUnit(0.1), { from: user });
+
+			userEthBalance = await web3.eth.getBalance(user);
+			console.log('userEthBalance ' + userEthBalance);
+
+			mockWethBalanceETH = await web3.eth.getBalance(mockWeth.address);
+			console.log('mockWethBalanceETH ' + mockWethBalanceETH);
+
+			minimumReceivedOfframp = await multiCollateralOnOffRamp.getMinimumReceivedOfframp(
+				mockWeth.address,
+				toUnit(10)
+			);
+			console.log('minimumReceivedOfframp WETH for 10 sUSD is ' + minimumReceivedOfframp / 1e18);
+
+			maximumReceivedOfframp = await multiCollateralOnOffRamp.getMaximumReceivedOfframp(
+				mockWeth.address,
+				toUnit(10)
+			);
+			console.log('maximumReceivedOfframp WETH for 10 sUSD is ' + maximumReceivedOfframp / 1e18);
+
+			await multiCollateralOnOffRamp.setSupportedCollateral(mockWeth.address, true);
+			await swapRouterMock.setDefaults(exoticUSD.address, mockWeth.address);
+
+			await mockWeth.transfer(swapRouterMock.address, toUnit(0.5), { from: user });
+
+			let swapRouterMockWethBalance = await mockWeth.balanceOf(swapRouterMock.address);
+			console.log('swapRouterMockWethBalance before ' + swapRouterMockWethBalance / 1e18);
+
+			mockWethBalanceETH = await web3.eth.getBalance(mockWeth.address);
+			console.log('mockWethBalanceETH before' + mockWethBalanceETH);
+
+			userEthBalance = await web3.eth.getBalance(user);
+			console.log('userEthBalance before' + userEthBalance);
+
+			await multiCollateralOnOffRamp.offrampIntoEth(toUnit(10), { from: user });
+
+			let mockWethBalanceETHAfter = await web3.eth.getBalance(mockWeth.address);
+			console.log('mockWethBalanceETH after ' + mockWethBalanceETHAfter);
+
+			balance = await exoticUSD.balanceOf(user);
+			console.log('Balance exoticUSD user after ' + balance / 1e18);
+			assert.bnEqual(balance, toUnit('60'));
+
+			let userEthBalanceAfter = await web3.eth.getBalance(user);
+			console.log('userEthBalance after ' + userEthBalanceAfter);
+
+			let userEthBalanceDiff = userEthBalanceAfter / 1e18 - userEthBalance / 1e18;
+			console.log('userEthBalanceDiff ' + userEthBalanceDiff);
+
+			let mockWethEthBalanceDiff = mockWethBalanceETH / 1e18 - mockWethBalanceETHAfter / 1e18;
+			console.log('mockWethEthBalanceDiff ' + mockWethEthBalanceDiff);
+
+			assert.bnGte(toUnit(mockWethEthBalanceDiff), toUnit('0.09'));
+			assert.bnLte(toUnit(mockWethEthBalanceDiff), toUnit('0.11'));
 		});
 	});
 });

@@ -66,6 +66,10 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     mapping(address => bytes) public pathPerCollateralOfframp;
 
+    fallback() external payable {}
+
+    receive() external payable {}
+
     function initialize(address _owner, IERC20Upgradeable _sUSD) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -138,7 +142,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         emit Offramped(collateral, amount);
     }
 
-    function offrampIntoEth(uint amount) external nonReentrant notPaused returns (uint convertedAmount) {
+    function offrampIntoEth(uint amount) external payable nonReentrant notPaused returns (uint convertedAmount) {
         require(ammsSupported[msg.sender], "Unsupported caller");
 
         sUSD.safeTransferFrom(msg.sender, address(this), amount);
@@ -146,6 +150,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         convertedAmount = _swapExactInputOfframp(amount, WETH9);
 
         WethLike(WETH9).withdraw(convertedAmount);
+
         address payable _to = payable(msg.sender);
         bool sent = _to.send(convertedAmount);
         require(sent, "Failed to send Ether");

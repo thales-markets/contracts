@@ -20,4 +20,8 @@ contract MockWeth is ERC20 {
     function deposit() public payable {
         _mint(msg.sender, msg.value);
     }
+
+    function withdraw(uint wad) public {
+        msg.sender.transfer(wad);
+    }
 }

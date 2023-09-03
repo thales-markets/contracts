@@ -324,10 +324,6 @@
     "type": "event"
   },
   {
-    "stateMutability": "payable",
-    "type": "fallback"
-  },
-  {
     "inputs": [],
     "name": "WETH9",
     "outputs": [
@@ -713,7 +709,7 @@
         "type": "uint256"
       }
     ],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

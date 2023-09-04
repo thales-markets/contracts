@@ -157,6 +157,56 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_tag1",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_tag2",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_spread",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMinSpreadPerSport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sport",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minSupportedOddsPerSport",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxSpreadPerSport",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMinSupportedOddsAndMaxSpreadPerSport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_market",
         "type": "address"
@@ -357,6 +407,64 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max_spread",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMaxSpreadForMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "maxSpread",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "useDefaultMinSpread",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "min_spread",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "min_spreadPerAddress",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMinSpreadToUse",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "min_spreadToUse",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "initNonReentrant",
     "outputs": [],
@@ -479,6 +587,68 @@
   {
     "inputs": [],
     "name": "maxRiskMultiplier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "maxSpreadPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "minSpreadPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "minSupportedOddsPerSport",
     "outputs": [
       {
         "internalType": "uint256",
@@ -678,6 +848,52 @@
       }
     ],
     "name": "setMaxCapAndRisk",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tag2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minSpread",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinSpreadPerSport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minSupportedOdds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxSpreadPerSport",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinSupportedOddsAndMaxSpreadPerSportPerSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

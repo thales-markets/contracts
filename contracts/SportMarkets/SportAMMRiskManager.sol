@@ -278,7 +278,7 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         maxSpread = _maxSpreadPerSport > 0 ? _maxSpreadPerSport : max_spread;
     }
 
-    function getMinOddsForMarket(address _market, uint minSupportedOdds) internal view returns (uint minOdds) {
+    function getMinOddsForMarket(address _market, uint minSupportedOdds) external view returns (uint minOdds) {
         (uint tag1, ) = _getTagsForMarket(_market);
         uint _minSupportedOddsPerSport = minSupportedOddsPerSport[tag1];
         minOdds = _minSupportedOddsPerSport > 0 ? _minSupportedOddsPerSport : minSupportedOdds;

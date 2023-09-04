@@ -44,7 +44,7 @@ contract SpeedMarket {
     bool public initialized = false;
 
     function initialize(InitParams calldata params) external {
-        require(!initialized, "Speed  market already initialized");
+        require(!initialized, "Speed market already initialized");
         initialized = true;
         speedMarketsAMM = SpeedMarketsAMM(params._speedMarketsAMM);
         user = params._user;

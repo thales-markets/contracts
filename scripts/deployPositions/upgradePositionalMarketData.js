@@ -34,12 +34,21 @@ async function main() {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
 
 	const MarketData = await ethers.getContractFactory('PositionalMarketData');
 	const MarketDataAddress = getTargetAddress('PositionalMarketData', network);
 
 	let implementation;
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 137) {
+	if (
+		networkObj.chainId == 10 ||
+		networkObj.chainId == 42161 ||
+		networkObj.chainId == 137 ||
+		networkObj.chainId == 8453
+	) {
 		implementation = await upgrades.prepareUpgrade(MarketDataAddress, MarketData);
 	}
 

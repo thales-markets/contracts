@@ -190,6 +190,8 @@ contract('ParlayAMM', (accounts) => {
 	const sportId_16 = 16; // CHL
 	const sportId_7 = 7; // UFC
 
+	const tagID_4 = 9000 + sportId_4;
+
 	let gameMarket;
 
 	let parlayAMMfee = toUnit('0.05');
@@ -204,7 +206,8 @@ contract('ParlayAMM', (accounts) => {
 	let parlayPositions = [];
 	let parlaySingleMarketAddress;
 	let parlaySingleMarket;
-	let voucher;
+	let voucher, SportAMMRiskManager;
+	let emptyArray = [];
 
 	let sportsAMMUtils;
 
@@ -257,15 +260,9 @@ contract('ParlayAMM', (accounts) => {
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
-		await SportsAMM.initialize(
-			owner,
-			Thales.address,
-			toUnit('5000'),
-			toUnit('0.02'),
-			toUnit('0.2'),
-			DAY,
-			{ from: owner }
-		);
+		await SportsAMM.initialize(owner, Thales.address, toUnit('0.02'), toUnit('0.2'), DAY, {
+			from: owner,
+		});
 
 		await SportsAMM.setParameters(
 			DAY,
@@ -273,7 +270,6 @@ contract('ParlayAMM', (accounts) => {
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
-			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
 			toUnit('5000000'),
@@ -574,6 +570,27 @@ contract('ParlayAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
+
+		let SportAMMRiskManagerContract = artifacts.require('SportAMMRiskManager');
+		SportAMMRiskManager = await SportAMMRiskManagerContract.new();
+
+		await SportAMMRiskManager.initialize(
+			owner,
+			SportPositionalMarketManager.address,
+			toUnit('5000'),
+			[tagID_4],
+			[toUnit('50000')],
+			emptyArray,
+			emptyArray,
+			emptyArray,
+			3,
+			[tagID_4],
+			[5],
+			{ from: owner }
+		);
 
 		await SportsAMM.setAddresses(
 			owner,
@@ -584,6 +601,7 @@ contract('ParlayAMM', (accounts) => {
 			ParlayAMM.address,
 			wrapper,
 			SportAMMLiquidityPool.address,
+			SportAMMRiskManager.address,
 			{ from: owner }
 		);
 
@@ -643,6 +661,9 @@ contract('ParlayAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await ParlayAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
 		await ParlayAMM.setParlayLP(ParlayAMMLiquidityPool.address, { from: owner });
 
 		let parlayAMMLiquidityPoolRoundMastercopy = await ParlayAMMLiquidityPoolRoundMastercopy.new();
@@ -1166,41 +1187,6 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(newResult5.isExercisable, false);
 		});
 
-		it('Buy Parlay with referral', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '11');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address;
-			}
-			let slippage = toUnit('0.01');
-			let result = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
-			let buyParlayTX = await ParlayAMM.buyFromParlayWithReferrer(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[1],
-				ZERO_ADDRESS,
-				second,
-				{ from: first }
-			);
-			// console.log("event: \n", buyParlayTX.logs[0]);
-
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-				account: first,
-				sUSDPaid: totalSUSDToPay,
-			});
-		});
-
 		it('Create/Buy Parlay with different slippage', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
@@ -1263,48 +1249,6 @@ contract('ParlayAMM', (accounts) => {
 				{ from: first }
 			);
 			// console.log("event: \n", buyParlayTX.logs[0]);
-
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-				account: first,
-				sUSDPaid: totalSUSDToPay,
-				amount: result[2],
-			});
-		});
-
-		it('Multi-collateral buy with referrals from amm', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '11');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address;
-			}
-			let slippage = toUnit('0.01');
-			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				testUSDC.address
-			);
-			let balanceOfReferrer = await Thales.balanceOf(second);
-			let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[2],
-				testUSDC.address,
-				second,
-				{ from: first }
-			);
-			// console.log("event: \n", buyParlayTX.logs[0]);
-			answer = await Thales.balanceOf(second);
-
-			assert.bnGt(answer, balanceOfReferrer);
-			console.log('Referrer change: ', fromUnit(balanceOfReferrer), fromUnit(answer));
 
 			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
 				account: first,

@@ -5,6 +5,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "manager",
+        "type": "address"
+      }
+    ],
+    "name": "ManagerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -207,6 +220,126 @@
     "inputs": [
       {
         "internalType": "address[]",
+        "name": "_lps",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "add",
+        "type": "bool"
+      }
+    ],
+    "name": "addLPs",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_vaults",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "add",
+        "type": "bool"
+      }
+    ],
+    "name": "addVaults",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getEstimatedCurrentLPsPoints",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "estimatedPoints",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "stakers",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "getEstimatedCurrentStakersLeaderboardData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "stakingMultiplier",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userVaultPointsPerRound",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userLPPointsPerRound",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userTradingPointsPerRound",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct StakingThalesBonusRewardsManager.EstimatedLeaderboardStakerData[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getEstimatedCurrentVaultPoints",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "estimatedPoints",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
         "name": "stakers",
         "type": "address[]"
       },
@@ -237,7 +370,17 @@
           },
           {
             "internalType": "uint256",
+            "name": "userVaultPointsPerRound",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "userLPBasePointsPerRound",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userLPPointsPerRound",
             "type": "uint256"
           },
           {
@@ -399,6 +542,19 @@
   },
   {
     "inputs": [],
+    "name": "manager",
+    "outputs": [
+      {
+        "internalType": "contract IPositionalMarketManagerTruncated",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maxStakingMultiplier",
     "outputs": [
       {
@@ -499,6 +655,19 @@
       }
     ],
     "name": "setKnownVault",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "setManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

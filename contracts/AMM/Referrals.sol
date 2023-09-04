@@ -49,17 +49,13 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             "Only whitelisted addresses or owner set referrers"
         );
         if (msg.sender == sportsAMM || msg.sender == parlayAMM) {
-            if (!sportTradedBefore[referred] && sportReferrals[referred] == address(0)) {
-                sportReferrals[referred] = referrer;
-                sportReferralStarted[referred] = block.timestamp;
-                emit SportReferralAdded(referrer, referred, block.timestamp);
-            }
+            sportReferrals[referred] = referrer;
+            sportReferralStarted[referred] = block.timestamp;
+            emit SportReferralAdded(referrer, referred, block.timestamp);
         } else {
-            if (!tradedBefore[referred] && referrals[referred] == address(0)) {
-                referrals[referred] = referrer;
-                referralStarted[referred] = block.timestamp;
-                emit ReferralAdded(referrer, referred, block.timestamp);
-            }
+            referrals[referred] = referrer;
+            referralStarted[referred] = block.timestamp;
+            emit ReferralAdded(referrer, referred, block.timestamp);
         }
     }
 

@@ -52,6 +52,18 @@ async function main() {
 		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+
+	if (networkObj.chainId == 5611) {
+		networkObj.name = 'opbnbtest';
+		network = 'opbnbtest';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);

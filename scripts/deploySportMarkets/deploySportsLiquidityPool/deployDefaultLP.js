@@ -56,6 +56,11 @@ async function main() {
 		network = 'arbitrumOne';
 		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
 
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
@@ -64,7 +69,9 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	const DefaultLiquidityProvider = await ethers.getContractFactory('DefaultLiquidityProvider');
+	const DefaultLiquidityProvider = await ethers.getContractFactory(
+		'contracts/SportMarkets/LiquidityPool/DefaultLiquidityProvider.sol:DefaultLiquidityProvider'
+	);
 	let DefaultLiquidityProviderDeployed = await upgrades.deployProxy(DefaultLiquidityProvider, [
 		owner.address,
 		proxySUSD,

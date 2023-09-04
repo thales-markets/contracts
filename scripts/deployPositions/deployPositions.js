@@ -39,6 +39,17 @@ async function main() {
 		network = 'arbitrumOne';
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
+	}
+
+	if (networkObj.chainId == 5611) {
+		networkObj.name = 'opbnbtest';
+		network = 'opbnbtest';
+	}
+
 	if (networkObj.chainId == 10) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else if (networkObj.chainId == 69) {
@@ -47,7 +58,9 @@ async function main() {
 	} else if (
 		networkObj.chainId == 80001 ||
 		networkObj.chainId == 137 ||
-		networkObj.chainId == 42161
+		networkObj.chainId == 8453 ||
+		networkObj.chainId == 42161 ||
+		networkObj.chainId == 5611
 	) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
 	} else if (networkObj.chainId == 56) {
@@ -128,22 +141,6 @@ async function main() {
 		PositionalMarketManagerImplementation
 	);
 
-	// set whitelisted addresses for L2
-	if (networkObj.chainId === 10 || networkObj.chainId === 69 || networkObj.chainId === 137) {
-		const whitelistedAddresses = [
-			'0x9841484A4a6C0B61C4EEa71376D76453fd05eC9C',
-			'0x461783A831E6dB52D68Ba2f3194F6fd1E0087E04',
-			'0x5027ce356c375a934b4d1de9240ba789072a5af1',
-		];
-
-		let transaction = await PositionalMarketManagerDeployed.setWhitelistedAddresses(
-			whitelistedAddresses
-		);
-		await transaction.wait().then((e) => {
-			console.log('PositionalMarketManager: whitelistedAddresses set');
-		});
-	}
-
 	const PositionalMarketFactory = await ethers.getContractFactory('PositionalMarketFactory');
 	const PositionalMarketFactoryDeployed = await upgrades.deployProxy(PositionalMarketFactory, [
 		owner.address,
@@ -163,12 +160,6 @@ async function main() {
 		network,
 		PositionalMarketFactoryImplementation
 	);
-
-	const PositionalMarketData = await ethers.getContractFactory('PositionalMarketData');
-	const positionalMarketData = await PositionalMarketData.deploy();
-
-	console.log('PositionalMarketData deployed to:', positionalMarketData.address);
-	setTargetAddress('PositionalMarketData', network, positionalMarketData.address);
 
 	//let LimitOrderProviderAddress = getTargetAddress('LimitOrderProvider', network);
 
@@ -223,11 +214,6 @@ async function main() {
 		});
 
 		await hre.run('verify:verify', {
-			address: positionalMarketData.address,
-			constructorArguments: [],
-		});
-
-		await hre.run('verify:verify', {
 			address: PositionalMarketManagerDeployed.address,
 		});
 	}
@@ -238,11 +224,6 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: PositionalMarketFactoryImplementation,
-	});
-
-	await hre.run('verify:verify', {
-		address: positionalMarketData.address,
-		constructorArguments: [],
 	});
 
 	await hre.run('verify:verify', {

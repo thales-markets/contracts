@@ -46,6 +46,11 @@ async function main() {
 		network = 'arbitrumOne';
 		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
@@ -53,7 +58,8 @@ async function main() {
 
 	let overtimeVoucher = getTargetAddress('OvertimeVoucher', network);
 
-	let whitelistedAddresses = ['0x9841484A4a6C0B61C4EEa71376D76453fd05eC9C'];
+	// required parm - set Vladan's HW as test
+	let whitelistedAddresses = ['0x0d858351a5fb419c9a3760647900d2f7ad526c83'];
 
 	console.log('Found ProxyERC20sUSD at:' + proxySUSD);
 

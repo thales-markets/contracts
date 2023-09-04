@@ -36,6 +36,14 @@ async function main() {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
+	if (networkObj.chainId == 5611) {
+		networkObj.name = 'opbnbtest';
+		network = 'opbnbtest';
+	}
 
 	const MarketData = await ethers.getContractFactory('PositionalMarketData');
 	const MarketManagerAddress = getTargetAddress('PositionalMarketManager', network);

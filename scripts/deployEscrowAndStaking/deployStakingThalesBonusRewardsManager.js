@@ -57,6 +57,12 @@ async function main() {
 		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 
@@ -89,12 +95,12 @@ async function main() {
 	);
 
 	setTargetAddress(
-		'ThalesAMMStakingThalesBonusRewardsManager',
+		'StakingThalesBonusRewardsManager',
 		network,
 		StakingThalesBonusRewardsManagerDeployed.address
 	);
 	setTargetAddress(
-		'ThalesAMMStakingThalesBonusRewardsManagerImplementation',
+		'StakingThalesBonusRewardsManagerImplementation',
 		network,
 		StakingThalesBonusRewardsManagerImplementation
 	);

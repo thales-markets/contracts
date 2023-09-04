@@ -61,6 +61,17 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
+
+	if (networkObj.chainId == 5611) {
+		networkObj.name = 'opbnbtest';
+		network = 'opbnbtest';
+	}
+
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 
@@ -68,8 +79,8 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	let thalesAMM = getTargetAddress('ThalesAMM', network);
-	let rangedAMM = getTargetAddress('RangedAMM', network);
+	// let thalesAMM = getTargetAddress('ThalesAMM', network);
+	// let rangedAMM = getTargetAddress('RangedAMM', network);
 
 	const Referrals = await ethers.getContractFactory('Referrals');
 	let ReferralsDeployed = await upgrades.deployProxy(Referrals, [
@@ -92,12 +103,12 @@ async function main() {
 	setTargetAddress('ReferralsImplementation', network, ReferralsImplementation);
 
 	//TODO: add fillip up already traded addresses
-	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
-	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
-	await ReferralsDeployed.setSportsAMM(SportsAMMAddress, ParlayAMMAddress, {
-		from: owner.address,
-	});
-	console.log('Sports and Parlay updated');
+	// const SportsAMMAddress = getTargetAddress('SportsAMM', network);
+	// const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
+	// await ReferralsDeployed.setSportsAMM(SportsAMMAddress, ParlayAMMAddress, {
+	// 	from: owner.address,
+	// });
+	// console.log('Sports and Parlay updated');
 
 	try {
 		await hre.run('verify:verify', {

@@ -22,6 +22,16 @@ async function main() {
 		network = 'arbitrumOne';
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
+
+	if (networkObj.chainId == 5611) {
+		networkObj.name = 'opbnbtest';
+		network = 'opbnbtest';
+	}
+
 	const ThalesAMMLiquidityPoolData = await ethers.getContractFactory('ThalesAMMLiquidityPoolData');
 
 	const ThalesAMMLiquidityPoolDataDeployed = await upgrades.deployProxy(

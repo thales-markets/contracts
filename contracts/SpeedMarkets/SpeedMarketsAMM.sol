@@ -99,6 +99,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     uint64 public maximumPriceDelayForResolving;
 
+    mapping(address => bool) private marketHasCreatedAtAttribute;
+
     address public referrals;
 
     function initialize(
@@ -250,19 +252,21 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         SpeedMarket.Direction oppositeDirection = direction == SpeedMarket.Direction.Up
             ? SpeedMarket.Direction.Down
             : SpeedMarket.Direction.Up;
-        // until there is risk for opposite direction, don't modify/check risk for current direction
-        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] == 0) {
-            currentRiskPerAssetAndDirection[asset][direction] += buyinAmount;
-            require(
-                currentRiskPerAssetAndDirection[asset][direction] <= maxRiskPerAssetAndDirection[asset][direction],
-                "Risk per direction exceeded"
-            );
-        }
+        uint amountToIncreaseRisk = buyinAmount;
         // decrease risk for opposite direction
         if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
             currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
         } else {
+            amountToIncreaseRisk = buyinAmount - currentRiskPerAssetAndDirection[asset][oppositeDirection];
             currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
+        }
+        // until there is risk for opposite direction, don't modify/check risk for current direction
+        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] == 0) {
+            currentRiskPerAssetAndDirection[asset][direction] += amountToIncreaseRisk;
+            require(
+                currentRiskPerAssetAndDirection[asset][direction] <= maxRiskPerAssetAndDirection[asset][direction],
+                "Risk per direction exceeded"
+            );
         }
 
         uint fee = pyth.getUpdateFee(priceUpdateData);
@@ -293,6 +297,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             stakingThales.updateVolume(msg.sender, buyinAmount);
         }
 
+        marketHasCreatedAtAttribute[address(srm)] = true;
         emit MarketCreated(address(srm), msg.sender, asset, strikeTime, price.price, direction, buyinAmount);
     }
 
@@ -489,6 +494,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             markets[i].finalPrice = market.finalPrice();
             markets[i].result = market.result();
             markets[i].isUserWinner = market.isUserWinner();
+            if (marketHasCreatedAtAttribute[marketsArray[i]]) {
+                markets[i].createdAt = market.createdAt();
+            }
         }
         return markets;
     }

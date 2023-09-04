@@ -438,7 +438,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     /// @notice return all risk data (direction, current and max) for both directions (Up and Down) by specified asset
-    function getRiskPerAssetAndDirection(bytes32 asset) external view returns (Risk[] memory) {
+    function getDirectionalRiskPerAsset(bytes32 asset) external view returns (Risk[] memory) {
         Risk[] memory risks = new Risk[](2); // two directions: Up and Down
         // Up
         SpeedMarket.Direction currentDirection = SpeedMarket.Direction.Up;

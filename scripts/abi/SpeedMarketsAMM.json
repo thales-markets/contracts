@@ -681,6 +681,42 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getDirectionalRiskPerAsset",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum SpeedMarket.Direction",
+            "name": "direction",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "current",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMM.Risk[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "marketsArray",
         "type": "address[]"
@@ -747,42 +783,6 @@
           }
         ],
         "internalType": "struct SpeedMarketsAMM.MarketData[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getRiskPerAssetAndDirection",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "enum SpeedMarket.Direction",
-            "name": "direction",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint256",
-            "name": "current",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "max",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMM.Risk[]",
         "name": "",
         "type": "tuple[]"
       }

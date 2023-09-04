@@ -37,6 +37,8 @@ contract SpeedMarket {
 
     SpeedMarketsAMM public speedMarketsAMM;
 
+    uint256 public createdAt;
+
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
@@ -52,6 +54,7 @@ contract SpeedMarket {
         direction = params._direction;
         buyinAmount = params._buyinAmount;
         speedMarketsAMM.sUSD().approve(params._speedMarketsAMM, type(uint256).max);
+        createdAt = block.timestamp;
     }
 
     function resolve(int64 _finalPrice) external onlyAMM {

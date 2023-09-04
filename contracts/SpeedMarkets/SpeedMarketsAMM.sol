@@ -80,6 +80,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         int64 finalPrice;
         SpeedMarket.Direction result;
         bool isUserWinner;
+        uint256 createdAt;
     }
 
     mapping(address => bool) public whitelistedAddresses;
@@ -94,6 +95,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint current;
         uint max;
     }
+
+    uint64 public maximumPriceDelayForResolving;
 
     function initialize(
         address _owner,
@@ -271,7 +274,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             priceUpdateData,
             priceIds,
             SpeedMarket(market).strikeTime(),
-            SpeedMarket(market).strikeTime() + maximumPriceDelay
+            SpeedMarket(market).strikeTime() + maximumPriceDelayForResolving
         );
 
         PythStructs.Price memory price = prices[0].price;
@@ -438,15 +441,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     function getRiskPerAssetAndDirection(bytes32 asset) external view returns (Risk[] memory) {
         Risk[] memory risks = new Risk[](2); // two directions: Up and Down
         // Up
-        SpeedMarket.Direction selectedDirection = SpeedMarket.Direction.Up;
-        risks[0].direction = selectedDirection;
-        risks[0].current = currentRiskPerAssetAndDirection[asset][selectedDirection];
-        risks[0].max = maxRiskPerAssetAndDirection[asset][selectedDirection];
+        SpeedMarket.Direction currentDirection = SpeedMarket.Direction.Up;
+        risks[0].direction = currentDirection;
+        risks[0].current = currentRiskPerAssetAndDirection[asset][currentDirection];
+        risks[0].max = maxRiskPerAssetAndDirection[asset][currentDirection];
         // Down
-        selectedDirection = SpeedMarket.Direction.Down;
-        risks[1].direction = selectedDirection;
-        risks[1].current = currentRiskPerAssetAndDirection[asset][selectedDirection];
-        risks[1].max = maxRiskPerAssetAndDirection[asset][selectedDirection];
+        currentDirection = SpeedMarket.Direction.Down;
+        risks[1].direction = currentDirection;
+        risks[1].current = currentRiskPerAssetAndDirection[asset][currentDirection];
+        risks[1].max = maxRiskPerAssetAndDirection[asset][currentDirection];
 
         return risks;
     }
@@ -484,6 +487,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     function setMaximumPriceDelay(uint64 _maximumPriceDelay) external onlyOwner {
         maximumPriceDelay = _maximumPriceDelay;
         emit SetMaximumPriceDelay(maximumPriceDelay);
+    }
+
+    /// @notice whats the longest a price can be delayed when resolving
+    function setMaximumPriceDelayForResolving(uint64 _maximumPriceDelayForResolving) external onlyOwner {
+        maximumPriceDelayForResolving = _maximumPriceDelayForResolving;
+        emit SetMaximumPriceDelayForResolving(maximumPriceDelayForResolving);
     }
 
     /// @notice maximum open interest per asset
@@ -573,6 +582,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event TimesChanged(uint _minimalTimeToMaturity, uint _maximalTimeToMaturity);
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event SetMaximumPriceDelay(uint _maximumPriceDelay);
+    event SetMaximumPriceDelayForResolving(uint _maximumPriceDelayForResolving);
     event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
     event SetMaxRiskPerAssetAndDirection(bytes32 asset, uint _maxRiskPerAssetAndDirection);
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);

@@ -257,6 +257,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_maximumPriceDelayForResolving",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMaximumPriceDelayForResolving",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_onramper",
         "type": "address"
@@ -726,6 +739,11 @@
             "internalType": "bool",
             "name": "isUserWinner",
             "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
           }
         ],
         "internalType": "struct SpeedMarketsAMM.MarketData[]",
@@ -991,6 +1009,19 @@
   {
     "inputs": [],
     "name": "maximumPriceDelay",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maximumPriceDelayForResolving",
     "outputs": [
       {
         "internalType": "uint64",
@@ -1400,6 +1431,19 @@
       }
     ],
     "name": "setMaximumPriceDelay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "_maximumPriceDelayForResolving",
+        "type": "uint64"
+      }
+    ],
+    "name": "setMaximumPriceDelayForResolving",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -77,7 +77,7 @@ async function main() {
 	];
 	let capsPerSportIds = [
 		w3utils.toWei('3000'),
-		w3utils.toWei('700'),
+		w3utils.toWei('3000'),
 		w3utils.toWei('6000'),
 		w3utils.toWei('1000'),
 		w3utils.toWei('3500'),

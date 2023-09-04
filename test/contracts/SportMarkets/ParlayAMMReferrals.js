@@ -211,6 +211,8 @@ contract('ParlayAMM', (accounts) => {
 
 	let sportsAMMUtils;
 
+	let ParlayPolicy;
+
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
 			from: manager,
@@ -689,6 +691,12 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultParlayAMMLiquidityProvider,
 		});
+
+		const ParlayPolicyContract = artifacts.require('ParlayPolicy');
+		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
+		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
+
+		await ParlayAMM.setPolicyAddresses(ParlayPolicy.address, { from: owner });
 	});
 
 	describe('Check ParlayAMM data', () => {

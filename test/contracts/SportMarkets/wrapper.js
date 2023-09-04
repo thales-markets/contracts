@@ -311,12 +311,12 @@ contract('TherundownConsumerWrapper', (accounts) => {
 				_specId: `0x3465326264623338336437393962343662653663656562336463366465306364`,
 			});
 
-			const tx_player = await wrapper.setPlayerPropsRecieverAddress(first, {
+			const tx_player = await wrapper.setPlayerPropsReceiverAddress(first, {
 				from: owner,
 			});
 
 			await expect(
-				wrapper.setPlayerPropsRecieverAddress(first, { from: first })
+				wrapper.setPlayerPropsReceiverAddress(first, { from: first })
 			).to.be.revertedWith('Ownable: caller is not the owner');
 
 			// check if event is emited

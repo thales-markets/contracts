@@ -451,7 +451,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /// @notice setting player props reciever address
     /// @param _playerPropsReciever props reciever address
-    function setPlayerPropsRecieverAddress(address _playerPropsReciever) external onlyOwner {
+    function setPlayerPropsReceiverAddress(address _playerPropsReciever) external onlyOwner {
         require(_playerPropsReciever != address(0), "Invalid address");
         playerPropsReciever = IGamesPlayerPropsReciever(_playerPropsReciever);
         emit NewPlayerPropsReciever(_playerPropsReciever);

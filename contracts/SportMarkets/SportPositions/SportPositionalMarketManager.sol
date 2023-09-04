@@ -22,6 +22,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
 import "../../interfaces/IGamesPlayerProps.sol";
 
+import "../../interfaces/IGameChildMarket.sol";
+
 contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, ISportPositionalMarketManager {
     /* ========== LIBRARIES ========== */
     using SafeMath for uint;
@@ -196,23 +198,25 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
         uint expiry = _newStartTime.add(expiryDuration);
 
-        // update main market
+        // Update main market
         _updateDatesForMarket(_market, _newStartTime, expiry);
 
-        // number of child
-        uint numberOfChildMarkets = IGamesOddsObtainer(oddsObtainer).numberOfChildMarkets(_market);
+        // Update child markets
+        _updateDatesForChildMarkets(_market, _newStartTime, expiry, oddsObtainer);
+        _updateDatesForChildMarkets(_market, _newStartTime, expiry, playerProps);
+    }
+
+    function _updateDatesForChildMarkets(
+        address _market,
+        uint256 _newStartTime,
+        uint256 _expiry,
+        address _childMarketContract
+    ) internal {
+        uint numberOfChildMarkets = IGameChildMarket(_childMarketContract).numberOfChildMarkets(_market);
 
         for (uint i = 0; i < numberOfChildMarkets; i++) {
-            address child = IGamesOddsObtainer(oddsObtainer).mainMarketChildMarketIndex(_market, i);
-            _updateDatesForMarket(child, _newStartTime, expiry);
-        }
-
-        // number of player props
-        uint numberOfPlayerPropsMarkets = IGamesPlayerProps(playerProps).numberOfChildMarkets(_market);
-
-        for (uint i = 0; i < numberOfPlayerPropsMarkets; i++) {
-            address child = IGamesPlayerProps(playerProps).mainMarketChildMarketIndex(_market, i);
-            _updateDatesForMarket(child, _newStartTime, expiry);
+            address child = IGameChildMarket(_childMarketContract).mainMarketChildMarketIndex(_market, i);
+            _updateDatesForMarket(child, _newStartTime, _expiry);
         }
     }
 
@@ -547,8 +551,9 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         for (uint i = 0; i < _parents.length; i++) {
             require(!isDoubleChance[_parents[i]], "Not supported for double chance markets");
             (bool _hasAnyMints, uint _maturity) = _hasAnyMintsAndMaturityDatesForMarket(_parents[i]);
-            require(!_hasAnyMints && _maturity <= block.timestamp && !_isResolvedMarket(_parents[i]), "Error on validity");
-            ITherundownConsumer(theRundownConsumer).resolveMarketManually(_parents[i], 0, 0, 0, false);
+            if (!_hasAnyMints && _maturity <= block.timestamp && !_isResolvedMarket(_parents[i])) {
+                ITherundownConsumer(theRundownConsumer).resolveMarketManually(_parents[i], 0, 0, 0, false);
+            }
         }
     }
 
@@ -556,11 +561,9 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         for (uint i = 0; i < _playerPropsMarkets.length; i++) {
             require(!isDoubleChance[_playerPropsMarkets[i]], "Not supported for double chance markets");
             (bool _hasAnyMints, uint _maturity) = _hasAnyMintsAndMaturityDatesForPP(_playerPropsMarkets[i]);
-            require(
-                !_hasAnyMints && _maturity <= block.timestamp && !_isResolvedMarket(_playerPropsMarkets[i]),
-                "Error on validity"
-            );
-            IGamesPlayerProps(playerProps).cancelMarketFromManager(_playerPropsMarkets[i]);
+            if (!_hasAnyMints && _maturity <= block.timestamp && !_isResolvedMarket(_playerPropsMarkets[i])) {
+                IGamesPlayerProps(playerProps).cancelMarketFromManager(_playerPropsMarkets[i]);
+            }
         }
     }
 
@@ -662,29 +665,29 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function _hasAnyMintsForChildren(address _market) internal view returns (bool) {
-        return _hasAnyMintsForHT(_market) || _hasAnyMintsForPP(_market);
+        return _hasAnyMints(_market, true) || _hasAnyMints(_market, false);
     }
 
-    function _hasAnyMintsForHT(address _market) internal view returns (bool) {
-        // number of child T and H
-        uint numberOfChildMarkets = IGamesOddsObtainer(oddsObtainer).numberOfChildMarkets(_market);
+    function _hasAnyMints(address _market, bool checkPlayerProps) internal view returns (bool) {
+        uint numberOfChildMarkets;
+        address childMarketContract;
+
+        if (checkPlayerProps) {
+            numberOfChildMarkets = IGameChildMarket(playerProps).numberOfChildMarkets(_market);
+            childMarketContract = playerProps;
+        } else {
+            numberOfChildMarkets = IGameChildMarket(oddsObtainer).numberOfChildMarkets(_market);
+            childMarketContract = oddsObtainer;
+        }
+
         for (uint i = 0; i < numberOfChildMarkets; i++) {
-            address child = IGamesOddsObtainer(oddsObtainer).mainMarketChildMarketIndex(_market, i);
+            address child = IGameChildMarket(childMarketContract).mainMarketChildMarketIndex(_market, i);
             if (ISportPositionalMarket(child).deposited() > 0) {
                 return true;
             }
         }
-    }
 
-    function _hasAnyMintsForPP(address _market) internal view returns (bool) {
-        // number of player props
-        uint numberOfPlayerPropsMarkets = IGamesPlayerProps(playerProps).numberOfChildMarkets(_market);
-        for (uint i = 0; i < numberOfPlayerPropsMarkets; i++) {
-            address child = IGamesPlayerProps(playerProps).mainMarketChildMarketIndex(_market, i);
-            if (ISportPositionalMarket(child).deposited() > 0) {
-                return true;
-            }
-        }
+        return false;
     }
 
     function reverseTransformCollateral(uint value) external view override returns (uint) {

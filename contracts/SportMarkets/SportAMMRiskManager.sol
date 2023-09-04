@@ -82,7 +82,7 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     function isTotalSpendingLessThanTotalRisk(uint _totalSpent, address _market) external view returns (bool _isNotRisky) {
         uint capPerMarket = _calculateCapToBeUsed(_market);
         uint riskMultiplier = _calculateRiskMultiplier(_market);
-        return _totalSpent < capPerMarket * riskMultiplier;
+        return _totalSpent <= capPerMarket * riskMultiplier;
     }
 
     /* ========== INTERNALS ========== */

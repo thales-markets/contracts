@@ -160,16 +160,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     SportAMMLiquidityPool public liquidityPool;
 
     // @return specific min_spread per address
-    mapping(uint => mapping(uint => uint)) public minSpreadPerSport;
+    mapping(uint => mapping(uint => uint)) public minSpreadPerSport; //deprecated see SportAMMRiskManager.sol
 
     /// @return the sport which is one-sider
     mapping(uint => bool) public isMarketForSportOnePositional;
 
     /// @return The maximum supported odd for sport
-    mapping(uint => uint) public minSupportedOddsPerSport;
+    mapping(uint => uint) public minSupportedOddsPerSport; //deprecated see SportAMMRiskManager.sol
 
     /// @return The maximum supported odd for sport
-    mapping(uint => uint) public maxSpreadPerSport;
+    mapping(uint => uint) public maxSpreadPerSport; //deprecated see SportAMMRiskManager.sol
 
     ISportAMMRiskManager public riskManager;
 
@@ -308,24 +308,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
-    function _getTagsForMarket(address _market) internal view returns (uint tag1, uint tag2) {
-        ISportPositionalMarket sportMarket = ISportPositionalMarket(_market);
-        tag1 = sportMarket.tags(0);
-        tag2 = sportMarket.isChild() ? sportMarket.tags(1) : 0;
-    }
-
-    function _getMinSpreadToUse(bool useDefaultMinSpread, address market) internal view returns (uint min_spreadToUse) {
-        (uint tag1, uint tag2) = _getTagsForMarket(market);
-        uint spreadForTag = tag2 > 0 && minSpreadPerSport[tag1][tag2] > 0
-            ? minSpreadPerSport[tag1][tag2]
-            : minSpreadPerSport[tag1][0];
-        min_spreadToUse = useDefaultMinSpread
-            ? (spreadForTag > 0 ? spreadForTag : min_spread)
-            : (
-                min_spreadPerAddress[msg.sender] > 0
-                    ? min_spreadPerAddress[msg.sender]
-                    : (spreadForTag > 0 ? spreadForTag : min_spread)
-            );
+    function _getMinSpreadToUse(bool useDefaultMinSpread, address market) internal view returns (uint) {
+        return riskManager.getMinSpreadToUse(useDefaultMinSpread, market, min_spread, min_spreadPerAddress[msg.sender]);
     }
 
     function _buyFromAMMQuoteDoubleChance(
@@ -429,7 +413,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address market,
         ISportsAMM.Position position,
         uint amount
-    ) public view returns (uint _quote) {
+    ) external view returns (uint _quote) {
         uint baseOdds = _obtainOdds(market, position);
         uint minOdds = _minOddsForMarket(market);
         baseOdds = (baseOdds > 0 && baseOdds < minOdds) ? minOdds : baseOdds;
@@ -765,29 +749,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         _setPausing ? _pause() : _unpause();
     }
 
-    function setMinSupportedOddsAndMaxSpreadPerSportPerSport(
-        uint _sportID,
-        uint _minSupportedOdds,
-        uint _maxSpreadPerSport
-    ) external onlyOwner {
-        minSupportedOddsPerSport[_sportID] = _minSupportedOdds;
-        maxSpreadPerSport[_sportID] = _maxSpreadPerSport;
-        emit SetMinSupportedOddsAndMaxSpreadPerSport(_sportID, _minSupportedOdds, _maxSpreadPerSport);
-    }
-
-    /// @notice Setting the Min Spread per Sport ID
-    /// @param _tag1 The first tagID used for each market
-    /// @param _tag2 The second tagID used for each market
-    /// @param _minSpread The min spread amount used for the sportID
-    function setMinSpreadPerSport(
-        uint _tag1,
-        uint _tag2,
-        uint _minSpread
-    ) external onlyOwner {
-        minSpreadPerSport[_tag1][_tag2] = _minSpread;
-        emit SetMinSpreadPerSport(_tag1, _tag2, _minSpread);
-    }
-
     /// @notice setting one positional sport
     /// @param _sportID tag id for sport
     /// @param _flag is one positional sport flag
@@ -930,7 +891,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             if (toMint > 0) {
                 liquidityPool.commitTrade(params.market, toMint);
                 ISportPositionalMarket(params.market).mint(toMint);
-                spentOnGame[params.market] = spentOnGame[params.market] + toMint;
+                spentOnGame[params.market] += toMint;
                 spentOnParent[parent] += toMint;
             }
             liquidityPool.getOptionsForBuy(params.market, params.amount - toMint, params.position);
@@ -1065,13 +1026,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     function _minOddsForMarket(address _market) internal view returns (uint minOdds) {
-        (uint tag1, ) = _getTagsForMarket(_market);
-        minOdds = minSupportedOddsPerSport[tag1] > 0 ? minSupportedOddsPerSport[tag1] : minSupportedOdds;
+        minOdds = riskManager.getMinOddsForMarket(_market, minSupportedOdds);
     }
 
     function _maxSpreadForMarket(address _market) internal view returns (uint maxSpread) {
-        (uint tag1, ) = _getTagsForMarket(_market);
-        maxSpread = maxSpreadPerSport[tag1] > 0 ? maxSpreadPerSport[tag1] : max_spread;
+        maxSpread = riskManager.getMaxSpreadForMarket(_market, max_spread);
     }
 
     function _sendMintedPositionsAndUSDToLiquidityPool(address market) internal {
@@ -1127,13 +1086,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         uint toSubtract = ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid - safeBoxShare);
 
-        spentOnGame[market] = spentOnGame[market] <= toSubtract
-            ? 0
-            : (spentOnGame[market] = spentOnGame[market] - toSubtract);
+        spentOnGame[market] = spentOnGame[market] <= toSubtract ? 0 : (spentOnGame[market] -= toSubtract);
 
-        spentOnParent[parent] = spentOnParent[parent] <= toSubtract
-            ? 0
-            : (spentOnParent[parent] = spentOnParent[parent] - toSubtract);
+        spentOnParent[parent] = spentOnParent[parent] <= toSubtract ? 0 : (spentOnParent[parent] -= toSubtract);
 
         if (referrerFee > 0 && referrals != address(0)) {
             uint referrerShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + referrerFee));
@@ -1195,7 +1150,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (toMint > 0) {
             liquidityPool.commitTrade(dcs.parentMarket, toMint);
             ISportPositionalMarket(dcs.parentMarket).mint(toMint);
-            spentOnGame[dcs.parentMarket] = spentOnGame[dcs.parentMarket] + toMint;
+            spentOnGame[dcs.parentMarket] += toMint;
             spentOnParent[dcs.parentMarket] += toMint;
         }
     }
@@ -1245,8 +1200,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     event SetSportsPositionalMarketManager(address _manager);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
-    event SetMinSpreadPerSport(uint _tag1, uint _tag2, uint _spread);
     event SetSportOnePositional(uint _sport, bool _flag);
-    event SetMinSupportedOddsAndMaxSpreadPerSport(uint _sport, uint _minSupportedOddsPerSport, uint _maxSpreadPerSport);
     event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
 }

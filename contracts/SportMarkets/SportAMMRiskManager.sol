@@ -32,6 +32,15 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     uint public maxCap;
     uint public maxRiskMultiplier;
 
+    // @return specific min_spread per address
+    mapping(uint => mapping(uint => uint)) public minSpreadPerSport; //deprecated see SportAMMRiskManager.sol
+
+    /// @return The maximum supported odd for sport
+    mapping(uint => uint) public minSupportedOddsPerSport; //deprecated see SportAMMRiskManager.sol
+
+    /// @return The maximum supported odd for sport
+    mapping(uint => uint) public maxSpreadPerSport; //deprecated see SportAMMRiskManager.sol
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -225,6 +234,56 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         emit SetMaxCapAndRisk(_maxCap, _maxRisk);
     }
 
+    function setMinSupportedOddsAndMaxSpreadPerSportPerSport(
+        uint _sportID,
+        uint _minSupportedOdds,
+        uint _maxSpreadPerSport
+    ) external onlyOwner {
+        minSupportedOddsPerSport[_sportID] = _minSupportedOdds;
+        maxSpreadPerSport[_sportID] = _maxSpreadPerSport;
+        emit SetMinSupportedOddsAndMaxSpreadPerSport(_sportID, _minSupportedOdds, _maxSpreadPerSport);
+    }
+
+    /// @notice Setting the Min Spread per Sport ID
+    /// @param _tag1 The first tagID used for each market
+    /// @param _tag2 The second tagID used for each market
+    /// @param _minSpread The min spread amount used for the sportID
+    function setMinSpreadPerSport(
+        uint _tag1,
+        uint _tag2,
+        uint _minSpread
+    ) external onlyOwner {
+        minSpreadPerSport[_tag1][_tag2] = _minSpread;
+        emit SetMinSpreadPerSport(_tag1, _tag2, _minSpread);
+    }
+
+    function getMinSpreadToUse(
+        bool useDefaultMinSpread,
+        address market,
+        uint min_spread,
+        uint min_spreadPerAddress
+    ) external view returns (uint min_spreadToUse) {
+        (uint tag1, uint tag2) = _getTagsForMarket(market);
+        uint minSpreadByTags = minSpreadPerSport[tag1][tag2];
+        uint minSpreadByPrimaryTag = minSpreadPerSport[tag1][0];
+        uint spreadForTag = tag2 > 0 && minSpreadByTags > 0 ? minSpreadByTags : minSpreadByPrimaryTag;
+        min_spreadToUse = useDefaultMinSpread
+            ? (spreadForTag > 0 ? spreadForTag : min_spread)
+            : (min_spreadPerAddress > 0 ? min_spreadPerAddress : (spreadForTag > 0 ? spreadForTag : min_spread));
+    }
+
+    function getMaxSpreadForMarket(address _market, uint max_spread) external view returns (uint maxSpread) {
+        (uint tag1, ) = _getTagsForMarket(_market);
+        uint spreadPerSport = maxSpreadPerSport[tag1];
+        maxSpread = spreadPerSport > 0 ? spreadPerSport : max_spread;
+    }
+
+    function getMinOddsForMarket(address _market, uint minSupportedOdds) internal view returns (uint minOdds) {
+        (uint tag1, ) = _getTagsForMarket(_market);
+        uint minSupportedOddsPerSport = minSupportedOddsPerSport[tag1];
+        minOdds = minSupportedOddsPerSport > 0 ? minSupportedOddsPerSport : minSupportedOdds;
+    }
+
     /* ========== MODIFIERS ========== */
     /* ========== EVENTS ========== */
     event SetCapPerSport(uint _sport, uint _cap);
@@ -236,4 +295,6 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     event SetRiskMultiplierPerSport(uint _sport, uint _riskMultiplier);
     event SetRiskMultiplierPerMarket(address _market, uint _riskMultiplier);
     event SetMaxCapAndRisk(uint _maxCap, uint _maxRisk);
+    event SetMinSpreadPerSport(uint _tag1, uint _tag2, uint _spread);
+    event SetMinSupportedOddsAndMaxSpreadPerSport(uint _sport, uint _minSupportedOddsPerSport, uint _maxSpreadPerSport);
 }

@@ -58,7 +58,7 @@
 		"SportPositionalMarketFactoryImplementation": "0x9fb1EF2B3cf9B62955ad18FC5e03e47FDCE15a4a",
 		"SportPositionalMarketMastercopy": "0xB0cbc48969E48993456493A04F8DfA4996DA10f3",
 		"SportPositionMastercopy": "0x4f1f0665Ef05Eb734d2a19eBf9948AAbef898e7d",
-		"SportsAMMImplementation": "0x664a9c4C58a8032e455feaC8a1C7Ba7D3C8c35B5",
+		"SportsAMMImplementation": "0x72b69C6C59E4F8917aa73b30Ad33b11025C34c7D",
 		"SportPositionalMarketData": "0xd8Bc9D6840C701bFAd5E7cf98CAdC2ee637c0701",
 		"SportPositionalMarketDataImplementation": "0xf775E40F6F331f6C2EfeaC5c3133A685856e9060",
 		"GamesQueue": "0x5417c847b6ce4163C43116E8D9670395Ba08B503",
@@ -153,7 +153,9 @@
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"MultiCollateralOnOffRampImplementation": "0x5c73AA8457861D07D60C16CfCE20e884BB6030FF",
 		"SpeedMarketsAMMImplementation": "0xC21f5B332a3039E53215B6149DD96c36B22a04DB",
-		"SpeedMarketMastercopy": "0x66F5D2cda6Ad805A5464dC676C4e1D65A52d4A50"
+		"SpeedMarketMastercopy": "0x66F5D2cda6Ad805A5464dC676C4e1D65A52d4A50",
+		"SportAMMRiskManager": "0x4d0192E2fE94687838Eaa3BcbC3B891964B38a9D",
+		"SportAMMRiskManagerImplementation": "0x2F29ff630410647B8F81f53C7e0CfA3C1FcAcB3E"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -196,7 +198,7 @@
 		"SportPositionalMarketFactoryImplementation": "0x1Ac7eBfa70AB18bf0a8C36e51ecD6C969E88B1d1",
 		"SportPositionalMarketMastercopy": "0xAdE47691175BaBC35a573E1489B324668609eE8C",
 		"SportPositionMastercopy": "0x943fb0D6CDeB373D4384f617887EB557855B815d",
-		"SportsAMMImplementation": "0xaE643CF11aE35623c997b2A9817b3f627761BA28",
+		"SportsAMMImplementation": "0x72b69C6C59E4F8917aa73b30Ad33b11025C34c7D",
 		"SportPositionalMarketData": "0x503e7F2C19384Ff68B445E21850fDC61f34434e6",
 		"SportPositionalMarketDataImplementation": "0x09F9FBA4C2A2f51182e90888df6B954C68288200",
 		"GamesQueue": "0xb233aa4cBa1C6F24974a4A7F9E32D054E4a51342",
@@ -274,7 +276,9 @@
 		"MultiCollateralOnOffRampImplementation": "0x88d6F967bba9cf564F597912D182EcB6569F853c",
 		"SpeedMarketMastercopy": "0xBb8151F500b7FEF54b6da14aBD890b45dbDceF11",
 		"SafeBoxBuyback": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203",
-		"SafeBoxBuybackImplementation": "0xd406adCC2ef2fA7f7c33c0be1a9fDD5E473aa6E2"
+		"SafeBoxBuybackImplementation": "0xd406adCC2ef2fA7f7c33c0be1a9fDD5E473aa6E2",
+		"SportAMMRiskManager": "0x4d0192E2fE94687838Eaa3BcbC3B891964B38a9D",
+		"SportAMMRiskManagerImplementation": "0x2F29ff630410647B8F81f53C7e0CfA3C1FcAcB3E"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",

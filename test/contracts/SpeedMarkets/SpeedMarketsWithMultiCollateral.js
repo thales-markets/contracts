@@ -144,6 +144,7 @@ contract('SpeedMarkets', (accounts) => {
 				exoticOP.address,
 				toUnit(10),
 				false,
+				ZERO_ADDRESS,
 				{ value: fee, from: user }
 			);
 

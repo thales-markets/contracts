@@ -174,6 +174,37 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "refferer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "trader",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "volume",
+        "type": "uint256"
+      }
+    ],
+    "name": "ReferrerPaid",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -509,6 +540,11 @@
         "internalType": "bytes[]",
         "name": "priceUpdateData",
         "type": "bytes[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
       }
     ],
     "name": "createNewMarket",
@@ -542,6 +578,11 @@
         "internalType": "bytes[]",
         "name": "priceUpdateData",
         "type": "bytes[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
       }
     ],
     "name": "createNewMarketWithDelta",
@@ -585,6 +626,11 @@
         "internalType": "bool",
         "name": "isEth",
         "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
       }
     ],
     "name": "createNewMarketWithDifferentCollateral",
@@ -628,6 +674,11 @@
         "internalType": "bool",
         "name": "isEth",
         "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
       }
     ],
     "name": "createNewMarketWithDifferentCollateralAndDelta",
@@ -1206,6 +1257,19 @@
     "outputs": [
       {
         "internalType": "contract IPyth",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "referrals",
+    "outputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }

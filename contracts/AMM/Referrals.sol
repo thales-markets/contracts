@@ -30,6 +30,13 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     address public sportsAMM;
     address public parlayAMM;
 
+    uint public referrerFeeDefault;
+    uint public referrerFeeSilver;
+    uint public referrerFeeGold;
+
+    mapping(address => bool) public silverAddresses;
+    mapping(address => bool) public goldAddresses;
+
     function initialize(
         address _owner,
         address thalesAmm,
@@ -39,6 +46,17 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         initNonReentrant();
         whitelistedAddresses[thalesAmm] = true;
         whitelistedAddresses[rangedAMM] = true;
+    }
+
+    function getReferrerFee(address referrer) public view returns (uint referrerFee) {
+        referrerFee = referrerFeeDefault;
+
+        if (silverAddresses[referrer]) {
+            referrerFee = referrerFeeSilver;
+        }
+        if (goldAddresses[referrer]) {
+            referrerFee = referrerFeeGold;
+        }
     }
 
     function setReferrer(address referrer, address referred) external {
@@ -57,6 +75,38 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             referralStarted[referred] = block.timestamp;
             emit ReferralAdded(referrer, referred, block.timestamp);
         }
+    }
+
+    /// @notice set Referral fees
+    /// @param _referrerFeeDefault how much of a fee to pay to referrers
+    /// @param _referrerFeeSilver how much of a fee to pay to silver referrers
+    /// @param _referrerFeeGold how much of a fee to pay to gold referrers
+    function setReferrerFees(
+        uint _referrerFeeDefault,
+        uint _referrerFeeSilver,
+        uint _referrerFeeGold
+    ) external onlyOwner {
+        referrerFeeDefault = _referrerFeeDefault;
+        referrerFeeSilver = _referrerFeeSilver;
+        referrerFeeGold = _referrerFeeGold;
+    }
+
+    /// @notice adding/removing silver address depending on a flag
+    /// @param _silverAddress address that needed to be added as silver or removed from silver addresses
+    /// @param _flag adding or removing from silver addresses (true: add, false: remove)
+    function setSilverAddress(address _silverAddress, bool _flag) external onlyOwner {
+        require(_silverAddress != address(0) && silverAddresses[_silverAddress] != _flag);
+        silverAddresses[_silverAddress] = _flag;
+        emit SetSilverAddress(_silverAddress, _flag);
+    }
+
+    /// @notice adding/removing gold address depending on a flag
+    /// @param _goldAddress address that needed to be added as gold or removed from gold addresses
+    /// @param _flag adding or removing from gold addresses (true: add, false: remove)
+    function setGoldAddress(address _goldAddress, bool _flag) external onlyOwner {
+        require(_goldAddress != address(0) && goldAddresses[_goldAddress] != _flag);
+        goldAddresses[_goldAddress] = _flag;
+        emit SetGoldAddress(_goldAddress, _flag);
     }
 
     function setWhitelistedAddress(address _address, bool enabled) external onlyOwner {
@@ -96,6 +146,8 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
     event SportReferralAdded(address referrer, address referred, uint timeStarted);
     event ReferralAdded(address referrer, address referred, uint timeStarted);
+    event SetSilverAddress(address silverAddress, bool flag);
+    event SetGoldAddress(address goldAddress, bool flag);
     event TradedBefore(address trader);
     event SportTradedBefore(address trader);
     event SetWhitelistedAddress(address whitelisted, bool enabled);

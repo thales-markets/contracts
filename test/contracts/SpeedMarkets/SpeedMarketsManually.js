@@ -110,6 +110,7 @@ contract('SpeedMarkets', (accounts) => {
 				0,
 				toUnit(10),
 				[priceFeedUpdateData],
+				ZERO_ADDRESS,
 				{ value: fee }
 			);
 

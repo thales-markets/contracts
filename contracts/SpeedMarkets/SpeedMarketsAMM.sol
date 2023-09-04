@@ -23,6 +23,7 @@ import "../utils/libraries/AddressSetLib.sol";
 
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IMultiCollateralOnOffRamp.sol";
+import {IReferrals} from "../interfaces/IReferrals.sol";
 
 import "./SpeedMarket.sol";
 
@@ -98,6 +99,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     uint64 public maximumPriceDelayForResolving;
 
+    address public referrals;
+
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
@@ -114,9 +117,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint64 strikeTime,
         SpeedMarket.Direction direction,
         uint buyinAmount,
-        bytes[] calldata priceUpdateData
+        bytes[] calldata priceUpdateData,
+        address _referrer
     ) external payable nonReentrant notPaused {
-        _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData, true);
+        _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData, true, _referrer);
     }
 
     function createNewMarketWithDelta(
@@ -124,9 +128,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint64 delta,
         SpeedMarket.Direction direction,
         uint buyinAmount,
-        bytes[] calldata priceUpdateData
+        bytes[] calldata priceUpdateData,
+        address _referrer
     ) external payable nonReentrant notPaused {
-        _createNewMarket(asset, uint64(block.timestamp + delta), direction, buyinAmount, priceUpdateData, true);
+        _createNewMarket(asset, uint64(block.timestamp + delta), direction, buyinAmount, priceUpdateData, true, _referrer);
     }
 
     function createNewMarketWithDifferentCollateral(
@@ -136,11 +141,19 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         bytes[] calldata priceUpdateData,
         address collateral,
         uint collateralAmount,
-        bool isEth
+        bool isEth,
+        address _referrer
     ) external payable nonReentrant notPaused {
-        require(multicollateralEnabled, "Multicollateral onramp not enabled");
-        uint buyinAmount = _convertCollateral(collateral, collateralAmount, isEth);
-        _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData, false);
+        _createNewMarketWithDifferentCollateral(
+            asset,
+            strikeTime,
+            direction,
+            priceUpdateData,
+            collateral,
+            collateralAmount,
+            isEth,
+            _referrer
+        );
     }
 
     function createNewMarketWithDifferentCollateralAndDelta(
@@ -150,11 +163,19 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         bytes[] calldata priceUpdateData,
         address collateral,
         uint collateralAmount,
-        bool isEth
+        bool isEth,
+        address _referrer
     ) external payable nonReentrant notPaused {
-        require(multicollateralEnabled, "Multicollateral onramp not enabled");
-        uint buyinAmount = _convertCollateral(collateral, collateralAmount, isEth);
-        _createNewMarket(asset, uint64(block.timestamp + delta), direction, buyinAmount, priceUpdateData, false);
+        _createNewMarketWithDifferentCollateral(
+            asset,
+            uint64(block.timestamp + delta),
+            direction,
+            priceUpdateData,
+            collateral,
+            collateralAmount,
+            isEth,
+            _referrer
+        );
     }
 
     function _convertCollateral(
@@ -173,14 +194,48 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         buyinAmount = (convertedAmount * (ONE - safeBoxImpact - lpFee)) / ONE;
     }
 
+    function _createNewMarketWithDifferentCollateral(
+        bytes32 asset,
+        uint64 strikeTime,
+        SpeedMarket.Direction direction,
+        bytes[] calldata priceUpdateData,
+        address collateral,
+        uint collateralAmount,
+        bool isEth,
+        address _referrer
+    ) internal {
+        require(multicollateralEnabled, "Multicollateral onramp not enabled");
+        uint buyinAmount = _convertCollateral(collateral, collateralAmount, isEth);
+        _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData, false, _referrer);
+    }
+
+    function _handleReferrer(address buyer, uint volume) internal returns (uint referrerShare) {
+        if (referrals != address(0)) {
+            address referrer = IReferrals(referrals).referrals(buyer);
+
+            if (referrer != address(0)) {
+                uint referrerFeeByTier = IReferrals(referrals).getReferrerFee(referrer);
+                if (referrerFeeByTier > 0) {
+                    referrerShare = (volume * referrerFeeByTier) / ONE;
+                    sUSD.safeTransfer(referrer, referrerShare);
+                    emit ReferrerPaid(referrer, buyer, referrerShare, volume);
+                }
+            }
+        }
+    }
+
     function _createNewMarket(
         bytes32 asset,
         uint64 strikeTime,
         SpeedMarket.Direction direction,
         uint buyinAmount,
         bytes[] memory priceUpdateData,
-        bool transferSusd
+        bool transferSusd,
+        address _referrer
     ) internal {
+        if (_referrer != address(0)) {
+            IReferrals(referrals).setReferrer(_referrer, msg.sender);
+        }
         require(supportedAsset[asset], "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "wrong buy in amount");
         require(
@@ -228,7 +283,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         sUSD.safeTransfer(address(srm), buyinAmount * 2);
 
-        sUSD.safeTransfer(safeBox, (buyinAmount * safeBoxImpact) / ONE);
+        uint referrerShare = _handleReferrer(msg.sender, buyinAmount);
+        sUSD.safeTransfer(safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
 
         _activeMarkets.add(address(srm));
         _activeMarketsPerUser[msg.sender].add(address(srm));
@@ -592,4 +648,5 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
+    event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
 }

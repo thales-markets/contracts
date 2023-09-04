@@ -1,19 +1,12 @@
 'use strict';
 
-const { artifacts, contract, web3 } = require('hardhat');
-const { toBN } = web3.utils;
-
+const { artifacts, contract } = require('hardhat');
 const { assert } = require('../../utils/common');
-
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
-const { toDecimal } = require('web3-utils');
-const { setupAllContracts } = require('../../utils/setup');
+const { fastForward, toUnit, currentTime } = require('../../utils')();
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
-
-const { fastForward, toUnit, fromUnit, currentTime } = require('../../utils')();
-const { encodeCall, convertToDecimals } = require('../../utils/helpers');
 
 contract('SpeedMarkets', (accounts) => {
 	const [owner, user, safeBox] = accounts;
@@ -109,6 +102,7 @@ contract('SpeedMarkets', (accounts) => {
 					0,
 					toUnit(10),
 					[priceFeedUpdateData],
+					ZERO_ADDRESS,
 					{ value: fee }
 				)
 			).to.be.revertedWith('revert');
@@ -122,6 +116,7 @@ contract('SpeedMarkets', (accounts) => {
 					0,
 					toUnit(10),
 					[priceFeedUpdateData],
+					ZERO_ADDRESS,
 					{ value: fee }
 				)
 			).to.be.revertedWith('Asset is not supported');
@@ -135,6 +130,7 @@ contract('SpeedMarkets', (accounts) => {
 					0,
 					toUnit(11),
 					[priceFeedUpdateData],
+					ZERO_ADDRESS,
 					{ value: fee }
 				)
 			).to.be.revertedWith('OI cap breached');
@@ -148,6 +144,7 @@ contract('SpeedMarkets', (accounts) => {
 					0,
 					toUnit(6),
 					[priceFeedUpdateData],
+					ZERO_ADDRESS,
 					{ value: fee }
 				)
 			).to.be.revertedWith('Risk per direction exceeded');
@@ -161,6 +158,7 @@ contract('SpeedMarkets', (accounts) => {
 				0,
 				toUnit(10),
 				[priceFeedUpdateData],
+				ZERO_ADDRESS,
 				{ value: fee }
 			);
 
@@ -180,6 +178,7 @@ contract('SpeedMarkets', (accounts) => {
 				1,
 				toUnit(10),
 				[priceFeedUpdateData],
+				ZERO_ADDRESS,
 				{ value: fee }
 			);
 
@@ -205,6 +204,7 @@ contract('SpeedMarkets', (accounts) => {
 				0,
 				toUnit(10),
 				[priceFeedUpdateData],
+				ZERO_ADDRESS,
 				{ value: fee }
 			);
 

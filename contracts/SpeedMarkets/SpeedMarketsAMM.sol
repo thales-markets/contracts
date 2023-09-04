@@ -93,7 +93,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         address _owner,
         IERC20Upgradeable _sUSD,
         IPyth _pyth
-    ) public initializer {
+    ) external initializer {
         setOwner(_owner);
         initNonReentrant();
         sUSD = _sUSD;

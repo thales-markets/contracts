@@ -68,7 +68,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     receive() external payable {}
 
-    function initialize(address _owner, IERC20Upgradeable _sUSD) public initializer {
+    function initialize(address _owner, IERC20Upgradeable _sUSD) external initializer {
         setOwner(_owner);
         initNonReentrant();
         sUSD = _sUSD;

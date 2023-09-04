@@ -709,7 +709,7 @@
 		"SportPositionalMarketData": "0x202209397e2A26dc3243bD4bF46480C1f6661032",
 		"SportPositionalMarketDataImplementation": "0x0CF4950ec8f73efbB54a841444Aa00c2f90A5c6C",
 		"SportsAMM": "0x7465c5d60d3d095443CF9991Da03304A30D42Eae",
-		"SportsAMMImplementation": "0xacDb7720B367E12C548501c01F9b604A3D9977cA",
+		"SportsAMMImplementation": "0x7B40A02aA5CEE1fa61Bc885FD421Aac6da5e175c",
 		"Referrals": "0xB2947FC03d8Ee002726F4e28C42D513f7B6D6788",
 		"ReferralsImplementation": "0x2D8286e6D62a4536918CeCEE130a5F96a5D47764",
 		"OvertimeVoucher": "0x9483eFf448042c366a4297dB465FaE108d2e6ea6",
@@ -800,7 +800,9 @@
 		"ParlayAMMLiquidityPoolData": "0xb25A2e739D9f10E346c5de5a46520Bf23df769E9",
 		"ParlayAMMLiquidityPoolDataImplementation": "0x7ce099733e08f6e2c18251278D0E195a697d3016",
 		"ParlayDefaultLiquidityProvider": "0xE2c8EC9F0aF39530f00F13214ce9BA933034E59f",
-		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27"
+		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27",
+		"SportAMMRiskManager": "0x0E4cB41143Ca28618eA7C96c31f193c01Ee4A293",
+		"SportAMMRiskManagerImplementation": "0x22A265604C4296091EAA8B380a22F4AD62203b6B"
 	},
 	"localhost": {
 		"Airdrop": "",

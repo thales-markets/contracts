@@ -101,8 +101,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
-			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), 0, toUnit(100));
-			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), 1, toUnit(100));
+			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(100));
 
 			await speedMarketsAMM.createNewMarketWithDelta(
 				toBytes32('ETH'),

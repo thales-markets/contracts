@@ -89,6 +89,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public maxRiskPerAssetAndDirection;
     mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public currentRiskPerAssetAndDirection;
 
+    struct Risk {
+        SpeedMarket.Direction direction;
+        uint current;
+        uint max;
+    }
+
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
@@ -164,14 +170,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         buyinAmount = (convertedAmount * (ONE - safeBoxImpact - lpFee)) / ONE;
     }
 
-    function _getOppositeDirection(SpeedMarket.Direction direction) internal returns (SpeedMarket.Direction opposite) {
-        if (direction == SpeedMarket.Direction.Up) {
-            opposite = SpeedMarket.Direction.Down;
-        } else {
-            opposite = SpeedMarket.Direction.Up;
-        }
-    }
-
     function _createNewMarket(
         bytes32 asset,
         uint64 strikeTime,
@@ -191,11 +189,23 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         currentRiskPerAsset[asset] += buyinAmount;
         require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "OI cap breached");
 
-        currentRiskPerAssetAndDirection[asset][direction] += buyinAmount;
-        require(
-            currentRiskPerAssetAndDirection[asset][direction] <= maxRiskPerAssetAndDirection[asset][direction],
-            "Risk per direction exceeded"
-        );
+        SpeedMarket.Direction oppositeDirection = direction == SpeedMarket.Direction.Up
+            ? SpeedMarket.Direction.Down
+            : SpeedMarket.Direction.Up;
+        // until there is risk for opposite direction, don't modify/check risk for current direction
+        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] == 0) {
+            currentRiskPerAssetAndDirection[asset][direction] += buyinAmount;
+            require(
+                currentRiskPerAssetAndDirection[asset][direction] <= maxRiskPerAssetAndDirection[asset][direction],
+                "Risk per direction exceeded"
+            );
+        }
+        // decrease risk for opposite direction
+        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
+            currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
+        } else {
+            currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
+        }
 
         uint fee = pyth.getUpdateFee(priceUpdateData);
         pyth.updatePriceFeeds{value: fee}(priceUpdateData);
@@ -219,13 +229,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         _activeMarkets.add(address(srm));
         _activeMarketsPerUser[msg.sender].add(address(srm));
-
-        SpeedMarket.Direction oppositeDirection = _getOppositeDirection(direction);
-        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
-            currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
-        } else {
-            currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
-        }
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, buyinAmount);
@@ -431,6 +434,23 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         return markets;
     }
 
+    /// @notice return all risk data (direction, current and max) for both directions (Up and Down) by specified asset
+    function getRiskPerAssetAndDirection(bytes32 asset) external view returns (Risk[] memory) {
+        Risk[] memory risks = new Risk[](2); // two directions: Up and Down
+        // Up
+        SpeedMarket.Direction selectedDirection = SpeedMarket.Direction.Up;
+        risks[0].direction = selectedDirection;
+        risks[0].current = currentRiskPerAssetAndDirection[asset][selectedDirection];
+        risks[0].max = maxRiskPerAssetAndDirection[asset][selectedDirection];
+        // Down
+        selectedDirection = SpeedMarket.Direction.Down;
+        risks[1].direction = selectedDirection;
+        risks[1].current = currentRiskPerAssetAndDirection[asset][selectedDirection];
+        risks[1].max = maxRiskPerAssetAndDirection[asset][selectedDirection];
+
+        return risks;
+    }
+
     //////////////////setters/////////////////
 
     /// @notice Set mastercopy to use to create markets
@@ -473,13 +493,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     /// @notice maximum risk per asset and direction
-    function setMaxRiskPerAssetAndDirection(
-        bytes32 asset,
-        SpeedMarket.Direction direction,
-        uint _maxRiskPerAssetAndDirection
-    ) external onlyOwner {
-        maxRiskPerAssetAndDirection[asset][direction] = _maxRiskPerAssetAndDirection;
-        emit SetMaxRiskPerAssetAndDirection(asset, direction, _maxRiskPerAssetAndDirection);
+    function setMaxRiskPerAssetAndDirection(bytes32 asset, uint _maxRiskPerAssetAndDirection) external onlyOwner {
+        maxRiskPerAssetAndDirection[asset][SpeedMarket.Direction.Up] = _maxRiskPerAssetAndDirection;
+        maxRiskPerAssetAndDirection[asset][SpeedMarket.Direction.Down] = _maxRiskPerAssetAndDirection;
+        emit SetMaxRiskPerAssetAndDirection(asset, _maxRiskPerAssetAndDirection);
     }
 
     /// @notice set SafeBox params
@@ -557,7 +574,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event SetMaximumPriceDelay(uint _maximumPriceDelay);
     event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
-    event SetMaxRiskPerAssetAndDirection(bytes32 asset, SpeedMarket.Direction direction, uint _maxRiskPerAssetAndDirection);
+    event SetMaxRiskPerAssetAndDirection(bytes32 asset, uint _maxRiskPerAssetAndDirection);
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
     event SetLPFee(uint _lpFee);
     event SetStakingThales(address _stakingThales);

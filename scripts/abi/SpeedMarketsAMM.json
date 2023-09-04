@@ -231,12 +231,6 @@
       },
       {
         "indexed": false,
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "direction",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "_maxRiskPerAssetAndDirection",
         "type": "uint256"
@@ -735,6 +729,42 @@
           }
         ],
         "internalType": "struct SpeedMarketsAMM.MarketData[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getRiskPerAssetAndDirection",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum SpeedMarket.Direction",
+            "name": "direction",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "current",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMM.Risk[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -1349,11 +1379,6 @@
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
-      },
-      {
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "direction",
-        "type": "uint8"
       },
       {
         "internalType": "uint256",

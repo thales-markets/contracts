@@ -102,7 +102,6 @@ async function main() {
 	const SportsAMMDeployed = await upgrades.deployProxy(SportsAMM, [
 		owner.address,
 		PaymentToken,
-		capPerMarket,
 		min_spread,
 		max_spread,
 		minimalTimeLeftToMaturity,
@@ -128,7 +127,6 @@ async function main() {
 		max_spread,
 		min_supported,
 		max_supported,
-		capPerMarket,
 		safeBoxImpact,
 		referrerFee,
 		{ from: owner.address }

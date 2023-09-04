@@ -49,6 +49,12 @@
         "internalType": "address",
         "name": "_lp",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_riskManager",
+        "type": "address"
       }
     ],
     "name": "AddressesUpdated",
@@ -171,12 +177,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_defaultCapPerGame",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "_safeBoxImpact",
         "type": "uint256"
       },
@@ -238,69 +238,6 @@
       }
     ],
     "name": "ReferrerPaid",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_cap",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetCapPerMarket",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_sport",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_cap",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetCapPerSport",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_sport",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_child",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_cap",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetCapPerSportAndChild",
     "type": "event"
   },
   {
@@ -964,11 +901,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_defaultCapPerGame",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_min_spread",
         "type": "uint256"
       },
@@ -1354,6 +1286,19 @@
   },
   {
     "inputs": [],
+    "name": "riskManager",
+    "outputs": [
+      {
+        "internalType": "contract ISportAMMRiskManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "sUSD",
     "outputs": [
       {
@@ -1451,6 +1396,11 @@
         "internalType": "address",
         "name": "_lp",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_riskManager",
+        "type": "address"
       }
     ],
     "name": "setAddresses",
@@ -1467,65 +1417,6 @@
       }
     ],
     "name": "setAmmUtils",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_markets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_capPerMarket",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCapPerMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_sportID",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_capPerSport",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCapPerSport",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_sportID",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_childID",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_capPerChild",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCapPerSportAndChild",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1636,11 +1527,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_defaultCapPerGame",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_safeBoxImpact",
         "type": "uint256"
       },
@@ -1736,6 +1622,25 @@
       }
     ],
     "name": "spentOnGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "spentOnParent",
     "outputs": [
       {
         "internalType": "uint256",

@@ -241,6 +241,7 @@ contract('ParlayAMM', (accounts) => {
 	const sportId_16 = 16; // CHL
 	const sportId_7 = 7; // UFC
 
+	const tagID_4 = 9000 + sportId_4;
 	let gameMarket;
 
 	let parlayAMMfee = toUnit('0.05');
@@ -268,7 +269,8 @@ contract('ParlayAMM', (accounts) => {
 	let voucher;
 	let maturityTimes = [];
 
-	let sportsAMMUtils;
+	let sportsAMMUtils, SportAMMRiskManager;
+	let emptyArray = [];
 
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
@@ -319,15 +321,9 @@ contract('ParlayAMM', (accounts) => {
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
-		await SportsAMM.initialize(
-			owner,
-			Thales.address,
-			toUnit('5000'),
-			toUnit('0.02'),
-			toUnit('0.2'),
-			DAY,
-			{ from: owner }
-		);
+		await SportsAMM.initialize(owner, Thales.address, toUnit('0.02'), toUnit('0.2'), DAY, {
+			from: owner,
+		});
 
 		await SportsAMM.setParameters(
 			DAY,
@@ -335,7 +331,6 @@ contract('ParlayAMM', (accounts) => {
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
-			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
 			toUnit('5000'),
@@ -727,6 +722,24 @@ contract('ParlayAMM', (accounts) => {
 			from: owner,
 		});
 
+		let SportAMMRiskManagerContract = artifacts.require('SportAMMRiskManager');
+		SportAMMRiskManager = await SportAMMRiskManagerContract.new();
+
+		await SportAMMRiskManager.initialize(
+			owner,
+			SportPositionalMarketManager.address,
+			toUnit('5000'),
+			[tagID_4],
+			[toUnit('50000')],
+			emptyArray,
+			emptyArray,
+			emptyArray,
+			3,
+			[tagID_4],
+			[5],
+			{ from: owner }
+		);
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -736,6 +749,7 @@ contract('ParlayAMM', (accounts) => {
 			ParlayAMM.address,
 			wrapper,
 			SportAMMLiquidityPool.address,
+			SportAMMRiskManager.address,
 			{ from: owner }
 		);
 

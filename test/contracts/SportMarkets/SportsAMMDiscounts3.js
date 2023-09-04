@@ -129,7 +129,7 @@ contract('SportsAMM', (accounts) => {
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
-	let GamesOddsObtainerDeployed;
+	let GamesOddsObtainerDeployed, SportAMMRiskManager;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -151,6 +151,8 @@ contract('SportsAMM', (accounts) => {
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
+
+	let emptyArray = [];
 
 	const sportId_4 = 4; // NBA
 	const sportId_16 = 16; // CHL
@@ -218,15 +220,9 @@ contract('SportsAMM', (accounts) => {
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
-		await SportsAMM.initialize(
-			owner,
-			Thales.address,
-			toUnit('5000'),
-			toUnit('0.02'),
-			toUnit('0.2'),
-			DAY,
-			{ from: owner }
-		);
+		await SportsAMM.initialize(owner, Thales.address, toUnit('0.02'), toUnit('0.2'), DAY, {
+			from: owner,
+		});
 
 		await SportsAMM.setParameters(
 			DAY,
@@ -234,7 +230,6 @@ contract('SportsAMM', (accounts) => {
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
-			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
 			toUnit('500000'),
@@ -448,6 +443,24 @@ contract('SportsAMM', (accounts) => {
 			from: owner,
 		});
 
+		let SportAMMRiskManagerContract = artifacts.require('SportAMMRiskManager');
+		SportAMMRiskManager = await SportAMMRiskManagerContract.new();
+
+		await SportAMMRiskManager.initialize(
+			owner,
+			SportPositionalMarketManager.address,
+			toUnit('5000'),
+			[tagID_4],
+			[toUnit('50000')],
+			emptyArray,
+			emptyArray,
+			emptyArray,
+			3,
+			[tagID_4],
+			[5],
+			{ from: owner }
+		);
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,
@@ -457,6 +470,7 @@ contract('SportsAMM', (accounts) => {
 			ZERO_ADDRESS,
 			wrapper,
 			SportAMMLiquidityPool.address,
+			SportAMMRiskManager.address,
 			{ from: owner }
 		);
 
@@ -484,7 +498,6 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.mint(first, toUnit(100000));
 		await testUSDC.mint(curveSUSD.address, toUnit(100000));
 		await testUSDC.approve(SportsAMM.address, toUnit(100000), { from: first });
-		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 	});
 
 	describe('Test 3 options game', () => {

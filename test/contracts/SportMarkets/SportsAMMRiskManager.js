@@ -34,7 +34,7 @@ const {
 	getEventByName,
 } = require('../../utils/helpers');
 
-contract('SportsAMM', (accounts) => {
+contract('SportsAMMRiskManager', (accounts) => {
 	const [
 		manager,
 		first,
@@ -130,8 +130,7 @@ contract('SportsAMM', (accounts) => {
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
-	let GamesOddsObtainerDeployed, SportAMMRiskManager;
-	let emptyArray = [];
+	let GamesOddsObtainerDeployed;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -149,7 +148,10 @@ contract('SportsAMM', (accounts) => {
 		testDAI,
 		Referrals,
 		SportsAMM,
-		SportAMMLiquidityPool;
+		SportAMMLiquidityPool,
+		SportAMMRiskManager,
+		GamesOddsReceiverDeployed;
+	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -159,6 +161,7 @@ contract('SportsAMM', (accounts) => {
 
 	const tagID_4 = 9000 + sportId_4;
 	const tagID_16 = 9000 + sportId_16;
+	const tagIDChild = 10002;
 
 	let gameMarket;
 
@@ -370,6 +373,17 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		let GamesOddsReceiver = artifacts.require('GamesOddsReceiver');
+		GamesOddsReceiverDeployed = await GamesOddsReceiver.new({ from: owner });
+
+		await GamesOddsReceiverDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			GamesOddsObtainerDeployed.address,
+			[fourth],
+			{ from: owner }
+		);
+
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
@@ -448,9 +462,6 @@ contract('SportsAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
-		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
-			from: owner,
-		});
 
 		let SportAMMRiskManagerContract = artifacts.require('SportAMMRiskManager');
 		SportAMMRiskManager = await SportAMMRiskManagerContract.new();
@@ -461,9 +472,9 @@ contract('SportsAMM', (accounts) => {
 			toUnit('5000'),
 			[tagID_4],
 			[toUnit('50000')],
-			emptyArray,
-			emptyArray,
-			emptyArray,
+			[tagID_4],
+			[tagIDChild],
+			[toUnit('1000')],
 			3,
 			[tagID_4],
 			[5],
@@ -482,6 +493,8 @@ contract('SportsAMM', (accounts) => {
 			SportAMMRiskManager.address,
 			{ from: owner }
 		);
+
+		await SportsAMM.setSportOnePositional(9455, true, { from: owner });
 
 		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
@@ -507,116 +520,541 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
+		await GamesOddsReceiverDeployed.addToWhitelist([third], true, { from: owner });
+
+		await GamesOddsObtainerDeployed.setContracts(
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			GamesOddsReceiverDeployed.address,
+			{
+				from: owner,
+			}
+		);
+		await SportAMMRiskManager.setMaxCapAndRisk(toUnit(10000), 5, {
+			from: owner,
+		});
 	});
 
-	describe('Test 3 options game', () => {
-		let deployedMarket;
-		let answer;
-		beforeEach(async () => {
-			let _currentTime = await currentTime();
-			// await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+	describe('Init', () => {
+		it('Check init risk manager', async () => {
+			assert.bnEqual(toUnit('5000'), await SportAMMRiskManager.defaultCapPerGame());
+			assert.bnEqual(toUnit('50000'), await SportAMMRiskManager.capPerSport(tagID_4));
+			assert.bnEqual(toUnit('0'), await SportAMMRiskManager.capPerSport(tagID_16));
+			assert.bnEqual(
+				toUnit('1000'),
+				await SportAMMRiskManager.capPerSportAndChild(tagID_4, tagIDChild)
+			);
+			assert.bnEqual(
+				toUnit('0'),
+				await SportAMMRiskManager.capPerSportAndChild(tagID_16, tagIDChild)
+			);
+
+			assert.bnEqual(3, await SportAMMRiskManager.defaultRiskMultiplier());
+			assert.bnEqual(5, await SportAMMRiskManager.riskMultiplierForSport(tagID_4));
+			assert.bnEqual(0, await SportAMMRiskManager.riskMultiplierForSport(tagID_16));
+		});
+	});
+
+	describe('Risk managment main functions tests', () => {
+		it('Check cap per market/sports/childs', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// console.log("Fast forward: ", (gameFootballTime - _currentTime - SECOND).toString());
+
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
 			// req. games
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-				reqIdFootballCreate,
-				gamesFootballCreated,
-				sportId_16,
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
 				game1NBATime,
 				{ from: wrapper }
 			);
 
-			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
-			// console.log("Current time: ", _currentTime.toString());
-			// console.log("Start time: ", game.startTime.toString());
-			// console.log("Difference: ", (_currentTime - game.startTime).toString());
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			// create markets
-			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
-			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
+
+			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-20700, result[0]);
+			assert.bnEqual(17700, result[1]);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			assert.equal('Atlanta Hawks', game.homeTeam);
+			assert.equal('Charlotte Hornets', game.awayTeam);
 
 			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdCreate,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+
 			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-			// console.log("Active market: ", answer.toString());
 			deployedMarket = await SportPositionalMarketContract.at(answer);
-		});
 
-		let position = 0;
-		let value = 100;
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
 
-		it('Buy from SportsAMM, position 1, value: 100', async () => {
-			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
-			let additionalSlippage = toUnit(0.01);
-			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(1));
-			answer = await Thales.balanceOf(first);
-			let before_balance = answer;
-			console.log('acc balance: ', fromUnit(answer));
-			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-			answer = await SportsAMM.buyFromAMM(
-				deployedMarket.address,
-				1,
-				toUnit(1),
-				buyFromAmmQuote,
-				additionalSlippage,
-				{ from: first }
+			// invalid odds zero as draw
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				{
+					from: third,
+				}
+			);
+
+			let result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(10300, result_final[0]);
+			assert.bnEqual(-11300, result_final[1]);
+			assert.bnEqual(0, result_final[2]);
+
+			// adding total markets via odds
+
+			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+
+			const tx_odds_total = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[10300, -11300],
+				{
+					from: third,
+				}
+			);
+			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+			let mainMarketTotalChildMarket = await GamesOddsObtainerDeployed.mainMarketTotalChildMarket(
+				marketAdd,
+				200
+			);
+			assert.bnEqual(
+				mainMarketTotalChildMarket,
+				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
+			);
+
+			let childMarket = await SportPositionalMarketContract.at(mainMarketTotalChildMarket);
+
+			assert.equal(false, await childMarket.canResolve());
+			assert.equal(9004, await childMarket.tags(0));
+			assert.bnEqual(10002, await childMarket.tags(1));
+
+			assert.bnEqual(toUnit('50000'), await SportAMMRiskManager.calculateCapToBeUsed(marketAdd));
+			assert.bnEqual(
+				toUnit('1000'),
+				await SportAMMRiskManager.calculateCapToBeUsed(mainMarketTotalChildMarket)
 			);
 		});
+		it('Check risk manager multiplier', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 
-		it('Resolove manually, and claim', async () => {
-			await fastForward(await currentTime());
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
-			assert.equal(true, await deployedMarket.canResolve());
-
-			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-				reqIdResolveFoodball,
-				gamesResolvedFootball,
-				sportId_16,
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
 				{ from: wrapper }
 			);
 
-			let gameR = await TherundownConsumerDeployed.gameResolved(gameFootballid1);
-			// resolve markets
-			// const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
-			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
-			const tx_resolve = await SportPositionalMarketManager.resolveMarketWithResult(
-				marketAdd,
-				2,
-				1,
-				2,
-				TherundownConsumerDeployed.address,
-				false,
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
+
+			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-20700, result[0]);
+			assert.bnEqual(17700, result[1]);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			assert.equal('Atlanta Hawks', game.homeTeam);
+			assert.equal('Charlotte Hornets', game.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdCreate,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			// invalid odds zero as draw
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
 				{
-					from: second,
+					from: third,
 				}
 			);
-			answer = await deployedMarket.result();
-			console.log('Result resolved: ', answer.toString());
-			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
-			let additionalSlippage = toUnit(0.01);
-			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(1));
-			answer = await Thales.balanceOf(first);
-			let before_balance = answer;
-			console.log('acc balance: ', fromUnit(answer));
-			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-			await expect(
-				SportsAMM.buyFromAMM(deployedMarket.address, 1, toUnit(1), MAX_NUMBER, additionalSlippage, {
-					from: first,
-				})
-			).to.be.revertedWith('Not trading');
-		});
 
-		it('Sport Data coverage', async () => {
-			let availableToBuy = await SportPositionalMarketData.getOddsForAllActiveMarkets();
-			availableToBuy = await SportPositionalMarketData.getOddsForAllActiveMarketsInBatches(0, 10);
-			availableToBuy = await SportPositionalMarketData.getBaseOddsForAllActiveMarkets();
-			availableToBuy = await SportPositionalMarketData.getPriceImpactForAllActiveMarketsInBatches(
-				0,
-				10
+			let result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(10300, result_final[0]);
+			assert.bnEqual(-11300, result_final[1]);
+			assert.bnEqual(0, result_final[2]);
+
+			// adding total markets via odds
+
+			assert.bnEqual(0, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+
+			const tx_odds_total = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[200, 200],
+				[10300, -11300],
+				{
+					from: third,
+				}
 			);
-			availableToBuy = await SportPositionalMarketData.getPriceImpactForAllActiveMarkets();
+			assert.bnEqual(1, await GamesOddsObtainerDeployed.numberOfChildMarkets(marketAdd));
+			let mainMarketTotalChildMarket = await GamesOddsObtainerDeployed.mainMarketTotalChildMarket(
+				marketAdd,
+				200
+			);
+			assert.bnEqual(
+				mainMarketTotalChildMarket,
+				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
+			);
+
+			let childMarket = await SportPositionalMarketContract.at(mainMarketTotalChildMarket);
+
+			assert.equal(false, await childMarket.canResolve());
+			assert.equal(9004, await childMarket.tags(0));
+			assert.bnEqual(10002, await childMarket.tags(1));
+
+			assert.bnEqual(
+				false,
+				await SportAMMRiskManager.isTotalSpendingLessThanTotalRisk(toUnit('500000'), marketAdd)
+			);
+			assert.bnEqual(
+				true,
+				await SportAMMRiskManager.isTotalSpendingLessThanTotalRisk(toUnit('5'), marketAdd)
+			);
+		});
+	});
+
+	describe('Risk management contract', () => {
+		it('Test owner functions', async () => {
+			const setMaxCapAndRisk = await SportAMMRiskManager.setMaxCapAndRisk(toUnit(22222), 4, {
+				from: owner,
+			});
+
+			await expect(
+				SportAMMRiskManager.setMaxCapAndRisk(3, 3, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid input');
+
+			await expect(
+				SportAMMRiskManager.setMaxCapAndRisk(3, 3, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(setMaxCapAndRisk.logs[0], 'SetMaxCapAndRisk', {
+				_maxCap: toUnit(22222),
+				_maxRisk: 4,
+			});
+
+			const tx_setDefaultRiskMultiplier = await SportAMMRiskManager.setDefaultRiskMultiplier(3, {
+				from: owner,
+			});
+
+			await expect(
+				SportAMMRiskManager.setDefaultRiskMultiplier(3, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				SportAMMRiskManager.setDefaultRiskMultiplier(13, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid multiplier');
+
+			// check if event is emited
+			assert.eventEqual(tx_setDefaultRiskMultiplier.logs[0], 'SetDefaultRiskMultiplier', {
+				_riskMultiplier: 3,
+			});
+
+			const tx_setRiskMultiplierPerSport = await SportAMMRiskManager.setRiskMultiplierPerSport(
+				tagID_16,
+				4,
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				SportAMMRiskManager.setRiskMultiplierPerSport(1, 4, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for sport');
+
+			await expect(
+				SportAMMRiskManager.setRiskMultiplierPerSport(tagID_4, 8, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid multiplier');
+
+			await expect(
+				SportAMMRiskManager.setRiskMultiplierPerSport(tagID_16, 4, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_setRiskMultiplierPerSport.logs[0], 'SetRiskMultiplierPerSport', {
+				_sport: tagID_16,
+				_riskMultiplier: 4,
+			});
+
+			const tx_setRiskMultiplierMarket = await SportAMMRiskManager.setRiskMultiplierMarket(
+				[first],
+				4,
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				SportAMMRiskManager.setRiskMultiplierMarket([first], 7, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Invalid sender');
+
+			await expect(
+				SportAMMRiskManager.setRiskMultiplierMarket([ZERO_ADDRESS], 3, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid address');
+
+			await expect(
+				SportAMMRiskManager.setRiskMultiplierMarket([ZERO_ADDRESS], 8, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid multiplier');
+
+			// check if event is emited
+			assert.eventEqual(tx_setRiskMultiplierMarket.logs[0], 'SetRiskMultiplierPerMarket', {
+				_market: first,
+				_riskMultiplier: 4,
+			});
+
+			const tx_setDefaultCapPerGame = await SportAMMRiskManager.setDefaultCapPerGame(
+				toUnit('1111'),
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				SportAMMRiskManager.setDefaultCapPerGame(toUnit('1111'), {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				SportAMMRiskManager.setDefaultCapPerGame(toUnit('122111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid cap');
+
+			// check if event is emited
+			assert.eventEqual(tx_setDefaultCapPerGame.logs[0], 'SetDefaultCapPerGame', {
+				_cap: toUnit('1111'),
+			});
+
+			const tx_setCapPerSport = await SportAMMRiskManager.setCapPerSport(tagID_16, toUnit('1111'), {
+				from: owner,
+			});
+
+			await expect(
+				SportAMMRiskManager.setCapPerSport(tagID_16, toUnit('1111'), {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				SportAMMRiskManager.setCapPerSport(tagID_16, toUnit('11222211'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid cap');
+			await expect(
+				SportAMMRiskManager.setCapPerSport(1, toUnit('1111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for sport');
+
+			// check if event is emited
+			assert.eventEqual(tx_setCapPerSport.logs[0], 'SetCapPerSport', {
+				_sport: tagID_16,
+				_cap: toUnit('1111'),
+			});
+
+			const tx_setCapPerSportAndChild = await SportAMMRiskManager.setCapPerSportAndChild(
+				tagID_16,
+				tagIDChild,
+				toUnit('1111'),
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				SportAMMRiskManager.setCapPerSportAndChild(tagID_16, tagIDChild, toUnit('1111'), {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				SportAMMRiskManager.setCapPerSportAndChild(tagID_16, tagIDChild, toUnit('1122221'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid cap');
+
+			await expect(
+				SportAMMRiskManager.setCapPerSportAndChild(tagID_16, 2, toUnit('1111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for child');
+
+			await expect(
+				SportAMMRiskManager.setCapPerSportAndChild(1, tagIDChild, toUnit('1111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for sport');
+
+			// check if event is emited
+			assert.eventEqual(tx_setCapPerSportAndChild.logs[0], 'SetCapPerSportAndChild', {
+				_sport: tagID_16,
+				_child: tagIDChild,
+				_cap: toUnit('1111'),
+			});
+
+			const tx_setCapPerMarket = await SportAMMRiskManager.setCapPerMarket(
+				[first],
+				toUnit('1111'),
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				SportAMMRiskManager.setCapPerMarket([first], toUnit('1111'), {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Invalid sender');
+
+			await expect(
+				SportAMMRiskManager.setCapPerMarket([first], toUnit('1222111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid cap');
+			await expect(
+				SportAMMRiskManager.setCapPerMarket([ZERO_ADDRESS], toUnit('1111'), {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid address');
+
+			// check if event is emited
+			assert.eventEqual(tx_setCapPerMarket.logs[0], 'SetCapPerMarket', {
+				_market: first,
+				_cap: toUnit('1111'),
+			});
+			const tx_setContracts = await SportAMMRiskManager.setSportsPositionalMarketManager(first, {
+				from: owner,
+			});
+
+			await expect(
+				SportAMMRiskManager.setSportsPositionalMarketManager(ZERO_ADDRESS, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid address');
+
+			await expect(
+				SportAMMRiskManager.setSportsPositionalMarketManager(first, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_setContracts.logs[0], 'SetSportsPositionalMarketManager', {
+				_manager: first,
+			});
+			//back to normal
+			await SportAMMRiskManager.setSportsPositionalMarketManager(
+				SportPositionalMarketManager.address,
+				{
+					from: owner,
+				}
+			);
 		});
 	});
 });

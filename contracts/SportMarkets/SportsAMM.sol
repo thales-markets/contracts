@@ -21,6 +21,7 @@ import "../interfaces/ICurveSUSD.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ISportsAMM.sol";
 import "../interfaces/ITherundownConsumerWrapper.sol";
+import "../interfaces/ISportAMMRiskManager.sol";
 
 import "./SportsAMMUtils.sol";
 import "./LiquidityPool/SportAMMLiquidityPool.sol";
@@ -45,7 +46,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @notice Each game has `defaultCapPerGame` available for trading
     /// @return The default cap per game.
-    uint public defaultCapPerGame;
+    uint public defaultCapPerGame; //deprecated see SportAMMRiskManager.sol
 
     /// @return The minimal spread/skrew percentage
     uint public min_spread;
@@ -115,12 +116,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint public maxAllowedPegSlippagePercentage;
 
     /// @return the cap per sportID. based on the tagID
-    mapping(uint => uint) public capPerSport;
+    mapping(uint => uint) public capPerSport; //deprecated see SportAMMRiskManager.sol
 
     SportsAMMUtils public sportAmmUtils;
 
     /// @return the cap per market. based on the marketId
-    mapping(address => uint) public capPerMarket;
+    mapping(address => uint) public capPerMarket; //deprecated see SportAMMRiskManager.sol
 
     /// @notice odds threshold which will trigger odds update
     /// @return The threshold.
@@ -136,7 +137,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     mapping(address => uint) public min_spreadPerAddress;
 
     /// @return the cap per sportID and childID. based on the tagID[0] and tagID[1]
-    mapping(uint => mapping(uint => uint)) public capPerSportAndChild;
+    mapping(uint => mapping(uint => uint)) public capPerSportAndChild; //deprecated see SportAMMRiskManager.sol
 
     struct BuyFromAMMParams {
         address market;
@@ -170,6 +171,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The maximum supported odd for sport
     mapping(uint => uint) public maxSpreadPerSport;
 
+    ISportAMMRiskManager public riskManager;
+
+    mapping(address => uint) public spentOnParent;
+
+    /// @return The sUSD amount bought from AMM by users for the parent
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
     bool public multicollateralEnabled;
 
@@ -182,7 +188,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
-        uint _defaultCapPerGame,
         uint _min_spread,
         uint _max_spread,
         uint _minimalTimeLeftToMaturity
@@ -190,7 +195,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         setOwner(_owner);
         initNonReentrant();
         sUSD = _sUSD;
-        defaultCapPerGame = _defaultCapPerGame;
         min_spread = _min_spread;
         max_spread = _max_spread;
         minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
@@ -665,7 +669,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _maxSpread Maximum spread percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
     /// @param _minSupportedOdds Minimal oracle odd in ether unit (18 decimals)
     /// @param _maxSupportedOdds Maximum oracle odds in ether unit (18 decimals)
-    /// @param _defaultCapPerGame Default sUSD cap per market (18 decimals)
     /// @param _safeBoxImpact Percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
     /// @param _referrerFee how much of a fee to pay to referrers
     function setParameters(
@@ -674,7 +677,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint _maxSpread,
         uint _minSupportedOdds,
         uint _maxSupportedOdds,
-        uint _defaultCapPerGame,
         uint _safeBoxImpact,
         uint _referrerFee,
         uint _threshold
@@ -684,7 +686,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         max_spread = _maxSpread;
         minSupportedOdds = _minSupportedOdds;
         maxSupportedOdds = _maxSupportedOdds;
-        defaultCapPerGame = _defaultCapPerGame;
         safeBoxImpact = _safeBoxImpact;
         referrerFee = _referrerFee;
         thresholdForOddsUpdate = _threshold;
@@ -695,7 +696,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             _maxSpread,
             _minSupportedOdds,
             _maxSupportedOdds,
-            _defaultCapPerGame,
             _safeBoxImpact,
             _referrerFee,
             _threshold
@@ -718,7 +718,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _referrals,
         address _parlayAMM,
         address _wrapper,
-        address _lp
+        address _lp,
+        address _riskManager
     ) external onlyOwner {
         safeBox = _safeBox;
         sUSD = _sUSD;
@@ -728,8 +729,19 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         parlayAMM = _parlayAMM;
         wrapper = ITherundownConsumerWrapper(_wrapper);
         liquidityPool = SportAMMLiquidityPool(_lp);
+        riskManager = ISportAMMRiskManager(_riskManager);
 
-        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper, _lp);
+        emit AddressesUpdated(
+            _safeBox,
+            _sUSD,
+            _theRundownConsumer,
+            _stakingThales,
+            _referrals,
+            _parlayAMM,
+            _wrapper,
+            _lp,
+            _riskManager
+        );
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -758,14 +770,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function setPaused(bool _setPausing) external onlyOwner {
         _setPausing ? _pause() : _unpause();
-    }
-
-    /// @notice Setting the Cap per Sport ID
-    /// @param _sportID The tagID used for each market
-    /// @param _capPerSport The cap amount used for the sportID
-    function setCapPerSport(uint _sportID, uint _capPerSport) external onlyOwner {
-        capPerSport[_sportID] = _capPerSport;
-        emit SetCapPerSport(_sportID, _capPerSport);
     }
 
     function setMinSupportedOddsAndMaxSpreadPerSportPerSport(
@@ -799,33 +803,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetSportOnePositional(_sportID, _flag);
     }
 
-    /// @notice Setting the Cap per Sport ID
-    /// @param _sportID The tagID used for sport (9004)
-    /// @param _childID The tagID used for childid (10002)
-    /// @param _capPerChild The cap amount used for the sportID
-    function setCapPerSportAndChild(
-        uint _sportID,
-        uint _childID,
-        uint _capPerChild
-    ) external onlyOwner {
-        capPerSportAndChild[_sportID][_childID] = _capPerChild;
-        emit SetCapPerSportAndChild(_sportID, _childID, _capPerChild);
-    }
-
-    /// @notice Setting the Cap per spec. market
-    /// @param _markets market addresses
-    /// @param _capPerMarket The cap amount used for the specific markets
-    function setCapPerMarket(address[] memory _markets, uint _capPerMarket) external {
-        require(
-            msg.sender == owner || ISportPositionalMarketManager(manager).isWhitelistedAddress(msg.sender),
-            "Invalid sender"
-        );
-        for (uint i; i < _markets.length; i++) {
-            capPerMarket[_markets[i]] = _capPerMarket;
-            emit SetCapPerMarket(_markets[i], _capPerMarket);
-        }
-    }
-
     /// @notice used to update gamified Staking bonuses from Parlay contract
     /// @param _account Address to update volume for
     /// @param _amount of the volume
@@ -850,24 +827,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     // Internal
-
-    /// @notice calculate which cap needs to be applied to the given market
-    /// @param market to get cap for
-    /// @return toReturn cap to use
-    function _calculateCapToBeUsed(address market) internal view returns (uint toReturn) {
-        toReturn = capPerMarket[market];
-        (uint tag1, uint tag2) = _getTagsForMarket(market);
-        if (toReturn == 0) {
-            uint capFirstTag = capPerSport[tag1];
-            capFirstTag = capFirstTag > 0 ? capFirstTag : defaultCapPerGame;
-            toReturn = capFirstTag;
-
-            if (tag2 > 0) {
-                uint capSecondTag = capPerSportAndChild[tag1][tag2];
-                toReturn = capSecondTag > 0 ? capSecondTag : capFirstTag / 2;
-            }
-        }
-    }
 
     function _buyFromAMMWithDifferentCollateral(
         address market,
@@ -908,11 +867,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return _buyFromAMM(BuyFromAMMParams(market, position, amount, susdQuote, additionalSlippage, false, susdQuote));
     }
 
-    function _buyFromAMM(BuyFromAMMParams memory params) internal {
-        require(isMarketInAMMTrading(params.market), "Not trading");
+    function _checkMarketValidityAndOptionsCount(address market, ISportsAMM.Position position) internal view {
+        require(isMarketInAMMTrading(market), "Not trading");
+        uint optionsCount = ISportPositionalMarket(market).optionsCount();
+        require(optionsCount > uint(position), "Invalid pos");
+    }
 
-        uint optionsCount = ISportPositionalMarket(params.market).optionsCount();
-        require(optionsCount > uint(params.position), "Invalid pos");
+    function _buyFromAMM(BuyFromAMMParams memory params) internal {
+        _checkMarketValidityAndOptionsCount(params.market, params.position);
 
         DoubleChanceStruct memory dcs = _getDoubleChanceStruct(params.market);
         require(!dcs.isDoubleChance || params.position == ISportsAMM.Position.Home, "Invalid pos");
@@ -953,6 +915,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             sUSD.safeTransferFrom(msg.sender, address(this), params.sUSDPaid);
         }
 
+        address parent = dcs.isDoubleChance || ISportPositionalMarket(params.market).isChild()
+            ? address(ISportPositionalMarket(params.market).parentMarket())
+            : params.market;
+
         if (dcs.isDoubleChance) {
             ISportPositionalMarket(params.market).mint(params.amount);
             _mintParentPositions(params.market, params.amount, dcs);
@@ -972,6 +938,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 liquidityPool.commitTrade(params.market, toMint);
                 ISportPositionalMarket(params.market).mint(toMint);
                 spentOnGame[params.market] = spentOnGame[params.market] + toMint;
+                spentOnParent[parent] += toMint;
             }
             liquidityPool.getOptionsForBuy(params.market, params.amount - toMint, params.position);
         }
@@ -990,9 +957,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         _updateSpentOnMarketOnBuy(
             dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market,
+            parent,
             params.sUSDPaid,
             msg.sender
         );
+
+        require(riskManager.isTotalSpendingLessThanTotalRisk(spentOnParent[parent], parent), "Risk is to high!");
 
         _sendMintedPositionsAndUSDToLiquidityPool(
             dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market
@@ -1066,7 +1036,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 : sportAmmUtils.balanceOfPositionOnMarket(market, position, liquidityPool.getMarketPool(market));
 
             availableAmount = sportAmmUtils.calculateAvailableToBuy(
-                _calculateCapToBeUsed(market),
+                riskManager.calculateCapToBeUsed(market),
                 spentOnGame[market],
                 baseOdds,
                 balance,
@@ -1139,6 +1109,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _updateSpentOnMarketOnBuy(
         address market,
+        address parent,
         uint sUSDPaid,
         address buyer
     ) internal {
@@ -1154,6 +1125,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         spentOnGame[market] = spentOnGame[market] <= toSubtract
             ? 0
             : (spentOnGame[market] = spentOnGame[market] - toSubtract);
+
+        spentOnParent[parent] = spentOnParent[parent] <= toSubtract
+            ? 0
+            : (spentOnParent[parent] = spentOnParent[parent] - toSubtract);
 
         if (referrerFee > 0 && referrals != address(0)) {
             uint referrerShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + referrerFee));
@@ -1216,6 +1191,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             liquidityPool.commitTrade(dcs.parentMarket, toMint);
             ISportPositionalMarket(dcs.parentMarket).mint(toMint);
             spentOnGame[dcs.parentMarket] = spentOnGame[dcs.parentMarket] + toMint;
+            spentOnParent[dcs.parentMarket] += toMint;
         }
     }
 
@@ -1246,7 +1222,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint _maxSpread,
         uint _minSupportedOdds,
         uint _maxSupportedOdds,
-        uint _defaultCapPerGame,
         uint _safeBoxImpact,
         uint _referrerFee,
         uint threshold
@@ -1259,16 +1234,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _referrals,
         address _parlayAMM,
         address _wrapper,
-        address _lp
+        address _lp,
+        address _riskManager
     );
 
     event SetSportsPositionalMarketManager(address _manager);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
-    event SetCapPerSport(uint _sport, uint _cap);
     event SetMinSpreadPerSport(uint _tag1, uint _tag2, uint _spread);
     event SetSportOnePositional(uint _sport, bool _flag);
-    event SetCapPerMarket(address _market, uint _cap);
-    event SetCapPerSportAndChild(uint _sport, uint _child, uint _cap);
     event SetMinSupportedOddsAndMaxSpreadPerSport(uint _sport, uint _minSupportedOddsPerSport, uint _maxSpreadPerSport);
     event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
 }

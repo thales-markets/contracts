@@ -638,16 +638,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             msg.sender
         );
 
-        if (homeBalance > 0) {
-            IERC20Upgradeable(address(home)).safeTransferFrom(msg.sender, address(this), homeBalance);
-        }
-
-        if (awayBalance > 0) {
-            IERC20Upgradeable(address(away)).safeTransferFrom(msg.sender, address(this), awayBalance);
-        }
-        if (drawBalance > 0) {
-            IERC20Upgradeable(address(draw)).safeTransferFrom(msg.sender, address(this), drawBalance);
-        }
+        _sendFromIfNotZero(msg.sender, address(home), address(this), homeBalance);
+        _sendFromIfNotZero(msg.sender, address(away), address(this), awayBalance);
+        _sendFromIfNotZero(msg.sender, address(draw), address(this), drawBalance);
 
         ISportPositionalMarket(market).exerciseOptions();
 
@@ -1084,9 +1077,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function _sendMintedPositionsAndUSDToLiquidityPool(address market) internal {
         address _liquidityPool = liquidityPool.getOrCreateMarketPool(market);
 
-        if (sUSD.balanceOf(address(this)) > 0) {
-            sUSD.safeTransfer(_liquidityPool, sUSD.balanceOf(address(this)));
-        }
+        _sendIfNotZero(address(this), _liquidityPool, sUSD.balanceOf(address(this)));
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
 
@@ -1095,15 +1086,29 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             address(this)
         );
 
-        if (homeBalance > 0) {
-            IERC20Upgradeable(address(home)).safeTransfer(_liquidityPool, homeBalance);
-        }
+        _sendIfNotZero(address(home), _liquidityPool, homeBalance);
+        _sendIfNotZero(address(away), _liquidityPool, awayBalance);
+        _sendIfNotZero(address(draw), _liquidityPool, drawBalance);
+    }
 
-        if (awayBalance > 0) {
-            IERC20Upgradeable(address(away)).safeTransfer(_liquidityPool, awayBalance);
+    function _sendIfNotZero(
+        address source,
+        address target,
+        uint balance
+    ) internal {
+        if (balance > 0) {
+            IERC20Upgradeable(address(source)).safeTransfer(target, balance);
         }
-        if (drawBalance > 0) {
-            IERC20Upgradeable(address(draw)).safeTransfer(_liquidityPool, drawBalance);
+    }
+
+    function _sendFromIfNotZero(
+        address from,
+        address source,
+        address target,
+        uint balance
+    ) internal {
+        if (balance > 0) {
+            IERC20Upgradeable(address(source)).safeTransferFrom(from, target, balance);
         }
     }
 

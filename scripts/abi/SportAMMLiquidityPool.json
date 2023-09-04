@@ -285,12 +285,50 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "SafeBoxSharePaid",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bool",
         "name": "flagToSet",
         "type": "bool"
       }
     ],
     "name": "SetOnlyWhitelistedStakersAllowed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "safeBox",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxImpact",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetSafeBoxParams",
     "type": "event"
   },
   {
@@ -343,6 +381,19 @@
       }
     ],
     "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "utilizationRate",
+        "type": "uint256"
+      }
+    ],
+    "name": "UtilizationRateChanged",
     "type": "event"
   },
   {
@@ -1146,6 +1197,32 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "safeBox",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "safeBoxImpact",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1265,6 +1342,24 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_safeBox",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_safeBoxImpact",
+        "type": "uint256"
+      }
+    ],
+    "name": "setSafeBoxParams",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract ISportsAMM",
         "name": "_sportAMM",
         "type": "address"
@@ -1297,6 +1392,19 @@
       }
     ],
     "name": "setStakingThales",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_utilizationRate",
+        "type": "uint256"
+      }
+    ],
+    "name": "setUtilizationRate",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1510,6 +1618,19 @@
   {
     "inputs": [],
     "name": "usersProcessedInRound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "utilizationRate",
     "outputs": [
       {
         "internalType": "uint256",

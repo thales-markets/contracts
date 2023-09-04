@@ -84,7 +84,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
 
         // use direct path for WETH
-        //TODO: consider mapping other collateral for direct swap
+        //TODO: not needed as we can set path for a direct swap
         if (collateral == WETH9) {
             convertedAmount = _swapExactSingle(collateralAmount, collateral);
         } else if (curveOnrampEnabled && (collateral == usdc || collateral == dai || collateral == usdt)) {
@@ -102,12 +102,15 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     /// @notice use native eth as a collateral to buy sUSD
     /// @return convertedAmount The amount of sUSD received.
     function onrampWithEth(uint amount) external payable nonReentrant notPaused returns (uint convertedAmount) {
-        require(msg.value > 0, "Can not exchange 0 ETH");
+        require(ammsSupported[msg.sender], "Unsupported caller");
+        require(msg.value > 0 && amount > 0, "Can not exchange 0 ETH");
         require(msg.value >= amount, "Amount ETH has to be larger than specified amount");
 
+        uint balanceBefore = IERC20Upgradeable(WETH9).balanceOf(address(this));
         WethLike(WETH9).deposit{value: amount}();
 
-        require(IERC20Upgradeable(WETH9).balanceOf(address(this)) == amount);
+        uint balanceDiff = IERC20Upgradeable(WETH9).balanceOf(address(this)) - balanceBefore;
+        require(balanceDiff == amount, "Not enough WETH received");
 
         convertedAmount = _swapExactSingle(amount, WETH9);
 
@@ -247,42 +250,49 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     /// @notice setSupportedCollateral which can be used for onramp
     function setSupportedCollateral(address collateral, bool supported) external onlyOwner {
+        require(collateral != address(0), "Can not set a zero address!");
         collateralSupported[collateral] = supported;
         emit SetSupportedCollateral(collateral, supported);
     }
 
     /// @notice setSupportedAMM which can call the onramp method
     function setSupportedAMM(address amm, bool supported) external onlyOwner {
+        require(amm != address(0), "Can not set a zero address!");
         ammsSupported[amm] = supported;
         emit SetSupportedAMM(amm, supported);
     }
 
     /// @notice setWETH
     function setWETH(address _weth) external onlyOwner {
+        require(_weth != address(0), "Can not set a zero address!");
         WETH9 = _weth;
         emit SetWETH(_weth);
     }
 
     /// @notice setUSD
     function setSUSD(address _usd) external onlyOwner {
+        require(_usd != address(0), "Can not set a zero address!");
         sUSD = IERC20Upgradeable(_usd);
         emit SetSUSD(_usd);
     }
 
     /// @notice setSwapRouter
     function setSwapRouter(address _router) external onlyOwner {
+        require(_router != address(0), "Can not set a zero address!");
         swapRouter = ISwapRouter(_router);
         emit SetSwapRouter(_router);
     }
 
     /// @notice setPriceFeed
     function setPriceFeed(address _priceFeed) external onlyOwner {
+        require(_priceFeed != address(0), "Can not set a zero address!");
         priceFeed = IPriceFeed(_priceFeed);
         emit SetPriceFeed(_priceFeed);
     }
 
     /// @notice map a key to an asset for price feed
     function setPriceFeedKeyPerAsset(bytes32 key, address asset) external onlyOwner {
+        require(asset != address(0), "Can not set a zero address!");
         priceFeedKeyPerCollateral[asset] = key;
         emit SetPriceFeedKeyPerAsset(key, asset);
     }
@@ -293,6 +303,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         bytes calldata path,
         bool doReset
     ) external onlyOwner {
+        require(asset != address(0), "Can not set a zero address!");
         if (doReset) {
             bytes memory resetVar;
             pathPerCollateral[asset] = resetVar;
@@ -304,6 +315,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     /// @notice set manager to use collateral transformations as needed
     function setManager(address _manager) external onlyOwner {
+        require(_manager != address(0), "Can not set a zero address!");
         manager = IPositionalMarketManagerTruncated(_manager);
         emit ManagerChanged(_manager);
     }
@@ -323,6 +335,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         bool _curveOnrampEnabled,
         uint _maxAllowedPegSlippagePercentage
     ) external onlyOwner {
+        require(_curveSUSD != address(0), "Can not set a zero address!");
         curveSUSD = ICurveSUSD(_curveSUSD);
         dai = _dai;
         usdc = _usdc;

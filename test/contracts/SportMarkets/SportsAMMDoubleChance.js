@@ -131,7 +131,8 @@ contract('SportsAMM DoubleChance', (accounts) => {
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
-	let GamesOddsObtainerDeployed;
+	let GamesOddsObtainerDeployed, SportAMMRiskManager;
+	let emptyArray = [];
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -227,15 +228,9 @@ contract('SportsAMM DoubleChance', (accounts) => {
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
-		await SportsAMM.initialize(
-			owner,
-			Thales.address,
-			toUnit('5000'),
-			toUnit('0.02'),
-			toUnit('0.2'),
-			DAY,
-			{ from: owner }
-		);
+		await SportsAMM.initialize(owner, Thales.address, toUnit('0.02'), toUnit('0.2'), DAY, {
+			from: owner,
+		});
 
 		await SportsAMM.setParameters(
 			DAY,
@@ -243,7 +238,6 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
-			toUnit('5000'),
 			toUnit('0.01'),
 			toUnit('0.005'),
 			toUnit('500000'),
@@ -468,6 +462,27 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
+
+		let SportAMMRiskManagerContract = artifacts.require('SportAMMRiskManager');
+		SportAMMRiskManager = await SportAMMRiskManagerContract.new();
+
+		await SportAMMRiskManager.initialize(
+			owner,
+			SportPositionalMarketManager.address,
+			toUnit('5000'),
+			[tagID_4],
+			[toUnit('50000')],
+			emptyArray,
+			emptyArray,
+			emptyArray,
+			3,
+			[tagID_4],
+			[5],
+			{ from: owner }
+		);
 
 		await SportsAMM.setAddresses(
 			owner,
@@ -478,6 +493,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			ZERO_ADDRESS,
 			wrapper,
 			SportAMMLiquidityPool.address,
+			SportAMMRiskManager.address,
 			{ from: owner }
 		);
 
@@ -505,7 +521,6 @@ contract('SportsAMM DoubleChance', (accounts) => {
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
-		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 	});
 
 	describe('Test double chance markets game', () => {
@@ -575,7 +590,6 @@ contract('SportsAMM DoubleChance', (accounts) => {
 		it('Checking SportsAMM variables', async () => {
 			assert.bnEqual(await SportsAMM.min_spread(), toUnit('0.04'));
 			assert.bnEqual(await SportsAMM.max_spread(), toUnit('0.2'));
-			assert.bnEqual(await SportsAMM.defaultCapPerGame(), toUnit('5000'));
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
 		});
 
@@ -828,7 +842,6 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				toUnit('0.2'),
 				toUnit('0.001'),
 				toUnit('0.1'),
-				toUnit('5000'),
 				toUnit('0.01'),
 				toUnit('0.005'),
 				toUnit('500'),
@@ -853,7 +866,6 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				toUnit('0.2'),
 				toUnit('0.001'),
 				toUnit('0.1'),
-				toUnit('5000'),
 				toUnit('0.01'),
 				toUnit('0.005'),
 				toUnit('500'),

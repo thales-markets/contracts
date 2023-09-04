@@ -151,7 +151,9 @@ contract('SportsAMM', (accounts) => {
 		Referrals,
 		GamesOddsObtainerDeployed,
 		SportsAMM,
-		SportAMMLiquidityPool;
+		SportAMMLiquidityPool,
+		SportAMMRiskManager;
+	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -221,15 +223,9 @@ contract('SportsAMM', (accounts) => {
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
-		await SportsAMM.initialize(
-			owner,
-			Thales.address,
-			toUnit('100'),
-			toUnit('0.02'),
-			toUnit('0.2'),
-			HOUR,
-			{ from: owner }
-		);
+		await SportsAMM.initialize(owner, Thales.address, toUnit('0.02'), toUnit('0.2'), HOUR, {
+			from: owner,
+		});
 
 		await SportsAMM.setParameters(
 			HOUR,
@@ -237,7 +233,6 @@ contract('SportsAMM', (accounts) => {
 			toUnit('0.2'),
 			toUnit('0.001'),
 			toUnit('0.9'),
-			toUnit('100'),
 			toUnit('0.01'),
 			toUnit('0.005'),
 			toUnit('500'),
@@ -459,6 +454,27 @@ contract('SportsAMM', (accounts) => {
 			},
 			{ from: owner }
 		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
+
+		let SportAMMRiskManagerContract = artifacts.require('SportAMMRiskManager');
+		SportAMMRiskManager = await SportAMMRiskManagerContract.new();
+
+		await SportAMMRiskManager.initialize(
+			owner,
+			SportPositionalMarketManager.address,
+			toUnit('100'),
+			[tagID_4],
+			[toUnit('100')],
+			emptyArray,
+			emptyArray,
+			emptyArray,
+			3,
+			[tagID_4],
+			[5],
+			{ from: owner }
+		);
 
 		await SportsAMM.setAddresses(
 			owner,
@@ -469,6 +485,7 @@ contract('SportsAMM', (accounts) => {
 			ZERO_ADDRESS,
 			wrapper,
 			SportAMMLiquidityPool.address,
+			SportAMMRiskManager.address,
 			{ from: owner }
 		);
 

@@ -15,6 +15,9 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 8453) {
+		network = 'baseMainnet';
+	}
 	const owner = new ethers.Wallet(user_key1, ethers.provider);
 
 	console.log('Owner is:' + owner.address);

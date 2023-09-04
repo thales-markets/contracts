@@ -55,6 +55,10 @@ async function main() {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
 
 	const paymentCreate = w3utils.toWei('0.01');
 	const paymentResolve = w3utils.toWei('0.01');

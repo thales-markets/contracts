@@ -52,6 +52,11 @@ async function main() {
 		network = 'arbitrumOne';
 		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
 
 	// min_spread = 0.01
 	// max_spread = 0.05
@@ -97,7 +102,6 @@ async function main() {
 	const SportsAMMDeployed = await upgrades.deployProxy(SportsAMM, [
 		owner.address,
 		PaymentToken,
-		capPerMarket,
 		min_spread,
 		max_spread,
 		minimalTimeLeftToMaturity,
@@ -123,7 +127,6 @@ async function main() {
 		max_spread,
 		min_supported,
 		max_supported,
-		capPerMarket,
 		safeBoxImpact,
 		referrerFee,
 		{ from: owner.address }

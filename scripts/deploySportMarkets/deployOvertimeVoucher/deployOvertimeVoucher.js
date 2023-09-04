@@ -55,6 +55,12 @@ async function main() {
 		PaymentToken = getTargetAddress('ProxyUSDC', network);
 		multiplier = 1e6;
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+		multiplier = 1e6;
+	}
 
 	sUSDAddress = PaymentToken;
 

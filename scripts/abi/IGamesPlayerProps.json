@@ -1,0 +1,390 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "cancelMarketFromManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      }
+    ],
+    "name": "cancelPlayerPropsMarketForMain",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "playerId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "option",
+        "type": "uint8"
+      }
+    ],
+    "name": "createFulfilledForPlayerProps",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      }
+    ],
+    "name": "doesSportSupportPlayerProps",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes[]",
+        "name": "_playerProps",
+        "type": "bytes[]"
+      }
+    ],
+    "name": "fulfillPlayerPropsCLResolved",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getAllOptionsWithPlayersForGameId",
+    "outputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "_playerIds",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "_options",
+        "type": "uint8[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isResolved",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "address[][]",
+        "name": "_childMarketsPerOption",
+        "type": "address[][]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "getNormalizedOddsForMarket",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "playerId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "option",
+        "type": "uint8"
+      }
+    ],
+    "name": "getPlayerPropForOption",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "",
+        "type": "uint16"
+      },
+      {
+        "internalType": "int24",
+        "name": "",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "",
+        "type": "int24"
+      },
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
+    ],
+    "name": "mainMarketChildMarketIndex",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      }
+    ],
+    "name": "numberOfChildMarkets",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "playerId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "option",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "playerName",
+            "type": "string"
+          },
+          {
+            "internalType": "uint16",
+            "name": "line",
+            "type": "uint16"
+          },
+          {
+            "internalType": "int24",
+            "name": "overOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "underOdds",
+            "type": "int24"
+          }
+        ],
+        "internalType": "struct IGamesPlayerProps.PlayerProps",
+        "name": "_player",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      }
+    ],
+    "name": "obtainPlayerProps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_invalidOddsOnMain",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_circuitBreakerMain",
+        "type": "bool"
+      }
+    ],
+    "name": "pauseAllPlayerPropsMarketForMain",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      }
+    ],
+    "name": "pausedByCircuitBreakerOnMain",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      }
+    ],
+    "name": "pausedByInvalidOddsOnMain",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "playerId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "option",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint16",
+            "name": "score",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint8",
+            "name": "statusId",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct IGamesPlayerProps.PlayerPropsResolver",
+        "name": "_result",
+        "type": "tuple"
+      }
+    ],
+    "name": "resolvePlayerProps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

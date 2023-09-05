@@ -309,6 +309,35 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "_playerPropsMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "queryMintsAndMaturityStatusForPlayerProps",
+    "outputs": [
+      {
+        "internalType": "bool[]",
+        "name": "_hasAnyMintsArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isMaturedArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isResolvedArray",
+        "type": "bool[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "market",
         "type": "address"

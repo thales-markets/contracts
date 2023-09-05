@@ -16,13 +16,11 @@ interface ITherundownConsumer {
     // view functions
     function supportedSport(uint _sportId) external view returns (bool);
 
-    function getNormalizedOdds(bytes32 _gameId) external view returns (uint[] memory);
+    function gameOnADate(bytes32 _gameId) external view returns (uint);
+
+    function isGameResolvedOrCanceled(bytes32 _gameId) external view returns (bool);
 
     function getNormalizedOddsForMarket(address _market) external view returns (uint[] memory);
-
-    function getNormalizedChildOdds(address _market) external view returns (uint[] memory);
-
-    function getNormalizedOddsForTwoPosition(bytes32 _gameId) external view returns (uint[] memory);
 
     function getGamesPerDatePerSport(uint _sportId, uint _date) external view returns (bytes32[] memory);
 
@@ -64,6 +62,13 @@ interface ITherundownConsumer {
     function setGameIdPerChildMarket(bytes32 _gameId, address _child) external;
 
     function pauseOrUnpauseMarket(address _market, bool _pause) external;
+
+    function pauseOrUnpauseMarketForPlayerProps(
+        address _market,
+        bool _pause,
+        bool _invalidOdds,
+        bool _circuitBreakerMain
+    ) external;
 
     function setChildMarkets(
         bytes32 _gameId,

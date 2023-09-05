@@ -42,6 +42,25 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_ids",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "NewBookmakerIdsBySportIdForPlayerProps",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_consumer",
         "type": "address"
@@ -80,6 +99,19 @@
       }
     ],
     "name": "NewDefaultBookmakerIds",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_ids",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "NewDefaultBookmakerIdsForPlayerProps",
     "type": "event"
   },
   {
@@ -138,6 +170,19 @@
       }
     ],
     "name": "NewObtainerAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_playerProps",
+        "type": "address"
+      }
+    ],
+    "name": "NewPlayerPropsAddress",
     "type": "event"
   },
   {
@@ -312,6 +357,35 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "_line",
+        "type": "uint16"
+      },
+      {
+        "internalType": "int24",
+        "name": "_overOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "_underOdds",
+        "type": "int24"
+      }
+    ],
+    "name": "areOddsAndLinesValidForPlayer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -570,6 +644,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "defaultPlayerPropsBookmakerIds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32[]",
         "name": "_gameIds",
         "type": "bytes32[]"
@@ -672,6 +765,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getBookmakerIdsBySportIdForPlayerProps",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "_gameIds",
         "type": "bytes32"
@@ -735,6 +847,55 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32[]",
+        "name": "_gameIds",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "_playerIds",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "_optionIds",
+        "type": "uint8[]"
+      }
+    ],
+    "name": "getPlayerPropForOption",
+    "outputs": [
+      {
+        "internalType": "int24[]",
+        "name": "odds",
+        "type": "int24[]"
+      },
+      {
+        "internalType": "uint16[]",
+        "name": "lines",
+        "type": "uint16[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "invalidOddsArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "pausedByInvalidOddsMainArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "pausedByCircuitBreakerMainArray",
+        "type": "bool[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
@@ -761,6 +922,11 @@
         "internalType": "bytes32[]",
         "name": "_gameIds",
         "type": "bytes32[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_supportPlayerProps",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1120,6 +1286,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "playerProps",
+    "outputs": [
+      {
+        "internalType": "contract IGamesPlayerProps",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1133,6 +1312,24 @@
       }
     ],
     "name": "setBookmakerIdsBySportId",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_bookmakerIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "setBookmakerIdsBySportIdForPlayerProps",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1177,6 +1374,19 @@
       }
     ],
     "name": "setDefaultBookmakerIds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_defaultPlayerPropsBookmakerIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "setDefaultBookmakerIdsForPlayerProps",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1286,6 +1496,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_playerProps",
+        "type": "address"
+      }
+    ],
+    "name": "setPlayerPropsAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_manager",
         "type": "address"
       }
@@ -1329,6 +1552,30 @@
     "name": "setWhitelistedAddresses",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "sportIdForPlayerPropsToBookmakerIds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

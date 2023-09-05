@@ -94,7 +94,7 @@ module.exports = {
 		let referrals = await Referrals.new();
 
 		await referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, speedMarketsAMM.address);
-		await referrals.setReferrerFees(toUnit(0.005), toUnit(0.075), toUnit(0.01));
+		await referrals.setReferrerFees(toUnit(0.005), toUnit(0.0075), toUnit(0.01));
 
 		await speedMarketsAMM.setReferrals(referrals.address, {
 			from: owner,

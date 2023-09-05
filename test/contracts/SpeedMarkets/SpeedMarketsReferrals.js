@@ -35,6 +35,32 @@ contract('SpeedMarketsReferrals', (accounts) => {
 			assert.bnEqual(safeBoxBalance, toUnit(0.15)); // 2% from 10 minus referrer fee (0.5%)
 		});
 
+		it('Should referrer receive silver fee', async () => {
+			let { speedMarketsAMM, exoticUSD, priceFeedUpdateData, fee, referrals, now } =
+				await speedMarketsInit(accounts);
+
+			await referrals.setSilverAddress(referrerAddress, true);
+
+			console.log('Create Speed Market with 10 amount and referrer silver fee');
+			await speedMarketsAMM.createNewMarket(
+				toBytes32('ETH'),
+				now + 36000,
+				0,
+				toUnit(10),
+				[priceFeedUpdateData],
+				referrerAddress,
+				{ value: fee }
+			);
+
+			console.log('Check referrer silver fee 0.75%');
+			let referrerBalance = await exoticUSD.balanceOf(referrerAddress);
+			assert.bnEqual(referrerBalance, toUnit(0.075)); // 0.75% from 10
+
+			console.log('Check safe box fee 2% - 0.75%');
+			let safeBoxBalance = await exoticUSD.balanceOf(safeBox);
+			assert.bnEqual(safeBoxBalance, toUnit(0.125)); // 2% from 10 minus referrer fee (0.75%)
+		});
+
 		it('Should referrer receive gold fee', async () => {
 			let { speedMarketsAMM, exoticUSD, priceFeedUpdateData, fee, referrals, now } =
 				await speedMarketsInit(accounts);

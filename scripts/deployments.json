@@ -753,7 +753,7 @@
 		"ParlayMarketDataImplementation": "0x5A027bE94Ec9E05E3f4cDBeba2CFF2c8Fc933F6D",
 		"TherundownConsumerVerifier": "0x86991efb34B0Cf55af38E9dACE3f82CD8B70188F",
 		"TherundownConsumerVerifierImplementation": "0x7c22139249c33a714950f69972618775f7D5fDD2",
-		"ParlayVerifier": "0x190D0EC5038dBdb0E7dDa90E75828712E6373c43",
+		"ParlayVerifier": "0xf51AFd402849eAc1953d754749e17bE57f5C99D0",
 		"SNXIssuer": "0x5F0CCaBe97bF838c777F08702E17EC300FF78cD0",
 		"AddressResolver": "0x1d551351613a28d676BaC1Af157799e201279198",
 		"OpThales_L2": "0xe2aD7187B3b079183a2D16C1d34A255592aC276b",
@@ -802,7 +802,7 @@
 		"ParlayDefaultLiquidityProvider": "0xE2c8EC9F0aF39530f00F13214ce9BA933034E59f",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27",
 		"ParlayPolicy": "0x0Df0FA512a1d9335d7CfDdDb1C890a5514367E95",
-		"ParlayPolicyImplementation": "0xAcEeC7B04b1188CEc192dFC7Fd10bD935Ab196f8",
+		"ParlayPolicyImplementation": "0x0B436B3514D762606Ed7485bD322d8e6e1b7f72F",
 		"SportAMMRiskManager": "0x0E4cB41143Ca28618eA7C96c31f193c01Ee4A293",
 		"SportAMMRiskManagerImplementation": "0x22A265604C4296091EAA8B380a22F4AD62203b6B"
 	},

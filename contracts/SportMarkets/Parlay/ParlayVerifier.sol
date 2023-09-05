@@ -26,6 +26,7 @@ contract ParlayVerifier {
     uint private constant TAG_NUMBER_SPREAD = 10001;
     uint private constant TAG_NUMBER_TOTAL = 10002;
     uint private constant DOUBLE_CHANCE_TAG = 10003;
+    uint private constant PLAYER_PROPS_TAG = 10010;
 
     struct InitialQuoteParameters {
         address[] sportMarkets;
@@ -264,7 +265,12 @@ contract ParlayVerifier {
                             params.positions[j / 2]
                         )
                     );
-                    if (cachedTeams[j].gameCounter > 0 || sgpFee == 0) {
+                    if (params.tag2[j / 2] == PLAYER_PROPS_TAG) {
+                        uint maxGameCounter = params.parlayPolicy.maxPlayerPropsPerSport(params.tag1[j / 2]);
+                        if (maxGameCounter > 0 && cachedTeams[j].gameCounter > maxGameCounter) {
+                            revert("ExceedsPlayerPropsPerMarket");
+                        }
+                    } else if (cachedTeams[j].gameCounter > 0 || sgpFee == 0) {
                         revert("SameTeamOnParlay");
                     }
                     cachedTeams[j].gameCounter += 1;

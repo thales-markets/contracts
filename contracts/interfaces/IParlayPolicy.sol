@@ -31,4 +31,6 @@ interface IParlayPolicy {
     function getSgpFeePerCombination(SGPData memory params) external view returns (uint sgpFee);
 
     function getMarketDefaultOdds(address _sportMarket, uint _position) external view returns (uint odd);
+
+    function maxPlayerPropsPerSport(uint tag1) external view returns (uint);
 }

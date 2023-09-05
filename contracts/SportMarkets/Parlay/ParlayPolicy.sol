@@ -24,6 +24,7 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     mapping(uint => mapping(uint => bool)) public restrictedTagCombination;
     mapping(bytes32 => mapping(uint => uint)) public restrictedTagComboCount;
     mapping(uint => mapping(uint => bool)) public restrictedTag1Combo;
+    mapping(uint => uint) public maxPlayerPropsPerSport;
 
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
         setOwner(_owner);
@@ -65,6 +66,10 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         } else if (restrictTag2 > 0 && restrictTag2 < tag2Count) {
             eligible = false;
         }
+    }
+
+    function setMaxPlayerPropsPerSport(uint tag1, uint maxPlayerPropsGames) external onlyOwner {
+        maxPlayerPropsPerSport[tag1] = maxPlayerPropsGames;
     }
 
     function setRestrictedTagCombos(

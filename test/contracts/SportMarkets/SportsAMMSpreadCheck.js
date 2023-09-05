@@ -575,7 +575,7 @@ contract('SportsAMM', (accounts) => {
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
 			console.log('Available to buy 2: ', fromUnit(answer));
 
-			await SportsAMM.setMinSpreadPerSport(tagID_16, 0, 1, { from: owner });
+			await SportAMMRiskManager.setMinSpreadPerSport(tagID_16, 0, 1, { from: owner });
 			const min_spreadForSport = await SportsAMM.minSpreadPerSport(tagID_16, 0);
 
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
@@ -599,7 +599,7 @@ contract('SportsAMM', (accounts) => {
 		it('Get BuyQuote from SportsAMM, position 1, value: 100', async () => {
 			answer = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
 			console.log('buyAMMQuote: ', fromUnit(answer));
-			await SportsAMM.setMinSpreadPerSport(tagID_16, 0, 1, { from: owner });
+			await SportAMMRiskManager.setMinSpreadPerSport(tagID_16, 0, 1, { from: owner });
 			const min_spreadForSport = await SportsAMM.minSpreadPerSport(tagID_16, 0);
 
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
@@ -619,7 +619,7 @@ contract('SportsAMM', (accounts) => {
 			sum = answer[0].add(answer[1]).add(answer[2]);
 			console.log('sum: ', fromUnit(sum));
 
-			await SportsAMM.setMinSpreadPerSport(tagID_16, 0, 1, { from: owner });
+			await SportAMMRiskManager.setMinSpreadPerSport(tagID_16, 0, 1, { from: owner });
 			const min_spreadForSport = await SportsAMM.minSpreadPerSport(tagID_16, 0);
 
 			console.log('SETTING NEW SPREAD PER SPORT: ', 1);
@@ -653,7 +653,7 @@ contract('SportsAMM', (accounts) => {
 			sum = answer[0].add(answer[1]).add(answer[2]);
 			console.log('sum: ', fromUnit(sum));
 
-			await SportsAMM.setMinSpreadPerSport(tagID_16, 0, toUnit('0.02'), { from: owner });
+			await SportAMMRiskManager.setMinSpreadPerSport(tagID_16, 0, toUnit('0.02'), { from: owner });
 			const min_spreadForSport = await SportsAMM.minSpreadPerSport(tagID_16, 0);
 
 			console.log('SETTING NEW SPREAD PER SPORT: ', 1);
@@ -688,7 +688,7 @@ contract('SportsAMM', (accounts) => {
 			sum = answer[0].add(answer[1]).add(answer[2]);
 			console.log('sum: ', fromUnit(sum));
 
-			await SportsAMM.setMinSpreadPerSport(tagID_16, 0, toUnit('0.1'), { from: owner });
+			await SportAMMRiskManager.setMinSpreadPerSport(tagID_16, 0, toUnit('0.1'), { from: owner });
 			const min_spreadForSport = await SportsAMM.minSpreadPerSport(tagID_16, 0);
 
 			console.log('SETTING NEW SPREAD PER SPORT: ', 1);
@@ -750,7 +750,7 @@ contract('SportsAMM', (accounts) => {
 			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
 			let additionalSlippage = toUnit(0.01);
 
-			await SportsAMM.setMinSpreadPerSport(tagID_16, 0, 1, { from: owner });
+			await SportAMMRiskManager.setMinSpreadPerSport(tagID_16, 0, 1, { from: owner });
 			const min_spreadForSport = await SportsAMM.minSpreadPerSport(tagID_16, 0);
 
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);

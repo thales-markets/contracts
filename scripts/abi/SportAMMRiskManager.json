@@ -433,6 +433,30 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minSupportedOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMinOddsForMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "minOdds",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bool",
         "name": "useDefaultMinSpread",
         "type": "bool"

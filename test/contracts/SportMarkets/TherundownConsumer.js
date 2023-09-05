@@ -640,6 +640,17 @@ contract('TheRundownConsumer', (accounts) => {
 			[4, 16],
 			{ from: owner }
 		);
+		let GamesPlayerProps = artifacts.require('GamesPlayerProps');
+		let GamesPlayerPropsDeployed = await GamesPlayerProps.new({ from: owner });
+		await GamesPlayerPropsDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			fourth, // dummy at beggining
+			[4, 16],
+			{ from: owner }
+		);
 
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
@@ -647,7 +658,10 @@ contract('TheRundownConsumer', (accounts) => {
 			SportPositionalMarketManager.address,
 			verifier.address,
 			GamesOddsObtainerDeployed.address,
-			{ from: owner }
+			GamesPlayerPropsDeployed.address,
+			{
+				from: owner,
+			}
 		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
@@ -656,9 +670,13 @@ contract('TheRundownConsumer', (accounts) => {
 		await SportPositionalMarketManager.setOddsObtainer(GamesOddsObtainerDeployed.address, {
 			from: manager,
 		});
+		await SportPositionalMarketManager.setPlayerProps(GamesPlayerPropsDeployed.address, {
+			from: manager,
+		});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 		await verifier.setObtainer(GamesOddsObtainerDeployed.address, { from: owner });
 		await verifier.setSportsManager(SportPositionalMarketManager.address, { from: owner });
+		await verifier.setPlayerPropsAddress(GamesPlayerPropsDeployed.address, { from: owner });
 	});
 
 	describe('Init', () => {
@@ -1080,7 +1098,10 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(true, await deployedMarket.canResolve());
 
-			assert.equal(false, await TherundownConsumerDeployed.isGameInResolvedStatus(gameFootballid1));
+			assert.equal(
+				false,
+				await TherundownConsumerDeployed.isGameResolvedOrCanceled(gameFootballid1)
+			);
 
 			let verifier_output_game = await verifier.getGameProperties(gameFootballid1);
 
@@ -1112,7 +1133,10 @@ contract('TheRundownConsumer', (accounts) => {
 			// resolve markets
 			const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameFootballid1);
 
-			assert.equal(true, await TherundownConsumerDeployed.isGameInResolvedStatus(gameFootballid1));
+			assert.equal(
+				true,
+				await TherundownConsumerDeployed.isGameResolvedOrCanceled(gameFootballid1)
+			);
 
 			// check if event is emited
 			assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
@@ -1840,13 +1864,13 @@ contract('TheRundownConsumer', (accounts) => {
 				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
 			);
 
-			let getNormalizedChildOdds = await TherundownConsumerDeployed.getNormalizedChildOdds(
+			let getNormalizedChildOdds = await TherundownConsumerDeployed.getNormalizedOddsForMarket(
 				mainMarketTotalChildMarket
 			);
 			assert.notEqual(0, getNormalizedChildOdds[0]);
 			assert.notEqual(0, getNormalizedChildOdds[1]);
 
-			let getNormalizedChildOddsS = await TherundownConsumerDeployed.getNormalizedChildOdds(
+			let getNormalizedChildOddsS = await TherundownConsumerDeployed.getNormalizedOddsForMarket(
 				mainMarketSpreadChildMarket
 			);
 			assert.notEqual(0, getNormalizedChildOddsS[0]);
@@ -1993,13 +2017,13 @@ contract('TheRundownConsumer', (accounts) => {
 				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
 			);
 
-			let getNormalizedChildOdds = await TherundownConsumerDeployed.getNormalizedChildOdds(
+			let getNormalizedChildOdds = await TherundownConsumerDeployed.getNormalizedOddsForMarket(
 				mainMarketTotalChildMarket
 			);
 			assert.notEqual(0, getNormalizedChildOdds[0]);
 			assert.notEqual(0, getNormalizedChildOdds[1]);
 
-			let getNormalizedChildOddsS = await TherundownConsumerDeployed.getNormalizedChildOdds(
+			let getNormalizedChildOddsS = await TherundownConsumerDeployed.getNormalizedOddsForMarket(
 				mainMarketSpreadChildMarket
 			);
 			assert.notEqual(0, getNormalizedChildOddsS[0]);
@@ -2783,7 +2807,7 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(false, await deployedMarket.canResolve());
 			assert.equal(9004, await deployedMarket.tags(0));
 
-			assert.equal(false, await TherundownConsumerDeployed.isGameInResolvedStatus(gameid1));
+			assert.equal(false, await TherundownConsumerDeployed.isGameResolvedOrCanceled(gameid1));
 
 			await fastForward(await currentTime());
 
@@ -4282,7 +4306,7 @@ contract('TheRundownConsumer', (accounts) => {
 				TherundownConsumerDeployed.setPausedByCanceledStatus(dummyAddress, true, {
 					from: wrapper,
 				})
-			).to.be.revertedWith('ID16');
+			).to.be.revertedWith('ID18');
 
 			const tx_SupportedSport = await TherundownConsumerDeployed.setSupportedSport(15, true, {
 				from: owner,
@@ -4360,15 +4384,24 @@ contract('TheRundownConsumer', (accounts) => {
 				wrapper,
 				wrapper,
 				wrapper,
+				wrapper,
 				{
 					from: owner,
 				}
 			);
 
 			await expect(
-				TherundownConsumerDeployed.setSportContracts(wrapper, wrapper, wrapper, wrapper, wrapper, {
-					from: wrapper,
-				})
+				TherundownConsumerDeployed.setSportContracts(
+					wrapper,
+					wrapper,
+					wrapper,
+					wrapper,
+					wrapper,
+					wrapper,
+					{
+						from: wrapper,
+					}
+				)
 			).to.be.revertedWith('Only the contract owner may perform this action');
 
 			// check if event is emited
@@ -4378,6 +4411,7 @@ contract('TheRundownConsumer', (accounts) => {
 				_sportsManager: wrapper,
 				_verifier: wrapper,
 				_oddsObtainer: wrapper,
+				_playerProps: wrapper,
 			});
 		});
 	});

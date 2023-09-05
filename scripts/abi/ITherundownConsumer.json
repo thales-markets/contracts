@@ -114,6 +114,25 @@
         "type": "bytes32"
       }
     ],
+    "name": "gameOnADate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
     "name": "getGameCreatedById",
     "outputs": [
       {
@@ -242,64 +261,7 @@
         "type": "address"
       }
     ],
-    "name": "getNormalizedChildOdds",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getNormalizedOdds",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
     "name": "getNormalizedOddsForMarket",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getNormalizedOddsForTwoPosition",
     "outputs": [
       {
         "internalType": "uint256[]",
@@ -367,6 +329,25 @@
       }
     ],
     "name": "isChildMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "isGameResolvedOrCanceled",
     "outputs": [
       {
         "internalType": "bool",
@@ -510,6 +491,34 @@
       }
     ],
     "name": "pauseOrUnpauseMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_pause",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_invalidOdds",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_circuitBreakerMain",
+        "type": "bool"
+      }
+    ],
+    "name": "pauseOrUnpauseMarketForPlayerProps",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

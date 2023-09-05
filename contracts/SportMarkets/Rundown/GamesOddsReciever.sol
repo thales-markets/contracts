@@ -97,8 +97,8 @@ contract GamesOddsReceiver is Initializable, ProxyOwned, ProxyPausable {
         emit NewConsumerAddress(_consumer);
     }
 
-    /// @notice sets the consumer contract address, which only owner can execute
-    /// @param _obtainer address of a consumer contract
+    /// @notice sets the obtainer contract address, which only owner can execute
+    /// @param _obtainer address of a obtainer contract
     function setObtainerAddress(address _obtainer) external onlyOwner {
         require(_obtainer != address(0), "Invalid address");
         obtainer = IGamesOddsObtainer(_obtainer);

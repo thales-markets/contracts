@@ -38,6 +38,12 @@ interface ITherundownConsumerVerifier {
         int24 totalUnderOdds
     ) external view returns (bool);
 
+    function areOddsAndLinesValidForPlayer(
+        uint16 _line,
+        int24 _overOdds,
+        int24 _underOdds
+    ) external pure returns (bool);
+
     function isValidOutcomeForGame(bool _isTwoPositionalSport, uint _outcome) external view returns (bool);
 
     function isValidOutcomeWithResult(
@@ -49,6 +55,8 @@ interface ITherundownConsumerVerifier {
     function calculateAndNormalizeOdds(int[] memory _americanOdds) external view returns (uint[] memory);
 
     function getBookmakerIdsBySportId(uint256 _sportId) external view returns (uint256[] memory);
+
+    function getBookmakerIdsBySportIdForPlayerProps(uint256 _sportId) external view returns (uint256[] memory);
 
     function getStringIDsFromBytesArrayIDs(bytes32[] memory _ids) external view returns (string[] memory);
 }

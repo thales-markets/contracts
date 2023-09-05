@@ -79,6 +79,11 @@ async function main() {
 
 	console.log('TherundownConsumerVerifier address: ', verifierAddress);
 
+	const playerPropsR = await ethers.getContractFactory('GamesPlayerPropsReceiver');
+	let playerPropsRAddress = getTargetAddress('GamesPlayerPropsReceiver', network);
+
+	console.log('GamesPlayerPropsReceiver address: ', playerPropsRAddress);
+
 	// ODDS ID in bytes32
 	let oddsSpecId = '0x3230646438613738373265343436303862386438323239636566333666623638';
 	console.log('oddsSpecId: ', oddsSpecId);
@@ -99,7 +104,8 @@ async function main() {
 		paymentOdds,
 		oddsSpecId,
 		sportsAMMAddress,
-		verifierAddress
+		verifierAddress,
+		playerPropsRAddress
 	);
 	await TherundownConsumerWrapperDeployed.deployed();
 
@@ -120,6 +126,7 @@ async function main() {
 				oddsSpecId,
 				sportsAMMAddress,
 				verifierAddress,
+				playerPropsRAddress,
 			],
 		});
 	} catch (e) {

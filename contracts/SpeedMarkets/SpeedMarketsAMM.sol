@@ -226,26 +226,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         }
     }
 
-    function _createNewMarket(
+    function _handleRisk(
         bytes32 asset,
-        uint64 strikeTime,
         SpeedMarket.Direction direction,
-        uint buyinAmount,
-        bytes[] memory priceUpdateData,
-        bool transferSusd,
-        address _referrer
+        uint buyinAmount
     ) internal {
-        if (_referrer != address(0)) {
-            IReferrals(referrals).setReferrer(_referrer, msg.sender);
-        }
-        require(supportedAsset[asset], "Asset is not supported");
-        require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "wrong buy in amount");
-        require(
-            strikeTime >= (block.timestamp + minimalTimeToMaturity),
-            "time has to be in the future + minimalTimeToMaturity"
-        );
-        require(strikeTime <= block.timestamp + maximalTimeToMaturity, "time too far into the future");
-
         currentRiskPerAsset[asset] += buyinAmount;
         require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "OI cap breached");
 
@@ -268,6 +253,29 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 "Risk per direction exceeded"
             );
         }
+    }
+
+    function _createNewMarket(
+        bytes32 asset,
+        uint64 strikeTime,
+        SpeedMarket.Direction direction,
+        uint buyinAmount,
+        bytes[] memory priceUpdateData,
+        bool transferSusd,
+        address _referrer
+    ) internal {
+        if (_referrer != address(0)) {
+            IReferrals(referrals).setReferrer(_referrer, msg.sender);
+        }
+        require(supportedAsset[asset], "Asset is not supported");
+        require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "wrong buy in amount");
+        require(
+            strikeTime >= (block.timestamp + minimalTimeToMaturity),
+            "time has to be in the future + minimalTimeToMaturity"
+        );
+        require(strikeTime <= block.timestamp + maximalTimeToMaturity, "time too far into the future");
+
+        _handleRisk(asset, direction, buyinAmount);
 
         uint fee = pyth.getUpdateFee(priceUpdateData);
         pyth.updatePriceFeeds{value: fee}(priceUpdateData);
@@ -590,6 +598,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         //TODO: dont set till StakingThalesBonusRewardsManager is ready for it
         stakingThales = IStakingThales(_stakingThales);
         emit SetStakingThales(_stakingThales);
+    }
+
+    /// @notice set referrals
+    /// @param _referrals contract for referrals storage
+    function setReferrals(address _referrals) external onlyOwner {
+        referrals = _referrals;
     }
 
     /// @notice Set pyth

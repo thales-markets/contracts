@@ -40,12 +40,14 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     function initialize(
         address _owner,
         address thalesAmm,
-        address rangedAMM
+        address rangedAMM,
+        address speedMarketsAmm
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
         whitelistedAddresses[thalesAmm] = true;
         whitelistedAddresses[rangedAMM] = true;
+        whitelistedAddresses[speedMarketsAmm] = true;
     }
 
     function getReferrerFee(address referrer) public view returns (uint referrerFee) {

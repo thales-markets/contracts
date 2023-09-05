@@ -312,7 +312,7 @@ contract('RangedAMM', (accounts) => {
 
 		let Referrals = artifacts.require('Referrals');
 		let referrals = await Referrals.new();
-		await referrals.initialize(owner, thalesAMM.address, rangedMarketsAMM.address);
+		await referrals.initialize(owner, thalesAMM.address, rangedMarketsAMM.address, ZERO_ADDRESS);
 
 		await rangedMarketsAMM.setThalesAMMStakingThalesAndReferrals(
 			thalesAMM.address,

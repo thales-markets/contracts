@@ -226,7 +226,7 @@ contract('ThalesAMM', (accounts) => {
 
 		Referrals = artifacts.require('Referrals');
 		referrals = await Referrals.new();
-		await referrals.initialize(owner, thalesAMM.address, thalesAMM.address);
+		await referrals.initialize(owner, thalesAMM.address, thalesAMM.address, ZERO_ADDRESS);
 
 		await thalesAMM.setStakingThalesAndReferrals(ZERO_ADDRESS, referrals.address, toUnit('0.01'), {
 			from: owner,

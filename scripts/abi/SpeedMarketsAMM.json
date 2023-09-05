@@ -1573,6 +1573,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_referrals",
+        "type": "address"
+      }
+    ],
+    "name": "setReferrals",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_safeBox",
         "type": "address"
       },

@@ -27,6 +27,25 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_child",
+        "type": "address"
+      }
+    ],
+    "name": "childMarketCreated",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_market",
         "type": "address"
       }
@@ -141,12 +160,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
       }
     ],
-    "name": "getNormalizedChildOdds",
+    "name": "getNormalizedOdds",
     "outputs": [
       {
         "internalType": "uint256[]",
@@ -160,12 +179,12 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
       }
     ],
-    "name": "getNormalizedOdds",
+    "name": "getNormalizedOddsForMarket",
     "outputs": [
       {
         "internalType": "uint256[]",

@@ -372,6 +372,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_playerProps",
+        "type": "address"
+      }
+    ],
+    "name": "SetPlayerPropsAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_sportPositionalMarketFactory",
         "type": "address"
       }
@@ -466,6 +479,32 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_parents",
+        "type": "address[]"
+      }
+    ],
+    "name": "cancelMarketsForParents",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_playerPropsMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "cancelMarketsForPlayerProps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1025,6 +1064,77 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "playerProps",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_parents",
+        "type": "address[]"
+      }
+    ],
+    "name": "queryMintsAndMaturityStatusForParents",
+    "outputs": [
+      {
+        "internalType": "bool[]",
+        "name": "_hasAnyMintsArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isMaturedArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isResolvedArray",
+        "type": "bool[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_playerPropsMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "queryMintsAndMaturityStatusForPlayerProps",
+    "outputs": [
+      {
+        "internalType": "bool[]",
+        "name": "_hasAnyMintsArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isMaturedArray",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "_isResolvedArray",
+        "type": "bool[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1258,6 +1368,19 @@
       }
     ],
     "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_playerProps",
+        "type": "address"
+      }
+    ],
+    "name": "setPlayerProps",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

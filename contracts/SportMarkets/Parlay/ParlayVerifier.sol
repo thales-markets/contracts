@@ -265,7 +265,7 @@ contract ParlayVerifier {
                             params.positions[j / 2]
                         )
                     );
-                    if (params.tag2[j / 2] == PLAYER_PROPS_TAG) {
+                    if (params.tag2[j / 2] == PLAYER_PROPS_TAG && params.tag2[i] == PLAYER_PROPS_TAG) {
                         uint maxGameCounter = params.parlayPolicy.maxPlayerPropsPerSport(params.tag1[j / 2]);
                         if (maxGameCounter > 0 && cachedTeams[j].gameCounter > maxGameCounter) {
                             revert("ExceedsPlayerPropsPerMarket");

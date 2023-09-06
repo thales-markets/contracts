@@ -341,6 +341,8 @@ contract ParlayVerifier {
         if (odds1 > 0 && odds2 > 0) {
             if (odds1 < (6 * ONE_PERCENT)) {
                 sgpFee2 = sgpFee - (ONE - sgpFee);
+            } else if (odds1 >= (96 * ONE_PERCENT)) {
+                sgpFee2 = sgpFee + ((ONE - sgpFee) * 90 * ONE_PERCENT) / ONE;
             } else if (odds1 >= (93 * ONE_PERCENT)) {
                 sgpFee2 = sgpFee + ((ONE - sgpFee) * 75 * ONE_PERCENT) / ONE;
             } else if (odds2 >= (50 * ONE_PERCENT)) {
@@ -363,8 +365,6 @@ contract ParlayVerifier {
                 } else {
                     sgpFee2 = sgpFee;
                 }
-            } else if (odds1 + (5 * ONE_PERCENT) > sgpFee) {
-                sgpFee2 = ONE - (sgpFee - odds1);
             }
         }
     }

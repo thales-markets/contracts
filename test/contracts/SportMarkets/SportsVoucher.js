@@ -341,6 +341,18 @@ contract('SportsVauchers', (accounts) => {
 			{ from: owner }
 		);
 
+		let GamesPlayerProps = artifacts.require('GamesPlayerProps');
+		let GamesPlayerPropsDeployed = await GamesPlayerProps.new({ from: owner });
+		await GamesPlayerPropsDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			fourth, // dummy at beggining
+			[4, 16],
+			{ from: owner }
+		);
+
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
@@ -348,6 +360,7 @@ contract('SportsVauchers', (accounts) => {
 			SportPositionalMarketManager.address,
 			verifier.address,
 			GamesOddsObtainerDeployed.address,
+			GamesPlayerPropsDeployed.address,
 			{
 				from: owner,
 			}

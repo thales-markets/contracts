@@ -348,6 +348,7 @@ contract('SportsVauchers', (accounts) => {
 			SportPositionalMarketManager.address,
 			verifier.address,
 			GamesOddsObtainerDeployed.address,
+			verifier.address, // dummy
 			{
 				from: owner,
 			}

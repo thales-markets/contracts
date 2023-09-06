@@ -16,6 +16,9 @@ npx hardhat test test/contracts/ThalesAMM/thalesamm.js
 npx hardhat test test/contracts/ThalesAMM/thalesammImprovements.js
 npx hardhat test test/contracts/RangedMarkets/rangedAmm.js
 
+test all in folder (SportMarkets)
+npx hardhat test test/contracts/SportMarkets/**/*.js
+
 npx hardhat coverage
 
 sports:

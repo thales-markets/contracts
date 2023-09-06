@@ -87,7 +87,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         uint _sportId
     ) external canUpdateOdds {
         if (_areOddsValid(_game)) {
-            uint[] memory currentNormalizedOdd = getNormalizedOdds(_game.gameId);
+            uint[] memory currentNormalizedOdd = _getNormalizedOdds(_game.gameId);
             IGamesOddsObtainer.GameOdds memory currentOddsBeforeSave = gameOdds[_game.gameId];
             gameOdds[_game.gameId] = _game;
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
@@ -128,6 +128,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 )
             ) {
                 _pauseOrUnpauseMarkets(_game, _main, true, true);
+                _pauseOrUnpausePlayerProps(_main, true, false, true);
                 backupOdds[_game.gameId] = currentOddsBeforeSave;
                 emit OddsCircuitBreaker(_main, _game.gameId);
             }
@@ -137,6 +138,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             if (!sportsManager.isMarketPaused(_main)) {
                 invalidOdds[_main] = true;
                 _pauseOrUnpauseMarkets(_game, _main, true, true);
+                _pauseOrUnpausePlayerProps(_main, true, true, false);
             }
 
             emit InvalidOddsForMarket(requestId, _main, _game.gameId, _game);
@@ -233,50 +235,15 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice view function which returns normalized odds up to 100 (Example: 50-40-10)
     /// @param _gameId game id for which game is looking
     /// @return uint[] odds array normalized
-    function getNormalizedOdds(bytes32 _gameId) public view returns (uint[] memory) {
-        address market = consumer.marketPerGameId(_gameId);
-        return
-            normalizedOddsForMarketFulfilled[market]
-                ? normalizedOddsForMarket[market]
-                : getNormalizedOddsFromGameOddsStruct(_gameId);
-    }
-
-    /// @notice view function which returns normalized odds (spread or total) up to 100 (Example: 55-45)
-    /// @param _market market
-    /// @return uint[] odds array normalized
-    function getNormalizedChildOdds(address _market) public view returns (uint[] memory) {
-        return
-            normalizedOddsForMarketFulfilled[_market]
-                ? normalizedOddsForMarket[_market]
-                : getNormalizedChildOddsFromGameOddsStruct(_market);
+    function getNormalizedOdds(bytes32 _gameId) external view returns (uint[] memory) {
+        return _getNormalizedOdds(_gameId);
     }
 
     /// @notice view function which returns normalized odds up to 100 (Example: 50-50)
     /// @param _market market
     /// @return uint[] odds array normalized
-    function getNormalizedOddsForMarket(address _market) public view returns (uint[] memory) {
-        return getNormalizedChildOdds(_market);
-    }
-
-    /// @param _gameId game id for which game is looking
-    /// @return uint[] odds array normalized
-    function getNormalizedOddsFromGameOddsStruct(bytes32 _gameId) public view returns (uint[] memory) {
-        int[] memory odds = new int[](3);
-        odds[0] = gameOdds[_gameId].homeOdds;
-        odds[1] = gameOdds[_gameId].awayOdds;
-        odds[2] = gameOdds[_gameId].drawOdds;
-        return verifier.calculateAndNormalizeOdds(odds);
-    }
-
-    /// @notice view function which returns normalized odds (spread or total) up to 100 (Example: 55-45)
-    /// @param _market market
-    /// @return uint[] odds array normalized
-    function getNormalizedChildOddsFromGameOddsStruct(address _market) public view returns (uint[] memory) {
-        bytes32 gameId = gameIdPerChildMarket[_market];
-        int[] memory odds = new int[](2);
-        odds[0] = isSpreadChildMarket[_market] ? gameOdds[gameId].spreadHomeOdds : gameOdds[gameId].totalOverOdds;
-        odds[1] = isSpreadChildMarket[_market] ? gameOdds[gameId].spreadAwayOdds : gameOdds[gameId].totalUnderOdds;
-        return verifier.calculateAndNormalizeOdds(odds);
+    function getNormalizedOddsForMarket(address _market) external view returns (uint[] memory) {
+        return _getNormalizedChildOdds(_market);
     }
 
     /// @notice function which retrievers all markert addresses for given parent market
@@ -370,6 +337,37 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== INTERNALS ========== */
 
+    function _getNormalizedOdds(bytes32 _gameId) internal view returns (uint[] memory) {
+        address _market = consumer.marketPerGameId(_gameId);
+        return
+            normalizedOddsForMarketFulfilled[_market]
+                ? normalizedOddsForMarket[_market]
+                : _getNormalizedOddsFromGameOddsStruct(_gameId);
+    }
+
+    function _getNormalizedChildOdds(address _market) internal view returns (uint[] memory) {
+        return
+            normalizedOddsForMarketFulfilled[_market]
+                ? normalizedOddsForMarket[_market]
+                : _getNormalizedChildOddsFromGameOddsStruct(_market);
+    }
+
+    function _getNormalizedOddsFromGameOddsStruct(bytes32 _gameId) internal view returns (uint[] memory) {
+        int[] memory odds = new int[](3);
+        odds[0] = gameOdds[_gameId].homeOdds;
+        odds[1] = gameOdds[_gameId].awayOdds;
+        odds[2] = gameOdds[_gameId].drawOdds;
+        return verifier.calculateAndNormalizeOdds(odds);
+    }
+
+    function _getNormalizedChildOddsFromGameOddsStruct(address _market) internal view returns (uint[] memory) {
+        bytes32 gameId = gameIdPerChildMarket[_market];
+        int[] memory odds = new int[](2);
+        odds[0] = isSpreadChildMarket[_market] ? gameOdds[gameId].spreadHomeOdds : gameOdds[gameId].totalOverOdds;
+        odds[1] = isSpreadChildMarket[_market] ? gameOdds[gameId].spreadAwayOdds : gameOdds[gameId].totalUnderOdds;
+        return verifier.calculateAndNormalizeOdds(odds);
+    }
+
     function _areOddsValid(IGamesOddsObtainer.GameOdds memory _game) internal view returns (bool) {
         return
             verifier.areOddsValid(
@@ -387,7 +385,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 _game.gameId,
                 currentActiveTotalChildMarket[_main],
                 _game,
-                getNormalizedChildOdds(currentActiveTotalChildMarket[_main]),
+                _getNormalizedChildOdds(currentActiveTotalChildMarket[_main]),
                 TAG_NUMBER_TOTAL
             );
         } else {
@@ -399,7 +397,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 _game.gameId,
                 currentActiveSpreadChildMarket[_main],
                 _game,
-                getNormalizedChildOdds(currentActiveSpreadChildMarket[_main]),
+                _getNormalizedChildOdds(currentActiveSpreadChildMarket[_main]),
                 TAG_NUMBER_SPREAD
             );
         } else {
@@ -456,14 +454,23 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    function _pauseOrUnpausePlayerProps(
+        address _market,
+        bool _pause,
+        bool _invalidOdds,
+        bool _circuitBreaker
+    ) internal {
+        consumer.pauseOrUnpauseMarketForPlayerProps(_market, _pause, _invalidOdds, _circuitBreaker);
+    }
+
     function _setNormalizedOdds(
         address _market,
         bytes32 _gameId,
         bool _isParent
     ) internal {
         normalizedOddsForMarket[_market] = _isParent
-            ? getNormalizedOddsFromGameOddsStruct(_gameId)
-            : getNormalizedChildOddsFromGameOddsStruct(_market);
+            ? _getNormalizedOddsFromGameOddsStruct(_gameId)
+            : _getNormalizedChildOddsFromGameOddsStruct(_market);
         normalizedOddsForMarketFulfilled[_market] = true;
     }
 
@@ -625,12 +632,12 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             childMarketSread[_child] = _spreadHome;
             currentActiveSpreadChildMarket[_main] = _child;
             isSpreadChildMarket[_child] = true;
-            emit CreateChildSpreadSportsMarket(_main, _child, _gameId, _spreadHome, getNormalizedChildOdds(_child), _type);
+            emit CreateChildSpreadSportsMarket(_main, _child, _gameId, _spreadHome, _getNormalizedChildOdds(_child), _type);
         } else {
             mainMarketTotalChildMarket[_main][_totalOver] = _child;
             childMarketTotal[_child] = _totalOver;
             currentActiveTotalChildMarket[_main] = _child;
-            emit CreateChildTotalSportsMarket(_main, _child, _gameId, _totalOver, getNormalizedChildOdds(_child), _type);
+            emit CreateChildTotalSportsMarket(_main, _child, _gameId, _totalOver, _getNormalizedChildOdds(_child), _type);
         }
     }
 

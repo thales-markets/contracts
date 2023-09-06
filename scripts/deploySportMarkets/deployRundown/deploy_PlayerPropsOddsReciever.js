@@ -2,8 +2,9 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
-
 const { setTargetAddress, getTargetAddress } = require('../../helpers');
+
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
 const { toBN } = web3.utils;
 
@@ -37,6 +38,10 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
 
 	if (networkObj.chainId == 80001) {
 		networkObj.name = 'polygonMumbai';
@@ -47,53 +52,56 @@ async function main() {
 		networkObj.name = 'polygon';
 		network = 'polygon';
 	}
-	if (networkObj.chainId == 420) {
-		networkObj.name = 'optimisticGoerli';
-		network = 'optimisticGoerli';
+
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
 	}
+
+	/* ========== PROPERTIES FOR INITIALIZE ========== */
+
+	const playerProps = await ethers.getContractFactory('GamesPlayerProps');
+	let playerPropsAddress = getTargetAddress('GamesPlayerProps', network);
+
+	console.log('GamesPlayerProps address: ', playerPropsAddress);
 
 	const consumer = await ethers.getContractFactory('TherundownConsumer');
 	let consumerAddress = getTargetAddress('TherundownConsumer', network);
-	const sportsAMM = await ethers.getContractFactory('SportsAMM');
-	let sportsAMMAddress = getTargetAddress('SportsAMM', network);
-	const verifier = await ethers.getContractFactory('TherundownConsumerVerifier');
-	let verifierAddress = getTargetAddress('TherundownConsumerVerifier', network);
-	const playerPropsR = await ethers.getContractFactory('GamesPlayerPropsReceiver');
-	let playerPropsRAddress = getTargetAddress('GamesPlayerPropsReceiver', network);
 
 	console.log('TherundownConsumer address: ', consumerAddress);
 
-	const chainlink = require(`./chainlink/${network}.json`);
+	let addresses = []; // TODO add addresses
 
-	console.log('LINK address: ', chainlink['LINK']);
-	console.log('ORACLE address: ', chainlink['ORACLE']);
-	const paymentCreate = w3utils.toWei('0.01');
-	const paymentResolve = w3utils.toWei('0.01');
-	const paymentOdds = w3utils.toWei('0.01');
-	let oddsSpecId = '0x3230646438613738373265343436303862386438323239636566333666623638';
+	/* ========== DEPLOY CONTRACT ========== */
 
-	const TherundownConsumerWrapper = getTargetAddress('TherundownConsumerWrapper', network);
-	console.log('TherundownConsumerWrapper: ', TherundownConsumerWrapper);
+	// consumer
 
-	try {
-		await hre.run('verify:verify', {
-			address: TherundownConsumerWrapper,
-			constructorArguments: [
-				chainlink['LINK'],
-				chainlink['ORACLE'],
-				consumerAddress,
-				paymentCreate,
-				paymentResolve,
-				paymentOdds,
-				oddsSpecId,
-				sportsAMMAddress,
-				verifierAddress,
-				playerPropsRAddress,
-			],
-		});
-	} catch (e) {
-		console.log(e);
-	}
+	let GamesPlayerPropsReceiver = await ethers.getContractFactory('GamesPlayerPropsReceiver');
+	const receiver = await upgrades.deployProxy(GamesPlayerPropsReceiver, [
+		owner.address,
+		consumerAddress,
+		playerPropsAddress,
+		addresses,
+	]);
+
+	await receiver.deployed();
+
+	console.log('GamesPlayerPropsReceiver deployed to:', receiver.address);
+	setTargetAddress('GamesPlayerPropsReceiver', network, receiver.address);
+
+	const implementation = await getImplementationAddress(ethers.provider, receiver.address);
+	console.log('GamesPlayerPropsReceiverImplementation: ', implementation);
+	setTargetAddress('GamesPlayerPropsReceiverImplementation', network, implementation);
+
+	await hre.run('verify:verify', {
+		address: implementation,
+	});
+}
+
+function delay(time) {
+	return new Promise(function (resolve) {
+		setTimeout(resolve, time);
+	});
 }
 
 main()

@@ -66,4 +66,13 @@ interface ISportPositionalMarketManager {
         address receiver,
         uint amount
     ) external;
+
+    function queryMintsAndMaturityStatusForPlayerProps(address[] memory _playerPropsMarkets)
+        external
+        view
+        returns (
+            bool[] memory _hasAnyMintsArray,
+            bool[] memory _isMaturedArray,
+            bool[] memory _isResolvedArray
+        );
 }

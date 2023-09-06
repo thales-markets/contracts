@@ -12,6 +12,7 @@ import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
+import "../../interfaces/IGamesPlayerProps.sol";
 
 /// @title Verifier of data which are coming from CL and stored into TherundownConsumer.sol
 /// @author gruja
@@ -37,6 +38,10 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
 
     uint public minOddsForCheckingThresholdDefault;
     mapping(uint => uint) public minOddsForCheckingThresholdPerSport;
+
+    IGamesPlayerProps public playerProps;
+    uint256[] public defaultPlayerPropsBookmakerIds;
+    mapping(uint256 => uint256[]) public sportIdForPlayerPropsToBookmakerIds;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -170,6 +175,14 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         return totalOver == totalUnder && totalOver > 0 && totalUnder > 0 && totalOverOdds != 0 && totalUnderOdds != 0;
     }
 
+    function areOddsAndLinesValidForPlayer(
+        uint16 _line,
+        int24 _overOdds,
+        int24 _underOdds
+    ) external pure returns (bool) {
+        return _line > 0 && _overOdds != 0 && _underOdds != 0;
+    }
+
     /// @notice view function which returns if outcome of a game is valid
     /// @param _isTwoPositionalSport if two positional sport  draw now vallid
     /// @param _outcome home - 1, away - 2, draw - 3 (if not two positional), and cancel - 0 are valid outomes
@@ -252,6 +265,49 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             (, , uint24 totalOver, uint24 totalUnder) = obtainer.getLinesForGame(_gameIds[i]);
             lines[i * 2 + 0] = totalOver; // 0 2 4 ...
             lines[i * 2 + 1] = totalUnder; // 1 3 5 ...
+        }
+    }
+
+    /// @notice view function which returns odds and lnes for player props
+    /// @param _gameIds game ids for which games is looking
+    /// @param _playerIds player ids
+    /// @param _optionIds option ids such as points etc
+    /// @return odds odds array
+    /// @return lines line array
+    /// @return invalidOddsArray invalid odds for market
+    function getPlayerPropForOption(
+        bytes32[] memory _gameIds,
+        bytes32[] memory _playerIds,
+        uint8[] memory _optionIds
+    )
+        public
+        view
+        returns (
+            int24[] memory odds,
+            uint16[] memory lines,
+            bool[] memory invalidOddsArray,
+            bool[] memory pausedByInvalidOddsMainArray,
+            bool[] memory pausedByCircuitBreakerMainArray
+        )
+    {
+        odds = new int24[](2 * _gameIds.length);
+        lines = new uint16[](_gameIds.length);
+        invalidOddsArray = new bool[](_gameIds.length);
+        pausedByInvalidOddsMainArray = new bool[](_gameIds.length);
+        pausedByCircuitBreakerMainArray = new bool[](_gameIds.length);
+        for (uint i = 0; i < _gameIds.length; i++) {
+            address marketAddress = consumer.marketPerGameId(_gameIds[i]);
+            (uint16 line, int24 overOdds, int24 underOdds, bool invalidOdds) = playerProps.getPlayerPropForOption(
+                _gameIds[i],
+                _playerIds[i],
+                _optionIds[i]
+            );
+            lines[i] = line;
+            invalidOddsArray[i] = invalidOdds;
+            pausedByInvalidOddsMainArray[i] = playerProps.pausedByInvalidOddsOnMain(marketAddress);
+            pausedByCircuitBreakerMainArray[i] = playerProps.pausedByCircuitBreakerOnMain(marketAddress);
+            odds[i * 2 + 0] = overOdds; // 0 2 4 ...
+            odds[i * 2 + 1] = underOdds; // 1 3 5 ...
         }
     }
 
@@ -366,13 +422,15 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         returns (
             bool _isSportOnADate,
             bool _twoPositional,
-            bytes32[] memory _gameIds
+            bytes32[] memory _gameIds,
+            bool _supportPlayerProps
         )
     {
         return (
             consumer.isSportOnADate(_date, _sportId),
             consumer.isSportTwoPositionsSport(_sportId),
-            consumer.getGamesPerDatePerSport(_sportId, _date)
+            consumer.getGamesPerDatePerSport(_sportId, _date),
+            playerProps.doesSportSupportPlayerProps(_sportId)
         );
     }
 
@@ -461,6 +519,15 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         return sportIdToBookmakerIds[_sportId].length > 0 ? sportIdToBookmakerIds[_sportId] : defaultBookmakerIds;
     }
 
+    /// @notice getting bookmaker by sports id for playerProps
+    /// @param _sportId id of a sport for fetching
+    function getBookmakerIdsBySportIdForPlayerProps(uint256 _sportId) external view returns (uint256[] memory) {
+        return
+            sportIdForPlayerPropsToBookmakerIds[_sportId].length > 0
+                ? sportIdForPlayerPropsToBookmakerIds[_sportId]
+                : defaultPlayerPropsBookmakerIds;
+    }
+
     /// @notice return string array from bytes32 array
     /// @param _ids bytes32 array of game ids
     function getStringIDsFromBytesArrayIDs(bytes32[] memory _ids) external view returns (string[] memory _gameIds) {
@@ -546,6 +613,34 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         emit NewBookmakerIdsBySportId(_sportId, _bookmakerIds);
     }
 
+    /// @notice setting default bookmakers for player props
+    /// @param _defaultPlayerPropsBookmakerIds array of bookmaker ids
+    function setDefaultBookmakerIdsForPlayerProps(uint256[] memory _defaultPlayerPropsBookmakerIds) external onlyOwner {
+        defaultPlayerPropsBookmakerIds = _defaultPlayerPropsBookmakerIds;
+        emit NewDefaultBookmakerIdsForPlayerProps(_defaultPlayerPropsBookmakerIds);
+    }
+
+    /// @notice setting bookmaker by sports id for playerProps
+    /// @param _sportId id of a sport
+    /// @param _bookmakerIds array of bookmakers
+    function setBookmakerIdsBySportIdForPlayerProps(uint256 _sportId, uint256[] memory _bookmakerIds) external {
+        require(msg.sender == owner || whitelistedAddresses[msg.sender], "Only owner or whitelisted address");
+        require(
+            consumer.supportedSport(_sportId) && playerProps.doesSportSupportPlayerProps(_sportId),
+            "SportId is not supported"
+        );
+        sportIdForPlayerPropsToBookmakerIds[_sportId] = _bookmakerIds;
+        emit NewBookmakerIdsBySportIdForPlayerProps(_sportId, _bookmakerIds);
+    }
+
+    /// @notice sets the PlayerProps contract address, which only owner can execute
+    /// @param _playerProps address of a player props contract
+    function setPlayerPropsAddress(address _playerProps) external onlyOwner {
+        require(_playerProps != address(0), "Invalid address");
+        playerProps = IGamesPlayerProps(_playerProps);
+        emit NewPlayerPropsAddress(_playerProps);
+    }
+
     /// @notice sets obtainer
     /// @param _obtainer obtainer address
     function setObtainer(address _obtainer) external onlyOwner {
@@ -598,4 +693,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event NewMinOddsForCheckingThresholdDefault(uint _minOddsChecking);
     event NewMinOddsForCheckingThresholdPerSport(uint256 _sportId, uint _minOddsChecking);
+    event NewBookmakerIdsBySportIdForPlayerProps(uint256 _sportId, uint256[] _ids);
+    event NewDefaultBookmakerIdsForPlayerProps(uint256[] _ids);
+    event NewPlayerPropsAddress(address _playerProps);
 }

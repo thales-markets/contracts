@@ -20,6 +20,9 @@ import "../../interfaces/ITherundownConsumer.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
+import "../../interfaces/IGamesPlayerProps.sol";
+
+import "../../interfaces/IGameChildMarket.sol";
 
 contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, ISportPositionalMarketManager {
     /* ========== LIBRARIES ========== */
@@ -55,6 +58,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     bool public override isDoubleChanceSupported;
     mapping(address => address[]) public doubleChanceMarketsByParent;
     mapping(uint => bool) public doesSportSupportDoubleChance;
+    address public playerProps;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -83,6 +87,11 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setOddsObtainer(address _oddsObtainer) external onlyOwner {
         oddsObtainer = _oddsObtainer;
         emit SetObtainerAddress(_oddsObtainer);
+    }
+
+    function setPlayerProps(address _playerProps) external onlyOwner {
+        playerProps = _playerProps;
+        emit SetPlayerPropsAddress(_playerProps);
     }
 
     function getOddsObtainer() external view override returns (address obtainer) {
@@ -176,6 +185,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             msg.sender == owner ||
                 msg.sender == theRundownConsumer ||
                 msg.sender == oddsObtainer ||
+                msg.sender == playerProps ||
                 whitelistedAddresses[msg.sender],
             "Invalid caller"
         );
@@ -184,24 +194,97 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function updateDatesForMarket(address _market, uint256 _newStartTime) external override {
-        require(msg.sender == owner || msg.sender == theRundownConsumer || msg.sender == oddsObtainer, "Invalid caller");
+        require(msg.sender == owner || msg.sender == theRundownConsumer, "Invalid caller");
 
         uint expiry = _newStartTime.add(expiryDuration);
 
-        // update main market
+        // Update main market
         _updateDatesForMarket(_market, _newStartTime, expiry);
 
-        // number of child
-        uint numberOfChildMarkets = IGamesOddsObtainer(oddsObtainer).numberOfChildMarkets(_market);
+        // Update child markets
+        _updateDatesForChildMarkets(_market, _newStartTime, expiry, oddsObtainer);
+        _updateDatesForChildMarkets(_market, _newStartTime, expiry, playerProps);
+    }
+
+    function _updateDatesForChildMarkets(
+        address _market,
+        uint256 _newStartTime,
+        uint256 _expiry,
+        address _childMarketContract
+    ) internal {
+        uint numberOfChildMarkets = IGameChildMarket(_childMarketContract).numberOfChildMarkets(_market);
 
         for (uint i = 0; i < numberOfChildMarkets; i++) {
-            address child = IGamesOddsObtainer(oddsObtainer).mainMarketChildMarketIndex(_market, i);
-            _updateDatesForMarket(child, _newStartTime, expiry);
+            address child = IGameChildMarket(_childMarketContract).mainMarketChildMarketIndex(_market, i);
+            _updateDatesForMarket(child, _newStartTime, _expiry);
         }
     }
 
     function isMarketPaused(address _market) external view override returns (bool) {
         return ISportPositionalMarket(_market).paused();
+    }
+
+    function queryMintsAndMaturityStatusForParents(address[] memory _parents)
+        external
+        view
+        returns (
+            bool[] memory _hasAnyMintsArray,
+            bool[] memory _isMaturedArray,
+            bool[] memory _isResolvedArray
+        )
+    {
+        _hasAnyMintsArray = new bool[](_parents.length);
+        _isMaturedArray = new bool[](_parents.length);
+        _isResolvedArray = new bool[](_parents.length);
+        for (uint i = 0; i < _parents.length; i++) {
+            (bool _hasAnyMints, uint _maturity) = _hasAnyMintsAndMaturityDatesForMarket(_parents[i]);
+            _isResolvedArray[i] = _isResolvedMarket(_parents[i]);
+            _hasAnyMintsArray[i] = _hasAnyMints;
+            _isMaturedArray[i] = _maturity <= block.timestamp;
+        }
+    }
+
+    function queryMintsAndMaturityStatusForPlayerProps(address[] memory _playerPropsMarkets)
+        external
+        view
+        override
+        returns (
+            bool[] memory _hasAnyMintsArray,
+            bool[] memory _isMaturedArray,
+            bool[] memory _isResolvedArray
+        )
+    {
+        _hasAnyMintsArray = new bool[](_playerPropsMarkets.length);
+        _isMaturedArray = new bool[](_playerPropsMarkets.length);
+        _isResolvedArray = new bool[](_playerPropsMarkets.length);
+        for (uint i = 0; i < _playerPropsMarkets.length; i++) {
+            (bool _hasAnyMints, uint _maturity) = _hasAnyMintsAndMaturityDatesForPP(_playerPropsMarkets[i]);
+            _isResolvedArray[i] = _isResolvedMarket(_playerPropsMarkets[i]);
+            _hasAnyMintsArray[i] = _hasAnyMints;
+            _isMaturedArray[i] = _maturity <= block.timestamp;
+        }
+    }
+
+    function _hasAnyMintsAndMaturityDatesForMarket(address _parent)
+        internal
+        view
+        returns (bool _hasAnyMints, uint _maturity)
+    {
+        ISportPositionalMarket marketContract = ISportPositionalMarket(_parent);
+        (uint maturity, ) = marketContract.times();
+        _hasAnyMints = marketContract.deposited() > 0 || _hasAnyMintsForChildren(_parent);
+        _maturity = maturity;
+    }
+
+    function _hasAnyMintsAndMaturityDatesForPP(address _market) internal view returns (bool _hasAnyMints, uint _maturity) {
+        ISportPositionalMarket marketContract = ISportPositionalMarket(_market);
+        (uint maturity, ) = marketContract.times();
+        _hasAnyMints = marketContract.deposited() > 0;
+        _maturity = maturity;
+    }
+
+    function _isResolvedMarket(address _market) internal view returns (bool _flag) {
+        return ISportPositionalMarket(_market).resolved();
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
@@ -251,7 +334,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-        require(msg.sender == theRundownConsumer || msg.sender == oddsObtainer, "Invalid creator");
+        require(
+            msg.sender == theRundownConsumer || msg.sender == oddsObtainer || msg.sender == playerProps,
+            "Invalid creator"
+        );
 
         uint expiry = maturity.add(expiryDuration);
 
@@ -392,6 +478,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             msg.sender == theRundownConsumer ||
                 msg.sender == owner ||
                 msg.sender == oddsObtainer ||
+                msg.sender == playerProps ||
                 whitelistedCancelAddresses[msg.sender],
             "Invalid resolver"
         );
@@ -457,6 +544,26 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
                 _awayScore,
                 _useBackupOdds
             );
+        }
+    }
+
+    function cancelMarketsForParents(address[] memory _parents) external {
+        for (uint i = 0; i < _parents.length; i++) {
+            require(!isDoubleChance[_parents[i]], "Not supported for double chance markets");
+            (bool _hasAnyMints, uint _maturity) = _hasAnyMintsAndMaturityDatesForMarket(_parents[i]);
+            if (!_hasAnyMints && _maturity <= block.timestamp && !_isResolvedMarket(_parents[i])) {
+                ITherundownConsumer(theRundownConsumer).resolveMarketManually(_parents[i], 0, 0, 0, false);
+            }
+        }
+    }
+
+    function cancelMarketsForPlayerProps(address[] memory _playerPropsMarkets) external {
+        for (uint i = 0; i < _playerPropsMarkets.length; i++) {
+            require(!isDoubleChance[_playerPropsMarkets[i]], "Not supported for double chance markets");
+            (bool _hasAnyMints, uint _maturity) = _hasAnyMintsAndMaturityDatesForPP(_playerPropsMarkets[i]);
+            if (!_hasAnyMints && _maturity <= block.timestamp && !_isResolvedMarket(_playerPropsMarkets[i])) {
+                IGamesPlayerProps(playerProps).cancelMarketFromManager(_playerPropsMarkets[i]);
+            }
         }
     }
 
@@ -557,6 +664,32 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit DatesUpdatedForMarket(_market, _newStartTime, _expiry);
     }
 
+    function _hasAnyMintsForChildren(address _market) internal view returns (bool) {
+        return _hasAnyMints(_market, true) || _hasAnyMints(_market, false);
+    }
+
+    function _hasAnyMints(address _market, bool checkPlayerProps) internal view returns (bool) {
+        uint numberOfChildMarkets;
+        address childMarketContract;
+
+        if (checkPlayerProps) {
+            numberOfChildMarkets = IGameChildMarket(playerProps).numberOfChildMarkets(_market);
+            childMarketContract = playerProps;
+        } else {
+            numberOfChildMarkets = IGameChildMarket(oddsObtainer).numberOfChildMarkets(_market);
+            childMarketContract = oddsObtainer;
+        }
+
+        for (uint i = 0; i < numberOfChildMarkets; i++) {
+            address child = IGameChildMarket(childMarketContract).mainMarketChildMarketIndex(_market, i);
+            if (ISportPositionalMarket(child).deposited() > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     function reverseTransformCollateral(uint value) external view override returns (uint) {
         if (needsTransformingCollateral) {
             return value * 1e12;
@@ -613,6 +746,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event SetsUSD(address _address);
     event SetTherundownConsumer(address theRundownConsumer);
     event SetObtainerAddress(address _obratiner);
+    event SetPlayerPropsAddress(address _playerProps);
     event OddsForMarketRestored(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event DatesUpdatedForMarket(address _market, uint256 _newStartTime, uint256 _expiry);

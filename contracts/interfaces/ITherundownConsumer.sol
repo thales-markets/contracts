@@ -41,6 +41,8 @@ interface ITherundownConsumer {
 
     function gameFulfilledCreated(bytes32 _gameId) external view returns (bool);
 
+    function playerProps() external view returns (address);
+
     // write functions
     function fulfillGamesCreated(
         bytes32 _requestId,

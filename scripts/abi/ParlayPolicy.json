@@ -65,6 +65,30 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_childMarket1",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_childMarket2",
+        "type": "address"
+      }
+    ],
+    "name": "areEligiblePropsMarkets",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "samePlayerDifferentProp",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "consumer",
     "outputs": [

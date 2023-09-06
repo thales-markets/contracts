@@ -54,6 +54,11 @@ interface IGamesPlayerProps {
 
     function pausedByCircuitBreakerOnMain(address _main) external view returns (bool);
 
+    function areEligiblePropsMarkets(address _childMarket1, address _childMarket2)
+        external
+        view
+        returns (bool samePlayerDifferentProp);
+
     function getAllOptionsWithPlayersForGameId(bytes32 _gameId)
         external
         view

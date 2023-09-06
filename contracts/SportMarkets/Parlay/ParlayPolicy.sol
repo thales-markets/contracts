@@ -14,6 +14,9 @@ import "../../interfaces/IParlayMarketsAMM.sol";
 
 import "../../interfaces/IParlayPolicy.sol";
 
+import "../../interfaces/ITherundownConsumer.sol";
+import "../../interfaces/IGamesPlayerProps.sol";
+
 contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     IParlayMarketsAMM public parlayMarketsAMM;
     ISportsAMM public sportsAMM;
@@ -31,6 +34,17 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         parlayMarketsAMM = IParlayMarketsAMM(_parlayMarketsAMM);
         sportsAMM = ISportsAMM(parlayMarketsAMM.sportsAmm());
         consumer = sportsAMM.theRundownConsumer();
+    }
+
+    function areEligiblePropsMarkets(address _childMarket1, address _childMarket2)
+        external
+        view
+        returns (bool samePlayerDifferentProp)
+    {
+        samePlayerDifferentProp = IGamesPlayerProps(ITherundownConsumer(consumer).playerProps()).areEligiblePropsMarkets(
+            _childMarket1,
+            _childMarket2
+        );
     }
 
     function getSgpFeePerCombination(IParlayPolicy.SGPData memory params) external view returns (uint sgpFee) {

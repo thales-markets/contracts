@@ -33,4 +33,9 @@ interface IParlayPolicy {
     function getMarketDefaultOdds(address _sportMarket, uint _position) external view returns (uint odd);
 
     function maxPlayerPropsPerSport(uint tag1) external view returns (uint);
+
+    function areEligiblePropsMarkets(address _childMarket1, address _childMarket2)
+        external
+        view
+        returns (bool samePlayerDifferentProp);
 }

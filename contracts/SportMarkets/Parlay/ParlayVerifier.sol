@@ -266,9 +266,15 @@ contract ParlayVerifier {
                         )
                     );
                     if (params.tag2[j / 2] == PLAYER_PROPS_TAG && params.tag2[i] == PLAYER_PROPS_TAG) {
-                        uint maxGameCounter = params.parlayPolicy.maxPlayerPropsPerSport(params.tag1[j / 2]);
-                        if (maxGameCounter > 0 && cachedTeams[j].gameCounter > maxGameCounter) {
-                            revert("ExceedsPlayerPropsPerMarket");
+                        if (
+                            params.parlayPolicy.areEligiblePropsMarkets(params.sportMarkets[j / 2], params.sportMarkets[i])
+                        ) {
+                            uint maxGameCounter = params.parlayPolicy.maxPlayerPropsPerSport(params.tag1[j / 2]);
+                            if (maxGameCounter > 0 && cachedTeams[j].gameCounter > maxGameCounter) {
+                                revert("ExceedsPlayerPropsPerMarket");
+                            }
+                        } else {
+                            revert("InvalidPlayerProps");
                         }
                     } else if (cachedTeams[j].gameCounter > 0 || sgpFee == 0) {
                         revert("SameTeamOnParlay");

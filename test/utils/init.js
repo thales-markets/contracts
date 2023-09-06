@@ -23,7 +23,7 @@ module.exports = {
 
 		await exoticUSD.mintForUser(owner);
 		balance = await exoticUSD.balanceOf(owner);
-		console.log('Balance of user is ' + balance / 1e18);
+		console.log('Balance of owner is ' + balance / 1e18);
 
 		let balanceOfSpeedMarketAMMBefore = await exoticUSD.balanceOf(speedMarketsAMM.address);
 

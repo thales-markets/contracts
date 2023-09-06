@@ -7,7 +7,7 @@ const { toUnit } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/init');
 
 contract('SpeedMarketsReferrals', (accounts) => {
-	const [owner, referrerAddress, safeBox] = accounts;
+	const [owner, user, safeBox, referrerAddress] = accounts;
 
 	describe('Speed markets referrals ', () => {
 		it('Should referrer receive default fee', async () => {

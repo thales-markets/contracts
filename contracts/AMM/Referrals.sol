@@ -51,14 +51,15 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     function getReferrerFee(address referrer) public view returns (uint referrerFee) {
-        referrerFee = referrerFeeDefault;
+        if (goldAddresses[referrer]) {
+            return referrerFeeGold;
+        }
 
         if (silverAddresses[referrer]) {
-            referrerFee = referrerFeeSilver;
+            return referrerFeeSilver;
         }
-        if (goldAddresses[referrer]) {
-            referrerFee = referrerFeeGold;
-        }
+
+        return referrerFeeDefault;
     }
 
     function setReferrer(address referrer, address referred) external {
@@ -88,6 +89,11 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         uint _referrerFeeSilver,
         uint _referrerFeeGold
     ) external onlyOwner {
+        uint TWO_PERCENT = 0.02 * 1e18;
+        require(
+            _referrerFeeDefault < TWO_PERCENT && _referrerFeeSilver < TWO_PERCENT && _referrerFeeGold < TWO_PERCENT,
+            "Maximum referrer fee is 2%"
+        );
         referrerFeeDefault = _referrerFeeDefault;
         referrerFeeSilver = _referrerFeeSilver;
         referrerFeeGold = _referrerFeeGold;

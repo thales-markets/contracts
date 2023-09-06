@@ -511,17 +511,17 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     /// @notice return all risk data (direction, current and max) for both directions (Up and Down) by specified asset
     function getDirectionalRiskPerAsset(bytes32 asset) external view returns (Risk[] memory) {
-        Risk[] memory risks = new Risk[](2); // two directions: Up and Down
-        // Up
-        SpeedMarket.Direction currentDirection = SpeedMarket.Direction.Up;
-        risks[0].direction = currentDirection;
-        risks[0].current = currentRiskPerAssetAndDirection[asset][currentDirection];
-        risks[0].max = maxRiskPerAssetAndDirection[asset][currentDirection];
-        // Down
-        currentDirection = SpeedMarket.Direction.Down;
-        risks[1].direction = currentDirection;
-        risks[1].current = currentRiskPerAssetAndDirection[asset][currentDirection];
-        risks[1].max = maxRiskPerAssetAndDirection[asset][currentDirection];
+        SpeedMarket.Direction[] memory directions = new SpeedMarket.Direction[](2);
+        directions[0] = SpeedMarket.Direction.Up;
+        directions[1] = SpeedMarket.Direction.Down;
+
+        Risk[] memory risks = new Risk[](directions.length);
+        for (uint i = 0; i < directions.length; i++) {
+            SpeedMarket.Direction currentDirection = directions[i];
+            risks[i].direction = currentDirection;
+            risks[i].current = currentRiskPerAssetAndDirection[asset][currentDirection];
+            risks[i].max = maxRiskPerAssetAndDirection[asset][currentDirection];
+        }
 
         return risks;
     }
@@ -603,6 +603,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice set referrals
     /// @param _referrals contract for referrals storage
     function setReferrals(address _referrals) external onlyOwner {
+        require(_referrals != address(0), "Can not be zero address");
         referrals = _referrals;
     }
 

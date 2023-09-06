@@ -244,10 +244,10 @@ contract SportsAMMUtils {
         )
     {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        homeBalance = home.getBalanceOf(address(addressToCheck));
-        awayBalance = away.getBalanceOf(address(addressToCheck));
+        homeBalance = home.getBalanceOf(addressToCheck);
+        awayBalance = away.getBalanceOf(addressToCheck);
         if (ISportPositionalMarket(market).optionsCount() == 3) {
-            drawBalance = draw.getBalanceOf(address(addressToCheck));
+            drawBalance = draw.getBalanceOf(addressToCheck);
         }
     }
 

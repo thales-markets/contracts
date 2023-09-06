@@ -126,8 +126,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     function offramp(address collateral, uint amount) external nonReentrant notPaused returns (uint convertedAmount) {
         require(collateralSupported[collateral], "Unsupported collateral");
         require(ammsSupported[msg.sender], "Unsupported caller");
-
         sUSD.safeTransferFrom(msg.sender, address(this), amount);
+
         if (curveOnrampEnabled && (collateral == usdc || collateral == dai || collateral == usdt)) {
             // for stable coins use Curve
             convertedAmount = _swapViaCurveOfframp(collateral, amount);

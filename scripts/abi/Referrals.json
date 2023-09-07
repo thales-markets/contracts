@@ -270,11 +270,6 @@
         "internalType": "address",
         "name": "rangedAMM",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "speedMarketsAmm",
-        "type": "address"
       }
     ],
     "name": "initialize",

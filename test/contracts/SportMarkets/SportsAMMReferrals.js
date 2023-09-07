@@ -792,22 +792,5 @@ contract('SportsAMM', (accounts) => {
 			console.log('after buy sportsAMM USDC balance: ', fromUnit(sportsAMMBalanceUSDC));
 			console.log('after buy sportsAMM sUSD balance: ', fromUnit(sportsAMMBalance));
 		});
-		it('Whitelist and set traded before', async () => {
-			await Referrals.setWhitelistedAddress(owner, true, {
-				from: owner,
-			});
-
-			let traders = new Array();
-			traders.push(owner);
-			await Referrals.setSportTradedBefore(traders, {
-				from: owner,
-			});
-
-			let isOwnerWhitelisted = await Referrals.whitelistedAddresses(owner);
-			assert.equal(isOwnerWhitelisted, true);
-
-			let isOwnerPrevtrader = await Referrals.sportTradedBefore(owner);
-			assert.equal(isOwnerPrevtrader, true);
-		});
 	});
 });

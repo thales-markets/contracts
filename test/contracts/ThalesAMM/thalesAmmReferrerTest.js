@@ -374,23 +374,4 @@ contract('ThalesAMM', (accounts) => {
 			assert.bnLte(secondReferrerSusdBalance, toUnit(0.1));
 		});
 	});
-	describe('Test Referrers whitelist and traded before', () => {
-		it('sets correctly', async () => {
-			await referrals.setWhitelistedAddress(owner, true, {
-				from: owner,
-			});
-
-			let traders = new Array();
-			traders.push(owner);
-			await referrals.setTradedBefore(traders, {
-				from: owner,
-			});
-
-			let isOwnerWhitelisted = await referrals.whitelistedAddresses(owner);
-			assert.equal(isOwnerWhitelisted, true);
-
-			let isOwnerPrevtrader = await referrals.tradedBefore(owner);
-			assert.equal(isOwnerPrevtrader, true);
-		});
-	});
 });

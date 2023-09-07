@@ -74,6 +74,31 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_referrerFeeDefault",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_referrerFeeSilver",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_referrerFeeGold",
+        "type": "uint256"
+      }
+    ],
+    "name": "ReferrerTiersFeesSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "goldAddress",
         "type": "address"
@@ -196,7 +221,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "referrerFee",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -518,19 +543,6 @@
   {
     "inputs": [
       {
-        "internalType": "address[]",
-        "name": "_addresses",
-        "type": "address[]"
-      }
-    ],
-    "name": "setSportTradedBefore",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_sportsAMM",
         "type": "address"
@@ -542,19 +554,6 @@
       }
     ],
     "name": "setSportsAMM",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_addresses",
-        "type": "address[]"
-      }
-    ],
-    "name": "setTradedBefore",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

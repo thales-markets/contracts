@@ -380,8 +380,12 @@ contract ParlayVerifier {
                     }
                 }
             } else {
-                if (odds2 >= (58 * ONE_PERCENT)) {
-                    sgpFee2 = ((ONE + (ONE - sgpFee)) * 95 * ONE_PERCENT) / ONE;
+                if (odds2 >= (54 * ONE_PERCENT)) {
+                    if (odds1 >= 76 * ONE_PERCENT) {
+                        sgpFee2 = (ONE + (15 * ONE_PERCENT) + (odds1 * 15 * ONE_PERCENT) / ONE);
+                    } else {
+                        sgpFee2 = (ONE + (15 * ONE_PERCENT) + (odds1 * 10 * ONE_PERCENT) / ONE);
+                    }
                 } else if (odds2 <= (48 * ONE_PERCENT) && odds1 >= (74 * ONE_PERCENT)) {
                     sgpFee2 = ONE + (25 * ONE_PERCENT);
                 } else if (odds2 <= (48 * ONE_PERCENT) && odds1 <= (11 * ONE_PERCENT)) {

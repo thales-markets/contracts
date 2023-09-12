@@ -7,6 +7,19 @@
         "type": "bytes[]"
       }
     ],
+    "name": "fulfillPlayerPropsCL",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes[]",
+        "name": "_playerProps",
+        "type": "bytes[]"
+      }
+    ],
     "name": "fulfillPlayerPropsCLResolved",
     "outputs": [],
     "stateMutability": "nonpayable",

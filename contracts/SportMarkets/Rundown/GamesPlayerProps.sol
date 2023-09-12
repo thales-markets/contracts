@@ -452,6 +452,26 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== VIEW FUNCTIONS ========== */
 
+    /// @notice view function which returns props data for given child market
+    /// @param _market market
+    function getPlayerPropsDataForMarket(address _market)
+        external
+        view
+        returns (
+            address,
+            bytes32,
+            bytes32,
+            uint8
+        )
+    {
+        return (
+            childMarketMainMarket[_market],
+            gameIdPerChildMarket[_market],
+            playerIdPerChildMarket[_market],
+            optionIdPerChildMarket[_market]
+        );
+    }
+
     /// @notice view function which returns normalized odds up to 100 (Example: 50-50)
     /// @param _market market
     /// @return uint[] odds array normalized

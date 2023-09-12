@@ -708,6 +708,26 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			assert.equal(s_gameid1, gameIDs[0]);
 			assert.equal(s_gameid2, gameIDs[1]);
 		});
+		it('Getting string from UINT', async () => {
+			let empty = [];
+			let uint_1 = 1;
+			let uint_2 = 2;
+
+			let s_1 = '1';
+			let s_2 = '2';
+
+			let strings = await verifier.convertUintToString(empty);
+			assert.equal(0, strings.length);
+
+			strings = await verifier.convertUintToString([s_1]);
+			assert.equal(1, strings.length);
+			assert.equal(uint_1, strings[0]);
+
+			strings = await verifier.convertUintToString([s_1, s_2]);
+			assert.equal(2, strings.length);
+			assert.equal(uint_1, strings[0]);
+			assert.equal(uint_2, strings[1]);
+		});
 	});
 	describe('Consumer Verifier Management', () => {
 		it('Test owner functions', async () => {

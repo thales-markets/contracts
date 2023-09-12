@@ -50,6 +50,11 @@
         "internalType": "address",
         "name": "_playerPropsReciever",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_playerProps",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -138,6 +143,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bytes32",
+        "name": "_specId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "NewOddsSpecIdPlayerProps",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_oracle",
         "type": "address"
@@ -183,6 +201,19 @@
       }
     ],
     "name": "NewPaymentAmountResolve",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_playerProps",
+        "type": "address"
+      }
+    ],
+    "name": "NewPlayerProps",
     "type": "event"
   },
   {
@@ -295,6 +326,49 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_date",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_playerId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "_optionId",
+        "type": "uint8"
+      }
+    ],
+    "name": "UpdatePlayerPropsOddsFromAMM",
+    "type": "event"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32[]",
@@ -379,6 +453,19 @@
       }
     ],
     "name": "callUpdateOddsForSpecificGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      }
+    ],
+    "name": "callUpdateOddsForSpecificPlayerProps",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -497,6 +584,24 @@
         "type": "bytes[]"
       }
     ],
+    "name": "fulfillPlayerPropsOdds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "_playerProps",
+        "type": "bytes[]"
+      }
+    ],
     "name": "fulfillPlayerPropsResolved",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -575,6 +680,19 @@
   },
   {
     "inputs": [],
+    "name": "oddsSpecIdPlayerProps",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -633,6 +751,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "playerProps",
+    "outputs": [
+      {
+        "internalType": "contract IGamesPlayerProps",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -866,6 +997,49 @@
         "type": "uint256"
       }
     ],
+    "name": "requestIdPlayerProps",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "requestIdPlayerPropsFulFilled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "requestIdPlayerPropsResolved",
     "outputs": [
       {
@@ -1027,6 +1201,19 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_specId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setOddsSpecIdForPlayerProps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_oracle",
         "type": "address"
@@ -1072,6 +1259,19 @@
       }
     ],
     "name": "setPaymentResolve",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_playerProps",
+        "type": "address"
+      }
+    ],
+    "name": "setPlayerPropsAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

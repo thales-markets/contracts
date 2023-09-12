@@ -612,6 +612,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint8[]",
+        "name": "_numbers",
+        "type": "uint8[]"
+      }
+    ],
+    "name": "convertUintToString",
+    "outputs": [
+      {
+        "internalType": "string[]",
+        "name": "strings",
+        "type": "string[]"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"

@@ -79,6 +79,23 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    /// @notice receive player props odds from CL Node
+    /// @param _playerProps bytes array for IGamesPlayerProps.PlayerProps
+    function fulfillPlayerPropsCL(bytes[] memory _playerProps) external onlyWrapper {
+        for (uint i = 0; i < _playerProps.length; i++) {
+            IGamesPlayerProps.PlayerProps memory player = abi.decode(_playerProps[i], (IGamesPlayerProps.PlayerProps));
+            uint sportId = consumer.sportsIdPerGame(player.gameId);
+            // game needs to be fulfilled and market needed to be created and valid option per sport
+            if (
+                consumer.gameFulfilledCreated(player.gameId) &&
+                consumer.marketPerGameId(player.gameId) != address(0) &&
+                isValidOptionPerSport[sportId][player.option]
+            ) {
+                playerProps.obtainPlayerProps(player, sportId);
+            }
+        }
+    }
+
     /// @notice receive resolve properties for markets
     /// @param _gameIds for which gameids market is resolving (Boston vs Miami etc.)
     /// @param _playerIds for which playerids market is resolving (12345, 678910 etc.)

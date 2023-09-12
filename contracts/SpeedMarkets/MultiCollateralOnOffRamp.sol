@@ -365,7 +365,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     function _getMaxAllowedPegSlippagePercentageForCollateral(address collateral) internal view returns (uint) {
         return
-            maxAllowedPegSlippagePercentagePerCollateral[collateral] >= 0
+            maxAllowedPegSlippagePercentagePerCollateral[collateral] > 0
                 ? maxAllowedPegSlippagePercentagePerCollateral[collateral]
                 : maxAllowedPegSlippagePercentage;
     }

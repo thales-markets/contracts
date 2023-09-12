@@ -989,15 +989,6 @@ contract('SportsAMM', (accounts) => {
 
 			assert.bnGte(toUnit(userEthBalanceAfterDiff), toUnit('0.04'));
 			assert.bnLte(toUnit(userEthBalanceAfterDiff), toUnit('0.05'));
-			//
-			// balance = await testUSDC.balanceOf(curveMock.address);
-			// console.log('Balance testUSDC curveMock after ' + balance / 1e6);
-			//
-			// balance = await testUSDC.balanceOf(first);
-			// console.log('Balance testUSDC first after ' + balance / 1e6);
-			//
-			// assert.bnGte(balance, toUnitSix('99.9'));
-			// assert.bnLte(balance, toUnit('100.1'));
 		});
 	});
 });

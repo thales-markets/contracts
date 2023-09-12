@@ -36,6 +36,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     uint private constant ONE = 1e18;
+    uint private constant COLLATERAL_TRANSFORMER_MULTIPLIER = 1e12;
 
     IERC20Upgradeable public sUSD;
 
@@ -65,6 +66,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     IPositionalMarketManagerTruncated public manager;
 
     mapping(address => bytes) public pathPerCollateralOfframp;
+
+    mapping(address => uint) public maxAllowedPegSlippagePercentagePerCollateral;
 
     receive() external payable {}
 
@@ -263,61 +266,84 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     /// @notice return the guaranteed payout for the given collateral and amount
     function getMinimumReceived(address collateral, uint amount) public view returns (uint minReceived) {
         if (_mapCollateralToCurveIndex(collateral) > 0) {
-            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt ? amount * (1e12) : amount;
-            minReceived = (transformedCollateralForPegCheck * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
+            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
+                ? amount * (COLLATERAL_TRANSFORMER_MULTIPLIER)
+                : amount;
+            minReceived =
+                (transformedCollateralForPegCheck * (ONE - _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
+                ONE;
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
-            minReceived = (((amount * currentCollateralPrice) / ONE) * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
+            minReceived =
+                (((amount * currentCollateralPrice) / ONE) *
+                    (ONE - _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
+                ONE;
         }
         if (address(manager) != address(0)) {
             minReceived = manager.transformCollateral(minReceived);
         }
     }
 
+    // @notice return the minimum needed of collateral to receive amount of sUSD
     function getMinimumNeeded(address collateral, uint amount) public view returns (uint minNeeded) {
         if (address(manager) != address(0)) {
             amount = manager.reverseTransformCollateral(amount);
         }
         if (_mapCollateralToCurveIndex(collateral) > 0) {
-            minNeeded = (amount * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
+            minNeeded = (amount * (ONE + _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) / ONE;
             if (collateral == usdc || collateral == usdt) {
-                minNeeded = minNeeded / 1e12;
+                minNeeded = minNeeded / COLLATERAL_TRANSFORMER_MULTIPLIER;
             }
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
-            minNeeded = (((amount * ONE) / currentCollateralPrice) * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
+            minNeeded =
+                (((amount * ONE) / currentCollateralPrice) *
+                    (ONE + _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
+                ONE;
         }
     }
 
     /// @notice return the guaranteed largest payout for the given collateral and amount
     function getMaximumReceived(address collateral, uint amount) public view returns (uint maxReceived) {
         if (_mapCollateralToCurveIndex(collateral) > 0) {
-            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt ? amount * (1e12) : amount;
-            maxReceived = (transformedCollateralForPegCheck * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
+            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
+                ? amount * (COLLATERAL_TRANSFORMER_MULTIPLIER)
+                : amount;
+            maxReceived =
+                (transformedCollateralForPegCheck * (ONE + _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
+                ONE;
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
-            maxReceived = (((amount * currentCollateralPrice) / ONE) * (ONE + maxAllowedPegSlippagePercentage)) / ONE;
+            maxReceived =
+                (((amount * currentCollateralPrice) / ONE) *
+                    (ONE + _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
+                ONE;
         }
         if (address(manager) != address(0)) {
             maxReceived = manager.transformCollateral(maxReceived);
         }
     }
 
+    /// @notice return the minimum received amount in collateral for sUSD amount
     function getMinimumReceivedOfframp(address collateral, uint amount) public view returns (uint minReceivedOfframp) {
         if (address(manager) != address(0)) {
             amount = manager.reverseTransformCollateral(amount);
         }
         if (_mapCollateralToCurveIndex(collateral) > 0) {
-            minReceivedOfframp = (amount * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
+            minReceivedOfframp = (amount * (ONE - _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) / ONE;
             if (collateral == usdc || collateral == usdt) {
-                minReceivedOfframp = minReceivedOfframp / 1e12;
+                minReceivedOfframp = minReceivedOfframp / COLLATERAL_TRANSFORMER_MULTIPLIER;
             }
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
-            minReceivedOfframp = (((amount * ONE) / currentCollateralPrice) * (ONE - maxAllowedPegSlippagePercentage)) / ONE;
+            minReceivedOfframp =
+                (((amount * ONE) / currentCollateralPrice) *
+                    (ONE - _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
+                ONE;
         }
     }
 
+    /// @notice return the maximum received amount in collateral for sUSD amount
     function getMaximumReceivedOfframp(address collateral, uint amount) public view returns (uint maxReceivedOfframp) {
         maxReceivedOfframp = getMinimumNeeded(collateral, amount);
     }
@@ -335,6 +361,13 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         } else {
             encoded = abi.encodePacked(inToken, feeOut, target);
         }
+    }
+
+    function _getMaxAllowedPegSlippagePercentageForCollateral(address collateral) internal view returns (uint) {
+        return
+            maxAllowedPegSlippagePercentagePerCollateral[collateral] >= 0
+                ? maxAllowedPegSlippagePercentagePerCollateral[collateral]
+                : maxAllowedPegSlippagePercentage;
     }
 
     //////////////// setters
@@ -420,6 +453,24 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         emit SetPathPerCollateralOfframp(asset, path, doReset);
     }
 
+    /// @notice set max slippage for a given collateral
+    function setMaxAllowedPegSlippagePercentagePerCollateral(address collateral, uint _maxAllowedSlippagePerCollateral)
+        external
+        onlyOwner
+    {
+        require(collateral != address(0), "Can not set a zero address!");
+        require(_maxAllowedSlippagePerCollateral <= maxAllowedPegSlippagePercentage, "Can not set higher than default");
+        maxAllowedPegSlippagePercentagePerCollateral[collateral] = _maxAllowedSlippagePerCollateral;
+        emit SetMaxAllowedPegSlippagePercentagePerCollateral(collateral, _maxAllowedSlippagePerCollateral);
+    }
+
+    /// @notice set max default slippage
+    function setMaxAllowedPegSlippagePercentage(uint _maxAllowedSlippage) external onlyOwner {
+        require(_maxAllowedSlippage <= 2 * 1e16, "Can not set higher than 2%");
+        maxAllowedPegSlippagePercentage = _maxAllowedSlippage;
+        emit SetMaxAllowedPegSlippagePercentage(_maxAllowedSlippage);
+    }
+
     /// @notice set manager to use collateral transformations as needed
     function setManager(address _manager) external onlyOwner {
         require(_manager != address(0), "Can not set a zero address!");
@@ -478,4 +529,6 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     event ManagerChanged(address manager);
     event SetPathPerCollateral(address asset, bytes path, bool doReset);
     event SetPathPerCollateralOfframp(address asset, bytes path, bool doReset);
+    event SetMaxAllowedPegSlippagePercentagePerCollateral(address collateral, uint _maxAllowedSlippagePerCollateral);
+    event SetMaxAllowedPegSlippagePercentage(uint _maxAllowedSlippage);
 }

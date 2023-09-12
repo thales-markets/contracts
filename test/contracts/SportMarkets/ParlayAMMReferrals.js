@@ -532,7 +532,16 @@ contract('ParlayAMM', (accounts) => {
 
 		await Thales.transfer(curveMock.address, toUnit('1000'), { from: owner });
 
+		let CurveSUSD = artifacts.require('MockCurveSUSD');
+		curveSUSD = await CurveSUSD.new(
+			Thales.address,
+			testUSDC.address,
+			testUSDT.address,
+			testDAI.address
+		);
+
 		await testUSDC.mint(first, toUnit(1000));
+		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
 
 		ParlayAMM = await ParlayAMMContract.new({ from: manager });
@@ -659,7 +668,7 @@ contract('ParlayAMM', (accounts) => {
 		});
 
 		await ParlayAMM.setCurveSUSD(
-			curveMock.address,
+			curveSUSD.address,
 			testDAI.address,
 			testUSDC.address,
 			testUSDT.address,

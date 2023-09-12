@@ -808,7 +808,7 @@ contract('ParlayAMM', (accounts) => {
 		});
 
 		await ParlayAMM.setCurveSUSD(
-			curveSUSD.address,
+			curveMock.address,
 			testDAI.address,
 			testUSDC.address,
 			testUSDT.address,
@@ -820,7 +820,6 @@ contract('ParlayAMM', (accounts) => {
 		Referrals.setSportsAMM(SportsAMM.address, ParlayAMM.address, { from: owner });
 
 		await testUSDC.mint(first, toUnit(1000));
-		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(ParlayAMM.address, toUnit(1000), { from: first });
 
 		// Parlay LP initializers:

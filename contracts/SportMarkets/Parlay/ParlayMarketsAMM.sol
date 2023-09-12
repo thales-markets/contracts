@@ -52,7 +52,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     uint public parlayAmmFee;
     uint public parlaySize;
-    // IMPORTANT: AMM risks only half or the payout effectively, but it risks the whole amount on price movements
     uint public maxSupportedAmount;
     uint public maxSupportedOdds;
     uint public safeBoxImpact;

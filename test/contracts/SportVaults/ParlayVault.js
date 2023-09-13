@@ -825,7 +825,7 @@ contract('Parlay Vault', (accounts) => {
 		});
 
 		await ParlayAMM.setCurveSUSD(
-			curveSUSD.address,
+			curveMock.address,
 			testDAI.address,
 			testUSDC.address,
 			testUSDT.address,
@@ -837,7 +837,6 @@ contract('Parlay Vault', (accounts) => {
 		Referrals.setSportsAMM(SportsAMM.address, ParlayAMM.address, { from: owner });
 
 		await testUSDC.mint(first, toUnit(1000));
-		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(ParlayAMM.address, toUnit(1000), { from: first });
 
 		Vault = artifacts.require('ParlayVault');

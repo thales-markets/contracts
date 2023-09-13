@@ -288,6 +288,8 @@ contract('SportsAMM', (accounts) => {
 		await Thales.mint(second, toUnitSix('1000'));
 		await Thales.mint(third, toUnitSix('1000'));
 
+		await Thales.mint(owner, toUnitSix('1000'));
+
 		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: first });
 		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: second });
 		await Thales.approve(SportsAMM.address, toUnitSix('1000'), { from: third });
@@ -463,8 +465,6 @@ contract('SportsAMM', (accounts) => {
 			toUnit('0.01'),
 			{ from: owner }
 		);
-
-		await Thales.transfer(curveMock.address, toUnit('1000'), { from: owner });
 
 		let SportAMMLiquidityPoolContract = artifacts.require('SportAMMLiquidityPool');
 		SportAMMLiquidityPool = await SportAMMLiquidityPoolContract.new();

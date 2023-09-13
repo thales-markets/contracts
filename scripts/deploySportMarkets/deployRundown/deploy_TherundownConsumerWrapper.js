@@ -17,9 +17,6 @@ async function main() {
 		network = 'mainnet';
 	}
 
-	console.log('Account is:' + owner.address);
-	console.log('Network name:' + networkObj.name);
-
 	if (network === 'unknown') {
 		network = 'localhost';
 	}
@@ -59,6 +56,9 @@ async function main() {
 		networkObj.name = 'baseMainnet';
 		network = 'baseMainnet';
 	}
+
+	console.log('Account is:' + owner.address);
+	console.log('Network name:' + networkObj.name);
 
 	const paymentCreate = w3utils.toWei('0.01');
 	const paymentResolve = w3utils.toWei('0.01');

@@ -58,6 +58,10 @@ async function main() {
 		network = 'arbitrumOne';
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
 	const manager = await ethers.getContractFactory('SportPositionalMarketManager');

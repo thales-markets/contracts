@@ -53,6 +53,10 @@ async function main() {
 		network = 'arbitrumOne';
 		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
 
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
 	const SportsAMM = await ethers.getContractFactory('SportsAMM');
@@ -79,7 +83,7 @@ async function main() {
 		}
 	}
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 8453) {
 		const implementation = await upgrades.prepareUpgrade(SportsAMMAddress, SportsAMM);
 		await delay(5000);
 

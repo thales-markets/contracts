@@ -17,6 +17,8 @@ import "../../utils/libraries/AddressSetLib.sol";
 
 import "./ParlayMarket.sol";
 import "./ParlayVerifier.sol";
+
+// interfaces
 import "../../interfaces/IParlayMarketData.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
@@ -24,6 +26,7 @@ import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 import "../../interfaces/IParlayAMMLiquidityPool.sol";
+import "../../interfaces/IMultiCollateralOnOffRamp.sol";
 
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -83,6 +86,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     mapping(uint => mapping(uint => mapping(uint => uint))) public SGPFeePerCombination;
 
     address public parlayLP;
+
+    /// @return The sUSD amount bought from AMM by users for the parent
+    IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
+    bool public multicollateralEnabled;
+
+    receive() external payable {}
 
     function initialize(
         address _owner,
@@ -175,19 +184,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint skewImpact
         )
     {
-        int128 curveIndex = _mapCollateralToCurveIndex(_collateral);
-        if (curveIndex == 0 || !curveOnrampEnabled) {
-            return (collateralQuote, sUSDAfterFees, totalBuyAmount, totalQuote, skewImpact);
-        }
-
         (sUSDAfterFees, totalBuyAmount, totalQuote, , skewImpact, , ) = _buyQuoteFromParlay(
             _sportMarkets,
             _positions,
             _sUSDPaid
         );
-        //cant get a quote on how much collateral is needed from curve for sUSD,
-        //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid) * (ONE + (ONE_PERCENT / 5))) / ONE;
+        collateralQuote = multiCollateralOnOffRamp.getMinimumNeeded(_collateral, _sUSDPaid);
     }
 
     function canCreateParlayMarket(
@@ -235,28 +237,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _expectedPayout,
         address _differentRecipient
     ) external nonReentrant notPaused {
-        if (_differentRecipient == address(0)) {
-            _differentRecipient = msg.sender;
-        }
-        _buyFromParlay(
+        _buyFromParlayCommon(
             _sportMarkets,
             _positions,
             _sUSDPaid,
             _additionalSlippage,
             _expectedPayout,
-            true,
             _differentRecipient
         );
-        if (referrerFee > 0 && referrals != address(0)) {
-            _handleReferrer(_differentRecipient, _sUSDPaid);
-        }
-        uint balance = sUSD.balanceOf(address(this));
-        if (balance > 0) {
-            sUSD.transfer(
-                IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
-                balance
-            );
-        }
     }
 
     function buyFromParlayWithReferrer(
@@ -268,12 +256,29 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address _differentRecipient,
         address _referrer
     ) external nonReentrant notPaused {
-        uint balance = sUSD.balanceOf(address(this));
-        if (_differentRecipient == address(0)) {
-            _differentRecipient = msg.sender;
-        }
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
+        }
+        _buyFromParlayCommon(
+            _sportMarkets,
+            _positions,
+            _sUSDPaid,
+            _additionalSlippage,
+            _expectedPayout,
+            _differentRecipient
+        );
+    }
+
+    function _buyFromParlayCommon(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDPaid,
+        uint _additionalSlippage,
+        uint _expectedPayout,
+        address _differentRecipient
+    ) internal {
+        if (_differentRecipient == address(0)) {
+            _differentRecipient = msg.sender;
         }
         _buyFromParlay(
             _sportMarkets,
@@ -287,13 +292,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(_differentRecipient, _sUSDPaid);
         }
-        balance = sUSD.balanceOf(address(this)) - balance;
-        if (balance > 0) {
-            sUSD.transfer(
-                IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
-                balance
-            );
-        }
+        _transferSuprlusIfExists();
     }
 
     function buyFromParlayWithDifferentCollateralAndReferrer(
@@ -305,38 +304,81 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address collateral,
         address _referrer
     ) external nonReentrant notPaused {
+        _buyFromParlayWithDifferentCollateralAndReferrer(
+            _sportMarkets,
+            _positions,
+            _sUSDPaid,
+            _additionalSlippage,
+            _expectedPayout,
+            collateral,
+            _referrer,
+            false
+        );
+    }
+
+    function buyFromParlayWithEth(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDPaid,
+        uint _additionalSlippage,
+        uint _expectedPayout,
+        address _referrer
+    ) external payable nonReentrant notPaused {
+        _buyFromParlayWithDifferentCollateralAndReferrer(
+            _sportMarkets,
+            _positions,
+            _sUSDPaid,
+            _additionalSlippage,
+            _expectedPayout,
+            address(0),
+            _referrer,
+            true
+        );
+    }
+
+    function _buyFromParlayWithDifferentCollateralAndReferrer(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDPaid,
+        uint _additionalSlippage,
+        uint _expectedPayout,
+        address collateral,
+        address _referrer,
+        bool isEth
+    ) internal {
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
-        uint balance = sUSD.balanceOf(address(this));
 
-        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
+        uint collateralQuote = multiCollateralOnOffRamp.getMinimumNeeded(collateral, _sUSDPaid);
+        require((collateralQuote * ONE) / (_expectedPayout) <= (ONE + _additionalSlippage), "Slippage too high!");
 
-        //cant get a quote on how much collateral is needed from curve for sUSD,
-        //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        uint collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid) * (ONE + (ONE_PERCENT / (5)))) / ONE;
+        uint exactReceived;
 
-        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
-            ? collateralQuote * 1e12
-            : collateralQuote;
-        require(
-            maxAllowedPegSlippagePercentage > 0 &&
-                transformedCollateralForPegCheck >= (_sUSDPaid * (ONE - maxAllowedPegSlippagePercentage)) / ONE,
-            "Amount below max allowed peg slippage"
-        );
+        if (isEth) {
+            exactReceived = multiCollateralOnOffRamp.onrampWithEth{value: collateralQuote}(collateralQuote);
+        } else {
+            IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
+            IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralQuote);
+            exactReceived = multiCollateralOnOffRamp.onramp(collateral, collateralQuote);
+        }
 
-        require((collateralQuote * ONE) / (_sUSDPaid) <= (ONE + _additionalSlippage), "Slippage too high!");
+        require(exactReceived >= _sUSDPaid, "Not enough sUSD received");
 
-        IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
-        collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
-        curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, _sUSDPaid);
+        //send the surplus to SB
+        if (exactReceived > _sUSDPaid) {
+            sUSD.safeTransfer(safeBox, exactReceived - _sUSDPaid);
+        }
 
         _buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, false, msg.sender);
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(msg.sender, _sUSDPaid);
         }
-        balance = sUSD.balanceOf(address(this)) - balance;
+        _transferSuprlusIfExists();
+    }
+
+    function _transferSuprlusIfExists() internal {
+        uint balance = sUSD.balanceOf(address(this));
         if (balance > 0) {
             sUSD.transfer(
                 IParlayAMMLiquidityPool(parlayLP).getMarketPool(_knownMarkets.elements[_knownMarkets.elements.length - 1]),
@@ -346,6 +388,35 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {
+        _exerciseParlay(_parlayMarket);
+    }
+
+    function exerciseParlayWithOfframp(
+        address _parlayMarket,
+        address collateral,
+        bool toEth
+    ) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {
+        ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
+        address parlayOwner = parlayMarket.parlayOwner();
+        require(msg.sender == parlayOwner, "Only allowed from parlay owner");
+        uint amountBefore = sUSD.balanceOf(parlayOwner);
+        _exerciseParlay(_parlayMarket);
+        uint amountDiff = amountBefore - sUSD.balanceOf(parlayOwner);
+        sUSD.safeTransferFrom(parlayOwner, address(this), amountDiff);
+        if (amountDiff > 0) {
+            if (toEth) {
+                uint offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
+                address payable _to = payable(parlayOwner);
+                bool sent = _to.send(offramped);
+                require(sent, "Failed to send Ether");
+            } else {
+                uint offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
+                IERC20Upgradeable(collateral).safeTransfer(parlayOwner, offramped);
+            }
+        }
+    }
+
+    function _exerciseParlay(address _parlayMarket) internal {
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseWiningSportMarkets();
         uint amount = sUSD.balanceOf(address(this));
@@ -375,10 +446,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function triggerResolvedEvent(address _account, bool _userWon) external {
         require(_knownMarkets.contains(msg.sender), "Not valid Parlay");
         emit ParlayResolved(msg.sender, _account, _userWon);
-    }
-
-    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
-        sUSD.safeTransfer(account, amount);
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
@@ -728,33 +795,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit AddressesSet(_sportsAMM, _safeBox, _referrals, _parlayMarketData, _parlayVerifier);
     }
 
-    /// @notice Setting the Curve collateral addresses for all collaterals
-    /// @param _curveSUSD Address of the Curve contract
-    /// @param _dai Address of the DAI contract
-    /// @param _usdc Address of the USDC contract
-    /// @param _usdt Address of the USDT (Tether) contract
-    /// @param _curveOnrampEnabled Enabling or restricting the use of multicollateral
-    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
-    function setCurveSUSD(
-        address _curveSUSD,
-        address _dai,
-        address _usdc,
-        address _usdt,
-        bool _curveOnrampEnabled,
-        uint _maxAllowedPegSlippagePercentage
-    ) external onlyOwner {
-        curveSUSD = ICurveSUSD(_curveSUSD);
-        dai = _dai;
-        usdc = _usdc;
-        usdt = _usdt;
-        IERC20Upgradeable(dai).approve(_curveSUSD, MAX_APPROVAL);
-        IERC20Upgradeable(usdc).approve(_curveSUSD, MAX_APPROVAL);
-        IERC20Upgradeable(usdt).approve(_curveSUSD, MAX_APPROVAL);
-        // not needed unless selling into different collateral is enabled
-        //sUSD.approve(_curveSUSD, MAX_APPROVAL);
-        curveOnrampEnabled = _curveOnrampEnabled;
-        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
-        emit CurveParametersUpdated(_curveSUSD, _dai, _usdc, _usdt, _curveOnrampEnabled, _maxAllowedPegSlippagePercentage);
+    /// @notice set multicollateral onramp contract
+    function setMultiCollateralOnOffRamp(address _onramper, bool enabled) external onlyOwner {
+        if (address(multiCollateralOnOffRamp) != address(0)) {
+            sUSD.approve(address(multiCollateralOnOffRamp), 0);
+        }
+        multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(_onramper);
+        multicollateralEnabled = enabled;
+        sUSD.approve(_onramper, MAX_APPROVAL);
+        emit SetMultiCollateralOnOffRamp(_onramper, enabled);
     }
 
     function setParlayLP(address _parlayLP) external onlyOwner {
@@ -809,13 +858,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event ParlayAmmFeePerAddressChanged(address _address, uint newFee);
     event NewParlayMastercopy(address parlayMarketMastercopy);
     event NewParametersSet(uint parlaySize);
-    event CurveParametersUpdated(
-        address curveSUSD,
-        address dai,
-        address usdc,
-        address usdt,
-        bool curveOnrampEnabled,
-        uint maxAllowedPegSlippagePercentage
-    );
     event ParlayLPSet(address parlayLP);
+    event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
 }

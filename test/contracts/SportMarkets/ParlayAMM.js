@@ -657,16 +657,6 @@ contract('ParlayAMM', (accounts) => {
 			from: defaultLiquidityProvider,
 		});
 
-		await ParlayAMM.setCurveSUSD(
-			curveMock.address,
-			testDAI.address,
-			testUSDC.address,
-			testUSDT.address,
-			true,
-			toUnit(0.02),
-			{ from: owner }
-		);
-
 		Referrals.setSportsAMM(SportsAMM.address, ParlayAMM.address, { from: owner });
 
 		await testUSDC.mint(first, toUnit(1000));
@@ -741,11 +731,6 @@ contract('ParlayAMM', (accounts) => {
 		});
 		it('set Addresses', async () => {
 			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, {
-				from: owner,
-			});
-		});
-		it('retrieve SUSDAmount', async () => {
-			await ParlayAMM.retrieveSUSDAmount(first, toUnit('20000'), {
 				from: owner,
 			});
 		});

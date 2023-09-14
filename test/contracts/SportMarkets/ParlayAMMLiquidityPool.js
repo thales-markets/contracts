@@ -641,10 +641,6 @@ contract('ParlayAMM', (accounts) => {
 
 		await multiCollateralOnOffRamp.setSupportedCollateral(testUSDC.address, true, { from: owner });
 
-		await SportsAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true, {
-			from: owner,
-		});
-
 		let CurveMock = artifacts.require('CurveMock');
 		let curveMock = await CurveMock.new(
 			Thales.address,
@@ -682,6 +678,10 @@ contract('ParlayAMM', (accounts) => {
 			safeBoxImpact,
 			{ from: owner }
 		);
+
+		await ParlayAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true, {
+			from: owner,
+		});
 
 		await ParlayAMM.setAmounts(
 			toUnit(minUSDAmount),
@@ -806,16 +806,6 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.approve(SportAMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultLiquidityProvider,
 		});
-
-		await ParlayAMM.setCurveSUSD(
-			curveMock.address,
-			testDAI.address,
-			testUSDC.address,
-			testUSDT.address,
-			true,
-			toUnit(0.02),
-			{ from: owner }
-		);
 
 		Referrals.setSportsAMM(SportsAMM.address, ParlayAMM.address, { from: owner });
 

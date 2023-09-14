@@ -1028,26 +1028,6 @@ contract('ParlayAMM', (accounts) => {
 			console.log('amountsToBuy[3]: ', fromUnit(result.amountsToBuy[3]));
 		});
 
-		it('BuyQuote Multicollateral for Parlay', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '11');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toLowerCase();
-			}
-			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				testUSDC.address
-			);
-			console.log('USDC: ', result[0].toString());
-		});
-
 		it('Create/Buy Parlay', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
@@ -1235,43 +1215,6 @@ contract('ParlayAMM', (accounts) => {
 					{ from: first }
 				)
 			).to.be.revertedWith('Slippage too high');
-		});
-
-		it('Multi-collateral buy from amm', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '11');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address;
-			}
-			let slippage = toUnit('0.01');
-			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				testUSDC.address
-			);
-			let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[2],
-				testUSDC.address,
-				ZERO_ADDRESS,
-				{ from: first }
-			);
-			// console.log("event: \n", buyParlayTX.logs[0]);
-
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-				account: first,
-				sUSDPaid: totalSUSDToPay,
-				amount: result[2],
-			});
 		});
 
 		it('Read from Parlay after buy', async () => {

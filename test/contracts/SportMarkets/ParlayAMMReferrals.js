@@ -667,15 +667,10 @@ contract('ParlayAMM', (accounts) => {
 			from: defaultLiquidityProvider,
 		});
 
-		await ParlayAMM.setCurveSUSD(
-			curveSUSD.address,
-			testDAI.address,
-			testUSDC.address,
-			testUSDT.address,
-			true,
-			toUnit(0.02),
-			{ from: owner }
-		);
+		await ParlayAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true, {
+			from: owner,
+		});
+		await multiCollateralOnOffRamp.setSupportedAMM(ParlayAMM.address, true, { from: owner });
 
 		Referrals.setSportsAMM(SportsAMM.address, ParlayAMM.address, { from: owner });
 

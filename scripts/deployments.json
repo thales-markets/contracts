@@ -380,7 +380,8 @@
 		"OvertimeVoucherEscrow": "0x9e244C353145018DA0885E5405f680f27F8eB0Fa",
 		"OvertimeVoucherEscrowImplementation": "0x31EAeCc94e837f05615510e7b9D2f056401A8bCE",
 		"SafeBoxBuyback": "0x860C4DD827DdDd98755e0843b89d909f5A0347Ff",
-		"SafeBoxBuybackImplementation": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203"
+		"SafeBoxBuybackImplementation": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203",
+		"OvertimeToken": "0x149459AD88d23d2ce0F4F1371203Db2122331d94"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

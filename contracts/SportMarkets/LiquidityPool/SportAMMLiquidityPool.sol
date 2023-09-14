@@ -661,6 +661,13 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         emit SetOnlyWhitelistedStakersAllowed(flagToSet);
     }
 
+    /// @notice Set setNeedsTransformingCollateral variable
+    /// @param _needsTransformingCollateral self explanatory
+    function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
+        needsTransformingCollateral = _needsTransformingCollateral;
+        emit SetNeedsTransformingCollateral(_needsTransformingCollateral);
+    }
+
     /// @notice Set _poolRoundMastercopy
     /// @param _poolRoundMastercopy to clone round pools from
     function setPoolRoundMastercopy(address _poolRoundMastercopy) external onlyOwner {
@@ -827,4 +834,5 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     event UtilizationRateChanged(uint utilizationRate);
     event SetSafeBoxParams(address safeBox, uint safeBoxImpact);
     event SafeBoxSharePaid(uint safeBoxShare, uint safeBoxAmount);
+    event SetNeedsTransformingCollateral(bool needs);
 }

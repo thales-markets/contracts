@@ -34,6 +34,11 @@ async function main() {
 		network = 'arbitrumOne';
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
@@ -42,7 +47,7 @@ async function main() {
 
 	const GamesPlayerPropsReceiver = await ethers.getContractFactory('GamesPlayerPropsReceiver');
 	let implementation;
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 8453) {
 		implementation = await upgrades.prepareUpgrade(
 			playerPropsReceiverAddress,
 			GamesPlayerPropsReceiver

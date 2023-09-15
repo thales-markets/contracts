@@ -576,6 +576,11 @@
       },
       {
         "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "_referrer",
         "type": "address"
       }

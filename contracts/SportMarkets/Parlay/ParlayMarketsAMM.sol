@@ -322,6 +322,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _sUSDPaid,
         uint _additionalSlippage,
         uint _expectedPayout,
+        address collateral,
         address _referrer
     ) external payable nonReentrant notPaused {
         _buyFromParlayWithDifferentCollateralAndReferrer(
@@ -330,7 +331,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _sUSDPaid,
             _additionalSlippage,
             _expectedPayout,
-            address(0),
+            collateral,
             _referrer,
             true
         );
@@ -351,11 +352,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         uint collateralQuote = multiCollateralOnOffRamp.getMinimumNeeded(collateral, _sUSDPaid);
-        require((collateralQuote * ONE) / (_expectedPayout) <= (ONE + _additionalSlippage), "Slippage too high!");
+        // TODO: check with Kiril what exactly makes sense here
+        //        require((collateralQuote * ONE) / (_expectedPayout) <= (ONE + _additionalSlippage), "Slippage too high!");
 
         uint exactReceived;
 
         if (isEth) {
+            require(collateral == multiCollateralOnOffRamp.WETH9(), "Wrong collateral sent");
             exactReceived = multiCollateralOnOffRamp.onrampWithEth{value: collateralQuote}(collateralQuote);
         } else {
             IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);

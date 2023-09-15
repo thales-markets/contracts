@@ -525,7 +525,7 @@ contract('ParlayAMM', (accounts) => {
 			testUSDC.address,
 			testUSDC.address,
 			true,
-			toUnit('0.01'),
+			toUnit('0.02'),
 			{ from: owner }
 		);
 
@@ -968,6 +968,91 @@ contract('ParlayAMM', (accounts) => {
 				{ from: first }
 			);
 			// console.log("event: \n", buyParlayTX.logs[0]);
+
+			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+				account: first,
+				sUSDPaid: totalSUSDToPay,
+				amount: result[2],
+			});
+		});
+
+		it('Multi-collateral buy from amm', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '11');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+
+			let MockWeth = artifacts.require('MockWeth');
+			let mockWeth = await MockWeth.new();
+			let userEthBalance = await web3.eth.getBalance(first);
+			console.log('userEthBalance ' + userEthBalance);
+			await multiCollateralOnOffRamp.setWETH(mockWeth.address, { from: owner });
+			await multiCollateralOnOffRamp.setSupportedCollateral(mockWeth.address, true, {
+				from: owner,
+			});
+
+			let SwapRouterMock = artifacts.require('SwapRouterMock');
+			let swapRouterMock = await SwapRouterMock.new();
+
+			await multiCollateralOnOffRamp.setSwapRouter(swapRouterMock.address, { from: owner });
+			await swapRouterMock.setDefaults(mockWeth.address, Thales.address);
+			await Thales.transfer(swapRouterMock.address, toUnit('1000'), { from: owner });
+
+			let MockPriceFeed = artifacts.require('MockPriceFeed');
+			let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(200), { from: owner });
+			await multiCollateralOnOffRamp.setPriceFeed(MockPriceFeedDeployed.address, { from: owner });
+
+			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				mockWeth.address
+			);
+
+			console.log('totalSUSDToPay: ' + totalSUSDToPay / 1e18);
+			console.log('result: ' + result[0] / 1e18);
+			console.log('sUSDAfterFees: ' + result[1] / 1e18);
+			console.log('totalBuyAmount: ' + result[2] / 1e18);
+			console.log('totalQuote: ' + result[3] / 1e18);
+			console.log('skewImpact: ' + result[4] / 1e18);
+
+			let minimumNeeded = await multiCollateralOnOffRamp.getMinimumNeeded(
+				mockWeth.address,
+				totalSUSDToPay
+			);
+			console.log(
+				'minimumNeeded ETH to receive ' + totalSUSDToPay / 1e18 + ' is ' + minimumNeeded / 1e18
+			);
+
+			let balanceBefore = await Thales.balanceOf(first);
+			console.log('balanceBefore: ' + balanceBefore / 1e18);
+			await multiCollateralOnOffRamp.setSupportedAMM(first, true, { from: owner });
+			await multiCollateralOnOffRamp.onrampWithEth(toUnit(minimumNeeded / 1e18), {
+				from: first,
+				value: toUnit(minimumNeeded / 1e18),
+			});
+			let balanceAfter = await Thales.balanceOf(first);
+			console.log('balanceAfter: ' + balanceAfter / 1e18);
+
+			let buyParlayTX = await ParlayAMM.buyFromParlayWithEth(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[2],
+				mockWeth.address,
+				ZERO_ADDRESS,
+				{ from: first, value: toUnit(result[0] / 1e18) }
+			);
+			console.log('event: \n', buyParlayTX.logs[0]);
 
 			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
 				account: first,

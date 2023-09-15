@@ -132,6 +132,7 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			third,
 			verifier.address,
 			GamesPlayerPropsReceiverDeployed.address,
+			GamesPlayerPropsDeployed.address,
 			{ from: owner }
 		);
 
@@ -186,6 +187,38 @@ contract('TherundownConsumerWrapper', (accounts) => {
 		});
 
 		it('Contract management', async () => {
+			const tx_setOddsSpecIdForPlayerProps = await wrapper.setOddsSpecIdForPlayerProps(
+				'0x3465326264623338336437393962343662653663656562336463366465306364',
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				wrapper.setOddsSpecIdForPlayerProps(
+					'0x3465326264623338336437393962343662653663656562336463366465306364',
+					{ from: first }
+				)
+			).to.be.revertedWith('Ownable: caller is not the owner');
+
+			// check if event is emited
+			assert.eventEqual(tx_setOddsSpecIdForPlayerProps.logs[0], 'NewOddsSpecIdPlayerProps', {
+				_specId: '0x3465326264623338336437393962343662653663656562336463366465306364',
+			});
+
+			const tx_setPlayerPropsAddress = await wrapper.setPlayerPropsAddress(first, {
+				from: owner,
+			});
+
+			await expect(wrapper.setPlayerPropsAddress(first, { from: first })).to.be.revertedWith(
+				'Ownable: caller is not the owner'
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_setPlayerPropsAddress.logs[0], 'NewPlayerProps', {
+				_playerProps: first,
+			});
+
 			const tx_Oracle = await wrapper.setOracle(first, {
 				from: owner,
 			});
@@ -381,6 +414,12 @@ contract('TherundownConsumerWrapper', (accounts) => {
 
 			await expect(
 				wrapper.callUpdateOddsForSpecificGame(dummyAddress, {
+					from: second,
+				})
+			).to.be.revertedWith('Only Sports AMM can call this function');
+
+			await expect(
+				wrapper.callUpdateOddsForSpecificPlayerProps(dummyAddress, {
 					from: second,
 				})
 			).to.be.revertedWith('Only Sports AMM can call this function');

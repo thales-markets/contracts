@@ -507,7 +507,7 @@ contract('SportsAMMRiskManager', (accounts) => {
 			{ from: owner }
 		);
 
-		await SportsAMM.setSportOnePositional(9455, true, { from: owner });
+		await SportAMMRiskManager.setSportOnePositional(9455, true, { from: owner });
 
 		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
@@ -813,6 +813,60 @@ contract('SportsAMMRiskManager', (accounts) => {
 
 	describe('Risk management contract', () => {
 		it('Test owner functions', async () => {
+			const setSportOnePositional = await SportAMMRiskManager.setSportOnePositional(9005, true, {
+				from: owner,
+			});
+
+			await expect(
+				SportAMMRiskManager.setSportOnePositional(8000, true, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for sport');
+
+			await expect(
+				SportAMMRiskManager.setSportOnePositional(9005, true, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				SportAMMRiskManager.setSportOnePositional(9005, true, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid flag');
+
+			// check if event is emited
+			assert.eventEqual(setSportOnePositional.logs[0], 'SetSportOnePositional', {
+				_sport: 9005,
+				_flag: true,
+			});
+
+			const setPlayerPropsOnePositional = await SportAMMRiskManager.setPlayerPropsOnePositional(
+				11053,
+				true,
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				SportAMMRiskManager.setPlayerPropsOnePositional(8000, true, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for player props');
+
+			await expect(
+				SportAMMRiskManager.setPlayerPropsOnePositional(11053, true, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(setPlayerPropsOnePositional.logs[0], 'SetPlayerPropsOnePositional', {
+				_playerPropsOptionTag: 11053,
+				_flag: true,
+			});
+
 			const setMaxCapAndRisk = await SportAMMRiskManager.setMaxCapAndRisk(toUnit(22222), 4, {
 				from: owner,
 			});

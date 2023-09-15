@@ -11,6 +11,19 @@
     "type": "constructor"
   },
   {
+    "inputs": [],
+    "name": "TAG_NUMBER_PLAYERS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",

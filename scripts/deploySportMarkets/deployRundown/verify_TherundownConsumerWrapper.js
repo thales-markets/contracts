@@ -60,6 +60,8 @@ async function main() {
 	let verifierAddress = getTargetAddress('TherundownConsumerVerifier', network);
 	const playerPropsR = await ethers.getContractFactory('GamesPlayerPropsReceiver');
 	let playerPropsRAddress = getTargetAddress('GamesPlayerPropsReceiver', network);
+	const playerProps = await ethers.getContractFactory('GamesPlayerProps');
+	let playerPropsAddress = getTargetAddress('GamesPlayerProps', network);
 
 	console.log('TherundownConsumer address: ', consumerAddress);
 
@@ -89,6 +91,7 @@ async function main() {
 				sportsAMMAddress,
 				verifierAddress,
 				playerPropsRAddress,
+				playerPropsAddress,
 			],
 		});
 	} catch (e) {

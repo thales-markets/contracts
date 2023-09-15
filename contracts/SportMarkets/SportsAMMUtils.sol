@@ -8,6 +8,7 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/ITherundownConsumer.sol";
 import "../interfaces/ISportsAMM.sol";
+import "../interfaces/ISportAMMRiskManager.sol";
 
 import "./LiquidityPool/SportAMMLiquidityPool.sol";
 
@@ -19,6 +20,7 @@ contract SportsAMMUtils {
     uint private constant MAX_APPROVAL = type(uint256).max;
     int private constant ONE_INT = 1e18;
     int private constant ONE_PERCENT_INT = 1e16;
+    uint public constant TAG_NUMBER_PLAYERS = 10010;
 
     ISportsAMM public sportsAMM;
 
@@ -192,11 +194,16 @@ contract SportsAMMUtils {
 
     function obtainOdds(address _market, ISportsAMM.Position _position) public view returns (uint oddsToReturn) {
         address theRundownConsumer = sportsAMM.theRundownConsumer();
+        ISportAMMRiskManager riskManager = sportsAMM.riskManager();
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
             odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
-            uint firstTag = ISportPositionalMarket(_market).tags(0);
-            if (!sportsAMM.isMarketForSportOnePositional(firstTag) || uint(_position) == 0) {
+            (uint firstTag, uint secondTag, uint thirdTag) = _getTagsForMarket(_market);
+            if (
+                !riskManager.isMarketForSportOnePositional(firstTag) ||
+                (secondTag == TAG_NUMBER_PLAYERS && !riskManager.isMarketForPlayerPorpsOnePositional(thirdTag)) ||
+                uint(_position) == 0
+            ) {
                 oddsToReturn = odds[uint(_position)];
             }
         }
@@ -464,5 +471,20 @@ contract SportsAMMUtils {
             }
         }
         return obtainOdds(_market, _position);
+    }
+
+    function _getTagsForMarket(address _market)
+        internal
+        view
+        returns (
+            uint tag1,
+            uint tag2,
+            uint tag3
+        )
+    {
+        ISportPositionalMarket sportMarket = ISportPositionalMarket(_market);
+        tag1 = sportMarket.tags(0);
+        tag2 = sportMarket.isChild() ? sportMarket.tags(1) : 0;
+        tag3 = sportMarket.isChild() && sportMarket.tags(1) == TAG_NUMBER_PLAYERS ? sportMarket.tags(2) : 0;
     }
 }

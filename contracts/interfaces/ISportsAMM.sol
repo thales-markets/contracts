@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "../interfaces/ISportAMMRiskManager.sol";
+
 interface ISportsAMM {
     /* ========== VIEWS / VARIABLES ========== */
 
@@ -20,6 +22,8 @@ interface ISportsAMM {
     }
 
     function theRundownConsumer() external view returns (address);
+
+    function riskManager() external view returns (ISportAMMRiskManager riskManager);
 
     function getMarketDefaultOdds(address _market, bool isSell) external view returns (uint[] memory);
 

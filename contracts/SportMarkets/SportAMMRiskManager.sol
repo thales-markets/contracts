@@ -17,6 +17,7 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     /* ========== RISK MANAGER CONST VARIABLES ========== */
     uint public constant MIN_TAG_NUMBER = 9000;
     uint public constant MIN_CHILD_NUMBER = 10000;
+    uint public constant MIN_PLAYER_PROPS_NUMBER = 11000;
 
     /* ========== RISK MANAGER STATE VARIABLES ========== */
     address public manager;
@@ -31,6 +32,9 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
 
     uint public maxCap;
     uint public maxRiskMultiplier;
+
+    mapping(uint => bool) public isMarketForSportOnePositional;
+    mapping(uint => bool) public isMarketForPlayerPropsOnePositional;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -225,6 +229,26 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         emit SetMaxCapAndRisk(_maxCap, _maxRisk);
     }
 
+    /// @notice setting one positional sport
+    /// @param _sportID tag id for sport
+    /// @param _flag is one positional sport flag
+    function setSportOnePositional(uint _sportID, bool _flag) external onlyOwner {
+        require(_sportID > MIN_TAG_NUMBER, "Invalid tag for sport");
+        require(isMarketForSportOnePositional[_sportID] != _flag, "Invalid flag");
+        isMarketForSportOnePositional[_sportID] = _flag;
+        emit SetSportOnePositional(_sportID, _flag);
+    }
+
+    /// @notice setting one positional sport
+    /// @param _playerPropsOptionTag tag id for PP
+    /// @param _flag is one positional sport flag
+    function setPlayerPropsOnePositional(uint _playerPropsOptionTag, bool _flag) external onlyOwner {
+        require(_playerPropsOptionTag > MIN_PLAYER_PROPS_NUMBER, "Invalid tag for player props");
+        require(isMarketForPlayerPropsOnePositional[_playerPropsOptionTag] != _flag, "Invalid flag");
+        isMarketForPlayerPropsOnePositional[_playerPropsOptionTag] = _flag;
+        emit SetPlayerPropsOnePositional(_playerPropsOptionTag, _flag);
+    }
+
     /* ========== MODIFIERS ========== */
     /* ========== EVENTS ========== */
     event SetCapPerSport(uint _sport, uint _cap);
@@ -236,4 +260,6 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     event SetRiskMultiplierPerSport(uint _sport, uint _riskMultiplier);
     event SetRiskMultiplierPerMarket(address _market, uint _riskMultiplier);
     event SetMaxCapAndRisk(uint _maxCap, uint _maxRisk);
+    event SetSportOnePositional(uint _sport, bool _flag);
+    event SetPlayerPropsOnePositional(uint _playerPropsOptionTag, bool _flag);
 }

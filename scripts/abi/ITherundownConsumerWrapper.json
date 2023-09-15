@@ -11,5 +11,18 @@
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      }
+    ],
+    "name": "callUpdateOddsForSpecificPlayerProps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
 ]

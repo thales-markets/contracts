@@ -482,6 +482,7 @@ contract('SportsAMM', (accounts) => {
 			[5],
 			{ from: owner }
 		);
+		await SportAMMRiskManager.setSportOnePositional(9455, true, { from: owner });
 
 		await SportsAMM.setAddresses(
 			owner,
@@ -495,8 +496,6 @@ contract('SportsAMM', (accounts) => {
 			SportAMMRiskManager.address,
 			{ from: owner }
 		);
-
-		await SportsAMM.setSportOnePositional(9455, true, { from: owner });
 
 		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {

@@ -157,7 +157,7 @@
 		"SportAMMRiskManager": "0x4d0192E2fE94687838Eaa3BcbC3B891964B38a9D",
 		"SportAMMRiskManagerImplementation": "0xa9048097759562D3Ad9Caa8745e99b0E3b122b5d",
 		"GamesPlayerProps": "0xE7a6C567dEF38AE2268634EA1Eb0dB80e0c7F8D2",
-		"GamesPlayerPropsImplementation": "0x8d061724B55147B9389c0c77D77B911c87cAB1D9",
+		"GamesPlayerPropsImplementation": "0xf723aE78e1201bA916BA6CaCc4Dc0D43BC6a9075",
 		"GamesPlayerPropsReceiver": "0xA6cd4eB2426bACa4772b48847Ec6b83b36dB71F6",
 		"GamesPlayerPropsReceiverImplementation": "0x22f9192E4135e31E237A28bFDa725D68f63F1F5e"
 	},
@@ -284,7 +284,7 @@
 		"SportAMMRiskManager": "0x4d0192E2fE94687838Eaa3BcbC3B891964B38a9D",
 		"SportAMMRiskManagerImplementation": "0x9668c9cF1780f766d5dfB26ac3e4B1c51d981d18",
 		"GamesPlayerProps": "0xda835388e4f17701e352390778f9b4e2f96ad049",
-		"GamesPlayerPropsImplementation": "0x552fbC93f366273Af45Ca9CbF7217418458074cb",
+		"GamesPlayerPropsImplementation": "0xc819Ef33cE5afDb993918EAeAffa85318F5eEf22",
 		"GamesPlayerPropsReceiver": "0x5311EF5370EAf6eb428DD4eA556AA3461269Aee0",
 		"GamesPlayerPropsReceiverImplementation": "0xfeEB24491Af1b35969CA74a5f05dC1EE00e7f519"
 	},
@@ -381,7 +381,7 @@
 		"SafeBoxBuyback": "0x860C4DD827DdDd98755e0843b89d909f5A0347Ff",
 		"SafeBoxBuybackImplementation": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203",
 		"GamesPlayerProps": "0xE1A9ed7922b78Bcb2b0df66371CCb93bb70dC08d",
-		"GamesPlayerPropsImplementation": "0x22f9192E4135e31E237A28bFDa725D68f63F1F5e",
+		"GamesPlayerPropsImplementation": "0x23c20d4632ADAAB56b9022E72Ed6E5fe9358952F",
 		"GamesPlayerPropsReceiver": "0x3daFD49175AA9e1D71FD94Ec194da813a2cD5741",
 		"GamesPlayerPropsReceiverImplementation": "0xF41A9B14b5DF3DC3357AD28500EC5e900ae7a044",
 		"SportAMMRiskManager": "0xd02339EfD17c3c02Bdb88abbA24Ad2A1b360a88E",

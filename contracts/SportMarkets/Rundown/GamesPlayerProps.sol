@@ -283,7 +283,9 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
 
     function _cancelPlayerPropsMarket(address _main) internal {
         for (uint i = 0; i < numberOfChildMarkets[_main]; i++) {
-            sportsManager.resolveMarket(mainMarketChildMarketIndex[_main][i], CANCELLED);
+            if (!childMarketResolved[mainMarketChildMarketIndex[_main][i]]) {
+                sportsManager.resolveMarket(mainMarketChildMarketIndex[_main][i], CANCELLED);
+            }
         }
     }
 

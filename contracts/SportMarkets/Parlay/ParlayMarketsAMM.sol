@@ -404,7 +404,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(msg.sender == parlayOwner, "Only allowed from parlay owner");
         uint amountBefore = sUSD.balanceOf(parlayOwner);
         _exerciseParlay(_parlayMarket);
-        uint amountDiff = amountBefore - sUSD.balanceOf(parlayOwner);
+        uint amountDiff = sUSD.balanceOf(parlayOwner) - amountBefore;
         sUSD.safeTransferFrom(parlayOwner, address(this), amountDiff);
         if (amountDiff > 0) {
             if (toEth) {
@@ -652,19 +652,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             resolvedParlay[_parlayMarket] = true;
             _knownMarkets.remove(_parlayMarket);
         }
-    }
-
-    function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
-        if (collateral == dai) {
-            return 1;
-        }
-        if (collateral == usdc) {
-            return 2;
-        }
-        if (collateral == usdt) {
-            return 3;
-        }
-        return 0;
     }
 
     function _handleReferrer(address buyer, uint volume) internal {

@@ -528,7 +528,7 @@ contract('SportsAMM', (accounts) => {
 			SportAMMRiskManager.address,
 			{ from: owner }
 		);
-		await SportsAMM.setSportOnePositional(9455, true, { from: owner });
+		await SportAMMRiskManager.setSportOnePositional(9455, true, { from: owner });
 
 		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
@@ -572,9 +572,6 @@ contract('SportsAMM', (accounts) => {
 
 			assert.equal(false, await TherundownConsumerDeployed.cancelGameStatuses(8));
 			assert.equal(true, await TherundownConsumerDeployed.cancelGameStatuses(1));
-
-			assert.equal(true, await SportsAMM.isMarketForSportOnePositional(9455));
-			assert.equal(false, await SportsAMM.isMarketForSportOnePositional(9456));
 		});
 
 		it('Check init Master copies', async () => {

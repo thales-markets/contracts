@@ -539,6 +539,38 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         }
     }
 
+    function convertUintToString(uint8[] memory _numbers) public pure returns (string[] memory strings) {
+        strings = new string[](_numbers.length);
+
+        for (uint256 i = 0; i < _numbers.length; i++) {
+            strings[i] = _uintToString(_numbers[i]);
+        }
+    }
+
+    function _uintToString(uint8 num) internal pure returns (string memory) {
+        if (num == 0) {
+            return "0";
+        }
+
+        uint8 tempNum = num;
+        uint8 digits;
+
+        while (tempNum != 0) {
+            digits++;
+            tempNum /= 10;
+        }
+
+        bytes memory buffer = new bytes(digits);
+
+        while (num != 0) {
+            digits--;
+            buffer[digits] = bytes1(uint8(48 + (num % 10))); // Convert to ASCII
+            num /= 10;
+        }
+
+        return string(buffer);
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     /// @notice sets consumer address

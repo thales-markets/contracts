@@ -74,6 +74,69 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_referrerFeeDefault",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_referrerFeeSilver",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_referrerFeeGold",
+        "type": "uint256"
+      }
+    ],
+    "name": "ReferrerTiersFeesSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "goldAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "flag",
+        "type": "bool"
+      }
+    ],
+    "name": "SetGoldAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "silverAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "flag",
+        "type": "bool"
+      }
+    ],
+    "name": "SetSilverAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "whitelisted",
         "type": "address"
@@ -144,6 +207,44 @@
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      }
+    ],
+    "name": "getReferrerFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "goldAddresses",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -293,6 +394,63 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "referrerFeeDefault",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "referrerFeeGold",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "referrerFeeSilver",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_goldAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      }
+    ],
+    "name": "setGoldAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -339,12 +497,40 @@
   {
     "inputs": [
       {
-        "internalType": "address[]",
-        "name": "_addresses",
-        "type": "address[]"
+        "internalType": "uint256",
+        "name": "_referrerFeeDefault",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_referrerFeeSilver",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_referrerFeeGold",
+        "type": "uint256"
       }
     ],
-    "name": "setSportTradedBefore",
+    "name": "setReferrerFees",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_silverAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      }
+    ],
+    "name": "setSilverAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -370,19 +556,6 @@
   {
     "inputs": [
       {
-        "internalType": "address[]",
-        "name": "_addresses",
-        "type": "address[]"
-      }
-    ],
-    "name": "setTradedBefore",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_address",
         "type": "address"
@@ -396,6 +569,25 @@
     "name": "setWhitelistedAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "silverAddresses",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

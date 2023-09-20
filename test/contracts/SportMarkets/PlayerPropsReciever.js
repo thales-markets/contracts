@@ -180,7 +180,9 @@ contract('PlayerProps', (accounts) => {
 		gamesResolved_single_1,
 		gamesResolved_single_2,
 		game_1_resolve_spread_total_2,
-		playerPropsViaCLNode;
+		playerPropsViaCLNode,
+		playerPropsViaCLNodeCreate,
+		playerPropsViaCLNodeCreateUpdate;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -606,6 +608,11 @@ contract('PlayerProps', (accounts) => {
 		playerPropsViaCLNode =
 			'0x65363063666137383038343661663638393738623439353739653563663339363431373836333400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002500000000000000000000000000000000000000000000000000000000000001220000000000000000000000000000000000000000000000000000000000000001';
 
+		playerPropsViaCLNodeCreate =
+			'0x000000000000000000000000000000000000000000000000000000000000002065363063666137383038343661663638393738623439353739653563663339363431373836333400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002500000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000011dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3140000000000000000000000000000000000000000000000000000000000002cec000000000000000000000000000000000000000000000000000000000000000c4e696b6f6c61204a6f6b69630000000000000000000000000000000000000000';
+
+		playerPropsViaCLNodeCreateUpdate =
+			'0x000000000000000000000000000000000000000000000000000000000000002065363063666137383038343661663638393738623439353739653563663339363431373836333400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002500000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000011dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd6fc0000000000000000000000000000000000000000000000000000000000002cec000000000000000000000000000000000000000000000000000000000000000c4e696b6f6c61204a6f6b69630000000000000000000000000000000000000000';
 		TherundownConsumer = artifacts.require('TherundownConsumer');
 		TherundownConsumerDeployed = await TherundownConsumer.new();
 
@@ -1277,6 +1284,204 @@ contract('PlayerProps', (accounts) => {
 					from: third,
 				}
 			);
+			assert.bnEqual(1, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
+			assert.bnEqual(
+				1,
+				await GamesPlayerPropsDeployed.numberOfChildMarketsPerPlayerAndOption(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+			assert.bnEqual(
+				'0x6536306366613738303834366166363839373862343935373965356366333936',
+				await GamesPlayerPropsDeployed.gameIdPerChildMarket(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				'0x3431373836333400000000000000000000000000000000000000000000000000',
+				await GamesPlayerPropsDeployed.playerIdPerChildMarket(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				37,
+				await GamesPlayerPropsDeployed.optionIdPerChildMarket(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(false, await GamesPlayerPropsDeployed.mainMarketPausedPlayerProps(marketAdd));
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.createFulfilledForPlayerProps(
+					'0x6536306366613738303834366166363839373862343935373965356366333936',
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+		});
+
+		it('Create game and create player props for game, change odds from CL NODE', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
+
+			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-20700, result[0]);
+			assert.bnEqual(17700, result[1]);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			assert.equal('Atlanta Hawks', game.homeTeam);
+			assert.equal('Charlotte Hornets', game.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdCreate,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			// invalid odds zero as draw
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				{
+					from: third,
+				}
+			);
+
+			let result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(10300, result_final[0]);
+			assert.bnEqual(-11300, result_final[1]);
+			assert.bnEqual(0, result_final[2]);
+
+			// adding player props
+
+			assert.bnEqual(0, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
+
+			let asArray = [playerPropsViaCLNodeCreate];
+
+			const tx_playerProps = await GamesPlayerPropsReceiverDeployed.fulfillPlayerPropsCL(asArray, {
+				from: third,
+			});
+
+			let props = await GamesPlayerPropsDeployed.getPlayerPropForOption(
+				'0x6536306366613738303834366166363839373862343935373965356366333936',
+				'0x3431373836333400000000000000000000000000000000000000000000000000',
+				37
+			);
+
+			assert.bnEqual(285, props[0]);
+			assert.bnEqual(-11500, props[1]);
+			assert.bnEqual(11500, props[2]);
+			assert.bnEqual(false, props[3]);
+
+			let propsArray = await verifier.getPlayerPropForOption(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				['0x3431373836333400000000000000000000000000000000000000000000000000'],
+				[37]
+			);
+
+			let prop1 = propsArray[0];
+			let prop2 = propsArray[1];
+			let prop3 = propsArray[2];
+
+			assert.bnEqual(-11500, prop1[0]);
+			assert.bnEqual(11500, prop1[1]);
+			assert.bnEqual(285, prop2[0]);
+			assert.bnEqual(false, prop3[0]);
+
+			assert.bnEqual(1, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
+			let mainMarketPlayerPropsChild =
+				await GamesPlayerPropsDeployed.mainMarketPlayerOptionLineChildMarket(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37,
+					285
+				);
+			assert.bnEqual(
+				mainMarketPlayerPropsChild,
+				await GamesPlayerPropsDeployed.currentActiveChildMarketPerPlayerAndOption(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+			assert.bnEqual(
+				marketAdd,
+				await GamesPlayerPropsDeployed.childMarketMainMarket(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.normalizedOddsForMarketFulfilled(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.childMarketCreated(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				285,
+				await GamesPlayerPropsDeployed.childMarketLine(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				mainMarketPlayerPropsChild,
+				await GamesPlayerPropsDeployed.mainMarketChildMarketIndex(marketAdd, 0)
+			);
+			assert.bnEqual(
+				1,
+				await GamesPlayerPropsDeployed.numberOfChildMarketsPerPlayerAndOption(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+			asArray = [playerPropsViaCLNodeCreateUpdate];
+
+			await GamesPlayerPropsReceiverDeployed.fulfillPlayerPropsCL(asArray, {
+				from: third,
+			});
 			assert.bnEqual(1, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
 			assert.bnEqual(
 				1,
@@ -3317,6 +3522,21 @@ contract('PlayerProps', (accounts) => {
 					37
 				)
 			);
+
+			let getPlayerPropsDataForMarket = await GamesPlayerPropsDeployed.getPlayerPropsDataForMarket(
+				mainMarketPlayerPropsChild
+			);
+
+			assert.equal(marketAdd, await getPlayerPropsDataForMarket[0]);
+			assert.equal(
+				'0x6536306366613738303834366166363839373862343935373965356366333936',
+				await getPlayerPropsDataForMarket[1]
+			);
+			assert.equal(
+				'0x3431373836333400000000000000000000000000000000000000000000000000',
+				await getPlayerPropsDataForMarket[2]
+			);
+			assert.equal(37, await getPlayerPropsDataForMarket[3]);
 
 			let childMarket = await SportPositionalMarketContract.at(mainMarketPlayerPropsChild);
 

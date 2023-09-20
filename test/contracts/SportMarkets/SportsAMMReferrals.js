@@ -502,6 +502,7 @@ contract('SportsAMM', (accounts) => {
 			[5],
 			{ from: owner }
 		);
+		await SportAMMRiskManager.setSportOnePositional(9455, true, { from: owner });
 
 		await SportsAMM.setAddresses(
 			owner,
@@ -515,8 +516,6 @@ contract('SportsAMM', (accounts) => {
 			SportAMMRiskManager.address,
 			{ from: owner }
 		);
-
-		await SportsAMM.setSportOnePositional(9455, true, { from: owner });
 
 		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
@@ -810,23 +809,6 @@ contract('SportsAMM', (accounts) => {
 			console.log('after buy user balance: ', fromUnit(userBalance));
 			console.log('after buy sportsAMM USDC balance: ', fromUnit(sportsAMMBalanceUSDC));
 			console.log('after buy sportsAMM sUSD balance: ', fromUnit(sportsAMMBalance));
-		});
-		it('Whitelist and set traded before', async () => {
-			await Referrals.setWhitelistedAddress(owner, true, {
-				from: owner,
-			});
-
-			let traders = new Array();
-			traders.push(owner);
-			await Referrals.setSportTradedBefore(traders, {
-				from: owner,
-			});
-
-			let isOwnerWhitelisted = await Referrals.whitelistedAddresses(owner);
-			assert.equal(isOwnerWhitelisted, true);
-
-			let isOwnerPrevtrader = await Referrals.sportTradedBefore(owner);
-			assert.equal(isOwnerPrevtrader, true);
 		});
 	});
 });

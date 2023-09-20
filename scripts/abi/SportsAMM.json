@@ -264,25 +264,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "_sport",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "SetSportOnePositional",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "_manager",
         "type": "address"
@@ -303,6 +284,19 @@
     ],
     "name": "Unpaused",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "TAG_NUMBER_PLAYERS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [],
@@ -1482,24 +1476,6 @@
       }
     ],
     "name": "setSafeBoxFeeAndMinSpreadPerAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_sportID",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "setSportOnePositional",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

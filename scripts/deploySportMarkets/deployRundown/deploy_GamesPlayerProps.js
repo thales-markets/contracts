@@ -58,6 +58,11 @@ async function main() {
 		network = 'arbitrumOne';
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
+
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
 	// if there is sport menager deployed:

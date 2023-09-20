@@ -104,6 +104,44 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_tag",
+        "type": "uint256"
+      }
+    ],
+    "name": "isMarketForPlayerPorpsOnePositional",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tag",
+        "type": "uint256"
+      }
+    ],
+    "name": "isMarketForSportOnePositional",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_totalSpent",
         "type": "uint256"
       },

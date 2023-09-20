@@ -17,9 +17,6 @@ async function main() {
 		network = 'mainnet';
 	}
 
-	console.log('Account is:' + owner.address);
-	console.log('Network name:' + networkObj.name);
-
 	if (network === 'unknown') {
 		network = 'localhost';
 	}
@@ -60,6 +57,9 @@ async function main() {
 		network = 'baseMainnet';
 	}
 
+	console.log('Account is:' + owner.address);
+	console.log('Network name:' + networkObj.name);
+
 	const paymentCreate = w3utils.toWei('0.01');
 	const paymentResolve = w3utils.toWei('0.01');
 	const paymentOdds = w3utils.toWei('0.01');
@@ -81,6 +81,9 @@ async function main() {
 
 	const playerPropsR = await ethers.getContractFactory('GamesPlayerPropsReceiver');
 	let playerPropsRAddress = getTargetAddress('GamesPlayerPropsReceiver', network);
+
+	const playerProps = await ethers.getContractFactory('GamesPlayerProps');
+	let playerPropsAddress = getTargetAddress('GamesPlayerProps', network);
 
 	console.log('GamesPlayerPropsReceiver address: ', playerPropsRAddress);
 
@@ -105,7 +108,8 @@ async function main() {
 		oddsSpecId,
 		sportsAMMAddress,
 		verifierAddress,
-		playerPropsRAddress
+		playerPropsRAddress,
+		playerPropsAddress
 	);
 	await TherundownConsumerWrapperDeployed.deployed();
 
@@ -127,6 +131,7 @@ async function main() {
 				sportsAMMAddress,
 				verifierAddress,
 				playerPropsRAddress,
+				playerPropsAddress,
 			],
 		});
 	} catch (e) {

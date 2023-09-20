@@ -7,6 +7,10 @@ interface ISportAMMRiskManager {
 
     function isTotalSpendingLessThanTotalRisk(uint _totalSpent, address _market) external view returns (bool _isNotRisky);
 
+    function isMarketForSportOnePositional(uint _tag) external view returns (bool);
+
+    function isMarketForPlayerPorpsOnePositional(uint _tag) external view returns (bool);
+
     function minSupportedOddsPerSport(uint tag) external view returns (uint);
 
     function minSpreadPerSport(uint tag1, uint tag2) external view returns (uint);

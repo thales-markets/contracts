@@ -37,6 +37,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint private constant ZERO_POINT_ONE = 1e17;
     uint private constant ONE_PERCENT = 1e16;
     uint private constant MAX_APPROVAL = type(uint256).max;
+    uint public constant TAG_NUMBER_PLAYERS = 10010;
 
     /// @return The sUSD contract used for payment
     IERC20Upgradeable public sUSD;
@@ -163,7 +164,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     mapping(uint => mapping(uint => uint)) public minSpreadPerSport; //deprecated see SportAMMRiskManager.sol
 
     /// @return the sport which is one-sider
-    mapping(uint => bool) public isMarketForSportOnePositional;
+    mapping(uint => bool) public isMarketForSportOnePositional; //deprecated see SportAMMRiskManager.sol
 
     /// @return The maximum supported odd for sport
     mapping(uint => uint) public minSupportedOddsPerSport; //deprecated see SportAMMRiskManager.sol
@@ -752,14 +753,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         _setPausing ? _pause() : _unpause();
     }
 
-    /// @notice setting one positional sport
-    /// @param _sportID tag id for sport
-    /// @param _flag is one positional sport flag
-    function setSportOnePositional(uint _sportID, bool _flag) external onlyOwner {
-        isMarketForSportOnePositional[_sportID] = _flag;
-        emit SetSportOnePositional(_sportID, _flag);
-    }
-
     /// @notice used to update gamified Staking bonuses from Parlay contract
     /// @param _account Address to update volume for
     /// @param _amount of the volume
@@ -913,21 +906,20 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (
             !dcs.isDoubleChance && thresholdForOddsUpdate > 0 && (params.amount - params.sUSDPaid) >= thresholdForOddsUpdate
         ) {
-            wrapper.callUpdateOddsForSpecificGame(params.market);
+            ISportPositionalMarket sportMarket = ISportPositionalMarket(params.market);
+            uint tag2 = sportMarket.isChild() ? sportMarket.tags(1) : 0;
+            if (tag2 == TAG_NUMBER_PLAYERS) {
+                wrapper.callUpdateOddsForSpecificPlayerProps(params.market);
+            } else {
+                wrapper.callUpdateOddsForSpecificGame(params.market);
+            }
         }
 
-        _updateSpentOnMarketOnBuy(
-            dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market,
-            parent,
-            params.sUSDPaid,
-            msg.sender
-        );
+        _updateSpentOnMarketOnBuy(dcs.isDoubleChance ? parent : params.market, parent, params.sUSDPaid, msg.sender);
 
         require(riskManager.isTotalSpendingLessThanTotalRisk(spentOnParent[parent], parent), "Risk is to high!");
 
-        _sendMintedPositionsAndUSDToLiquidityPool(
-            dcs.isDoubleChance ? address(ISportPositionalMarket(params.market).parentMarket()) : params.market
-        );
+        _sendMintedPositionsAndUSDToLiquidityPool(dcs.isDoubleChance ? parent : params.market);
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, params.sUSDPaid);
@@ -1187,6 +1179,5 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     event SetSportsPositionalMarketManager(address _manager);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
-    event SetSportOnePositional(uint _sport, bool _flag);
     event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
 }

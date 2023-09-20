@@ -136,6 +136,15 @@ contract('SpeedMarkets', (accounts) => {
 
 			await MockPriceFeedDeployed.setPricetoReturn(toUnit(1));
 
+			await multiCollateralOnOffRamp.setCurveSUSD(
+				exoticUSD.address,
+				exoticUSD.address,
+				exoticUSD.address,
+				exoticUSD.address,
+				true,
+				toUnit('0.01')
+			);
+
 			await speedMarketsAMM.createNewMarketWithDifferentCollateral(
 				toBytes32('ETH'),
 				now + 36000,

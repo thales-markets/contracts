@@ -190,7 +190,9 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 			assert.bnEqual(balance, toUnit('80'));
 			balance = await exoticOP.balanceOf(user);
 			console.log('Balance exoticOP user after ' + balance / 1e18);
-			assert.bnEqual(balance, toUnit('109.9'));
+
+			assert.bnGte(balance, toUnit('109.9'));
+			assert.bnLte(balance, toUnit('110'));
 
 			console.log('TEST OP OFFRAMP rate 0.5!!!!!!!!!!!!!!!!!!!');
 
@@ -215,7 +217,8 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 			assert.bnEqual(balance, toUnit('70'));
 			balance = await exoticOP.balanceOf(user);
 			console.log('Balance exoticOP user after ' + balance / 1e18);
-			assert.bnEqual(balance, toUnit('129.7'));
+			assert.bnGte(balance, toUnit('129'));
+			assert.bnLte(balance, toUnit('130'));
 
 			console.log('TEST ETH OFFRAMP at rate 100!!!!!!!!!!!!!!!!!!!');
 

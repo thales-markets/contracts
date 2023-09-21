@@ -205,6 +205,31 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_pyth",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_referrals",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "SetAddresses",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -278,14 +303,7 @@
         "internalType": "uint256",
         "name": "_maximumPriceDelay",
         "type": "uint256"
-      }
-    ],
-    "name": "SetMaximumPriceDelay",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
       {
         "indexed": false,
         "internalType": "uint256",
@@ -293,7 +311,7 @@
         "type": "uint256"
       }
     ],
-    "name": "SetMaximumPriceDelayForResolving",
+    "name": "SetMaximumPriceDelays",
     "type": "event"
   },
   {
@@ -321,19 +339,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_pyth",
-        "type": "address"
-      }
-    ],
-    "name": "SetPyth",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "_safeBox",
         "type": "address"
       },
@@ -345,19 +350,6 @@
       }
     ],
     "name": "SetSafeBoxParams",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
-      }
-    ],
-    "name": "SetStakingThales",
     "type": "event"
   },
   {
@@ -1419,6 +1411,29 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_pyth",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrals",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "setAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_minBuyinAmount",
         "type": "uint256"
@@ -1520,22 +1535,14 @@
         "internalType": "uint64",
         "name": "_maximumPriceDelay",
         "type": "uint64"
-      }
-    ],
-    "name": "setMaximumPriceDelay",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
+      },
       {
         "internalType": "uint64",
         "name": "_maximumPriceDelayForResolving",
         "type": "uint64"
       }
     ],
-    "name": "setMaximumPriceDelayForResolving",
+    "name": "setMaximumPriceDelays",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1588,32 +1595,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_pyth",
-        "type": "address"
-      }
-    ],
-    "name": "setPyth",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_referrals",
-        "type": "address"
-      }
-    ],
-    "name": "setReferrals",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_safeBox",
         "type": "address"
       },
@@ -1624,19 +1605,6 @@
       }
     ],
     "name": "setSafeBoxParams",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
-      }
-    ],
-    "name": "setStakingThales",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

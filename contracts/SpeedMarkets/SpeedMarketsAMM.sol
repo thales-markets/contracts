@@ -36,6 +36,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     AddressSetLib.AddressSet internal _maturedMarkets;
 
     uint private constant ONE = 1e18;
+    uint private constant MAX_APPROVAL = type(uint256).max;
 
     IERC20Upgradeable public sUSD;
 
@@ -585,15 +586,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     /// @notice whats the longest a price can be delayed
-    function setMaximumPriceDelay(uint64 _maximumPriceDelay) external onlyOwner {
+    function setMaximumPriceDelays(uint64 _maximumPriceDelay, uint64 _maximumPriceDelayForResolving) external onlyOwner {
         maximumPriceDelay = _maximumPriceDelay;
-        emit SetMaximumPriceDelay(maximumPriceDelay);
-    }
-
-    /// @notice whats the longest a price can be delayed when resolving
-    function setMaximumPriceDelayForResolving(uint64 _maximumPriceDelayForResolving) external onlyOwner {
         maximumPriceDelayForResolving = _maximumPriceDelayForResolving;
-        emit SetMaximumPriceDelayForResolving(maximumPriceDelayForResolving);
+        emit SetMaximumPriceDelays(_maximumPriceDelay, _maximumPriceDelayForResolving);
     }
 
     /// @notice maximum open interest per asset
@@ -622,24 +618,16 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetLPFee(_lpFee);
     }
 
-    /// @notice Set staking thales
-    function setStakingThales(address _stakingThales) external onlyOwner {
-        //TODO: dont set till StakingThalesBonusRewardsManager is ready for it
-        stakingThales = IStakingThales(_stakingThales);
-        emit SetStakingThales(_stakingThales);
-    }
-
-    /// @notice set referrals
-    /// @param _referrals contract for referrals storage
-    function setReferrals(address _referrals) external onlyOwner {
-        require(_referrals != address(0), "Can not be zero address");
-        referrals = _referrals;
-    }
-
-    /// @notice Set pyth
-    function setPyth(address _pyth) external onlyOwner {
+    /// @notice set corresponding addresses
+    function setAddresses(
+        address _pyth,
+        address _referrals,
+        address _stakingThales
+    ) external onlyOwner {
         pyth = IPyth(_pyth);
-        emit SetPyth(_pyth);
+        referrals = _referrals;
+        stakingThales = IStakingThales(_stakingThales);
+        emit SetAddresses(_pyth, _referrals, _stakingThales);
     }
 
     /// @notice set whether an asset is supported
@@ -650,8 +638,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     /// @notice set multicollateral onramp contract
     function setMultiCollateralOnOffRamp(address _onramper, bool enabled) external onlyOwner {
+        if (address(multiCollateralOnOffRamp) != address(0)) {
+            sUSD.approve(address(multiCollateralOnOffRamp), 0);
+        }
         multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(_onramper);
         multicollateralEnabled = enabled;
+        sUSD.approve(_onramper, MAX_APPROVAL);
         emit SetMultiCollateralOnOffRamp(_onramper, enabled);
     }
 
@@ -659,7 +651,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
     /// @param _flag adding or removing from whitelist (true: add, false: remove)
     function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
-        require(_whitelistAddress != address(0) && whitelistedAddresses[_whitelistAddress] != _flag);
+        require(_whitelistAddress != address(0));
         whitelistedAddresses[_whitelistAddress] = _flag;
         emit AddedIntoWhitelist(_whitelistAddress, _flag);
     }
@@ -689,16 +681,14 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event AmountsChanged(uint _minBuyinAmount, uint _maxBuyinAmount);
     event TimesChanged(uint _minimalTimeToMaturity, uint _maximalTimeToMaturity);
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
-    event SetMaximumPriceDelay(uint _maximumPriceDelay);
-    event SetMaximumPriceDelayForResolving(uint _maximumPriceDelayForResolving);
+    event SetMaximumPriceDelays(uint _maximumPriceDelay, uint _maximumPriceDelayForResolving);
     event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
     event SetMaxRiskPerAssetAndDirection(bytes32 asset, uint _maxRiskPerAssetAndDirection);
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
     event SetLPFee(uint _lpFee);
-    event SetStakingThales(address _stakingThales);
-    event SetPyth(address _pyth);
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
+    event SetAddresses(address _pyth, address _referrals, address _stakingThales);
 }

@@ -103,6 +103,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     address public referrals;
 
+    receive() external payable {}
+
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
@@ -313,6 +315,33 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param market address of the market
     function resolveMarket(address market, bytes[] calldata priceUpdateData) external payable nonReentrant notPaused {
         _resolveMarket(market, priceUpdateData);
+    }
+
+    /// @notice resolveMarket resolves an active market with offramp
+    /// @param market address of the market
+    function resolveMarketWithOfframp(
+        address market,
+        bytes[] calldata priceUpdateData,
+        address collateral,
+        bool toEth
+    ) external payable nonReentrant notPaused {
+        address user = SpeedMarket(market).user();
+        require(msg.sender == user, "Only allowed from market owner");
+        uint amountBefore = sUSD.balanceOf(user);
+        _resolveMarket(market, priceUpdateData);
+        uint amountDiff = sUSD.balanceOf(user) - amountBefore;
+        sUSD.safeTransferFrom(user, address(this), amountDiff);
+        if (amountDiff > 0) {
+            if (toEth) {
+                uint offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
+                address payable _to = payable(user);
+                bool sent = _to.send(offramped);
+                require(sent, "Failed to send Ether");
+            } else {
+                uint offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
+                IERC20Upgradeable(collateral).safeTransfer(user, offramped);
+            }
+        }
     }
 
     /// @notice resolveMarkets in a batch

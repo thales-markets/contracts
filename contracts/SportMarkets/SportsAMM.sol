@@ -45,9 +45,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The address of the SportsPositionalManager contract
     address public manager;
 
-    /// @notice Each game has `defaultCapPerGame` available for trading
-    /// @return The default cap per game.
-    uint public defaultCapPerGame; //deprecated see SportAMMRiskManager.sol
+    uint private defaultCapPerGame; //deprecated see SportAMMRiskManager.sol
 
     /// @return The minimal spread/skrew percentage
     uint public min_spread;
@@ -86,20 +84,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The maximum supported odd
     uint public maxSupportedOdds;
 
-    /// @return The address of the Curve contract for multi-collateral
-    ICurveSUSD public curveSUSD;
+    ICurveSUSD private curveSUSD; // deprecated see MultiCollateralOnOffRamp.sol
 
-    /// @return The address of USDC
-    address public usdc;
+    address private usdc; // deprecated see MultiCollateralOnOffRamp.sol
 
-    /// @return The address of USDT (Tether)
-    address public usdt;
+    address private usdt; // deprecated see MultiCollateralOnOffRamp.sol
 
-    /// @return The address of DAI
-    address public dai;
+    address private dai; // deprecated see MultiCollateralOnOffRamp.sol
 
-    /// @return Curve usage is enabled?
-    bool public curveOnrampEnabled;
+    bool private curveOnrampEnabled; // deprecated see MultiCollateralOnOffRamp.sol
 
     /// @return Referrals contract address
     address public referrals;
@@ -110,19 +103,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The address of Parlay AMM
     address public parlayAMM;
 
-    /// @return The address of Apex Consumer
-    address public apexConsumer; // deprecated
+    address private apexConsumer; // deprecated
 
     /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
     uint public maxAllowedPegSlippagePercentage;
 
-    /// @return the cap per sportID. based on the tagID
-    mapping(uint => uint) public capPerSport; //deprecated see SportAMMRiskManager.sol
+    mapping(uint => uint) private capPerSport; //deprecated see SportAMMRiskManager.sol
 
     SportsAMMUtils public sportAmmUtils;
 
-    /// @return the cap per market. based on the marketId
-    mapping(address => uint) public capPerMarket; //deprecated see SportAMMRiskManager.sol
+    mapping(address => uint) private capPerMarket; //deprecated see SportAMMRiskManager.sol
 
     /// @notice odds threshold which will trigger odds update
     /// @return The threshold.
@@ -137,8 +127,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     // @return specific min_spread per address
     mapping(address => uint) public min_spreadPerAddress;
 
-    /// @return the cap per sportID and childID. based on the tagID[0] and tagID[1]
-    mapping(uint => mapping(uint => uint)) public capPerSportAndChild; //deprecated see SportAMMRiskManager.sol
+    mapping(uint => mapping(uint => uint)) private capPerSportAndChild; //deprecated see SportAMMRiskManager.sol
 
     struct BuyFromAMMParams {
         address market;
@@ -160,17 +149,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return the adddress of the AMMLP contract
     SportAMMLiquidityPool public liquidityPool;
 
-    // @return specific min_spread per address
-    mapping(uint => mapping(uint => uint)) public minSpreadPerSport; //deprecated see SportAMMRiskManager.sol
+    mapping(uint => mapping(uint => uint)) private minSpreadPerSport; //deprecated see SportAMMRiskManager.sol
 
-    /// @return the sport which is one-sider
-    mapping(uint => bool) public isMarketForSportOnePositional; //deprecated see SportAMMRiskManager.sol
+    mapping(uint => bool) private isMarketForSportOnePositional; //deprecated see SportAMMRiskManager.sol
 
-    /// @return The maximum supported odd for sport
-    mapping(uint => uint) public minSupportedOddsPerSport; //deprecated see SportAMMRiskManager.sol
+    mapping(uint => uint) private minSupportedOddsPerSport; //deprecated see SportAMMRiskManager.sol
 
-    /// @return The maximum supported odd for sport
-    mapping(uint => uint) public maxSpreadPerSport; //deprecated see SportAMMRiskManager.sol
+    mapping(uint => uint) private maxSpreadPerSport; //deprecated see SportAMMRiskManager.sol
 
     ISportAMMRiskManager public riskManager;
 
@@ -307,10 +292,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
             returnQuote = ISportPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
         }
-    }
-
-    function _getMinSpreadToUse(bool useDefaultMinSpread, address market) internal view returns (uint) {
-        return riskManager.getMinSpreadToUse(useDefaultMinSpread, market, min_spread, min_spreadPerAddress[msg.sender]);
     }
 
     function _buyFromAMMQuoteDoubleChance(
@@ -821,12 +802,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return _buyFromAMM(BuyFromAMMParams(market, position, amount, susdQuote, additionalSlippage, false, susdQuote));
     }
 
-    function _checkMarketValidityAndOptionsCount(address market, ISportsAMM.Position position) internal view {
-        require(isMarketInAMMTrading(market), "Not trading");
-        uint optionsCount = ISportPositionalMarket(market).optionsCount();
-        require(optionsCount > uint(position), "Invalid pos");
-    }
-
     function _buyFromAMM(BuyFromAMMParams memory params) internal {
         _checkMarketValidityAndOptionsCount(params.market, params.position);
 
@@ -999,6 +974,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             }
         }
         return sportAmmUtils.obtainOdds(_market, _position);
+    }
+
+    function _checkMarketValidityAndOptionsCount(address market, ISportsAMM.Position position) internal view {
+        require(isMarketInAMMTrading(market), "Not trading");
+        uint optionsCount = ISportPositionalMarket(market).optionsCount();
+        require(optionsCount > uint(position), "Invalid pos");
+    }
+
+    function _getMinSpreadToUse(bool useDefaultMinSpread, address market) internal view returns (uint) {
+        return riskManager.getMinSpreadToUse(useDefaultMinSpread, market, min_spread, min_spreadPerAddress[msg.sender]);
     }
 
     function _getSafeBoxFeePerAddress(address toCheck) internal view returns (uint toReturn) {

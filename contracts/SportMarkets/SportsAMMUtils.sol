@@ -199,12 +199,14 @@ contract SportsAMMUtils {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
             odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
             (uint firstTag, uint secondTag, uint thirdTag) = _getTagsForMarket(_market);
-            if (
-                !riskManager.isMarketForSportOnePositional(firstTag) ||
-                (secondTag == TAG_NUMBER_PLAYERS && !riskManager.isMarketForPlayerPorpsOnePositional(thirdTag)) ||
-                uint(_position) == 0
-            ) {
-                oddsToReturn = odds[uint(_position)];
+            if (secondTag == TAG_NUMBER_PLAYERS) {
+                if (!riskManager.isMarketForPlayerPropsOnePositional(thirdTag) || uint(_position) == 0) {
+                    oddsToReturn = odds[uint(_position)];
+                }
+            } else {
+                if ((!riskManager.isMarketForSportOnePositional(firstTag) || uint(_position) == 0)) {
+                    oddsToReturn = odds[uint(_position)];
+                }
             }
         }
     }

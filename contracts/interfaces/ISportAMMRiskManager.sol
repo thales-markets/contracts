@@ -9,7 +9,7 @@ interface ISportAMMRiskManager {
 
     function isMarketForSportOnePositional(uint _tag) external view returns (bool);
 
-    function isMarketForPlayerPorpsOnePositional(uint _tag) external view returns (bool);
+    function isMarketForPlayerPropsOnePositional(uint _tag) external view returns (bool);
 
     function minSupportedOddsPerSport(uint tag) external view returns (uint);
 

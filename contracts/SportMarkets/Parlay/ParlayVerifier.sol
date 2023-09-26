@@ -357,22 +357,34 @@ contract ParlayVerifier {
             if (optionsCount == 2) {
                 sgpFee2 = sgpFee;
             } else if (position2 == 0) {
-                if (odds1 < (6 * ONE_PERCENT)) {
+                if (odds1 < (6 * ONE_PERCENT) && odds2 < (70 * ONE_PERCENT)) {
                     sgpFee2 = sgpFee - (ONE - sgpFee);
                 } else if (odds1 >= (96 * ONE_PERCENT)) {
                     sgpFee2 = sgpFee + ((ONE - sgpFee) * 90 * ONE_PERCENT) / ONE;
                 } else if (odds1 >= (93 * ONE_PERCENT)) {
                     sgpFee2 = sgpFee + ((ONE - sgpFee) * 75 * ONE_PERCENT) / ONE;
+                } else if (odds1 >= (90 * ONE_PERCENT) && odds2 >= (65 * ONE_PERCENT)) {
+                    sgpFee2 = sgpFee + ((ONE - sgpFee) * 90 * ONE_PERCENT) / ONE;
+                } else if (odds1 >= (80 * ONE_PERCENT) && odds2 >= (70 * ONE_PERCENT)) {
+                    sgpFee2 = sgpFee + ((ONE - sgpFee) * 50 * ONE_PERCENT) / ONE;
+                } else if (odds1 >= (80 * ONE_PERCENT) && odds2 >= (50 * ONE_PERCENT)) {
+                    sgpFee2 = sgpFee + ((ONE - sgpFee) * 90 * ONE_PERCENT) / ONE;
+                } else if (odds2 >= (52 * ONE_PERCENT)) {
+                    sgpFee2 = sgpFee + (5 * ONE_PERCENT);
                 } else if (odds2 >= (50 * ONE_PERCENT)) {
-                    // calculate the fee
-                    uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
-                    if (oddsDiff > 0) {
-                        oddsDiff = (oddsDiff - (5 * ONE_PERCENT) / (90 * ONE_PERCENT));
-                        oddsDiff = ((ONE - sgpFee) * oddsDiff) / ONE;
-                        sgpFee2 = (sgpFee * (ONE + oddsDiff)) / ONE;
+                    if (odds1 < (10 * ONE_PERCENT)) {
+                        sgpFee2 = ONE + odds1;
                     } else {
-                        sgpFee2 = sgpFee;
+                        uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
+                        if (oddsDiff > 0) {
+                            oddsDiff = (oddsDiff - (5 * ONE_PERCENT) / (90 * ONE_PERCENT));
+                            oddsDiff = ((ONE - sgpFee) * oddsDiff) / ONE;
+                            sgpFee2 = (sgpFee * (ONE + oddsDiff)) / ONE;
+                        } else {
+                            sgpFee2 = sgpFee;
+                        }
                     }
+                    // calculate the fee
                 } else if (odds2 >= (43 * ONE_PERCENT)) {
                     if (odds2 <= (46 * ONE_PERCENT)) {
                         sgpFee2 = sgpFee > 5 * ONE_PERCENT ? sgpFee - (2 * ONE_PERCENT) : sgpFee;
@@ -390,24 +402,53 @@ contract ParlayVerifier {
                     sgpFee2 = sgpFee > 5 * ONE_PERCENT ? sgpFee - (2 * ONE_PERCENT) : sgpFee;
                 }
             } else {
-                if (odds2 >= (54 * ONE_PERCENT)) {
+                if (odds2 >= (56 * ONE_PERCENT)) {
                     if (odds1 >= 76 * ONE_PERCENT) {
                         sgpFee2 = (ONE + (15 * ONE_PERCENT) + (odds1 * 15 * ONE_PERCENT) / ONE);
+                    } else if (odds1 >= 60 * ONE_PERCENT) {
+                        sgpFee2 = ONE + (ONE - sgpFee);
                     } else {
                         sgpFee2 = (ONE + (15 * ONE_PERCENT) + (odds1 * 10 * ONE_PERCENT) / ONE);
                     }
+                } else if (odds2 <= (38 * ONE_PERCENT) && odds1 >= (80 * ONE_PERCENT)) {
+                    sgpFee2 = ONE + (ONE - sgpFee + 5 * ONE_PERCENT);
+                } else if (odds2 <= (38 * ONE_PERCENT) && odds1 >= (50 * ONE_PERCENT)) {
+                    sgpFee2 = ONE + (ONE - sgpFee + 5 * ONE_PERCENT);
+                } else if (odds2 <= (38 * ONE_PERCENT) && odds1 >= (30 * ONE_PERCENT)) {
+                    sgpFee2 = ONE + (2 * (ONE - sgpFee));
+                } else if (odds2 <= (38 * ONE_PERCENT) && odds1 >= (70 * ONE_PERCENT)) {
+                    sgpFee2 = ONE + (ONE - sgpFee + 10 * ONE_PERCENT);
                 } else if (odds2 <= (38 * ONE_PERCENT) && odds1 >= (66 * ONE_PERCENT)) {
-                    sgpFee2 = ONE + (ONE - sgpFee + 30 * ONE_PERCENT);
+                    sgpFee2 = ONE + (ONE - sgpFee + 25 * ONE_PERCENT);
                 } else if (odds2 <= (48 * ONE_PERCENT) && odds1 <= (11 * ONE_PERCENT)) {
                     sgpFee2 = (sgpFee * 95 * ONE_PERCENT) / ONE;
                 } else if (odds2 < (54 * ONE_PERCENT) && odds1 >= (74 * ONE_PERCENT)) {
                     sgpFee2 = ONE + (ONE - sgpFee);
                 } else if (odds2 < (54 * ONE_PERCENT) && odds1 >= (58 * ONE_PERCENT)) {
                     sgpFee2 = ONE + (ONE - sgpFee + 10 * ONE_PERCENT);
-                } else if (odds2 < (54 * ONE_PERCENT) && odds1 <= (20 * ONE_PERCENT)) {
+                } else if (odds2 < (54 * ONE_PERCENT) && odds1 >= (20 * ONE_PERCENT)) {
+                    sgpFee2 = ONE + (ONE - sgpFee);
+                } else if (odds2 < (54 * ONE_PERCENT) && odds1 < (20 * ONE_PERCENT)) {
                     sgpFee2 = ONE + ((ONE - sgpFee) * 50 * ONE_PERCENT) / ONE;
+                } else if (odds2 < (56 * ONE_PERCENT) && odds1 >= (82 * ONE_PERCENT)) {
+                    sgpFee2 = ONE + ((ONE - sgpFee) * 50 * ONE_PERCENT) / ONE;
+                } else if (odds2 < (56 * ONE_PERCENT) && odds1 >= (40 * ONE_PERCENT)) {
+                    sgpFee2 = ONE + (ONE - sgpFee);
+                } else if (odds2 < (56 * ONE_PERCENT) && odds1 >= (10 * ONE_PERCENT)) {
+                    sgpFee2 = ONE + (ONE - sgpFee);
                 } else {
                     sgpFee2 = sgpFee;
+                }
+            }
+            uint totalQuote = (odds1 * odds2) / ONE;
+            uint totalQuoteWSGP = ((totalQuote * ONE * ONE) / sgpFee2) / ONE;
+            if (totalQuoteWSGP >= odds1 || totalQuoteWSGP >= odds2) {
+                if (totalQuoteWSGP > odds1 && odds1 > odds2 && odds1 > totalQuote) {
+                    sgpFee = (odds1 - totalQuote) - (2 * ONE_PERCENT);
+                    sgpFee2 = ONE - sgpFee;
+                } else if (totalQuoteWSGP > odds2 && odds2 > totalQuote) {
+                    sgpFee = (odds2 - totalQuote) - (2 * ONE_PERCENT);
+                    sgpFee2 = ONE - sgpFee;
                 }
             }
         }

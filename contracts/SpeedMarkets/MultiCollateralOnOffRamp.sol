@@ -152,8 +152,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
         WethLike(WETH9).withdraw(convertedAmount);
 
-        address payable _to = payable(msg.sender);
-        bool sent = _to.send(convertedAmount);
+        bool sent = payable(msg.sender).send(convertedAmount);
         require(sent, "Failed to send Ether");
 
         emit OfframpedEth(amount);

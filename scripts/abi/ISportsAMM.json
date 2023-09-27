@@ -412,6 +412,19 @@
   },
   {
     "inputs": [],
+    "name": "riskManager",
+    "outputs": [
+      {
+        "internalType": "contract ISportAMMRiskManager",
+        "name": "riskManager",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "safeBoxImpact",
     "outputs": [
       {

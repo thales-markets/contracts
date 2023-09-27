@@ -237,10 +237,6 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
-		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
-			from: owner,
-		});
-
 		sportsAMMUtils = await SportsAMMUtils.new(SportsAMM.address);
 		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
 			from: owner,
@@ -436,15 +432,15 @@ contract('SportsAMM', (accounts) => {
 			testDAI.address
 		);
 
-		await SportsAMM.setCurveSUSD(
-			curveSUSD.address,
-			testDAI.address,
-			testUSDC.address,
-			testUSDT.address,
-			true,
-			toUnit(0.02),
-			{ from: owner }
-		);
+		// await SportsAMM.setCurveSUSD(
+		// 	curveSUSD.address,
+		// 	testDAI.address,
+		// 	testUSDC.address,
+		// 	testUSDT.address,
+		// 	true,
+		// 	toUnit(0.02),
+		// 	{ from: owner }
+		// );
 
 		let SportAMMLiquidityPoolContract = artifacts.require('SportAMMLiquidityPool');
 		SportAMMLiquidityPool = await SportAMMLiquidityPoolContract.new();
@@ -463,6 +459,10 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
+
+		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
 			from: owner,
 		});
 
@@ -497,7 +497,8 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
-		await SportsAMM.setSportOnePositional(9455, true, { from: owner });
+		await SportAMMRiskManager.setSportOnePositional(9455, true, { from: owner });
+		await SportAMMRiskManager.setPlayerPropsOnePositional(11053, true, { from: owner });
 
 		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
@@ -526,7 +527,7 @@ contract('SportsAMM', (accounts) => {
 	});
 
 	describe('Init', () => {
-		it('Check init Therundown consumer', async () => {
+		it('Check init', async () => {
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
 			assert.equal(false, await TherundownConsumerDeployed.supportedSport(0));
@@ -543,8 +544,10 @@ contract('SportsAMM', (accounts) => {
 			assert.equal(false, await TherundownConsumerDeployed.cancelGameStatuses(8));
 			assert.equal(true, await TherundownConsumerDeployed.cancelGameStatuses(1));
 
-			assert.equal(true, await SportsAMM.isMarketForSportOnePositional(9455));
-			assert.equal(false, await SportsAMM.isMarketForSportOnePositional(9456));
+			assert.equal(true, await SportAMMRiskManager.isMarketForSportOnePositional(9455));
+			assert.equal(false, await SportAMMRiskManager.isMarketForSportOnePositional(9456));
+			assert.equal(true, await SportAMMRiskManager.isMarketForPlayerPropsOnePositional(11053));
+			assert.equal(false, await SportAMMRiskManager.isMarketForPlayerPropsOnePositional(11054));
 		});
 
 		it('Check init Master copies', async () => {
@@ -991,95 +994,6 @@ contract('SportsAMM', (accounts) => {
 			let before_balance = answer;
 			console.log('acc sUSD balance after buy: ', fromUnit(answer));
 			console.log('cost buy: ', fromUnit(initial_balance.sub(answer)));
-		});
-
-		it('Multi-collateral buy from amm', async () => {
-			position = 1;
-			value = 100;
-			let odds = [];
-			odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
-			odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
-			odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
-			console.log('Game odds: 0=', fromUnit(odds[0]), ', 1=', fromUnit(odds[1]));
-			let optionsCount = await deployedMarket.optionsCount();
-			console.log('Positions count: ', optionsCount.toString());
-			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
-			let additionalSlippage = toUnit(0.5);
-			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
-				deployedMarket.address,
-				position,
-				toUnit(value)
-			);
-			await Thales.approve(SportsAMM.address, toUnit(100000), { from: first });
-			console.log('buyFromAmmQuote decimal is: ', fromUnit(buyFromAmmQuote));
-
-			let buyFromAmmQuoteUSDCCollateralObject =
-				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-					deployedMarket.address,
-					position,
-					toUnit(value),
-					testUSDC.address
-				);
-			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
-			console.log(
-				'buyFromAmmQuoteWithDifferentCollateral USDC: ',
-				buyFromAmmQuoteUSDCCollateral / 1e6
-			);
-
-			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > fromUnit(buyFromAmmQuote), true);
-
-			let buyFromAmmQuoteDAICollateralObject =
-				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-					deployedMarket.address,
-					position,
-					toUnit(value),
-					testDAI.address
-				);
-			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
-			console.log(
-				'buyFromAmmQuoteWithDifferentCollateral DAI: ',
-				buyFromAmmQuoteDAICollateral / 1e18
-			);
-
-			assert.equal(fromUnit(buyFromAmmQuoteDAICollateral) > fromUnit(buyFromAmmQuote), true);
-
-			answer = await Thales.balanceOf(first);
-			let initial_balance = answer;
-			console.log('acc sUSD balance before buy: ', fromUnit(answer));
-			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-			answer = await SportsAMM.buyFromAMM(
-				deployedMarket.address,
-				position,
-				toUnit(value),
-				buyFromAmmQuote,
-				additionalSlippage,
-				{ from: first }
-			);
-
-			let userBalance = await testUSDC.balanceOf(first);
-			let sportsAMMBalanceUSDC = await testUSDC.balanceOf(SportsAMM.address);
-			let sportsAMMBalance = await Thales.balanceOf(SportsAMM.address);
-			console.log('Balance of USDC for user: ', fromUnit(userBalance));
-			console.log('Balance of USDC for sportsAMM: ', fromUnit(sportsAMMBalanceUSDC));
-			console.log('Balance of sUSD for sportsAMM: ', fromUnit(sportsAMMBalance));
-
-			await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
-			await SportsAMM.buyFromAMMWithDifferentCollateral(
-				deployedMarket.address,
-				position,
-				toUnit(value),
-				buyFromAmmQuoteUSDCCollateral,
-				additionalSlippage,
-				testUSDC.address,
-				{ from: first }
-			);
-
-			userBalance = await testUSDC.balanceOf(first);
-			sportsAMMBalanceUSDC = await testUSDC.balanceOf(SportsAMM.address);
-			sportsAMMBalance = await Thales.balanceOf(SportsAMM.address);
-			console.log('after buy user balance: ', fromUnit(userBalance));
-			console.log('after buy sportsAMM USDC balance: ', fromUnit(sportsAMMBalanceUSDC));
-			console.log('after buy sportsAMM sUSD balance: ', fromUnit(sportsAMMBalance));
 		});
 
 		it('Continous buy position 0, amount: ' + value + ' positions', async () => {

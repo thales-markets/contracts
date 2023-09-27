@@ -42,49 +42,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "curveSUSD",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "dai",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "usdc",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "usdt",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "curveOnrampEnabled",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "maxAllowedPegSlippagePercentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "CurveParametersUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "receiver",
         "type": "address"
       },
@@ -423,6 +380,25 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_onramper",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "SetMultiCollateralOnOffRamp",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "sUSDToken",
         "type": "address"
       }
@@ -569,6 +545,49 @@
     "name": "buyFromParlayWithDifferentCollateralAndReferrer",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sUSDPaid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_additionalSlippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
+      }
+    ],
+    "name": "buyFromParlayWithEth",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -864,6 +883,29 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "toEth",
+        "type": "bool"
+      }
+    ],
+    "name": "exerciseParlayWithOfframp",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "_parlayMarkets",
         "type": "address[]"
@@ -1084,6 +1126,32 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "multiCollateralOnOffRamp",
+    "outputs": [
+      {
+        "internalType": "contract IMultiCollateralOnOffRamp",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "multicollateralEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1356,24 +1424,6 @@
   {
     "inputs": [
       {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "retrieveSUSDAmount",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -1636,36 +1686,16 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_curveSUSD",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_dai",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_usdc",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_usdt",
+        "name": "_onramper",
         "type": "address"
       },
       {
         "internalType": "bool",
-        "name": "_curveOnrampEnabled",
+        "name": "enabled",
         "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxAllowedPegSlippagePercentage",
-        "type": "uint256"
       }
     ],
-    "name": "setCurveSUSD",
+    "name": "setMultiCollateralOnOffRamp",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1963,5 +1993,9 @@
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]

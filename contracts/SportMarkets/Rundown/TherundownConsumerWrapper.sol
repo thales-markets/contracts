@@ -12,6 +12,7 @@ import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/ITherundownConsumerVerifier.sol";
 import "../../interfaces/IGamesPlayerPropsReceiver.sol";
+import "../../interfaces/IGamesPlayerProps.sol";
 
 /// @title Wrapper contract which calls CL sports data (Link to docs: https://market.link/nodes/TheRundown/integrations)
 /// @author gruja
@@ -22,6 +23,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     ITherundownConsumer public consumer;
     ITherundownConsumerVerifier public verifier;
     IGamesPlayerPropsReciever public playerPropsReciever;
+    IGamesPlayerProps public playerProps;
     mapping(bytes32 => uint) public sportIdPerRequestId;
     mapping(bytes32 => uint) public datePerRequest;
     uint public paymentCreate;
@@ -29,6 +31,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     uint public paymentOdds;
     IERC20 public linkToken;
     bytes32 public oddsSpecId;
+    bytes32 public oddsSpecIdPlayerProps;
     address public sportsAMM;
 
     mapping(bytes32 => bytes[]) public requestIdGamesCreated;
@@ -36,11 +39,13 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     mapping(bytes32 => bytes[]) public requestIdGamesOdds;
     mapping(bytes32 => uint256) private requestIdRemainder;
     mapping(bytes32 => bytes[]) public requestIdPlayerPropsResolved;
+    mapping(bytes32 => bytes[]) public requestIdPlayerProps;
 
     mapping(bytes32 => bool) public requestIdGamesCreatedFulFilled;
     mapping(bytes32 => bool) public requestIdGamesResolvedFulFilled;
     mapping(bytes32 => bool) public requestIdGamesOddsFulFilled;
     mapping(bytes32 => bool) public requestIdPlayerPropsResolvedFulFilled;
+    mapping(bytes32 => bool) public requestIdPlayerPropsFulFilled;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -54,7 +59,8 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         bytes32 _oddsSpecId,
         address _sportsAMM,
         address _verifier,
-        address _playerPropsReciever
+        address _playerPropsReciever,
+        address _playerProps
     ) {
         setChainlinkToken(_link);
         setChainlinkOracle(_oracle);
@@ -67,6 +73,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         sportsAMM = _sportsAMM;
         verifier = ITherundownConsumerVerifier(_verifier);
         playerPropsReciever = IGamesPlayerPropsReciever(_playerPropsReciever);
+        playerProps = IGamesPlayerProps(_playerProps);
     }
 
     /* ========== CONSUMER REQUEST FUNCTIONS ========== */
@@ -224,10 +231,52 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         }
     }
 
+    /// @notice Request odds update for specific player props when triggered by a market address
+    /// @param _marketAddress Market address that triggered the update
+    function callUpdateOddsForSpecificPlayerProps(address _marketAddress) external whenNotPaused {
+        require(msg.sender == sportsAMM, "Only Sports AMM can call this function");
+        if (linkToken.balanceOf(address(this)) >= paymentOdds) {
+            // Get player props data for the market
+            (address _parent, bytes32 _gameId, bytes32 _playerId, uint8 _optionId) = playerProps.getPlayerPropsDataForMarket(
+                _marketAddress
+            );
+
+            // Create arrays with single elements for filtering
+            bytes32[] memory _gameIds = new bytes32[](1);
+            _gameIds[0] = _gameId;
+            bytes32[] memory _playerIds = new bytes32[](1);
+            _playerIds[0] = _playerId;
+            uint8[] memory _optionIds = new uint8[](1);
+            _optionIds[0] = _optionId;
+
+            // Get sport and date information
+            (uint _sportId, uint _date, ) = consumer.getGamePropsForOdds(_parent);
+
+            // Request odds update using the filtered data
+            _requestPlayerPropsOddsWithFiltersFromAmm(
+                oddsSpecIdPlayerProps,
+                _sportId,
+                _date,
+                verifier.getStringIDsFromBytesArrayIDs(_gameIds),
+                verifier.getStringIDsFromBytesArrayIDs(_playerIds),
+                verifier.convertUintToString(_optionIds)
+            );
+
+            // Emit an event to log the update request
+            emit UpdatePlayerPropsOddsFromAMM(_sportId, _date, _marketAddress, _gameId, _playerId, _optionId);
+        }
+    }
+
     /// @notice getting bookmaker by sports id
     /// @param _sportId id of a sport for fetching
     function getBookmakerIdsBySportId(uint256 _sportId) external view returns (uint256[] memory) {
         return verifier.getBookmakerIdsBySportId(_sportId);
+    }
+
+    /// @notice getting bookmaker by sports id for playerprops
+    /// @param _sportId id of a sport for fetching
+    function getBookmakerIdsBySportIdForPlayerProps(uint256 _sportId) external view returns (uint256[] memory) {
+        return verifier.getBookmakerIdsBySportIdForPlayerProps(_sportId);
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -284,6 +333,18 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         requestIdRemainder[_requestId] = _remainder;
         requestIdGamesOddsFulFilled[_requestId] = true;
         consumer.fulfillGamesOdds(_requestId, _games);
+    }
+
+    /// @notice proxy all retrieved data for odds in games from CL to consumer
+    /// @param _requestId request id autogenerated from CL
+    /// @param _playerProps array of a playerProps
+    function fulfillPlayerPropsOdds(bytes32 _requestId, bytes[] memory _playerProps)
+        external
+        recordChainlinkFulfillment(_requestId)
+    {
+        requestIdPlayerProps[_requestId] = _playerProps;
+        requestIdPlayerPropsFulFilled[_requestId] = true;
+        playerPropsReciever.fulfillPlayerPropsCL(_playerProps);
     }
 
     /* ========== VIEWS ========== */
@@ -375,6 +436,27 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         datePerRequest[requestId] = _date;
     }
 
+    function _requestPlayerPropsOddsWithFiltersFromAmm(
+        bytes32 _specId,
+        uint256 _sportId,
+        uint256 _date,
+        string[] memory _gameIds,
+        string[] memory _playerIds,
+        string[] memory _optionIds
+    ) internal {
+        Chainlink.Request memory req = buildChainlinkRequest(_specId, address(this), this.fulfillPlayerPropsOdds.selector);
+
+        req.addUint("date", _date);
+        req.addUint("sportId", _sportId);
+        req.addStringArray("gameIds", _gameIds);
+        req.addStringArray("playerIds", _playerIds);
+        req.addStringArray("optionIds", _optionIds);
+
+        bytes32 requestId = sendChainlinkRequest(req, paymentOdds);
+        sportIdPerRequestId[requestId] = _sportId;
+        datePerRequest[requestId] = _date;
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     /// @notice setting payment for game creation request
@@ -441,6 +523,13 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewOddsSpecId(_specId);
     }
 
+    /// @notice setting odds spec id for player props
+    /// @param _specId spec id
+    function setOddsSpecIdForPlayerProps(bytes32 _specId) external onlyOwner {
+        oddsSpecIdPlayerProps = _specId;
+        emit NewOddsSpecIdPlayerProps(_specId);
+    }
+
     /// @notice setting amm address
     /// @param _sportsAmm amm address
     function setSportsAmmAddress(address _sportsAmm) external onlyOwner {
@@ -455,6 +544,14 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         require(_playerPropsReciever != address(0), "Invalid address");
         playerPropsReciever = IGamesPlayerPropsReciever(_playerPropsReciever);
         emit NewPlayerPropsReciever(_playerPropsReciever);
+    }
+
+    /// @notice setting player props  address
+    /// @param _playerProps props address
+    function setPlayerPropsAddress(address _playerProps) external onlyOwner {
+        require(_playerProps != address(0), "Invalid address");
+        playerProps = IGamesPlayerProps(_playerProps);
+        emit NewPlayerProps(_playerProps);
     }
 
     /// @notice Retrieve LINK from the contract
@@ -485,4 +582,14 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     event NewSportsAmmAddress(address _sportsAmm);
     event UpdateOddsFromAMMForAGame(uint256 _sportId, uint256 _date, address _marketAddress);
     event NewPlayerPropsReciever(address _playerPropsReciever);
+    event NewPlayerProps(address _playerProps);
+    event NewOddsSpecIdPlayerProps(bytes32 _specId);
+    event UpdatePlayerPropsOddsFromAMM(
+        uint256 _sportId,
+        uint256 _date,
+        address _marketAddress,
+        bytes32 _gameId,
+        bytes32 _playerId,
+        uint8 _optionId
+    );
 }

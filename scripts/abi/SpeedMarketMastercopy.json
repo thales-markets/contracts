@@ -57,6 +57,19 @@
   },
   {
     "inputs": [],
+    "name": "createdAt",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "direction",
     "outputs": [
       {
@@ -201,7 +214,7 @@
     "name": "speedMarketsAMM",
     "outputs": [
       {
-        "internalType": "contract SpeedMarketsAMM",
+        "internalType": "contract ISpeedMarketsAMM",
         "name": "",
         "type": "address"
       }

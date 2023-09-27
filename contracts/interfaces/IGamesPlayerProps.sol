@@ -69,6 +69,16 @@ interface IGamesPlayerProps {
             address[][] memory _childMarketsPerOption
         );
 
+    function getPlayerPropsDataForMarket(address _market)
+        external
+        view
+        returns (
+            address,
+            bytes32,
+            bytes32,
+            uint8
+        );
+
     function getPlayerPropForOption(
         bytes32 gameId,
         bytes32 playerId,

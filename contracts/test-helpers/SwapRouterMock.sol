@@ -27,8 +27,11 @@ contract SwapRouterMock {
     /// @return amountOut The amount of the received token
     function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut) {
         IERC20Upgradeable(params.tokenIn).safeTransferFrom(msg.sender, address(this), params.amountIn);
-        IERC20Upgradeable(params.tokenOut).safeTransfer(msg.sender, params.amountOutMinimum * multiplier);
-        amountOut = params.amountOutMinimum * multiplier;
+        IERC20Upgradeable(params.tokenOut).safeTransfer(
+            msg.sender,
+            (params.amountOutMinimum * multiplier * (1e18 + 1e16)) / 1e18
+        );
+        amountOut = (params.amountOutMinimum * multiplier * (1e18 + 1e16)) / 1e18;
     }
 
     struct ExactInputParams {
@@ -44,8 +47,11 @@ contract SwapRouterMock {
     /// @return amountOut The amount of the received token
     function exactInput(ExactInputParams calldata params) external payable returns (uint256 amountOut) {
         IERC20Upgradeable(defaultTokenIn).safeTransferFrom(msg.sender, address(this), params.amountIn);
-        IERC20Upgradeable(defaultTokenOut).safeTransfer(msg.sender, params.amountOutMinimum * multiplier);
-        amountOut = params.amountOutMinimum * multiplier;
+        IERC20Upgradeable(defaultTokenOut).safeTransfer(
+            msg.sender,
+            (params.amountOutMinimum * multiplier * (1e18 + 1e16)) / 1e18
+        );
+        amountOut = (params.amountOutMinimum * multiplier * (1e18 + 1e16)) / 1e18;
     }
 
     function setDefaults(address _defaultTokenIn, address _defaultTokenOut) external {

@@ -174,6 +174,62 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "refferer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "trader",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "volume",
+        "type": "uint256"
+      }
+    ],
+    "name": "ReferrerPaid",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_pyth",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_referrals",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "SetAddresses",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -231,12 +287,6 @@
       },
       {
         "indexed": false,
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "direction",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "_maxRiskPerAssetAndDirection",
         "type": "uint256"
@@ -253,9 +303,15 @@
         "internalType": "uint256",
         "name": "_maximumPriceDelay",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maximumPriceDelayForResolving",
+        "type": "uint256"
       }
     ],
-    "name": "SetMaximumPriceDelay",
+    "name": "SetMaximumPriceDelays",
     "type": "event"
   },
   {
@@ -283,19 +339,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_pyth",
-        "type": "address"
-      }
-    ],
-    "name": "SetPyth",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "_safeBox",
         "type": "address"
       },
@@ -307,19 +350,6 @@
       }
     ],
     "name": "SetSafeBoxParams",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
-      }
-    ],
-    "name": "SetStakingThales",
     "type": "event"
   },
   {
@@ -502,6 +532,11 @@
         "internalType": "bytes[]",
         "name": "priceUpdateData",
         "type": "bytes[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
       }
     ],
     "name": "createNewMarket",
@@ -535,6 +570,11 @@
         "internalType": "bytes[]",
         "name": "priceUpdateData",
         "type": "bytes[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
       }
     ],
     "name": "createNewMarketWithDelta",
@@ -578,6 +618,11 @@
         "internalType": "bool",
         "name": "isEth",
         "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
       }
     ],
     "name": "createNewMarketWithDifferentCollateral",
@@ -621,6 +666,11 @@
         "internalType": "bool",
         "name": "isEth",
         "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
       }
     ],
     "name": "createNewMarketWithDifferentCollateralAndDelta",
@@ -666,6 +716,42 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getDirectionalRiskPerAsset",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum SpeedMarket.Direction",
+            "name": "direction",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "current",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMM.Risk[]",
+        "name": "",
+        "type": "tuple[]"
       }
     ],
     "stateMutability": "view",
@@ -732,6 +818,11 @@
             "internalType": "bool",
             "name": "isUserWinner",
             "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
           }
         ],
         "internalType": "struct SpeedMarketsAMM.MarketData[]",
@@ -973,6 +1064,19 @@
   },
   {
     "inputs": [],
+    "name": "maximumPriceDelayForResolving",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "minBuyinAmount",
     "outputs": [
       {
@@ -1153,6 +1257,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "referrals",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1204,6 +1321,34 @@
     "name": "resolveMarketManuallyBatch",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "priceUpdateData",
+        "type": "bytes[]"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "toEth",
+        "type": "bool"
+      }
+    ],
+    "name": "resolveMarketWithOfframp",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1261,6 +1406,29 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_pyth",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrals",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "setAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1351,11 +1519,6 @@
         "type": "bytes32"
       },
       {
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "direction",
-        "type": "uint8"
-      },
-      {
         "internalType": "uint256",
         "name": "_maxRiskPerAssetAndDirection",
         "type": "uint256"
@@ -1372,9 +1535,14 @@
         "internalType": "uint64",
         "name": "_maximumPriceDelay",
         "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_maximumPriceDelayForResolving",
+        "type": "uint64"
       }
     ],
-    "name": "setMaximumPriceDelay",
+    "name": "setMaximumPriceDelays",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1427,19 +1595,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_pyth",
-        "type": "address"
-      }
-    ],
-    "name": "setPyth",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_safeBox",
         "type": "address"
       },
@@ -1450,19 +1605,6 @@
       }
     ],
     "name": "setSafeBoxParams",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
-      }
-    ],
-    "name": "setStakingThales",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1579,5 +1721,9 @@
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]

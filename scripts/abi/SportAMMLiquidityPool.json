@@ -305,6 +305,19 @@
       {
         "indexed": false,
         "internalType": "bool",
+        "name": "needs",
+        "type": "bool"
+      }
+    ],
+    "name": "SetNeedsTransformingCollateral",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
         "name": "flagToSet",
         "type": "bool"
       }
@@ -1270,6 +1283,19 @@
       }
     ],
     "name": "setMinAllowedDeposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_needsTransformingCollateral",
+        "type": "bool"
+      }
+    ],
+    "name": "setNeedsTransformingCollateral",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -150,7 +150,8 @@ contract('SportsAMMRiskManager', (accounts) => {
 		SportsAMM,
 		SportAMMLiquidityPool,
 		SportAMMRiskManager,
-		GamesOddsReceiverDeployed;
+		GamesOddsReceiverDeployed,
+		multiCollateralOnOffRamp;
 	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
@@ -441,21 +442,38 @@ contract('SportsAMMRiskManager', (accounts) => {
 		let ERC20token = artifacts.require('Thales');
 		testDAI = await ERC20token.new();
 
-		let CurveSUSD = artifacts.require('MockCurveSUSD');
-		curveSUSD = await CurveSUSD.new(
+		let MultiCollateralOnOffRamp = artifacts.require('MultiCollateralOnOffRamp');
+		multiCollateralOnOffRamp = await MultiCollateralOnOffRamp.new();
+		await multiCollateralOnOffRamp.initialize(owner, Thales.address);
+
+		let MockPriceFeed = artifacts.require('MockPriceFeed');
+		let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
+		await multiCollateralOnOffRamp.setPriceFeed(MockPriceFeedDeployed.address, { from: owner });
+		await MockPriceFeedDeployed.setPricetoReturn(toUnit(1), { from: owner });
+
+		await multiCollateralOnOffRamp.setSupportedAMM(SportsAMM.address, true, { from: owner });
+
+		await multiCollateralOnOffRamp.setSupportedCollateral(testUSDC.address, true, { from: owner });
+
+		await SportsAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true, {
+			from: owner,
+		});
+
+		let CurveMock = artifacts.require('CurveMock');
+		let curveMock = await CurveMock.new(
 			Thales.address,
 			testUSDC.address,
-			testUSDT.address,
-			testDAI.address
+			testUSDC.address,
+			testUSDC.address
 		);
 
-		await SportsAMM.setCurveSUSD(
-			curveSUSD.address,
-			testDAI.address,
+		await multiCollateralOnOffRamp.setCurveSUSD(
+			curveMock.address,
 			testUSDC.address,
-			testUSDT.address,
+			testUSDC.address,
+			testUSDC.address,
 			true,
-			toUnit(0.02),
+			toUnit('0.01'),
 			{ from: owner }
 		);
 
@@ -507,7 +525,7 @@ contract('SportsAMMRiskManager', (accounts) => {
 			{ from: owner }
 		);
 
-		await SportsAMM.setSportOnePositional(9455, true, { from: owner });
+		await SportAMMRiskManager.setSportOnePositional(9455, true, { from: owner });
 
 		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
@@ -531,7 +549,6 @@ contract('SportsAMMRiskManager', (accounts) => {
 		});
 
 		await testUSDC.mint(first, toUnit(1000));
-		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
 		await GamesOddsReceiverDeployed.addToWhitelist([third], true, { from: owner });
 
@@ -813,6 +830,60 @@ contract('SportsAMMRiskManager', (accounts) => {
 
 	describe('Risk management contract', () => {
 		it('Test owner functions', async () => {
+			const setSportOnePositional = await SportAMMRiskManager.setSportOnePositional(9005, true, {
+				from: owner,
+			});
+
+			await expect(
+				SportAMMRiskManager.setSportOnePositional(8000, true, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for sport');
+
+			await expect(
+				SportAMMRiskManager.setSportOnePositional(9005, true, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				SportAMMRiskManager.setSportOnePositional(9005, true, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid flag');
+
+			// check if event is emited
+			assert.eventEqual(setSportOnePositional.logs[0], 'SetSportOnePositional', {
+				_sport: 9005,
+				_flag: true,
+			});
+
+			const setPlayerPropsOnePositional = await SportAMMRiskManager.setPlayerPropsOnePositional(
+				11053,
+				true,
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				SportAMMRiskManager.setPlayerPropsOnePositional(8000, true, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid tag for player props');
+
+			await expect(
+				SportAMMRiskManager.setPlayerPropsOnePositional(11053, true, {
+					from: wrapper,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(setPlayerPropsOnePositional.logs[0], 'SetPlayerPropsOnePositional', {
+				_playerPropsOptionTag: 11053,
+				_flag: true,
+			});
+
 			const setMaxCapAndRisk = await SportAMMRiskManager.setMaxCapAndRisk(toUnit(22222), 4, {
 				from: owner,
 			});

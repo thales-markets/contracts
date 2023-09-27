@@ -386,7 +386,8 @@
 		"GamesPlayerPropsReceiverImplementation": "0xF41A9B14b5DF3DC3357AD28500EC5e900ae7a044",
 		"SportAMMRiskManager": "0xd02339EfD17c3c02Bdb88abbA24Ad2A1b360a88E",
 		"SportAMMRiskManagerImplementation": "0x01e0e3c22f6Ff60282aE9F0066C9e8F230666DE1",
-		"TherundownConsumerWrapper": "0x089B4c50Fe83aD172D3E6A920702fF7f61aFB8A5"
+		"TherundownConsumerWrapper": "0x089B4c50Fe83aD172D3E6A920702fF7f61aFB8A5",
+		"SwapRouter": "0xeA05705e26C8aabeA407994ea5e9D84db217e78C"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

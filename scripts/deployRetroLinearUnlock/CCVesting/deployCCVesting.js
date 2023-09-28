@@ -1,12 +1,8 @@
 const { ethers, upgrades } = require('hardhat');
-const {
-	txLog,
-	getTargetAddress,
-	setTargetAddress,
-} = require('../../helpers.js');
+const { txLog, getTargetAddress, setTargetAddress } = require('../../helpers.js');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
-const { recipients, amounts, startTimes, TOTAL_AMOUNT } = require('./recipients');
+const { recipients, amounts, startTimes, endTimes, TOTAL_AMOUNT } = require('./recipients');
 const VESTING_PERIOD = 86400 * 365 * 3; // three years
 
 async function main() {
@@ -14,7 +10,7 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let thalesAddress, Thales;
+	let thalesAddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -49,20 +45,16 @@ async function main() {
 
 	if (networkObj.chainId == 10 || networkObj.chainId == 69) {
 		thalesAddress = getTargetAddress('OpThales_L2', network);
-		Thales = await ethers.getContractFactory('OpThales');
 	} else {
 		thalesAddress = getTargetAddress('Thales', network);
-		Thales = await ethers.getContractFactory('Thales');
 	}
 
-	const ThalesDeployed = await Thales.attach(thalesAddress);
-
-	console.log('Thales address:', ThalesDeployed.address);
+	console.log('Thales address:', thalesAddress);
 
 	const VestingEscrow = await ethers.getContractFactory('VestingEscrowCC');
 	const vestingEscrow = await upgrades.deployProxy(VestingEscrow, [
 		owner.address,
-		ThalesDeployed.address,
+		thalesAddress,
 		VESTING_PERIOD,
 	]);
 	await vestingEscrow.deployed();
@@ -76,22 +68,20 @@ async function main() {
 	console.log('VestingEscrowCCImplementation: ', implementation);
 	setTargetAddress('VestingEscrowCCImplementation', network, implementation);
 
-	let tx = await ThalesDeployed.transfer(vestingEscrow.address, TOTAL_AMOUNT);
-	await tx.wait().then(e => {
-		txLog(tx, 'Thales: Transfer tokens');
-	});
-	tx = await ThalesDeployed.approve(vestingEscrow.address, TOTAL_AMOUNT);
-	await tx.wait().then(e => {
-		txLog(tx, 'Thales: Approve tokens');
-	});
-
 	console.log('started funding');
+	let tx;
 
-	for(let i = 0; i < recipients.length; i++) {
+	for (let i = 0; i < recipients.length; i++) {
 		tx = await vestingEscrow.fund(recipients[i], amounts[i], startTimes[i]);
-		await tx.wait().then(e => {
+		await tx.wait().then((e) => {
 			txLog(tx, 'Fund account: ' + recipients[i]);
 		});
+		await delay(1000);
+		tx = await vestingEscrow.setEndTime(recipients[i], endTimes[i]);
+		await tx.wait().then((e) => {
+			txLog(tx, 'setEndTime: ' + endTimes[i]);
+		});
+		await delay(1000);
 	}
 
 	try {
@@ -105,13 +95,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

@@ -179,6 +179,7 @@ contract('ParlayAMM', (accounts) => {
 		ParlayVerifier,
 		SportsAMM,
 		SportAMMLiquidityPool,
+		ParlayPolicy,
 		ParlayAMMLiquidityPool,
 		multiCollateralOnOffRamp;
 
@@ -721,6 +722,13 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultParlayAMMLiquidityProvider,
 		});
+
+		// Parlay Policy
+		const ParlayPolicyContract = artifacts.require('ParlayPolicy');
+		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
+		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
+
+		await ParlayAMM.setPolicyAddresses(ParlayPolicy.address, { from: owner });
 	});
 
 	describe('Parlay AMM setters', () => {

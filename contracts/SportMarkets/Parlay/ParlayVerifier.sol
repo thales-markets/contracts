@@ -399,7 +399,11 @@ contract ParlayVerifier {
                         sgpFee2 = sgpFee;
                     }
                 } else if (odds2 < (43 * ONE_PERCENT)) {
-                    sgpFee2 = sgpFee > 5 * ONE_PERCENT ? sgpFee - (2 * ONE_PERCENT) : sgpFee;
+                    if (odds1 <= (46 * ONE_PERCENT)) {
+                        sgpFee + ((ONE - sgpFee) * 90 * ONE_PERCENT) / ONE;
+                    } else {
+                        sgpFee2 = sgpFee > 5 * ONE_PERCENT ? sgpFee - (2 * ONE_PERCENT) : sgpFee;
+                    }
                 }
             } else {
                 if (odds2 >= (56 * ONE_PERCENT)) {
@@ -420,6 +424,14 @@ contract ParlayVerifier {
                     sgpFee2 = ONE + (ONE - sgpFee + 10 * ONE_PERCENT);
                 } else if (odds2 <= (38 * ONE_PERCENT) && odds1 >= (66 * ONE_PERCENT)) {
                     sgpFee2 = ONE + (ONE - sgpFee + 25 * ONE_PERCENT);
+                } else if (odds2 <= (45 * ONE_PERCENT) && odds1 >= (70 * ONE_PERCENT)) {
+                    sgpFee2 = ONE + (2 * (ONE - sgpFee));
+                } else if (odds2 <= (45 * ONE_PERCENT) && odds1 >= (40 * ONE_PERCENT)) {
+                    sgpFee2 = sgpFee + ((ONE - sgpFee) * 80 * ONE_PERCENT) / ONE;
+                } else if (odds2 <= (45 * ONE_PERCENT) && odds1 >= (20 * ONE_PERCENT)) {
+                    sgpFee2 = sgpFee + ((ONE - sgpFee) * 50 * ONE_PERCENT) / ONE;
+                } else if (odds2 <= (45 * ONE_PERCENT) && odds1 < (20 * ONE_PERCENT)) {
+                    sgpFee2 = sgpFee + ((ONE - sgpFee) * 30 * ONE_PERCENT) / ONE;
                 } else if (odds2 <= (48 * ONE_PERCENT) && odds1 <= (11 * ONE_PERCENT)) {
                     sgpFee2 = (sgpFee * 95 * ONE_PERCENT) / ONE;
                 } else if (odds2 < (54 * ONE_PERCENT) && odds1 >= (74 * ONE_PERCENT)) {

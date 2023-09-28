@@ -676,31 +676,31 @@ contract ParlayVerifier {
         if (i < right) _quickSort(arr, i, right);
     }
 
-    function getSkewImpact(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _sUSDAfterFees,
-        ISportsAMM _sportsAMM,
-        address _parlayAMM,
-        uint _totalBuyAmount,
-        uint _totalQuote,
-        uint _oldSkew
-    ) external view returns (uint resultSkewImpact) {
-        resultSkewImpact = _oldSkew;
-        // //todo refactor this part
-        // uint newBuyAmount;
-        // (, , uint[] memory sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
-        // if (sgpFee > 0) {
-        //     _totalQuote = (_totalQuote * sgpFee) / ONE;
-        //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
-        // } else {
-        //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
-        // }
-        // resultSkewImpact = newBuyAmount > _totalBuyAmount
-        //     ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
-        //     : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
-        // resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : 0;
-    }
+    // function getSkewImpact(
+    //     address[] memory _sportMarkets,
+    //     uint[] memory _positions,
+    //     uint _sUSDAfterFees,
+    //     ISportsAMM _sportsAMM,
+    //     address _parlayAMM,
+    //     uint _totalBuyAmount,
+    //     uint _totalQuote,
+    //     uint _oldSkew
+    // ) external view returns (uint resultSkewImpact) {
+    //     resultSkewImpact = _oldSkew;
+    // //todo refactor this part
+    // uint newBuyAmount;
+    // (, , uint[] memory sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
+    // if (sgpFee > 0) {
+    //     _totalQuote = (_totalQuote * sgpFee) / ONE;
+    //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
+    // } else {
+    //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
+    // }
+    // resultSkewImpact = newBuyAmount > _totalBuyAmount
+    //     ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
+    //     : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
+    // resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : 0;
+    // }
 
     function sort(address[] memory data) external pure returns (address[] memory) {
         _quickSort(data, int(0), int(data.length - 1));

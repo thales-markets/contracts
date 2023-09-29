@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "hardhat/console.sol";
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -94,6 +95,9 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
 
     mapping(uint => uint) public allocationSpentInARound;
 
+    address public safeBox;
+    uint public safeBoxImpact;
+
     /* ========== CONSTRUCTOR ========== */
 
     function __BaseVault_init(
@@ -162,6 +166,14 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
         // balance in next round does not affect PnL in a current round
         uint currentVaultBalance = sUSD.balanceOf(address(this)) - allocationPerRound[round + 1];
         // calculate PnL
+
+        // send profit reserved for SafeBox if positive round
+        if (currentVaultBalance > allocationPerRound[round] && safeBoxImpact > 0) {
+            uint safeBoxAmount = ((currentVaultBalance - allocationPerRound[round]) * safeBoxImpact) / ONE;
+            sUSD.safeTransfer(safeBox, safeBoxAmount);
+            currentVaultBalance = currentVaultBalance - safeBoxAmount;
+            emit SafeBoxSharePaid(safeBoxImpact, safeBoxAmount);
+        }
 
         // if no allocation for current round
         if (allocationPerRound[round] == 0) {
@@ -368,6 +380,15 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
         emit SetMinTradeAmount(_minTradeAmount);
     }
 
+    /// @notice set SafeBox params
+    /// @param _safeBox where to send a profit reserved for protocol from each round
+    /// @param _safeBoxImpact how much is the SafeBox percentage
+    function setSafeBoxParams(address _safeBox, uint _safeBoxImpact) external onlyOwner {
+        safeBox = _safeBox;
+        safeBoxImpact = _safeBoxImpact;
+        emit SetSafeBoxParams(_safeBox, _safeBoxImpact);
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _exerciseMarketsReadyToExercised() internal {
@@ -509,4 +530,6 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
     event SetSkewImpactLimit(int skewImpact);
     event SetMinTradeAmount(uint SetMinTradeAmount);
     event TradeExecuted(address market, IThalesAMM.Position position, uint amount, uint quote);
+    event SetSafeBoxParams(address safeBox, uint safeBoxImpact);
+    event SafeBoxSharePaid(uint safeBoxShare, uint safeBoxAmount);
 }

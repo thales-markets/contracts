@@ -273,6 +273,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
                 ONE;
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
+            require(currentCollateralPrice > 0, "no price available from price feed");
             minReceived =
                 (((amount * currentCollateralPrice) / ONE) *
                     (ONE - _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
@@ -295,6 +296,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
             }
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
+            require(currentCollateralPrice > 0, "no price available from price feed");
             minNeeded =
                 (((amount * ONE) / currentCollateralPrice) *
                     (ONE + _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
@@ -313,6 +315,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
                 ONE;
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
+            require(currentCollateralPrice > 0, "no price available from price feed");
             maxReceived =
                 (((amount * currentCollateralPrice) / ONE) *
                     (ONE + _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
@@ -335,6 +338,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
             }
         } else {
             uint currentCollateralPrice = priceFeed.rateForCurrency(priceFeedKeyPerCollateral[collateral]);
+            require(currentCollateralPrice > 0, "no price available from price feed");
             minReceivedOfframp =
                 (((amount * ONE) / currentCollateralPrice) *
                     (ONE - _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /

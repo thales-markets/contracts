@@ -303,8 +303,8 @@
 		"sUSD": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"ProxyUSDC": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"Pyth": "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a",
-		"SpeedMarketsAMMImplementation": "0x1bAcc75f17EFdBe425eFEbBF5a918bB56d5B6A47",
-		"SpeedMarketMastercopy": "0x2880154aCC4886417d2a85BB888bA888E2F02e07",
+		"SpeedMarketsAMMImplementation": "0xA525A0A446Dd4Bd8921840564124032aAD868c93",
+		"SpeedMarketMastercopy": "0x2bbB803493890d21a5b7f22Fb9e5a1a09Aeed16a",
 		"PositionMastercopy": "0xD2b907a94E33BFe0371B8dcbFAcf1a319b13d609",
 		"PositionalMarketMastercopy": "0x503e7F2C19384Ff68B445E21850fDC61f34434e6",
 		"PriceFeed": "0x5B5DbF38a1fcf63B58d263648EBb63b53c1de3E7",
@@ -387,7 +387,9 @@
 		"SportAMMRiskManager": "0xd02339EfD17c3c02Bdb88abbA24Ad2A1b360a88E",
 		"SportAMMRiskManagerImplementation": "0x01e0e3c22f6Ff60282aE9F0066C9e8F230666DE1",
 		"TherundownConsumerWrapper": "0x089B4c50Fe83aD172D3E6A920702fF7f61aFB8A5",
-		"SwapRouter": "0xeA05705e26C8aabeA407994ea5e9D84db217e78C"
+		"SwapRouter": "0xeA05705e26C8aabeA407994ea5e9D84db217e78C",
+		"MultiCollateralOnOffRamp": "0x0946BfE3c543e0B770B7F7e508c8A566947C4278",
+		"MultiCollateralOnOffRampImplementation": "0x38a50ebB6b299361D4492D488F95e13bE0A6b693"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

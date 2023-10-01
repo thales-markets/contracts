@@ -210,7 +210,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         address _referrer
     ) internal {
         require(multicollateralEnabled, "Multicollateral onramp not enabled");
+        //        uint amountBefore = sUSD.balanceOf(address(this));
         uint buyinAmount = _convertCollateral(collateral, collateralAmount, isEth);
+        //        uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
+        //        require(amountDiff >= buyinAmount, "not enough received via onramp");
+        //TODO: add this check once contract can fit it size wise
         _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData, false, _referrer);
     }
 
@@ -280,8 +284,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         _handleRisk(asset, direction, buyinAmount);
 
-        uint fee = pyth.getUpdateFee(priceUpdateData);
-        pyth.updatePriceFeeds{value: fee}(priceUpdateData);
+        pyth.updatePriceFeeds{value: pyth.getUpdateFee(priceUpdateData)}(priceUpdateData);
 
         PythStructs.Price memory price = pyth.getPrice(assetToPythId[asset]);
 

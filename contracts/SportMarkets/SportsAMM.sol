@@ -611,16 +611,21 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         _sendFromIfNotZero(msg.sender, address(away), address(this), awayBalance);
         _sendFromIfNotZero(msg.sender, address(draw), address(this), drawBalance);
 
+        uint amountBefore = sUSD.balanceOf(address(this));
+
         ISportPositionalMarket(market).exerciseOptions();
 
-        if (toEth) {
-            uint offramped = multiCollateralOnOffRamp.offrampIntoEth(sUSD.balanceOf(address(this)));
-            address payable _to = payable(msg.sender);
-            bool sent = _to.send(offramped);
-            require(sent, "Failed to send Ether");
-        } else {
-            uint offramped = multiCollateralOnOffRamp.offramp(collateral, sUSD.balanceOf(address(this)));
-            IERC20Upgradeable(collateral).safeTransfer(msg.sender, offramped);
+        uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
+
+        if (amountDiff > 0) {
+            if (toEth) {
+                uint offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
+                bool sent = payable(msg.sender).send(offramped);
+                require(sent, "Failed to send Ether");
+            } else {
+                uint offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
+                IERC20Upgradeable(collateral).safeTransfer(msg.sender, offramped);
+            }
         }
     }
 

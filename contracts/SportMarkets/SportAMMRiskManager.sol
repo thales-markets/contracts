@@ -37,13 +37,13 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     mapping(uint => bool) public isMarketForPlayerPropsOnePositional;
 
     // @return specific min_spread per address
-    mapping(uint => mapping(uint => uint)) public minSpreadPerSport; //deprecated see SportAMMRiskManager.sol
+    mapping(uint => mapping(uint => uint)) public minSpreadPerSport;
 
     /// @return The maximum supported odd for sport
-    mapping(uint => uint) public minSupportedOddsPerSport; //deprecated see SportAMMRiskManager.sol
+    mapping(uint => uint) public minSupportedOddsPerSport;
 
     /// @return The maximum supported odd for sport
-    mapping(uint => uint) public maxSpreadPerSport; //deprecated see SportAMMRiskManager.sol
+    mapping(uint => uint) public maxSpreadPerSport;
 
     /* ========== CONSTRUCTOR ========== */
 

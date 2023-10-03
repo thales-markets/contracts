@@ -13436,139 +13436,139 @@
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
           },
           {
             "contract": "ProxyOwned",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
           },
           {
             "contract": "ProxyOwned",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
           },
           {
             "contract": "ProxyOwned",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
           },
           {
             "contract": "ProxyOwned",
             "label": "_transferredAtInit",
             "type": "t_bool",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
           },
           {
             "contract": "ContextUpgradeable",
             "label": "__gap",
             "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
           },
           {
             "contract": "PausableUpgradeable",
             "label": "_paused",
             "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
           },
           {
             "contract": "PausableUpgradeable",
             "label": "__gap",
             "type": "t_array(t_uint256)49_storage",
-            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
           },
           {
             "contract": "ProxyReentrancyGuard",
             "label": "_guardCounter",
             "type": "t_uint256",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
           },
           {
             "contract": "ProxyReentrancyGuard",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "manager",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:23"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:23"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "defaultCapPerGame",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:24"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:24"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "capPerSport",
             "type": "t_mapping(t_uint256,t_uint256)",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:25"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:25"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "capPerSportAndChild",
             "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:26"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:26"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "capPerMarket",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:27"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:27"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "defaultRiskMultiplier",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:29"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:29"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "riskMultiplierForSport",
             "type": "t_mapping(t_uint256,t_uint256)",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:30"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:30"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "riskMultiplierPerMarket",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:31"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:31"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "maxCap",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:33"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:33"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "maxRiskMultiplier",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:34"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:34"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "isMarketForSportOnePositional",
             "type": "t_mapping(t_uint256,t_bool)",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:36"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:36"
           },
           {
             "contract": "SportAMMRiskManager",
             "label": "isMarketForPlayerPropsOnePositional",
             "type": "t_mapping(t_uint256,t_bool)",
-            "src": "contracts/SportMarkets/SportAMMRiskManager.sol:37"
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:37"
           }
         ],
         "types": {
@@ -13611,299 +13611,299 @@
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
           },
           {
             "contract": "ProxyOwned",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
           },
           {
             "contract": "ProxyOwned",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
           },
           {
             "contract": "ProxyOwned",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
           },
           {
             "contract": "ProxyOwned",
             "label": "_transferredAtInit",
             "type": "t_bool",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
           },
           {
             "contract": "ContextUpgradeable",
             "label": "__gap",
             "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
           },
           {
             "contract": "PausableUpgradeable",
             "label": "_paused",
             "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
           },
           {
             "contract": "PausableUpgradeable",
             "label": "__gap",
             "type": "t_array(t_uint256)49_storage",
-            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
           },
           {
             "contract": "ProxyReentrancyGuard",
             "label": "_guardCounter",
             "type": "t_uint256",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
           },
           {
             "contract": "ProxyReentrancyGuard",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
           },
           {
             "contract": "SportsAMM",
             "label": "sUSD",
-            "type": "t_contract(IERC20Upgradeable)548",
-            "src": "contracts/SportMarkets/SportsAMM.sol:41"
+            "type": "t_contract(IERC20Upgradeable)8234",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:41"
           },
           {
             "contract": "SportsAMM",
             "label": "manager",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:44"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:44"
           },
           {
             "contract": "SportsAMM",
             "label": "defaultCapPerGame",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:48"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:48"
           },
           {
             "contract": "SportsAMM",
             "label": "min_spread",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:51"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:51"
           },
           {
             "contract": "SportsAMM",
             "label": "max_spread",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:54"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:54"
           },
           {
             "contract": "SportsAMM",
             "label": "minimalTimeLeftToMaturity",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:58"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:58"
           },
           {
             "contract": "SportsAMM",
             "label": "spentOnGame",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:67"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:67"
           },
           {
             "contract": "SportsAMM",
             "label": "safeBox",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:70"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:70"
           },
           {
             "contract": "SportsAMM",
             "label": "theRundownConsumer",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:73"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:73"
           },
           {
             "contract": "SportsAMM",
             "label": "safeBoxImpact",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:76"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:76"
           },
           {
             "contract": "SportsAMM",
             "label": "stakingThales",
-            "type": "t_contract(IStakingThales)10680",
-            "src": "contracts/SportMarkets/SportsAMM.sol:79"
+            "type": "t_contract(IStakingThales)94035",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:79"
           },
           {
             "contract": "SportsAMM",
             "label": "minSupportedOdds",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:82"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:82"
           },
           {
             "contract": "SportsAMM",
             "label": "maxSupportedOdds",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:85"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:85"
           },
           {
             "contract": "SportsAMM",
             "label": "curveSUSD",
-            "type": "t_contract(ICurveSUSD)9612",
-            "src": "contracts/SportMarkets/SportsAMM.sol:88"
+            "type": "t_contract(ICurveSUSD)92016",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:88"
           },
           {
             "contract": "SportsAMM",
             "label": "usdc",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:91"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:91"
           },
           {
             "contract": "SportsAMM",
             "label": "usdt",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:94"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:94"
           },
           {
             "contract": "SportsAMM",
             "label": "dai",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:97"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:97"
           },
           {
             "contract": "SportsAMM",
             "label": "curveOnrampEnabled",
             "type": "t_bool",
-            "src": "contracts/SportMarkets/SportsAMM.sol:100"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:100"
           },
           {
             "contract": "SportsAMM",
             "label": "referrals",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:103"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:103"
           },
           {
             "contract": "SportsAMM",
             "label": "referrerFee",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:106"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:106"
           },
           {
             "contract": "SportsAMM",
             "label": "parlayAMM",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:109"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:109"
           },
           {
             "contract": "SportsAMM",
             "label": "apexConsumer",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:112"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:112"
           },
           {
             "contract": "SportsAMM",
             "label": "maxAllowedPegSlippagePercentage",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:115"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:115"
           },
           {
             "contract": "SportsAMM",
             "label": "capPerSport",
             "type": "t_mapping(t_uint256,t_uint256)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:118"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:118"
           },
           {
             "contract": "SportsAMM",
             "label": "sportAmmUtils",
-            "type": "t_contract(SportsAMMUtils)9585",
-            "src": "contracts/SportMarkets/SportsAMM.sol:120"
+            "type": "t_contract(SportsAMMUtils)87644",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:120"
           },
           {
             "contract": "SportsAMM",
             "label": "capPerMarket",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:123"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:123"
           },
           {
             "contract": "SportsAMM",
             "label": "thresholdForOddsUpdate",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:127"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:127"
           },
           {
             "contract": "SportsAMM",
             "label": "wrapper",
-            "type": "t_contract(ITherundownConsumerWrapper)10956",
-            "src": "contracts/SportMarkets/SportsAMM.sol:130"
+            "type": "t_contract(ITherundownConsumerWrapper)94832",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:130"
           },
           {
             "contract": "SportsAMM",
             "label": "safeBoxFeePerAddress",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:133"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:133"
           },
           {
             "contract": "SportsAMM",
             "label": "min_spreadPerAddress",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:136"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:136"
           },
           {
             "contract": "SportsAMM",
             "label": "capPerSportAndChild",
             "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
-            "src": "contracts/SportMarkets/SportsAMM.sol:139"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:139"
           },
           {
             "contract": "SportsAMM",
             "label": "liquidityPool",
-            "type": "t_contract(SportAMMLiquidityPool)4014",
-            "src": "contracts/SportMarkets/SportsAMM.sol:159"
+            "type": "t_contract(SportAMMLiquidityPool)47556",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:159"
           },
           {
             "contract": "SportsAMM",
             "label": "minSpreadPerSport",
             "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
-            "src": "contracts/SportMarkets/SportsAMM.sol:162"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:162"
           },
           {
             "contract": "SportsAMM",
             "label": "isMarketForSportOnePositional",
             "type": "t_mapping(t_uint256,t_bool)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:165"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:165"
           },
           {
             "contract": "SportsAMM",
             "label": "minSupportedOddsPerSport",
             "type": "t_mapping(t_uint256,t_uint256)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:168"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:168"
           },
           {
             "contract": "SportsAMM",
             "label": "maxSpreadPerSport",
             "type": "t_mapping(t_uint256,t_uint256)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:171"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:171"
           },
           {
             "contract": "SportsAMM",
             "label": "riskManager",
-            "type": "t_contract(ISportAMMRiskManager)10005",
-            "src": "contracts/SportMarkets/SportsAMM.sol:173"
+            "type": "t_contract(ISportAMMRiskManager)93350",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:173"
           },
           {
             "contract": "SportsAMM",
             "label": "spentOnParent",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:176"
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:176"
           }
         ],
         "types": {
-          "t_contract(IERC20Upgradeable)548": {
+          "t_contract(IERC20Upgradeable)8234": {
             "label": "contract IERC20Upgradeable"
           },
           "t_address": {
@@ -13915,10 +13915,10 @@
           "t_mapping(t_address,t_uint256)": {
             "label": "mapping(address => uint256)"
           },
-          "t_contract(IStakingThales)10680": {
+          "t_contract(IStakingThales)94035": {
             "label": "contract IStakingThales"
           },
-          "t_contract(ICurveSUSD)9612": {
+          "t_contract(ICurveSUSD)92016": {
             "label": "contract ICurveSUSD"
           },
           "t_bool": {
@@ -13927,22 +13927,22 @@
           "t_mapping(t_uint256,t_uint256)": {
             "label": "mapping(uint256 => uint256)"
           },
-          "t_contract(SportsAMMUtils)9585": {
+          "t_contract(SportsAMMUtils)87644": {
             "label": "contract SportsAMMUtils"
           },
-          "t_contract(ITherundownConsumerWrapper)10956": {
+          "t_contract(ITherundownConsumerWrapper)94832": {
             "label": "contract ITherundownConsumerWrapper"
           },
           "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))": {
             "label": "mapping(uint256 => mapping(uint256 => uint256))"
           },
-          "t_contract(SportAMMLiquidityPool)4014": {
+          "t_contract(SportAMMLiquidityPool)47556": {
             "label": "contract SportAMMLiquidityPool"
           },
           "t_mapping(t_uint256,t_bool)": {
             "label": "mapping(uint256 => bool)"
           },
-          "t_contract(ISportAMMRiskManager)10005": {
+          "t_contract(ISportAMMRiskManager)93350": {
             "label": "contract ISportAMMRiskManager"
           },
           "t_array(t_uint256)49_storage": {
@@ -15034,6 +15034,566 @@
           },
           "t_bool": {
             "label": "bool"
+          }
+        }
+      }
+    },
+    "dbc7d234d3a739e96dabff49f354e1aea2bd55d7b8ca9fcc20e27f4eb2d9b8d0": {
+      "address": "0x4067A70366d48A406573a0122BBb603D69394c29",
+      "txHash": "0x9353f67ac37c692c90ef1604c9b128dcdef81387fd6a9677b0622a05053ac488",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)8234",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:43"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "manager",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:46"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "defaultCapPerGame",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:48"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "min_spread",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:51"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "max_spread",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:54"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "minimalTimeLeftToMaturity",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:58"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "spentOnGame",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:67"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "safeBox",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:70"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "theRundownConsumer",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:73"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "safeBoxImpact",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:76"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "stakingThales",
+            "type": "t_contract(IStakingThales)95159",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:79"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "minSupportedOdds",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:82"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "maxSupportedOdds",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:85"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "curveSUSD",
+            "type": "t_contract(ICurveSUSD)93037",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:87"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "usdc",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:89"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "usdt",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:91"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "dai",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:93"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "curveOnrampEnabled",
+            "type": "t_bool",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:95"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "referrals",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:98"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "referrerFee",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:101"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "parlayAMM",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:104"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "apexConsumer",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:106"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "maxAllowedPegSlippagePercentage",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:109"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "capPerSport",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:111"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "sportAmmUtils",
+            "type": "t_contract(SportsAMMUtils)88666",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:113"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "capPerMarket",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:115"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "thresholdForOddsUpdate",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:119"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "wrapper",
+            "type": "t_contract(ITherundownConsumerWrapper)95956",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:122"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "safeBoxFeePerAddress",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:125"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "min_spreadPerAddress",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:128"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "capPerSportAndChild",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:130"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "liquidityPool",
+            "type": "t_contract(SportAMMLiquidityPool)48317",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:150"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "minSpreadPerSport",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:152"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "isMarketForSportOnePositional",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:154"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "minSupportedOddsPerSport",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:156"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "maxSpreadPerSport",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:158"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "riskManager",
+            "type": "t_contract(ISportAMMRiskManager)94474",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:160"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "spentOnParent",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:162"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "multiCollateralOnOffRamp",
+            "type": "t_contract(IMultiCollateralOnOffRamp)93657",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:165"
+          },
+          {
+            "contract": "SportsAMM",
+            "label": "multicollateralEnabled",
+            "type": "t_bool",
+            "src": "contracts\\SportMarkets\\SportsAMM.sol:166"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)8234": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_contract(IStakingThales)95159": {
+            "label": "contract IStakingThales"
+          },
+          "t_contract(ICurveSUSD)93037": {
+            "label": "contract ICurveSUSD"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_contract(SportsAMMUtils)88666": {
+            "label": "contract SportsAMMUtils"
+          },
+          "t_contract(ITherundownConsumerWrapper)95956": {
+            "label": "contract ITherundownConsumerWrapper"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(uint256 => mapping(uint256 => uint256))"
+          },
+          "t_contract(SportAMMLiquidityPool)48317": {
+            "label": "contract SportAMMLiquidityPool"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_contract(ISportAMMRiskManager)94474": {
+            "label": "contract ISportAMMRiskManager"
+          },
+          "t_contract(IMultiCollateralOnOffRamp)93657": {
+            "label": "contract IMultiCollateralOnOffRamp"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "b0e301e668db95c147293b559df70c6dd93e00a0f24314230aad6842c8c7f17a": {
+      "address": "0x9727Fbc64B05c94286eEf3493F4CAe161B9ba3a8",
+      "txHash": "0xc6956a80718be11328a86b9cb92808bc6918c6a556f0cd05fea40bebe5415d06",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "manager",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:23"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "defaultCapPerGame",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:24"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "capPerSport",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:25"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "capPerSportAndChild",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:26"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "capPerMarket",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:27"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "defaultRiskMultiplier",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:29"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "riskMultiplierForSport",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:30"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "riskMultiplierPerMarket",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:31"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "maxCap",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:33"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "maxRiskMultiplier",
+            "type": "t_uint256",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:34"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "isMarketForSportOnePositional",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:36"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "isMarketForPlayerPropsOnePositional",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:37"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "minSpreadPerSport",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:40"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "minSupportedOddsPerSport",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:43"
+          },
+          {
+            "contract": "SportAMMRiskManager",
+            "label": "maxSpreadPerSport",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\SportMarkets\\SportAMMRiskManager.sol:46"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(uint256 => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
           }
         }
       }

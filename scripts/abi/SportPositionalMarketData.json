@@ -243,6 +243,47 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "batchNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "batchSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "getLiquidityForAllActiveMarketsInBatches",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "liquidity",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "liquidityUsd",
+            "type": "uint256[]"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.ActiveMarketsLiquidity[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "market",
         "type": "address"

@@ -98,6 +98,9 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     uint public maxMarketUsedInRoundCount;
 
     uint public marketsProcessedInRound;
+    
+    address public safeBox;
+    uint public safeBoxImpact;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -172,6 +175,14 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         // balance in next round does not affect PnL in a current round
         uint currentVaultBalance = sUSD.balanceOf(address(this)) - allocationPerRound[round + 1];
         // calculate PnL
+
+        // send profit reserved for SafeBox if positive round
+        if (currentVaultBalance > allocationPerRound[round] && safeBoxImpact > 0) {
+            uint safeBoxAmount = ((currentVaultBalance - allocationPerRound[round]) * safeBoxImpact) / ONE;
+            sUSD.safeTransfer(safeBox, safeBoxAmount);
+            currentVaultBalance = currentVaultBalance - safeBoxAmount;
+            emit SafeBoxSharePaid(safeBoxImpact, safeBoxAmount);
+        }
 
         // if no allocation for current round
         if (allocationPerRound[round] == 0) {
@@ -394,6 +405,15 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     function setMinTradeAmount(uint _minTradeAmount) external onlyOwner {
         minTradeAmount = _minTradeAmount;
         emit SetMinTradeAmount(_minTradeAmount);
+    }
+
+    /// @notice set SafeBox params
+    /// @param _safeBox where to send a profit reserved for protocol from each round
+    /// @param _safeBoxImpact how much is the SafeBox percentage
+    function setSafeBoxParams(address _safeBox, uint _safeBoxImpact) external onlyOwner {
+        safeBox = _safeBox;
+        safeBoxImpact = _safeBoxImpact;
+        emit SetSafeBoxParams(_safeBox, _safeBoxImpact);
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
@@ -649,4 +669,6 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     event SetSkewImpactLimit(int skewImpact);
     event SetMinTradeAmount(uint SetMinTradeAmount);
     event TradeExecuted(address parlayMarket, uint sUSDPaid);
+    event SetSafeBoxParams(address safeBox, uint safeBoxImpact);
+    event SafeBoxSharePaid(uint safeBoxShare, uint safeBoxAmount);
 }

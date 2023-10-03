@@ -37,6 +37,8 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
+let sUSDSynth;
+
 contract('SportsAMM', (accounts) => {
 	const [
 		manager,
@@ -541,6 +543,10 @@ contract('SportsAMM', (accounts) => {
 				from: owner,
 			}
 		);
+
+		await vault.setSafeBoxParams(safeBox, toUnit(0.2), {
+			from: owner,
+		});
 	});
 
 	describe('Test sport vault', () => {
@@ -868,6 +874,31 @@ contract('SportsAMM', (accounts) => {
 
 			volume = await StakingThales.getAMMVolume(second);
 			console.log('volume second is:' + volume / 1e18);
+		});
+
+		it('If round is positive, send share to SafeBox', async() => {
+			const AMOUNT = 50;
+			
+			await vault.deposit(toUnit(500), { from: first });
+			await vault.startVault({ from: owner });
+
+			await Thales.transfer(vault.address, toUnit(AMOUNT), {
+				from: first
+			});
+
+			const safeBoxImpact = await vault.safeBoxImpact();
+
+			let startSafeBoxBalance = await Thales.balanceOf(safeBox);
+			console.log('startSafeBoxBalance ' + startSafeBoxBalance / 1e18);
+
+			await fastForward(week);
+
+			await vault.closeRound();
+
+			let safeBoxBalanceAfterClosingRound = await Thales.balanceOf(safeBox);
+			console.log('safeBoxBalanceAfterClosingRound ' + safeBoxBalanceAfterClosingRound / 1e18);
+
+			assert.equal((Number(startSafeBoxBalance / 1e18) + Number(AMOUNT * (safeBoxImpact / 1e18))).toFixed(4), (safeBoxBalanceAfterClosingRound / 1e18).toFixed(4));
 		});
 	});
 });

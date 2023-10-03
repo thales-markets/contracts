@@ -52,7 +52,7 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vaultAddress = getTargetAddress('AmmVaultDegen', network);
+	const vaultAddress = getTargetAddress('AmmVault', network);
 	console.log('Found Vault at:', vaultAddress);
 
 	const Vault = await ethers.getContractFactory('AmmVault');
@@ -64,7 +64,7 @@ async function main() {
 	}
 
 	console.log('AmmVaultImplementation: ', implementation);
-	setTargetAddress('AmmVaultDegenImplementation', network, implementation);
+	setTargetAddress('AmmVaultImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
 		address: implementation,

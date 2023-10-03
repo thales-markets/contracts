@@ -198,6 +198,25 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "safeBoxShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "SafeBoxSharePaid",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "SetMinTradeAmount",
         "type": "uint256"
       }
@@ -235,6 +254,25 @@
       }
     ],
     "name": "SetSUSD",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "safeBox",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxImpact",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetSafeBoxParams",
     "type": "event"
   },
   {
@@ -1041,6 +1079,32 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "safeBox",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "safeBoxImpact",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1171,6 +1235,24 @@
       }
     ],
     "name": "setRoundLength",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_safeBox",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_safeBoxImpact",
+        "type": "uint256"
+      }
+    ],
+    "name": "setSafeBoxParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

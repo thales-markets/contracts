@@ -288,6 +288,11 @@ contract('Vault', (accounts) => {
 		await thalesAMM.setMinSpreadPerAddress(vault.address, toUnit('0.005'), {
 			from: owner,
 		});
+
+		await vault.setSafeBoxParams(safeBox, toUnit(0.2), {
+			from: owner,
+		});
+
 	});
 
 	const Position = {
@@ -565,6 +570,31 @@ contract('Vault', (accounts) => {
 
 			profitAndLossPerRound = await vault.profitAndLossPerRound(round - 1);
 			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
+		});
+
+		it('If round is positive, send share to SafeBox', async() => {
+			const AMOUNT = 50;
+			
+			await vault.deposit(toUnit(500), { from: first });
+			await vault.startVault({ from: owner });
+
+			await sUSDSynth.transfer(vault.address, toUnit(AMOUNT), {
+				from: first
+			});
+
+			const safeBoxImpact = await vault.safeBoxImpact();
+
+			let startSafeBoxBalance = await sUSDSynth.balanceOf(safeBox);
+			console.log('startSafeBoxBalance ' + startSafeBoxBalance / 1e18);
+
+			await fastForward(week);
+
+			await vault.closeRound();
+
+			let safeBoxBalanceAfterClosingRound = await sUSDSynth.balanceOf(safeBox);
+			console.log('safeBoxBalanceAfterClosingRound ' + safeBoxBalanceAfterClosingRound / 1e18);
+
+			assert.equal((Number(startSafeBoxBalance / 1e18) + Number(AMOUNT * (safeBoxImpact / 1e18))).toFixed(4), (safeBoxBalanceAfterClosingRound / 1e18).toFixed(4));
 		});
 	});
 });

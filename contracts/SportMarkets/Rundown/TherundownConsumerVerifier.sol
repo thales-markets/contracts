@@ -335,11 +335,11 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             uint calculationOdds;
             if (_americanOdds[i] == 0) {
                 normalizedOdds[i] = 0;
-            } else if (_americanOdds[i] > 0) {
-                calculationOdds = uint(_americanOdds[i]);
-                normalizedOdds[i] = ((10000 * 1e18) / (calculationOdds + 10000)) * 100;
             } else if (_americanOdds[i] < 0) {
-                calculationOdds = uint(-_americanOdds[i]);
+                calculationOdds = uint(10000) - uint(-_americanOdds[i]);
+                normalizedOdds[i] = ((10000 * 1e18) / (calculationOdds + 10000)) * 100;
+            } else if (_americanOdds[i] > 0) {
+                calculationOdds = uint(10000) - uint(_americanOdds[i]);
                 normalizedOdds[i] = ((calculationOdds * 1e18) / (calculationOdds + 10000)) * 100;
             }
             totalOdds += normalizedOdds[i];

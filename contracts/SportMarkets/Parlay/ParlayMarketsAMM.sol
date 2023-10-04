@@ -352,8 +352,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         uint collateralQuote = multiCollateralOnOffRamp.getMinimumNeeded(collateral, _sUSDPaid);
-        // TODO: check with Kiril what exactly makes sense here
-        //        require((collateralQuote * ONE) / (_expectedPayout) <= (ONE + _additionalSlippage), "Slippage too high!");
 
         uint exactReceived;
 

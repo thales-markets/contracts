@@ -21,6 +21,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     uint private constant TAG_NUMBER_SPREAD = 10001;
     uint private constant TAG_NUMBER_TOTAL = 10002;
     uint private constant DOUBLE_CHANCE_TAG = 10003;
+
     struct ActiveMarketsOdds {
         address market;
         uint[] odds;
@@ -29,6 +30,12 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     struct ActiveMarketsPriceImpact {
         address market;
         int[] priceImpact;
+    }
+
+    struct ActiveMarketsLiquidity {
+        address market;
+        uint[] liquidity;
+        uint[] liquidityUsd;
     }
 
     struct MarketData {
@@ -216,6 +223,48 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
             }
         }
         return marketPriceImpact;
+    }
+
+    function getLiquidityForAllActiveMarketsInBatches(uint batchNumber, uint batchSize)
+        external
+        view
+        returns (ActiveMarketsLiquidity[] memory)
+    {
+        address[] memory activeMarkets = SportPositionalMarketManager(manager).activeMarkets(
+            batchNumber * batchSize,
+            batchSize
+        );
+        ActiveMarketsLiquidity[] memory marketLiquidity = new ActiveMarketsLiquidity[](activeMarkets.length);
+        for (uint i = 0; i < activeMarkets.length; i++) {
+            marketLiquidity[i].market = activeMarkets[i];
+            marketLiquidity[i].liquidity = new uint[](SportPositionalMarket(activeMarkets[i]).optionsCount());
+            marketLiquidity[i].liquidityUsd = new uint[](SportPositionalMarket(activeMarkets[i]).optionsCount());
+
+            for (uint j = 0; j < marketLiquidity[i].liquidity.length; j++) {
+                if (ISportsAMM(sportsAMM).isMarketInAMMTrading(activeMarkets[i])) {
+                    ISportsAMM.Position position;
+                    if (j == 0) {
+                        position = ISportsAMM.Position.Home;
+                    } else if (j == 1) {
+                        position = ISportsAMM.Position.Away;
+                    } else {
+                        position = ISportsAMM.Position.Draw;
+                    }
+                    marketLiquidity[i].liquidity[j] = ISportsAMM(sportsAMM).availableToBuyFromAMM(
+                        activeMarkets[i],
+                        position
+                    );
+                    if (marketLiquidity[i].liquidity[j] > 0) {
+                        marketLiquidity[i].liquidityUsd[j] = ISportsAMM(sportsAMM).buyFromAmmQuote(
+                            activeMarkets[i],
+                            position,
+                            marketLiquidity[i].liquidity[j]
+                        );
+                    }
+                }
+            }
+        }
+        return marketLiquidity;
     }
 
     function getCombinedOddsForBatchOfMarkets(address[] memory _marketBatch)

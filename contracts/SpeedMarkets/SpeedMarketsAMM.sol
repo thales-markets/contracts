@@ -71,20 +71,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     mapping(address => AddressSetLib.AddressSet) internal _activeMarketsPerUser;
     mapping(address => AddressSetLib.AddressSet) internal _maturedMarketsPerUser;
 
-    struct MarketData {
-        address user;
-        bytes32 asset;
-        uint64 strikeTime;
-        int64 strikePrice;
-        SpeedMarket.Direction direction;
-        uint buyinAmount;
-        bool resolved;
-        int64 finalPrice;
-        SpeedMarket.Direction result;
-        bool isUserWinner;
-        uint256 createdAt;
-    }
-
     mapping(address => bool) public whitelistedAddresses;
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
     bool public multicollateralEnabled;
@@ -92,15 +78,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public maxRiskPerAssetAndDirection;
     mapping(bytes32 => mapping(SpeedMarket.Direction => uint)) public currentRiskPerAssetAndDirection;
 
-    struct Risk {
-        SpeedMarket.Direction direction;
-        uint current;
-        uint max;
-    }
-
     uint64 public maximumPriceDelayForResolving;
 
-    mapping(address => bool) private marketHasCreatedAtAttribute;
+    mapping(address => bool) public marketHasCreatedAtAttribute;
 
     address public referrals;
 
@@ -210,11 +190,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         address _referrer
     ) internal {
         require(multicollateralEnabled, "Multicollateral onramp not enabled");
-        //        uint amountBefore = sUSD.balanceOf(address(this));
+        uint amountBefore = sUSD.balanceOf(address(this));
         uint buyinAmount = _convertCollateral(collateral, collateralAmount, isEth);
-        //        uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
-        //        require(amountDiff >= buyinAmount, "not enough received via onramp");
-        //TODO: add this check once contract can fit it size wise
+        uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
+        require(amountDiff >= buyinAmount, "not enough received via onramp");
+
         _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData, false, _referrer);
     }
 
@@ -518,45 +498,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             _activeMarkets.contains(market) &&
             (SpeedMarket(market).strikeTime() < block.timestamp) &&
             !SpeedMarket(market).resolved();
-    }
-
-    /// @notice return all market data for an array of markets
-    function getMarketsData(address[] calldata marketsArray) external view returns (MarketData[] memory) {
-        MarketData[] memory markets = new MarketData[](marketsArray.length);
-        for (uint i = 0; i < marketsArray.length; i++) {
-            SpeedMarket market = SpeedMarket(marketsArray[i]);
-            markets[i].user = market.user();
-            markets[i].asset = market.asset();
-            markets[i].strikeTime = market.strikeTime();
-            markets[i].strikePrice = market.strikePrice();
-            markets[i].direction = market.direction();
-            markets[i].buyinAmount = market.buyinAmount();
-            markets[i].resolved = market.resolved();
-            markets[i].finalPrice = market.finalPrice();
-            markets[i].result = market.result();
-            markets[i].isUserWinner = market.isUserWinner();
-            if (marketHasCreatedAtAttribute[marketsArray[i]]) {
-                markets[i].createdAt = market.createdAt();
-            }
-        }
-        return markets;
-    }
-
-    /// @notice return all risk data (direction, current and max) for both directions (Up and Down) by specified asset
-    function getDirectionalRiskPerAsset(bytes32 asset) external view returns (Risk[] memory) {
-        SpeedMarket.Direction[] memory directions = new SpeedMarket.Direction[](2);
-        directions[0] = SpeedMarket.Direction.Up;
-        directions[1] = SpeedMarket.Direction.Down;
-
-        Risk[] memory risks = new Risk[](directions.length);
-        for (uint i = 0; i < directions.length; i++) {
-            SpeedMarket.Direction currentDirection = directions[i];
-            risks[i].direction = currentDirection;
-            risks[i].current = currentRiskPerAssetAndDirection[asset][currentDirection];
-            risks[i].max = maxRiskPerAssetAndDirection[asset][currentDirection];
-        }
-
-        return risks;
     }
 
     //////////////////setters/////////////////

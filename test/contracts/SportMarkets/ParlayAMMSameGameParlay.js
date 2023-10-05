@@ -1124,11 +1124,12 @@ contract('ParlayAMM', (accounts) => {
 				parlayPositions,
 				totalSUSDToPay
 			);
-			let calculateSkew = await ParlayAMM.calculateSkewImpact(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
+			let calculateSkew = result.skewImpact;
+			// await ParlayAMM.calculateSkewImpact(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay
+			// );
 
 			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
 			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
@@ -1174,11 +1175,12 @@ contract('ParlayAMM', (accounts) => {
 				totalSUSDToPay
 			);
 
-			let calculateSkew = await ParlayAMM.calculateSkewImpact(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
+			let calculateSkew = result.skewImpact;
+			// await ParlayAMM.calculateSkewImpact(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay
+			// );
 
 			await ParlayPolicy.setRestrictedMarketsCountPerTag(9016, 1, { from: owner });
 
@@ -1219,11 +1221,12 @@ contract('ParlayAMM', (accounts) => {
 				totalSUSDToPay
 			);
 
-			let calculateSkew = await ParlayAMM.calculateSkewImpact(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
+			let calculateSkew = result.skewImpact;
+			// let calculateSkew = await ParlayAMM.calculateSkewImpact(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay
+			// );
 
 			await ParlayPolicy.setRestrictedTagCombos(9007, 9016, 1, 1, { from: owner });
 
@@ -1264,11 +1267,13 @@ contract('ParlayAMM', (accounts) => {
 				totalSUSDToPay
 			);
 
-			let calculateSkew = await ParlayAMM.calculateSkewImpact(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
+			let calculateSkew = result.skewImpact;
+
+			// let calculateSkew = await ParlayAMM.calculateSkewImpact(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay
+			// );
 
 			await ParlayAMM.setSGPFeePerPosition('9004', '0', '10002', '1', '1', toUnit(1), {
 				from: owner,
@@ -1341,11 +1346,13 @@ contract('ParlayAMM', (accounts) => {
 				totalSUSDToPay
 			);
 
-			let calculateSkew = await ParlayAMM.calculateSkewImpact(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
+			let calculateSkew = result.skewImpact;
+
+			// let calculateSkew = await ParlayAMM.calculateSkewImpact(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay
+			// );
 
 			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
 			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
@@ -1469,11 +1476,13 @@ contract('ParlayAMM', (accounts) => {
 				parlayPositions,
 				totalSUSDToPay
 			);
-			let calculateSkew = await ParlayAMM.calculateSkewImpact(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
+			let calculateSkew = result.skewImpact;
+
+			// let calculateSkew = await ParlayAMM.calculateSkewImpact(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay
+			// );
 
 			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
 			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));

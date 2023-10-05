@@ -10,6 +10,10 @@ module.exports = {
 		let SpeedMarketsAMMContract = artifacts.require('SpeedMarketsAMM');
 		let speedMarketsAMM = await SpeedMarketsAMMContract.new();
 
+		let SpeedMarketsAMMDataContract = artifacts.require('SpeedMarketsAMMData');
+		let speedMarketsAMMData = await SpeedMarketsAMMDataContract.new();
+		await speedMarketsAMMData.initialize(speedMarketsAMM.address);
+
 		let ExoticUSD = artifacts.require('ExoticUSD');
 		let exoticUSD = await ExoticUSD.new();
 
@@ -102,6 +106,7 @@ module.exports = {
 
 		return {
 			speedMarketsAMM,
+			speedMarketsAMMData,
 			balanceOfSpeedMarketAMMBefore,
 			priceFeedUpdateData,
 			fee,

@@ -16,6 +16,7 @@ contract('SpeedMarkets', (accounts) => {
 		it('deploy and test', async () => {
 			let {
 				speedMarketsAMM,
+				speedMarketsAMMData,
 				balanceOfSpeedMarketAMMBefore,
 				priceFeedUpdateData,
 				fee,
@@ -114,9 +115,8 @@ contract('SpeedMarkets', (accounts) => {
 				{ value: fee }
 			);
 
-			let currentRiskPerAssetAndDirectionData = await speedMarketsAMM.getDirectionalRiskPerAsset(
-				toBytes32('ETH')
-			);
+			let currentRiskPerAssetAndDirectionData =
+				await speedMarketsAMMData.getDirectionalRiskPerAsset(toBytes32('ETH'));
 			console.log('currentRiskPerAssetAndDirectionData', currentRiskPerAssetAndDirectionData);
 
 			let price = await mockPyth.getPrice(pythId);
@@ -158,7 +158,7 @@ contract('SpeedMarkets', (accounts) => {
 			let strikeTime = await speedMarket.strikeTime();
 			console.log('Strike time is ' + strikeTime);
 
-			let marketData = await speedMarketsAMM.getMarketsData([market]);
+			let marketData = await speedMarketsAMMData.getMarketsData([market]);
 			console.log('marketData ' + marketData);
 
 			now = await currentTime();

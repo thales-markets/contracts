@@ -12,7 +12,7 @@ import "../interfaces/ISpeedMarketsAMM.sol";
 
 import "./SpeedMarket.sol";
 
-contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
+contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
     address public speedMarketsAMM;
 
     struct MarketData {
@@ -56,12 +56,14 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         speedMarketsAMM = _speedMarketsAMM;
     }
 
+    /// @notice Set speed markets AMM address
+    /// @param _speedMarketsAMM to use address for fetching data
     function setSpeedMarketsAMM(address _speedMarketsAMM) external onlyOwner {
         speedMarketsAMM = _speedMarketsAMM;
         emit SetSpeedMarketsAMM(_speedMarketsAMM);
     }
 
-    //////////// getters for active and matured markets/////////////////
+    //////////////////getters/////////////////
 
     /// @notice return all market data for an array of markets
     function getMarketsData(address[] calldata marketsArray) external view returns (MarketData[] memory) {

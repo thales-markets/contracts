@@ -21,6 +21,10 @@ interface ISpeedMarketsAMM {
 
     function maximumPriceDelayForResolving() external view returns (uint64);
 
+    function getTimeThresholdsForFees() external view returns (uint[] memory);
+
+    function getLPFees() external view returns (uint[] memory);
+
     function lpFee() external view returns (uint);
 
     function safeBoxImpact() external view returns (uint);

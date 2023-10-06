@@ -58,7 +58,11 @@ module.exports = {
 		await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(100));
 		await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('BTC'), toUnit(100));
 		await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.02));
-		await speedMarketsAMM.setLPFee(toUnit(0.01));
+		await speedMarketsAMM.setLPFeeParams(
+			[15, 30, 60, 120],
+			[toUnit(0.18), toUnit(0.13), toUnit(0.08), toUnit(0.05)],
+			toUnit(0.04)
+		);
 
 		await speedMarketsAMM.setAssetToPythID(
 			toBytes32('ETH'),
@@ -101,6 +105,12 @@ module.exports = {
 		await referrals.setReferrerFees(toUnit(0.005), toUnit(0.0075), toUnit(0.01));
 
 		await speedMarketsAMM.setAddresses(mockPyth.address, referrals.address, ZERO_ADDRESS, {
+			from: owner,
+		});
+
+		let SpeedMarketsAMMUtilsContract = artifacts.require('SpeedMarketsAMMUtils');
+		let speedMarketsAMMUtils = await SpeedMarketsAMMUtilsContract.new();
+		await speedMarketsAMM.setAMMUtils(speedMarketsAMMUtils.address, {
 			from: owner,
 		});
 

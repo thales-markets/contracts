@@ -12,6 +12,7 @@ import "../interfaces/ISpeedMarketsAMM.sol";
 
 import "./SpeedMarket.sol";
 
+/// @title An AMM data fetching for Thales speed markets
 contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
     address public speedMarketsAMM;
 
@@ -47,6 +48,8 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         uint maximalTimeToMaturity;
         uint64 maximumPriceDelay;
         uint64 maximumPriceDelayForResolving;
+        uint[] timeThresholdsForFees;
+        uint[] lpFees;
         uint lpFee;
         uint safeBoxImpact;
         bool isAddressWhitelisted;
@@ -123,6 +126,8 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
                 ISpeedMarketsAMM(speedMarketsAMM).maximalTimeToMaturity(),
                 ISpeedMarketsAMM(speedMarketsAMM).maximumPriceDelay(),
                 ISpeedMarketsAMM(speedMarketsAMM).maximumPriceDelayForResolving(),
+                ISpeedMarketsAMM(speedMarketsAMM).getTimeThresholdsForFees(),
+                ISpeedMarketsAMM(speedMarketsAMM).getLPFees(),
                 ISpeedMarketsAMM(speedMarketsAMM).lpFee(),
                 ISpeedMarketsAMM(speedMarketsAMM).safeBoxImpact(),
                 _walletAddress != address(0) ? ISpeedMarketsAMM(speedMarketsAMM).whitelistedAddresses(_walletAddress) : false

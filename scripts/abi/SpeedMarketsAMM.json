@@ -205,6 +205,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "contract SpeedMarketsAMMUtils",
+        "name": "_speedMarketsAMMUtils",
+        "type": "address"
+      }
+    ],
+    "name": "SetAMMUtils",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_pyth",
         "type": "address"
@@ -249,12 +262,24 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_timeThresholds",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_lpFees",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "_lpFee",
         "type": "uint256"
       }
     ],
-    "name": "SetLPFee",
+    "name": "SetLPFeeParams",
     "type": "event"
   },
   {
@@ -723,6 +748,32 @@
   },
   {
     "inputs": [],
+    "name": "getLPFees",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getTimeThresholdsForFees",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "initNonReentrant",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -805,6 +856,25 @@
   {
     "inputs": [],
     "name": "lpFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "lpFees",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1318,6 +1388,19 @@
   {
     "inputs": [
       {
+        "internalType": "contract SpeedMarketsAMMUtils",
+        "name": "_speedMarketsAMMUtils",
+        "type": "address"
+      }
+    ],
+    "name": "setAMMUtils",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_pyth",
         "type": "address"
@@ -1377,12 +1460,22 @@
   {
     "inputs": [
       {
+        "internalType": "uint256[]",
+        "name": "_timeThresholds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_lpFees",
+        "type": "uint256[]"
+      },
+      {
         "internalType": "uint256",
         "name": "_lpFee",
         "type": "uint256"
       }
     ],
-    "name": "setLPFee",
+    "name": "setLPFeeParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1567,6 +1660,19 @@
   },
   {
     "inputs": [],
+    "name": "speedMarketsAMMUtils",
+    "outputs": [
+      {
+        "internalType": "contract SpeedMarketsAMMUtils",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "stakingThales",
     "outputs": [
       {
@@ -1592,6 +1698,25 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "timeThresholdsForFees",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

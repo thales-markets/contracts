@@ -25,6 +25,8 @@ contract('SpeedMarkets', (accounts) => {
 				now,
 			} = await speedMarketsInit(accounts);
 
+			await speedMarketsAMM.setLPFeeParams([15], [toUnit(0.01)], toUnit(0.01));
+
 			let MultiCollateralOnOffRamp = artifacts.require('MultiCollateralOnOffRamp');
 			let multiCollateralOnOffRamp = await MultiCollateralOnOffRamp.new();
 			await multiCollateralOnOffRamp.initialize(owner, exoticUSD.address);

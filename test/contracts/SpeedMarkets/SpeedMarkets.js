@@ -161,6 +161,9 @@ contract('SpeedMarkets', (accounts) => {
 			let marketData = await speedMarketsAMMData.getMarketsData([market]);
 			console.log('marketData ' + marketData);
 
+			let ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(ZERO_ADDRESS);
+			console.log('AMM Data lpFees ' + ammData.lpFees);
+
 			now = await currentTime();
 			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
 				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',

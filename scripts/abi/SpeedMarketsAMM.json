@@ -81,6 +81,18 @@
         "internalType": "uint256",
         "name": "buyinAmount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxImpact",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "lpFee",
+        "type": "uint256"
       }
     ],
     "name": "MarketCreated",
@@ -560,7 +572,7 @@
       },
       {
         "internalType": "address",
-        "name": "_referrer",
+        "name": "referrer",
         "type": "address"
       }
     ],
@@ -598,7 +610,7 @@
       },
       {
         "internalType": "address",
-        "name": "_referrer",
+        "name": "referrer",
         "type": "address"
       }
     ],
@@ -646,7 +658,7 @@
       },
       {
         "internalType": "address",
-        "name": "_referrer",
+        "name": "referrer",
         "type": "address"
       }
     ],
@@ -694,7 +706,7 @@
       },
       {
         "internalType": "address",
-        "name": "_referrer",
+        "name": "referrer",
         "type": "address"
       }
     ],

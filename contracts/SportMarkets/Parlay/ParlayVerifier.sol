@@ -156,6 +156,7 @@ contract ParlayVerifier {
         address sportMarket;
         bool oldUnique;
         for (uint i = 0; i < sportMarkets.length; i++) {
+            // 1. Get all tags for a sport market (tag1, tag2)
             sportMarket = sportMarkets[i];
             tag1[i] = ISportPositionalMarket(sportMarket).tags(0);
             tag2[i] = ISportPositionalMarket(sportMarket).getTagsLength() > 1
@@ -168,6 +169,7 @@ contract ParlayVerifier {
                     return (tag1, tag2);
                 }
             }
+            // 2. Count the unique tags in a parlay (tag1)
             if (i == 0) {
                 uniqueTags[uniqueTagsCounter] = tag1[i];
                 ++uniqueTagsCount[uniqueTagsCounter];
@@ -180,6 +182,7 @@ contract ParlayVerifier {
                         oldUnique = true;
                     }
                 }
+                // 3. Add count per unique tag1
                 if (!oldUnique) {
                     uniqueTags[uniqueTagsCounter] = tag1[i];
                     ++uniqueTagsCount[uniqueTagsCounter];
@@ -208,12 +211,14 @@ contract ParlayVerifier {
         if (_uniqueTagsCounter > 0) {
             uint restrictedCount;
             for (uint i = 0; i < _uniqueTagsCounter; i++) {
+                // 4. Check if the number of sport markets in a parlay exceeds the max number per tag1 (Motosport: 1)
                 restrictedCount = _parlayPolicy.restrictedMarketsCount(_uniqueTags[i]);
                 if (restrictedCount > 0 && restrictedCount < _uniqueTagsCount[i]) {
                     revert("RestrictedTag1Count");
                 }
                 if (eligible && i > 0) {
                     for (uint j = 0; j < i; j++) {
+                        // 5. Check if the combination of tag1 exceeds the max number per combination (tag1[0], tag1[1]) (Golf H2H 1 game and Golf winner multiple)
                         if (_parlayPolicy.restrictedTagCombination(_uniqueTags[i], _uniqueTags[j])) {
                             eligible = _parlayPolicy.isRestrictedComboEligible(
                                 _uniqueTags[i],
@@ -245,17 +250,21 @@ contract ParlayVerifier {
         uint lastCachedIdx;
         uint sgpFee;
         for (uint i = 0; i < params.sportMarkets.length; i++) {
+            // get names of the home and away team
             (homeId, awayId) = _getGameIds(ITherundownConsumer(params.parlayPolicy.consumer()), params.sportMarkets[i]);
             for (uint j = 0; j < lastCachedIdx; j++) {
+                // if it is a same home or away team -> check for SGP
                 if (
                     (cachedTeams[j].gameId == homeId ||
                         (j > 1 && cachedTeams[j].gameId == awayId && cachedTeams[j - 1].gameId != homeId))
                 ) {
+                    // if they are same team but from different league, check if they are restricted (La Liga and UCL)
                     if (params.tag1[i] != params.tag1[j / 2]) {
                         if (params.parlayPolicy.isTags1ComboRestricted(params.tag1[i], params.tag1[j / 2])) {
                             revert("SameTeamOnParlay");
                         }
                     }
+                    // get the SGP fee per tag1 and the tag2 from first market and tag2 from the second market, their positions as well
                     sgpFee = params.parlayPolicy.getSgpFeePerCombination(
                         IParlayPolicy.SGPData(
                             params.tag1[i],
@@ -265,10 +274,13 @@ contract ParlayVerifier {
                             params.positions[j / 2]
                         )
                     );
+                    // check if the tags belong to player props
                     if (params.tag2[j / 2] == PLAYER_PROPS_TAG && params.tag2[i] == PLAYER_PROPS_TAG) {
+                        // check if the markets are elibible props markets
                         if (
                             params.parlayPolicy.areEligiblePropsMarkets(params.sportMarkets[j / 2], params.sportMarkets[i])
                         ) {
+                            // check if the number of player props per sport per parlay is exceeded
                             uint maxGameCounter = params.parlayPolicy.maxPlayerPropsPerSport(params.tag1[j / 2]);
                             if (maxGameCounter > 0 && cachedTeams[j].gameCounter > maxGameCounter) {
                                 revert("ExceedsPlayerPropsPerMarket");
@@ -276,10 +288,16 @@ contract ParlayVerifier {
                         } else {
                             revert("InvalidPlayerProps");
                         }
+                        // if SGP is not defined for both markets, revert
                     } else if (cachedTeams[j].gameCounter > 0 || sgpFee == 0) {
                         revert("SameTeamOnParlay");
                     }
                     cachedTeams[j].gameCounter += 1;
+                    // The next lines is the computation of the SGP odds
+                    // if SGP is defined, then obtain the odds in such order that
+                    // the first odd is always the moneyline odd
+                    // the second odd is always the totals odd
+                    // pass the positions in the same order, and the default sgpFee
                     if (params.tag2[j / 2] == 0) {
                         (odds[j / 2], odds[i], sgpFees[j / 2], sgpFees[i]) = _getSGPSingleOdds(
                             params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[j / 2], params.positions[j / 2]),
@@ -301,8 +319,11 @@ contract ParlayVerifier {
                     }
                 }
             }
+            // cache the already processed names
             cachedTeams[lastCachedIdx++].gameId = homeId;
             cachedTeams[lastCachedIdx++].gameId = awayId;
+            // if odds have not been updated as part of the SGP computation, obtain the odds for the position
+            // to save external calls in the calculate initial quotes function
             if (odds[i] == 0) {
                 odds[i] = params.parlayPolicy.getMarketDefaultOdds(params.sportMarkets[i], params.positions[i]);
             }
@@ -350,12 +371,19 @@ contract ParlayVerifier {
             uint sgpFee2
         )
     {
+        // The default odds are obtained during the function call
+        // This way they are stored for further usage
         resultOdds1 = odds1;
         resultOdds2 = odds2;
 
         if (odds1 > 0 && odds2 > 0) {
+            // for 2 options SGPs use the default SGPfee
             if (optionsCount == 2) {
                 sgpFee2 = sgpFee;
+
+                // if the totals position is OVER
+                // The cases are purely empirical chosen by correction and trial/error from multiple games
+                // ONLY over 50 percent case is generated by a logical behavior in such cases
             } else if (position2 == 0) {
                 if (odds1 < (6 * ONE_PERCENT) && odds2 < (70 * ONE_PERCENT)) {
                     sgpFee2 = sgpFee - (ONE - sgpFee);
@@ -375,6 +403,9 @@ contract ParlayVerifier {
                     if (odds1 < (10 * ONE_PERCENT)) {
                         sgpFee2 = ONE + odds1;
                     } else {
+                        // Logical behaviour case (which is very limited, but was an initial refactor)
+                        // If the odds difference is higher the sgpFee is lowered significantly
+                        // If the odds difference is lower, the sgpFee is lowered by a small amount
                         uint oddsDiff = odds2 > odds1 ? odds2 - odds1 : odds1 - odds2;
                         if (oddsDiff > 0) {
                             oddsDiff = (oddsDiff - (5 * ONE_PERCENT) / (90 * ONE_PERCENT));
@@ -384,7 +415,6 @@ contract ParlayVerifier {
                             sgpFee2 = sgpFee;
                         }
                     }
-                    // calculate the fee
                 } else if (odds2 >= (43 * ONE_PERCENT)) {
                     if (odds2 <= (46 * ONE_PERCENT)) {
                         sgpFee2 = sgpFee > 5 * ONE_PERCENT ? sgpFee - (2 * ONE_PERCENT) : sgpFee;
@@ -405,6 +435,7 @@ contract ParlayVerifier {
                         sgpFee2 = sgpFee > 5 * ONE_PERCENT ? sgpFee - (2 * ONE_PERCENT) : sgpFee;
                     }
                 }
+                // case when the totals odd is UNDER
             } else {
                 if (odds2 >= (56 * ONE_PERCENT)) {
                     if (odds1 >= 76 * ONE_PERCENT) {
@@ -452,6 +483,7 @@ contract ParlayVerifier {
                     sgpFee2 = sgpFee;
                 }
             }
+            // Recalculation of the SGP fee in case it results in lower than the initial quotes
             uint totalQuote = (odds1 * odds2) / ONE;
             uint totalQuoteWSGP = ((totalQuote * ONE * ONE) / sgpFee2) / ONE;
             if (totalQuoteWSGP >= odds1 || totalQuoteWSGP >= odds2) {
@@ -563,6 +595,7 @@ contract ParlayVerifier {
         }
         for (uint i = 0; i < params.sportMarkets.length; i++) {
             finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / params.buyQuoteAmounts[i]) / ONE;
+            // where the SGP fee is actually applied
             if (params.sgpFees[i] > 0) {
                 finalQuotes[i] = ((finalQuotes[i] * ONE * ONE) / params.sgpFees[i]) / ONE;
                 feesIncluded += params.sgpFees[i] > ONE ? params.sgpFees[i] - ONE : (ONE - params.sgpFees[i]);

@@ -1460,8 +1460,5 @@ contract('PlayerProps', (accounts) => {
 				)
 			);
 		});
-
-		
-		
 	});
 });

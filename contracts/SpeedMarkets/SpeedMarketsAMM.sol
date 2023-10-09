@@ -211,21 +211,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         _createNewMarket(asset, strikeTime, direction, buyinAmount, priceUpdateData, false, referrer);
     }
 
-    function _handleReferrer(address buyer, uint volume) internal returns (uint referrerShare) {
-        if (referrals != address(0)) {
-            address referrer = IReferrals(referrals).referrals(buyer);
-
-            if (referrer != address(0)) {
-                uint referrerFeeByTier = IReferrals(referrals).getReferrerFee(referrer);
-                if (referrerFeeByTier > 0) {
-                    referrerShare = (volume * referrerFeeByTier) / ONE;
-                    sUSD.safeTransfer(referrer, referrerShare);
-                    emit ReferrerPaid(referrer, buyer, referrerShare, volume);
-                }
-            }
-        }
-    }
-
     function _handleRisk(
         bytes32 asset,
         SpeedMarket.Direction direction,
@@ -242,7 +227,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
             currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
         } else {
-            amountToIncreaseRisk = buyinAmount - currentRiskPerAssetAndDirection[asset][oppositeDirection];
+            amountToIncreaseRisk -= currentRiskPerAssetAndDirection[asset][oppositeDirection];
             currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
         }
         // until there is risk for opposite direction, don't modify/check risk for current direction
@@ -300,7 +285,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         sUSD.safeTransfer(address(srm), buyinAmount * 2);
 
-        uint referrerShare = _handleReferrer(msg.sender, buyinAmount);
+        uint referrerShare;
+        if (referrals != address(0) && referrer != address(0)) {
+            uint referrerFeeByTier = IReferrals(referrals).getReferrerFee(referrer);
+            if (referrerFeeByTier > 0) {
+                referrerShare = (buyinAmount * referrerFeeByTier) / ONE;
+                sUSD.safeTransfer(referrer, referrerShare);
+                emit ReferrerPaid(referrer, msg.sender, referrerShare, buyinAmount);
+            }
+        }
         sUSD.safeTransfer(safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
 
         _activeMarkets.add(address(srm));
@@ -365,11 +358,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         notPaused
     {
         for (uint i = 0; i < markets.length; i++) {
-            address market = markets[i];
-            if (canResolveMarket(market)) {
+            if (canResolveMarket(markets[i])) {
                 bytes[] memory subarray = new bytes[](1);
                 subarray[0] = priceUpdateData[i];
-                _resolveMarket(market, subarray);
+                _resolveMarket(markets[i], subarray);
             }
         }
     }
@@ -377,11 +369,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     function _resolveMarket(address market, bytes[] memory priceUpdateData) internal {
         require(canResolveMarket(market), "Can not resolve");
 
-        uint fee = pyth.getUpdateFee(priceUpdateData);
-
         bytes32[] memory priceIds = new bytes32[](1);
         priceIds[0] = assetToPythId[SpeedMarket(market).asset()];
-        PythStructs.PriceFeed[] memory prices = pyth.parsePriceFeedUpdates{value: fee}(
+        PythStructs.PriceFeed[] memory prices = pyth.parsePriceFeedUpdates{value: pyth.getUpdateFee(priceUpdateData)}(
             priceUpdateData,
             priceIds,
             SpeedMarket(market).strikeTime(),
@@ -604,7 +594,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint[] calldata _lpFees,
         uint _lpFee
     ) external onlyOwner {
-        require(_timeThresholds.length == _lpFees.length, "Time thresholds and LP fees must have the same length");
+        require(_timeThresholds.length == _lpFees.length, "Times and fees must have the same length");
         for (uint i = 0; i < _timeThresholds.length; i++) {
             timeThresholdsForFees.push(_timeThresholds[i]);
             lpFees.push(_lpFees[i]);

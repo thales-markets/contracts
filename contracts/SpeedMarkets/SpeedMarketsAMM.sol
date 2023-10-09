@@ -214,24 +214,22 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     function _handleRisk(
         bytes32 asset,
         SpeedMarket.Direction direction,
-        uint buyinAmount
+        uint buyinAmount,
+        uint lpFeeForDeltaTime
     ) internal {
-        currentRiskPerAsset[asset] += buyinAmount;
+        currentRiskPerAsset[asset] += (buyinAmount * (ONE - safeBoxImpact - lpFeeForDeltaTime)) / ONE;
         require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "OI cap breached");
 
         SpeedMarket.Direction oppositeDirection = direction == SpeedMarket.Direction.Up
             ? SpeedMarket.Direction.Down
             : SpeedMarket.Direction.Up;
-        uint amountToIncreaseRisk = buyinAmount;
-        // decrease risk for opposite direction
+
+        // decrease risk for opposite directionif there is, otherwise increase risk for current direction
         if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
             currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
         } else {
-            amountToIncreaseRisk -= currentRiskPerAssetAndDirection[asset][oppositeDirection];
+            uint amountToIncreaseRisk = buyinAmount - currentRiskPerAssetAndDirection[asset][oppositeDirection];
             currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
-        }
-        // until there is risk for opposite direction, don't modify/check risk for current direction
-        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] == 0) {
             currentRiskPerAssetAndDirection[asset][direction] += amountToIncreaseRisk;
             require(
                 currentRiskPerAssetAndDirection[asset][direction] <= maxRiskPerAssetAndDirection[asset][direction],
@@ -260,7 +258,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         );
         require(strikeTime <= block.timestamp + maximalTimeToMaturity, "time too far into the future");
 
-        _handleRisk(asset, direction, buyinAmount);
+        uint lpFeeForDeltaTime = speedMarketsAMMUtils.getFeeByTimeThreshold(
+            uint64(strikeTime - block.timestamp),
+            timeThresholdsForFees,
+            lpFees,
+            lpFee
+        );
+        _handleRisk(asset, direction, buyinAmount, lpFeeForDeltaTime);
 
         pyth.updatePriceFeeds{value: pyth.getUpdateFee(priceUpdateData)}(priceUpdateData);
 
@@ -268,12 +272,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         require((price.publishTime + maximumPriceDelay) > block.timestamp && price.price > 0, "Stale price");
 
-        uint lpFeeForDeltaTime = speedMarketsAMMUtils.getFeeByTimeThreshold(
-            uint64(strikeTime - block.timestamp),
-            timeThresholdsForFees,
-            lpFees,
-            lpFee
-        );
         if (transferSusd) {
             uint totalAmountToTransfer = (buyinAmount * (ONE + safeBoxImpact + lpFeeForDeltaTime)) / ONE;
             sUSD.safeTransferFrom(msg.sender, address(this), totalAmountToTransfer);

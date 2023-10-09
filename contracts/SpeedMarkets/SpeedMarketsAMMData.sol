@@ -27,6 +27,8 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         int64 finalPrice;
         SpeedMarket.Direction result;
         bool isUserWinner;
+        uint safeBoxImpact;
+        uint lpFee;
         uint256 createdAt;
     }
 
@@ -84,6 +86,10 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].result = market.result();
             markets[i].isUserWinner = market.isUserWinner();
 
+            if (ISpeedMarketsAMM(speedMarketsAMM).marketHasFeeAttribute(marketsArray[i])) {
+                markets[i].safeBoxImpact = market.safeBoxImpact();
+                markets[i].lpFee = market.lpFee();
+            }
             if (ISpeedMarketsAMM(speedMarketsAMM).marketHasCreatedAtAttribute(marketsArray[i])) {
                 markets[i].createdAt = market.createdAt();
             }

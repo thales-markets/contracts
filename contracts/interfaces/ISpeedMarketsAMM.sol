@@ -31,6 +31,8 @@ interface ISpeedMarketsAMM {
 
     function marketHasCreatedAtAttribute(address _market) external view returns (bool);
 
+    function marketHasFeeAttribute(address _market) external view returns (bool);
+
     function maxRiskPerAsset(bytes32 _asset) external view returns (uint);
 
     function currentRiskPerAsset(bytes32 _asset) external view returns (uint);

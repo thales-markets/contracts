@@ -164,6 +164,16 @@
           },
           {
             "internalType": "uint256",
+            "name": "safeBoxImpact",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lpFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "createdAt",
             "type": "uint256"
           }

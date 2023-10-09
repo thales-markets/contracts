@@ -90,6 +90,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     SpeedMarketsAMMUtils public speedMarketsAMMUtils;
 
+    mapping(address => bool) public marketHasFeeAttribute;
+
     receive() external payable {}
 
     function initialize(
@@ -278,7 +280,17 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         }
         SpeedMarket srm = SpeedMarket(Clones.clone(speedMarketMastercopy));
         srm.initialize(
-            SpeedMarket.InitParams(address(this), msg.sender, asset, strikeTime, price.price, direction, buyinAmount)
+            SpeedMarket.InitParams(
+                address(this),
+                msg.sender,
+                asset,
+                strikeTime,
+                price.price,
+                direction,
+                buyinAmount,
+                safeBoxImpact,
+                lpFeeForDeltaTime
+            )
         );
 
         sUSD.safeTransfer(address(srm), buyinAmount * 2);
@@ -302,6 +314,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         }
 
         marketHasCreatedAtAttribute[address(srm)] = true;
+        marketHasFeeAttribute[address(srm)] = true;
         emit MarketCreated(
             address(srm),
             msg.sender,

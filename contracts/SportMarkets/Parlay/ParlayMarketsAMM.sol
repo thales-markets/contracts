@@ -357,7 +357,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         if (isEth) {
             require(collateral == multiCollateralOnOffRamp.WETH9(), "Wrong collateral sent");
-            exactReceived = multiCollateralOnOffRamp.onrampWithEth{value: collateralQuote}(collateralQuote);
+            require(msg.value >= collateralQuote, "not enough ETH send");
+            exactReceived = multiCollateralOnOffRamp.onrampWithEth{value: msg.value}(msg.value);
         } else {
             IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
             IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralQuote);
@@ -366,12 +367,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         require(exactReceived >= _sUSDPaid, "Not enough sUSD received");
 
-        //send the surplus to SB
-        if (exactReceived > _sUSDPaid) {
-            sUSD.safeTransfer(safeBox, exactReceived - _sUSDPaid);
-        }
-
-        _buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, false, msg.sender);
+        _buyFromParlay(_sportMarkets, _positions, exactReceived, _additionalSlippage, _expectedPayout, false, msg.sender);
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(msg.sender, _sUSDPaid);
         }

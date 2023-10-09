@@ -1212,6 +1212,9 @@ contract('PlayerProps', (accounts) => {
 					37,
 					285
 				);
+
+			// console.log("Child prop: ",mainMarketPlayerPropsChild);
+			// console.log("Main market: ",marketAdd);
 			assert.bnEqual(
 				mainMarketPlayerPropsChild,
 				await GamesPlayerPropsDeployed.currentActiveChildMarketPerPlayerAndOption(
@@ -1248,6 +1251,65 @@ contract('PlayerProps', (accounts) => {
 					37
 				)
 			);
+
+			let allMarkets = await SportPositionalMarketManager.activeMarkets('0', '100');
+			let market_1 = await SportPositionalMarketContract.at(allMarkets[0]);
+			let market_2 = await SportPositionalMarketContract.at(allMarkets[1]);
+			let market_3 = await SportPositionalMarketContract.at(allMarkets[2]);
+			let market_4 = await SportPositionalMarketContract.at(allMarkets[3]);
+			let market_5 = await SportPositionalMarketContract.at(allMarkets[4]);
+
+			parlayMarkets = [market_1, market_2, market_5];
+			// console.log("All markets: ", parlayMarkets);
+
+			assert.equal(9004, await market_1.tags(0));
+			assert.equal(9004, await market_2.tags(0));
+			assert.equal(9004, await market_5.tags(0));
+
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1'];
+			let parlayPositions2 = ['1', '1', '1', '1', '0'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length - 1; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
+			}
+			let slippage = toUnit('0.01');
+
+			await expect(
+				ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
+			).to.be.revertedWith('SameTeamOnParlay');
+
+			// result = await ParlayAMM.buyQuoteFromParlay(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay
+			// );
+
+			// console.log("result: ", result);
+
+			// await ParlayPolicy.setRestrictedMarketsCountPerTag(9016, 1, { from: owner });
+			// await ParlayPolicy.setRestrictedTagCombos(9007, 9016, 1, 1, { from: owner });
+
+			// let buyParlayTX = await ParlayAMM.buyFromParlay(
+			// 	parlayMarketsAddress,
+			// 	parlayPositions,
+			// 	totalSUSDToPay,
+			// 	slippage,
+			// 	result[1],
+			// 	ZERO_ADDRESS,
+			// 	{ from: first }
+			// );
+			// // console.log("event: \n", buyParlayTX.logs[0]);
+
+			// assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+			// 	account: first,
+			// 	sUSDPaid: totalSUSDToPay,
+			// });
 		});
 
 		it('Create game and create player props for game, change odds', async () => {

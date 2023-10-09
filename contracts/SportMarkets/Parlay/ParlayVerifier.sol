@@ -91,51 +91,6 @@ contract ParlayVerifier {
         (odds, sgpFees) = _checkNamesAndGetOdds(
             CheckNames(params.sportMarkets, params.positions, tags1, tags2, parlayPolicy)
         );
-
-        // The old implementation kept:
-        // eligible = true;
-        // ITherundownConsumer consumer = ITherundownConsumer(params.sportsAMM.theRundownConsumer());
-        // CachedMarket[] memory cachedTeams = new CachedMarket[](params.sportMarkets.length * 2);
-        // uint lastCachedIdx = 0;
-        // bytes32 gameIdHome;
-        // bytes32 gameIdAway;
-        // uint tag1;
-        // uint tag2;
-        // address sportMarket;
-        // uint motoCounter = 0;
-        // for (uint i = 0; i < params.sportMarkets.length; i++) {
-        //     sportMarket = params.sportMarkets[i];
-        //     (gameIdHome, gameIdAway) = _getGameIds(consumer, sportMarket);
-        //     tag1 = ISportPositionalMarket(sportMarket).tags(0);
-        //     tag2 = consumer.isChildMarket(sportMarket) ? ISportPositionalMarket(sportMarket).tags(1) : 0;
-        //     motoCounter = (tag1 == TAG_F1 || tag1 == TAG_MOTOGP || tag1 == TAG_GOLF) ? ++motoCounter : motoCounter;
-        // require(motoCounter <= 1, "2xMotosport");
-        // // check if game IDs already exist
-        // for (uint j = 0; j < lastCachedIdx; j++) {
-        //     if (
-        //         (cachedTeams[j].gameId == gameIdHome ||
-        //             (j > 1 && cachedTeams[j].gameId == gameIdAway && cachedTeams[j - 1].gameId != gameIdHome))
-        //         // && cachedTeams[j].tag1 == tag1
-        //     ) {
-        //         uint feeToApply = IParlayMarketsAMM(params.parlayAMM).getSgpFeePerCombination(
-        //             tag1,
-        //             tag2,
-        //             cachedTeams[j].tag2,
-        //             100 + (10 * position[i] + position[j / 2])
-        //         );
-        //         if (cachedTeams[j].gameCounter > 0 || feeToApply == 0) {
-        //             revert("SameTeamOnParlay");
-        //         }
-        //         cachedTeams[j].gameCounter += 1;
-        //         sgpFee = sgpFee > 0 ? (sgpFee * feeToApply) / ONE : feeToApply;
-        //     }
-        // }
-
-        //     (cachedTeams[lastCachedIdx].tag1, cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
-        //     cachedTeams[lastCachedIdx++].gameId = gameIdHome;
-        //     (cachedTeams[lastCachedIdx].tag1, cachedTeams[lastCachedIdx].tag2) = (tag1, tag2);
-        //     cachedTeams[lastCachedIdx++].gameId = gameIdAway;
-        // }
     }
 
     /// @notice Obtain all the tags for each position and calculate unique ones
@@ -524,7 +479,6 @@ contract ParlayVerifier {
                     totalQuote = 0;
                     break;
                 }
-                // marketOdds = params.sportsAMM.getMarketDefaultOdds(params.sportMarkets[i], false);
                 if (marketOdds.length == 0) {
                     totalQuote = 0;
                     break;
@@ -603,7 +557,6 @@ contract ParlayVerifier {
             totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
         if (totalQuote > 0) {
-            // totalQuote = params.sgpFee > 0 ? ((totalQuote * ONE * ONE) / params.sgpFee) / ONE : totalQuote;
             if (totalQuote < IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds()) {
                 totalQuote = IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds();
             }
@@ -708,32 +661,6 @@ contract ParlayVerifier {
         if (left < j) _quickSort(arr, left, j);
         if (i < right) _quickSort(arr, i, right);
     }
-
-    // function getSkewImpact(
-    //     address[] memory _sportMarkets,
-    //     uint[] memory _positions,
-    //     uint _sUSDAfterFees,
-    //     ISportsAMM _sportsAMM,
-    //     address _parlayAMM,
-    //     uint _totalBuyAmount,
-    //     uint _totalQuote,
-    //     uint _oldSkew
-    // ) external view returns (uint resultSkewImpact) {
-    //     resultSkewImpact = _oldSkew;
-    // //todo refactor this part
-    // uint newBuyAmount;
-    // (, , uint[] memory sgpFee) = _verifyMarkets(VerifyMarket(_sportMarkets, _positions, ISportsAMM(_sportsAMM), _parlayAMM));
-    // if (sgpFee > 0) {
-    //     _totalQuote = (_totalQuote * sgpFee) / ONE;
-    //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / _totalQuote) / ONE;
-    // } else {
-    //     newBuyAmount = ((_sUSDAfterFees * ONE * ONE) / (_totalQuote)) / ONE;
-    // }
-    // resultSkewImpact = newBuyAmount > _totalBuyAmount
-    //     ? (((ONE * newBuyAmount) - (ONE * _totalBuyAmount)) / (_totalBuyAmount))
-    //     : (((ONE * _totalBuyAmount) - (ONE * newBuyAmount)) / (_totalBuyAmount));
-    // resultSkewImpact = _oldSkew > resultSkewImpact ? _oldSkew - resultSkewImpact : 0;
-    // }
 
     function sort(address[] memory data) external pure returns (address[] memory) {
         _quickSort(data, int(0), int(data.length - 1));

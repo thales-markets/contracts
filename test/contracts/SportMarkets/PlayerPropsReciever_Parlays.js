@@ -35,7 +35,20 @@ const {
 } = require('../../utils/helpers');
 
 contract('PlayerProps', (accounts) => {
-	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
+	const [
+		manager,
+		first,
+		owner,
+		second,
+		third,
+		fourth,
+		safeBox,
+		wrapper,
+		firstLiquidityProvider,
+		defaultLiquidityProvider,
+		firstParlayAMMLiquidityProvider,
+		defaultParlayAMMLiquidityProvider,
+	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
@@ -48,6 +61,26 @@ contract('PlayerProps', (accounts) => {
 	const SportPositionalMarketFactoryContract = artifacts.require('SportPositionalMarketFactory');
 	const SportsAMMContract = artifacts.require('SportsAMM');
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
+
+	const SportPositionMasterCopyContract = artifacts.require('SportPositionMastercopy');
+	const StakingThalesContract = artifacts.require('StakingThales');
+	const SNXRewardsContract = artifacts.require('SNXRewards');
+	const AddressResolverContract = artifacts.require('AddressResolverHelper');
+	const TestOddsContract = artifacts.require('TestOdds');
+	const ReferralsContract = artifacts.require('Referrals');
+	const ParlayAMMContract = artifacts.require('ParlayMarketsAMM');
+	const ParlayMarketContract = artifacts.require('ParlayMarketMastercopy');
+	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
+	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
+	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
+
+	const SportAMMLiquidityPoolRoundMastercopy = artifacts.require(
+		'SportAMMLiquidityPoolRoundMastercopy'
+	);
+
+	let ParlayAMM;
+	let ParlayMarket;
+	let ParlayMarketData;
 	let Thales;
 	let answer;
 	let minimumPositioningDuration = 0;
@@ -188,7 +221,22 @@ contract('PlayerProps', (accounts) => {
 		SportPositionalMarket,
 		SportPositionalMarketMastercopy,
 		SportPositionMastercopy,
-		SportsAMM;
+		ParlayMarketMastercopy,
+		StakingThales,
+		SNXRewards,
+		AddressResolver,
+		TestOdds,
+		curveSUSD,
+		testUSDC,
+		testUSDT,
+		testDAI,
+		Referrals,
+		ParlayVerifier,
+		SportsAMM,
+		SportAMMLiquidityPool,
+		ParlayAMMLiquidityPool,
+		ParlayPolicy;
+
 	let GamesPlayerPropsReceiverDeployed, GamesPlayerPropsDeployed;
 
 	const game1NBATime = 1646958600;
@@ -198,6 +246,31 @@ contract('PlayerProps', (accounts) => {
 	const sportId_4 = 4; // NBA
 	const sportId_16 = 16; // CHL
 	const sportId_7 = 7; // UFC
+
+	const tagID_4 = 9000 + sportId_4;
+	let gameMarket;
+
+	let parlayAMMfee = toUnit('0.05');
+	let safeBoxImpact = toUnit('0.02');
+	let minUSDAmount = '10';
+	let maxSupportedAmount = '20000';
+	let maxSupportedOdd = '0.05';
+
+	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
+	let parlayMarkets = [];
+	let parlayMarkets2 = [];
+	let parlayMarkets3 = [];
+	let parlayMarkets4 = [];
+	let parlayMarkets5 = [];
+
+	let equalParlayMarkets = [];
+	let parlayPositions = [];
+	let parlaySingleMarketAddress;
+	let parlaySingleMarket;
+	let voucher, SportAMMRiskManager;
+	let emptyArray = [];
+
+	let sportsAMMUtils;
 
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
@@ -210,8 +283,35 @@ contract('PlayerProps', (accounts) => {
 		SportPositionMastercopy = await SportPositionContract.new({ from: manager });
 		SportPositionalMarketData = await SportPositionalMarketDataContract.new({ from: manager });
 		SportsAMM = await SportsAMMContract.new({ from: manager });
-
 		Thales = await ThalesContract.new({ from: owner });
+
+		await SportsAMM.initialize(owner, Thales.address, toUnit('0.02'), toUnit('0.2'), DAY, {
+			from: owner,
+		});
+
+		await SportsAMM.setParameters(
+			DAY,
+			toUnit('0.04'), //_minSpread
+			toUnit('0.2'),
+			toUnit('0.001'),
+			toUnit('0.9'),
+			toUnit('0.01'),
+			toUnit('0.005'),
+			toUnit('5000'),
+			{ from: owner }
+		);
+
+		sportsAMMUtils = await SportsAMMUtils.new(SportsAMM.address);
+		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
+			from: owner,
+		});
+		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
+			from: owner,
+		});
+
+		Referrals = await ReferralsContract.new();
+		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
+
 		let GamesQueue = artifacts.require('GamesQueue');
 		gamesQueue = await GamesQueue.new({ from: owner });
 		await gamesQueue.initialize(owner, { from: owner });
@@ -732,6 +832,239 @@ contract('PlayerProps', (accounts) => {
 		await SportPositionalMarketManager.setPlayerProps(GamesPlayerPropsDeployed.address, {
 			from: manager,
 		});
+		await SportPositionalMarketManager.setSupportedSportForDoubleChance(
+			[10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+			true,
+			{
+				from: manager,
+			}
+		);
+		await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
+		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
+
+		await SportPositionalMarketData.initialize(owner, { from: owner });
+
+		await SportPositionalMarketData.setSportPositionalMarketManager(
+			SportPositionalMarketManager.address,
+			{ from: owner }
+		);
+		await SportPositionalMarketData.setSportsAMM(SportsAMM.address, { from: owner });
+
+		let TestUSDC = artifacts.require('TestUSDC');
+		testUSDC = await TestUSDC.new();
+		testUSDT = await TestUSDC.new();
+
+		let ERC20token = artifacts.require('Thales');
+		testDAI = await ERC20token.new();
+
+		let CurveSUSD = artifacts.require('MockCurveSUSD');
+		curveSUSD = await CurveSUSD.new(
+			Thales.address,
+			testUSDC.address,
+			testUSDT.address,
+			testDAI.address
+		);
+
+		await testUSDC.mint(first, toUnit(1000));
+		await testUSDC.mint(curveSUSD.address, toUnit(1000));
+		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
+
+		ParlayAMM = await ParlayAMMContract.new({ from: manager });
+
+		await ParlayAMM.initialize(
+			owner,
+			SportsAMM.address,
+			SportPositionalMarketManager.address,
+			parlayAMMfee,
+			toUnit(maxSupportedAmount),
+			toUnit(maxSupportedOdd),
+			Thales.address,
+			safeBox,
+			safeBoxImpact,
+			{ from: owner }
+		);
+
+		await ParlayAMM.setAmounts(
+			toUnit(minUSDAmount),
+			toUnit(maxSupportedAmount),
+			toUnit(maxSupportedOdd),
+			parlayAMMfee,
+			safeBoxImpact,
+			toUnit(0.05),
+			toUnit(20000000),
+			{
+				from: owner,
+			}
+		);
+		let nba_sgp_fee = toUnit(0.95);
+		let soccer_sgp_fee = toUnit(0.8);
+		let nfl_sgp_fee = toUnit(0.9);
+		let nhl_sgp_fee = toUnit(0.85);
+
+		await ParlayAMM.setSgpFeePerCombination(9004, 0, 10002, nba_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9004, 10002, 10001, nba_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9016, 0, 10002, soccer_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9016, 10001, 10002, soccer_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9002, 0, 10002, nfl_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9002, 10001, 10002, nfl_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9007, 0, 10002, nhl_sgp_fee, { from: owner });
+		await ParlayAMM.setSgpFeePerCombination(9007, 10001, 10002, nhl_sgp_fee, { from: owner });
+
+		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: first });
+		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: second });
+		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: third });
+
+		ParlayMarketData = await ParlayMarketDataContract.new({ from: manager });
+		ParlayVerifier = await ParlayVerifierContract.new({ from: manager });
+
+		await ParlayMarketData.initialize(owner, ParlayAMM.address);
+
+		await ParlayAMM.setAddresses(
+			SportsAMM.address,
+			safeBox,
+			Referrals.address,
+			ParlayMarketData.address,
+			ParlayVerifier.address,
+			{ from: owner }
+		);
+		ParlayMarketMastercopy = await ParlayMarketContract.new({ from: manager });
+
+		await ParlayAMM.setParlayMarketMastercopies(ParlayMarketMastercopy.address, { from: owner });
+		await Thales.transfer(ParlayAMM.address, toUnit('20000'), { from: owner });
+
+		await ParlayAMM.setParameters(5, { from: owner });
+
+		let SportAMMLiquidityPoolContract = artifacts.require('SportAMMLiquidityPool');
+		SportAMMLiquidityPool = await SportAMMLiquidityPoolContract.new();
+
+		await SportAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_sportsAmm: SportsAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(100000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+		await SportAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
+
+		let SportAMMRiskManagerContract = artifacts.require('SportAMMRiskManager');
+		SportAMMRiskManager = await SportAMMRiskManagerContract.new();
+
+		await SportAMMRiskManager.initialize(
+			owner,
+			SportPositionalMarketManager.address,
+			toUnit('5000'),
+			[tagID_4],
+			[toUnit('50000')],
+			emptyArray,
+			emptyArray,
+			emptyArray,
+			3,
+			[tagID_4],
+			[5],
+			{ from: owner }
+		);
+		StakingThales = await StakingThalesContract.new({ from: manager });
+
+		await SportsAMM.setAddresses(
+			owner,
+			Thales.address,
+			TherundownConsumerDeployed.address,
+			StakingThales.address,
+			Referrals.address,
+			ParlayAMM.address,
+			wrapper,
+			SportAMMLiquidityPool.address,
+			SportAMMRiskManager.address,
+			{ from: owner }
+		);
+
+		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
+		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+			from: owner,
+		});
+		await Thales.transfer(firstLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('10000000'), {
+			from: firstLiquidityProvider,
+		});
+		await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+			from: owner,
+		});
+		await SportAMMLiquidityPool.deposit(toUnit(100000), { from: firstLiquidityProvider });
+		await SportAMMLiquidityPool.start({ from: owner });
+		await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
+			from: owner,
+		});
+		await Thales.transfer(defaultLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(SportAMMLiquidityPool.address, toUnit('10000000'), {
+			from: defaultLiquidityProvider,
+		});
+
+		Referrals.setSportsAMM(SportsAMM.address, ParlayAMM.address, { from: owner });
+
+		await testUSDC.mint(first, toUnit(1000));
+		await testUSDC.mint(curveSUSD.address, toUnit(1000));
+		await testUSDC.approve(ParlayAMM.address, toUnit(1000), { from: first });
+		// Parlay LP initializers:
+		const ParlayAMMLiquidityPoolContract = artifacts.require('ParlayAMMLiquidityPool');
+		const ParlayAMMLiquidityPoolRoundMastercopy = artifacts.require(
+			'ParlayAMMLiquidityPoolRoundMastercopy'
+		);
+
+		ParlayAMMLiquidityPool = await ParlayAMMLiquidityPoolContract.new({ from: manager });
+
+		await ParlayAMMLiquidityPool.initialize(
+			{
+				_owner: owner,
+				_parlayAMM: ParlayAMM.address,
+				_sUSD: Thales.address,
+				_roundLength: WEEK,
+				_maxAllowedDeposit: toUnit(100000).toString(),
+				_minDepositAmount: toUnit(100).toString(),
+				_maxAllowedUsers: 100,
+			},
+			{ from: owner }
+		);
+		await ParlayAMMLiquidityPool.setUtilizationRate(toUnit(1), {
+			from: owner,
+		});
+		await ParlayAMM.setParlayLP(ParlayAMMLiquidityPool.address, { from: owner });
+
+		let parlayAMMLiquidityPoolRoundMastercopy = await ParlayAMMLiquidityPoolRoundMastercopy.new();
+		await ParlayAMMLiquidityPool.setPoolRoundMastercopy(
+			parlayAMMLiquidityPoolRoundMastercopy.address,
+			{
+				from: owner,
+			}
+		);
+		await Thales.transfer(firstParlayAMMLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
+			from: firstParlayAMMLiquidityProvider,
+		});
+		await ParlayAMMLiquidityPool.setWhitelistedAddresses([firstParlayAMMLiquidityProvider], true, {
+			from: owner,
+		});
+		await ParlayAMMLiquidityPool.deposit(toUnit(100000), { from: firstParlayAMMLiquidityProvider });
+		await ParlayAMMLiquidityPool.start({ from: owner });
+		await ParlayAMMLiquidityPool.setDefaultLiquidityProvider(defaultParlayAMMLiquidityProvider, {
+			from: owner,
+		});
+		await Thales.transfer(defaultParlayAMMLiquidityProvider, toUnit('10000000'), { from: owner });
+		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
+			from: defaultParlayAMMLiquidityProvider,
+		});
+
+		const ParlayPolicyContract = artifacts.require('ParlayPolicy');
+		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
+		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
+
+		await ParlayAMM.setPolicyAddresses(ParlayPolicy.address, { from: owner });
 	});
 
 	describe('Init', () => {

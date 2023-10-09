@@ -1028,18 +1028,6 @@ contract('ParlayAMM', (accounts) => {
 
 			let allMarkets = await SportPositionalMarketManager.activeMarkets('0', '100');
 			// console.log(allMarkets);
-			// for (let i = 0; i < allMarkets.length; i++) {
-			// 	let market = await SportPositionalMarketContract.at(allMarkets[i]);
-			// 	let tags = await market.getTags();
-			// 	let gameDetails = await market.getGameDetails();
-			// 	console.log('market ', i, ' : ', market.address);
-			// 	console.log('  tag1: ', parseInt(tags[0]));
-			// 	console.log('  tag2: ', parseInt(tags[1]));
-			// 	console.log('  gameDetails: ', gameDetails[1].toString());
-			// 	console.log('  \n');
-			// }
-			// console.log(mainMarketSpreadChildMarket);
-			// console.log(mainMarketTotalChildMarket);
 
 			assert.equal(deployedMarket_4.address, marketAdd_4);
 			assert.equal(deployedMarket_5.address, marketAdd_5);

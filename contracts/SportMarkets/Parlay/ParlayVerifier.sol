@@ -439,15 +439,17 @@ contract ParlayVerifier {
                 }
             }
             // Recalculation of the SGP fee in case it results in lower than the initial quotes
-            uint totalQuote = (odds1 * odds2) / ONE;
-            uint totalQuoteWSGP = ((totalQuote * ONE * ONE) / sgpFee2) / ONE;
-            if (totalQuoteWSGP >= odds1 || totalQuoteWSGP >= odds2) {
-                if (totalQuoteWSGP > odds1 && odds1 > odds2 && odds1 > totalQuote) {
-                    sgpFee = (odds1 - totalQuote) - (2 * ONE_PERCENT);
-                    sgpFee2 = ONE - sgpFee;
-                } else if (totalQuoteWSGP > odds2 && odds2 > totalQuote) {
-                    sgpFee = (odds2 - totalQuote) - (2 * ONE_PERCENT);
-                    sgpFee2 = ONE - sgpFee;
+            if (sgpFee2 > 0) {
+                uint totalQuote = (odds1 * odds2) / ONE;
+                uint totalQuoteWSGP = ((totalQuote * ONE * ONE) / sgpFee2) / ONE;
+                if (totalQuoteWSGP >= odds1 || totalQuoteWSGP >= odds2) {
+                    if (totalQuoteWSGP > odds1 && odds1 > odds2 && odds1 > totalQuote) {
+                        sgpFee = (odds1 - totalQuote) - (2 * ONE_PERCENT);
+                        sgpFee2 = ONE - sgpFee;
+                    } else if (totalQuoteWSGP > odds2 && odds2 > totalQuote) {
+                        sgpFee = (odds2 - totalQuote) - (2 * ONE_PERCENT);
+                        sgpFee2 = ONE - sgpFee;
+                    }
                 }
             }
         }

@@ -828,9 +828,10 @@
 		"GamesPlayerPropsReceiverImplementation": "0xb36C532C5B497c1F030f5AB31Aa1c4Dc0125DB26",
 		"SportAMMRiskManager": "0x0E4cB41143Ca28618eA7C96c31f193c01Ee4A293",
 		"SportAMMRiskManagerImplementation": "0xAABB772ae836D3e4B552E6205073ce797674FA09",
-		"SpeedMarketMastercopy": "0xa969977E42BF53f18918FD6b68fA1792a4760DF1",
+		"SpeedMarketMastercopy": "0xC2C460dA7Ce3fa819C8A33987bDD19A07CbA1167",
 		"SpeedMarketsAMM": "0x05cD078cECB32d62b304e9028C147bBCdef5Ba24",
-		"SpeedMarketsAMMImplementation": "0x1546F2C3534dc6404Dbce55a27Fba3ac1bB87174"
+		"SpeedMarketsAMMImplementation": "0x674bB266BE2A48942c9DA48585f6FB0048A18E4c",
+		"SpeedMarketsAMMUtils": "0xB3DCB8Cf75B54e5C972C7770c1f20c2d2f363F2E"
 	},
 	"localhost": {
 		"Airdrop": "",

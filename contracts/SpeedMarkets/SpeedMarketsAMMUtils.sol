@@ -16,8 +16,7 @@ contract SpeedMarketsAMMUtils {
         uint[] calldata _timeThresholds,
         uint[] calldata _fees,
         uint _defaultFee
-    ) public pure returns (uint fee) {
-        require(_timeThresholds.length == _fees.length, "Time thresholds and fees arrays must have the same length");
+    ) external pure returns (uint fee) {
         fee = _defaultFee;
         uint _deltaTime = _deltaTimeSec / SECONDS_PER_MINUTE;
         for (uint i = _timeThresholds.length - 1; i >= 0; i--) {

@@ -1691,19 +1691,6 @@
   },
   {
     "inputs": [],
-    "name": "speedMarketsAMMUtils",
-    "outputs": [
-      {
-        "internalType": "contract SpeedMarketsAMMUtils",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "stakingThales",
     "outputs": [
       {

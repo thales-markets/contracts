@@ -88,7 +88,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     uint[] public timeThresholdsForFees;
     uint[] public lpFees;
 
-    SpeedMarketsAMMUtils public speedMarketsAMMUtils;
+    SpeedMarketsAMMUtils private speedMarketsAMMUtils;
 
     mapping(address => bool) public marketHasFeeAttribute;
 
@@ -597,7 +597,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     /// @notice set LP fee params
-    /// @param _timeThresholds array of time thresholds (minutes) for different fees
+    /// @param _timeThresholds array of time thresholds (minutes) for different fees in ascending order
     /// @param _lpFees array of fees applied to each time frame defined in _timeThresholds
     /// @param _lpFee default LP fee when there are no dynamic fees
     function setLPFeeParams(

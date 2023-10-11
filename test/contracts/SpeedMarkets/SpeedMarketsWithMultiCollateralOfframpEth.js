@@ -43,7 +43,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			await speedMarketsAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true);
 
-			await exoticOP.setDefaultAmount(toUnit(100));
+			await exoticOP.setDefaultAmount(toUnit(10000));
 			await exoticOP.mintForUser(user);
 			let balance = await exoticOP.balanceOf(user);
 			console.log('Balance of user is ' + balance / 1e18);
@@ -120,51 +120,58 @@ contract('SpeedMarkets', (accounts) => {
 				strikeTime
 			);
 
-			numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
-			console.log('numActiveMarkets before resolve ' + numActiveMarkets);
+			let MockWeth = artifacts.require('MockWeth');
+			let mockWeth = await MockWeth.new();
+			await multiCollateralOnOffRamp.setWETH(mockWeth.address, { from: owner });
 
-			let balanceOfMarketBefore = await exoticUSD.balanceOf(market);
-			let balanceOfUserBefore = await exoticUSD.balanceOf(owner);
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(1000));
 
-			await speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee });
+			let minimumReceivedOfframp = await multiCollateralOnOffRamp.getMinimumReceivedOfframp(
+				mockWeth.address,
+				toUnit(20)
+			);
+			console.log('minimumReceivedOfframp weth for 100 sUSD is ' + minimumReceivedOfframp / 1e18);
 
-			numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
-			console.log('numActiveMarkets after resolve' + numActiveMarkets);
+			let maximumReceivedOfframp = await multiCollateralOnOffRamp.getMaximumReceivedOfframp(
+				mockWeth.address,
+				toUnit(20)
+			);
+			console.log('maximumReceivedOfframp weth for 100 sUSD is ' + maximumReceivedOfframp / 1e18);
 
-			let resolved = await speedMarket.resolved();
-			console.log('resolved  is ' + resolved);
+			await mockWeth.deposit({ value: toUnit(1), from: user });
+			let userEthBalance = await web3.eth.getBalance(user);
+			console.log('userEthBalance ' + userEthBalance);
 
-			let result = await speedMarket.result();
-			console.log('result  is ' + result);
+			await multiCollateralOnOffRamp.setSupportedCollateral(mockWeth.address, true, {
+				from: owner,
+			});
+			await swapRouterMock.setDefaults(exoticUSD.address, mockWeth.address);
 
-			let direction = await speedMarket.direction();
-			console.log('direction  is ' + direction);
+			await mockWeth.transfer(swapRouterMock.address, toUnit(0.5), { from: user });
+			userEthBalance = await web3.eth.getBalance(user);
+			console.log('userEthBalance ' + userEthBalance);
 
-			let buyinAmount = await speedMarket.buyinAmount();
-			console.log('buyinAmount  is ' + buyinAmount / 1e18);
+			let swapRouterMockWethBalance = await mockWeth.balanceOf(swapRouterMock.address);
 
-			let isUserWinner = await speedMarket.isUserWinner();
-			console.log('isUserWinner  is ' + isUserWinner);
+			await exoticUSD.approve(speedMarketsAMM.address, toUnit('1000'), { from: user });
 
-			let balanceOfMarketAfter = await exoticUSD.balanceOf(market);
-			console.log('balanceOfMarketBefore ' + balanceOfMarketBefore / 1e18);
-			console.log('balanceOfMarketAfter ' + balanceOfMarketAfter / 1e18);
-
-			let balanceOfUserAfter = await exoticUSD.balanceOf(user);
-			console.log('balanceOfUserBefore ' + balanceOfUserBefore / 1e18);
-			console.log('balanceOfUserAfter ' + balanceOfUserAfter / 1e18);
-
-			let balanceOfUserAfterExoticOP = await exoticOP.balanceOf(user);
-			console.log('balanceOfUserAfterExoticOP ' + balanceOfUserAfterExoticOP / 1e18);
-
-			let balanceOfSpeedMarketAMMAfterResolve = await exoticUSD.balanceOf(speedMarketsAMM.address);
-			console.log('balanceOfSpeedMarketAMMBefore ' + balanceOfSpeedMarketAMMBefore / 1e18);
-			console.log(
-				'balanceOfSpeedMarketAMMAfterResolve ' + balanceOfSpeedMarketAMMAfterResolve / 1e18
+			console.log('swapRouterMockWethBalance before ' + swapRouterMockWethBalance / 1e18);
+			await speedMarketsAMM.resolveMarketWithOfframp(
+				market,
+				[resolvePriceFeedUpdateData],
+				mockWeth.address,
+				true,
+				{ value: fee, from: user }
 			);
 
-			let balanceSafeBox = await exoticUSD.balanceOf(safeBox);
-			console.log('balanceSafeBox ' + balanceSafeBox / 1e18);
+			let userEthBalanceAfter = await web3.eth.getBalance(user);
+			console.log('userEthBalance after ' + userEthBalanceAfter);
+
+			let userEthBalanceAfterDiff = userEthBalanceAfter / 1e18 - userEthBalance / 1e18;
+			console.log('userEthBalanceAfterDiff ' + userEthBalanceAfterDiff);
+
+			assert.bnGte(toUnit(userEthBalanceAfterDiff), toUnit('0.01'));
+			assert.bnLte(toUnit(userEthBalanceAfterDiff), toUnit('0.02'));
 		});
 	});
 });

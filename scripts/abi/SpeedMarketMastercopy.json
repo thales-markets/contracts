@@ -214,7 +214,7 @@
     "name": "speedMarketsAMM",
     "outputs": [
       {
-        "internalType": "contract SpeedMarketsAMM",
+        "internalType": "contract ISpeedMarketsAMM",
         "name": "",
         "type": "address"
       }

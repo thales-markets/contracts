@@ -86,6 +86,27 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 			balance = await exoticOP.balanceOf(user);
 			console.log('Balance exoticOP user before ' + balance / 1e18);
 
+			let ExoticUSDC = artifacts.require('ExoticUSDC');
+			let exoticUSDC = await ExoticUSDC.new();
+			await exoticUSDC.mintForUser(user);
+
+			let CurveMock = artifacts.require('CurveMock');
+			let curveMock = await CurveMock.new(
+				exoticUSD.address,
+				exoticUSDC.address,
+				exoticUSDC.address,
+				exoticUSDC.address
+			);
+
+			await multiCollateralOnOffRamp.setCurveSUSD(
+				curveMock.address,
+				exoticUSDC.address,
+				exoticUSDC.address,
+				exoticUSDC.address,
+				true,
+				toUnit('0.01')
+			);
+
 			await multiCollateralOnOffRamp.onramp(exoticOP.address, toUnit(10), { from: user });
 
 			balance = await exoticUSD.balanceOf(swapRouterMock.address);
@@ -107,27 +128,6 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 			await expect(
 				multiCollateralOnOffRamp.onramp(exoticOP.address, toUnit(10), { from: user })
 			).to.be.revertedWith('Amount above max allowed peg slippage');
-
-			let ExoticUSDC = artifacts.require('ExoticUSDC');
-			let exoticUSDC = await ExoticUSDC.new();
-			await exoticUSDC.mintForUser(user);
-
-			let CurveMock = artifacts.require('CurveMock');
-			let curveMock = await CurveMock.new(
-				exoticUSD.address,
-				exoticUSDC.address,
-				exoticUSDC.address,
-				exoticUSDC.address
-			);
-
-			await multiCollateralOnOffRamp.setCurveSUSD(
-				curveMock.address,
-				exoticUSDC.address,
-				exoticUSDC.address,
-				exoticUSDC.address,
-				true,
-				toUnit('0.01')
-			);
 
 			await exoticUSD.mintForUser(proxyUser);
 			await exoticUSD.transfer(curveMock.address, toUnit(100), { from: proxyUser });
@@ -196,6 +196,13 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 
 			await expect(
 				multiCollateralOnOffRamp.onrampWithEth(toUnit('1'), { from: user, value: toUnit('1') })
+			).to.be.revertedWith('Unsupported collateral');
+
+			await multiCollateralOnOffRamp.setSupportedCollateral(mockWeth.address, true);
+
+			await swapRouterMock.setDefaults(mockWeth.address, exoticUSD.address);
+			await expect(
+				multiCollateralOnOffRamp.onrampWithEth(toUnit('1'), { from: user, value: toUnit('1') })
 			).to.be.revertedWith('Amount above max allowed peg slippage');
 
 			await swapRouterMock.setMultiplier(1);
@@ -206,6 +213,21 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 
 			userEthBalance = await web3.eth.getBalance(user);
 			console.log('userEthBalance after' + userEthBalance);
+
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(2));
+
+			let minimumNeeded = await multiCollateralOnOffRamp.getMinimumNeeded(
+				exoticOP.address,
+				toUnit(10)
+			);
+			console.log('minimumNeeded OP to receive 10 sUSD at rate 2 is ' + minimumNeeded / 1e18);
+
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(1));
+
+			minimumNeeded = await multiCollateralOnOffRamp.getMinimumNeeded(exoticOP.address, toUnit(10));
+			console.log('minimumNeeded OP to receive 10 sUSD is ' + minimumNeeded / 1e18);
+
+			assert.bnEqual(minimumNeeded, toUnit('10.1'));
 		});
 	});
 });

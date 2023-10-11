@@ -47,8 +47,7 @@ module.exports = {
 
 		await speedMarketsAMM.setTimes(3600, 86400);
 
-		await speedMarketsAMM.setMaximumPriceDelay(60);
-		await speedMarketsAMM.setMaximumPriceDelayForResolving(30);
+		await speedMarketsAMM.setMaximumPriceDelays(60, 30);
 
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
@@ -97,7 +96,7 @@ module.exports = {
 		await referrals.setWhitelistedAddress(speedMarketsAMM.address, true);
 		await referrals.setReferrerFees(toUnit(0.005), toUnit(0.0075), toUnit(0.01));
 
-		await speedMarketsAMM.setReferrals(referrals.address, {
+		await speedMarketsAMM.setAddresses(mockPyth.address, referrals.address, ZERO_ADDRESS, {
 			from: owner,
 		});
 

@@ -55,6 +55,12 @@ async function main() {
 		PaymentToken = getTargetAddress('ProxyUSDC', network);
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
+
 	const parlayAMMfee = '5';
 	const maxSupportedAmount = w3utils.toWei('20000');
 	const maxSupportedOdds = w3utils.toWei('0.005');
@@ -64,7 +70,12 @@ async function main() {
 
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 5 || networkObj.chainId == 42161) {
+	if (
+		networkObj.chainId == 10 ||
+		networkObj.chainId == 5 ||
+		networkObj.chainId == 42161 ||
+		networkObj.chainId == 8453
+	) {
 		console.log('HERE');
 		const implementation = await upgrades.prepareUpgrade(ParlayAMMAddress, ParlayAMM);
 		await delay(5000);

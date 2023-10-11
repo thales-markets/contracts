@@ -43,7 +43,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			await speedMarketsAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true);
 
-			await exoticOP.setDefaultAmount(toUnit(100));
+			await exoticOP.setDefaultAmount(toUnit(10000));
 			await exoticOP.mintForUser(user);
 			let balance = await exoticOP.balanceOf(user);
 			console.log('Balance of user is ' + balance / 1e18);
@@ -123,48 +123,44 @@ contract('SpeedMarkets', (accounts) => {
 			numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
 			console.log('numActiveMarkets before resolve ' + numActiveMarkets);
 
-			let balanceOfMarketBefore = await exoticUSD.balanceOf(market);
-			let balanceOfUserBefore = await exoticUSD.balanceOf(owner);
+			await expect(
+				speedMarketsAMM.resolveMarketWithOfframp(
+					market,
+					[resolvePriceFeedUpdateData],
+					exoticOP.address,
+					false,
+					{ value: fee }
+				)
+			).to.be.revertedWith('Only allowed from market owner');
 
-			await speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee });
+			await exoticOP.approve(speedMarketsAMM.address, toUnit('1000'), { from: user });
+			await exoticUSD.approve(speedMarketsAMM.address, toUnit('1000'), { from: user });
 
-			numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
-			console.log('numActiveMarkets after resolve' + numActiveMarkets);
+			await exoticOP.mintForUser(proxyUser);
+			await exoticOP.transfer(swapRouterMock.address, toUnit(1000), { from: proxyUser });
 
-			let resolved = await speedMarket.resolved();
-			console.log('resolved  is ' + resolved);
+			await swapRouterMock.setDefaults(exoticUSD.address, exoticOP.address);
 
-			let result = await speedMarket.result();
-			console.log('result  is ' + result);
+			let balanceOfUserAfterExoticOPBefore = await exoticOP.balanceOf(user);
+			console.log('balanceOfUserAfterExoticOPBefore ' + balanceOfUserAfterExoticOPBefore / 1e18);
 
-			let direction = await speedMarket.direction();
-			console.log('direction  is ' + direction);
-
-			let buyinAmount = await speedMarket.buyinAmount();
-			console.log('buyinAmount  is ' + buyinAmount / 1e18);
-
-			let isUserWinner = await speedMarket.isUserWinner();
-			console.log('isUserWinner  is ' + isUserWinner);
-
-			let balanceOfMarketAfter = await exoticUSD.balanceOf(market);
-			console.log('balanceOfMarketBefore ' + balanceOfMarketBefore / 1e18);
-			console.log('balanceOfMarketAfter ' + balanceOfMarketAfter / 1e18);
-
-			let balanceOfUserAfter = await exoticUSD.balanceOf(user);
-			console.log('balanceOfUserBefore ' + balanceOfUserBefore / 1e18);
-			console.log('balanceOfUserAfter ' + balanceOfUserAfter / 1e18);
+			await speedMarketsAMM.resolveMarketWithOfframp(
+				market,
+				[resolvePriceFeedUpdateData],
+				exoticOP.address,
+				false,
+				{ value: fee, from: user }
+			);
 
 			let balanceOfUserAfterExoticOP = await exoticOP.balanceOf(user);
 			console.log('balanceOfUserAfterExoticOP ' + balanceOfUserAfterExoticOP / 1e18);
 
-			let balanceOfSpeedMarketAMMAfterResolve = await exoticUSD.balanceOf(speedMarketsAMM.address);
-			console.log('balanceOfSpeedMarketAMMBefore ' + balanceOfSpeedMarketAMMBefore / 1e18);
-			console.log(
-				'balanceOfSpeedMarketAMMAfterResolve ' + balanceOfSpeedMarketAMMAfterResolve / 1e18
-			);
+			let userBalanceAfterDiff =
+				balanceOfUserAfterExoticOP / 1e18 - balanceOfUserAfterExoticOPBefore / 1e18;
+			console.log('userBalanceAfterDiff ' + userBalanceAfterDiff);
 
-			let balanceSafeBox = await exoticUSD.balanceOf(safeBox);
-			console.log('balanceSafeBox ' + balanceSafeBox / 1e18);
+			assert.bnGte(toUnit(userBalanceAfterDiff), toUnit('19'));
+			assert.bnLte(toUnit(userBalanceAfterDiff), toUnit('21'));
 		});
 	});
 });

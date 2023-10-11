@@ -16,6 +16,10 @@ const DAY = 86400;
 const WEEK = 604800;
 const YEAR = 31556926;
 
+const { toWei } = require('web3-utils');
+
+const toUnitSix = (amount) => toBN(toWei(amount.toString(), 'ether') / 1e12);
+
 const {
 	fastForward,
 	toUnit,
@@ -180,9 +184,7 @@ contract('ParlayAMM', (accounts) => {
 		SportsAMM,
 		SportAMMLiquidityPool,
 		ParlayAMMLiquidityPool,
-		SportAMMRiskManager,
 		multiCollateralOnOffRamp;
-	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -203,12 +205,13 @@ contract('ParlayAMM', (accounts) => {
 	let maxSupportedOdd = '0.005';
 
 	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
-	let parlayMarkets_1 = [];
-	let parlayMarkets_2 = [];
+	let parlayMarkets = [];
+	let equalParlayMarkets = [];
 	let parlayPositions = [];
 	let parlaySingleMarketAddress;
 	let parlaySingleMarket;
-	let voucher;
+	let voucher, SportAMMRiskManager;
+	let emptyArray = [];
 
 	let sportsAMMUtils;
 
@@ -526,22 +529,13 @@ contract('ParlayAMM', (accounts) => {
 			testUSDC.address,
 			testUSDC.address,
 			true,
-			toUnit('0.01'),
+			toUnit('0.02'),
 			{ from: owner }
 		);
 
 		await Thales.transfer(curveMock.address, toUnit('1000'), { from: owner });
 
-		let CurveSUSD = artifacts.require('MockCurveSUSD');
-		curveSUSD = await CurveSUSD.new(
-			Thales.address,
-			testUSDC.address,
-			testUSDT.address,
-			testDAI.address
-		);
-
 		await testUSDC.mint(first, toUnit(1000));
-		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
 
 		ParlayAMM = await ParlayAMMContract.new({ from: manager });
@@ -566,7 +560,7 @@ contract('ParlayAMM', (accounts) => {
 			parlayAMMfee,
 			safeBoxImpact,
 			toUnit(0.05),
-			toUnit(1860),
+			toUnit(2000),
 			{
 				from: owner,
 			}
@@ -667,6 +661,13 @@ contract('ParlayAMM', (accounts) => {
 			from: defaultLiquidityProvider,
 		});
 
+		let CurveSUSD = artifacts.require('MockCurveSUSD');
+		curveSUSD = await CurveSUSD.new(
+			Thales.address,
+			testUSDC.address,
+			testUSDT.address,
+			testDAI.address
+		);
 		await ParlayAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true, {
 			from: owner,
 		});
@@ -723,6 +724,43 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.transfer(defaultParlayAMMLiquidityProvider, toUnit('10000000'), { from: owner });
 		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultParlayAMMLiquidityProvider,
+		});
+	});
+
+	describe('Parlay AMM setters', () => {
+		it('SetAmounts', async () => {
+			await ParlayAMM.setAmounts(
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				{
+					from: owner,
+				}
+			);
+		});
+		it('SetAmounts', async () => {
+			await ParlayAMM.setParameters(8, { from: owner });
+		});
+		it('set Addresses', async () => {
+			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, {
+				from: owner,
+			});
+		});
+		it('ParlayMarketData', async () => {
+			await ParlayMarketData.setParlayMarketsAMM(third, { from: owner });
+			await ParlayMarketData.addParlayForGamePosition(first, '1', second, second, { from: third });
+			let hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
+			assert.equal(hasData, true);
+			hasData = await ParlayMarketData.isGameInParlay(first, second);
+			assert.equal(hasData[0], true);
+			assert.equal(hasData[1].toString(), '1');
+			await ParlayMarketData.removeParlayForGamePosition(first, '1', second, { from: third });
+			hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
+			assert.equal(hasData, false);
 		});
 	});
 
@@ -901,135 +939,22 @@ contract('ParlayAMM', (accounts) => {
 			// console.log('parlay 3: ', deployedMarket_3.address);
 			// console.log('parlay 4: ', deployedMarket_4.address);
 
-			parlayMarkets_1 = [deployedMarket_1, deployedMarket_5];
-			parlayMarkets_2 = [deployedMarket_3, deployedMarket_4];
+			parlayMarkets = [deployedMarket_1, deployedMarket_5, deployedMarket_3, deployedMarket_4];
+			equalParlayMarkets = [deployedMarket_1, deployedMarket_2, deployedMarket_3, deployedMarket_4];
 		});
 
-		it('Buy Parlay with referral', async () => {
+		it('Multi-collateral buy from amm', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
 			assert.equal(answer.toString(), '11');
-
 			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1'];
-
+			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets_1.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets_1[i].address;
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
 			}
-
-			let slippage = toUnit('0.2');
-			let result = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
-
-			let balanceOfFirstReferrer = await Thales.balanceOf(second);
-			console.log('balanceOfFirstReferrer before: ' + balanceOfFirstReferrer / 1e18);
-
-			let balanceOfSecondReferrer = await Thales.balanceOf(third);
-			console.log('balanceOfSecondReferrer before: ' + balanceOfSecondReferrer / 1e18);
-
-			console.log(
-				'========================== 1st buyFromParlayWithReferrer ==============================='
-			);
-			let buyParlayTX = await ParlayAMM.buyFromParlayWithReferrer(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[1],
-				ZERO_ADDRESS,
-				second,
-				{ from: first }
-			);
-
-			let firstAnswer = await Thales.balanceOf(second);
-			assert.bnGt(firstAnswer, balanceOfFirstReferrer);
-			console.log(
-				'First referrer change: ',
-				fromUnit(balanceOfFirstReferrer),
-				fromUnit(firstAnswer)
-			);
-
-			let secondAnswer = await Thales.balanceOf(third);
-			assert.bnEqual(secondAnswer, balanceOfSecondReferrer);
-			console.log(
-				'Second referrer change: ',
-				fromUnit(balanceOfSecondReferrer),
-				fromUnit(secondAnswer)
-			);
-
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-				account: first,
-				sUSDPaid: totalSUSDToPay,
-			});
-
-			parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets_2.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets_2[i].address;
-			}
-
-			result = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
-
-			balanceOfFirstReferrer = await Thales.balanceOf(second);
-			balanceOfSecondReferrer = await Thales.balanceOf(third);
-			console.log(
-				'========================== 2st buyFromParlayWithReferrer ==============================='
-			);
-
-			buyParlayTX = await ParlayAMM.buyFromParlayWithReferrer(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[1],
-				ZERO_ADDRESS,
-				third,
-				{ from: first }
-			);
-
-			firstAnswer = await Thales.balanceOf(second);
-			assert.bnEqual(firstAnswer, balanceOfFirstReferrer);
-			console.log(
-				'First referrer change: ',
-				fromUnit(balanceOfFirstReferrer),
-				fromUnit(firstAnswer)
-			);
-
-			secondAnswer = await Thales.balanceOf(third);
-			assert.bnGt(secondAnswer, balanceOfSecondReferrer);
-			console.log(
-				'Second referrer change: ',
-				fromUnit(balanceOfSecondReferrer),
-				fromUnit(secondAnswer)
-			);
-
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-				account: first,
-				sUSDPaid: totalSUSDToPay,
-			});
-		});
-
-		it('Multi-collateral buy with referrals from amm', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '11');
-
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1'];
-
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets_1.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets_1[i].address;
-			}
-
-			let slippage = toUnit('0.2');
+			let slippage = toUnit('0.01');
 			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
 				parlayMarketsAddress,
 				parlayPositions,
@@ -1037,15 +962,21 @@ contract('ParlayAMM', (accounts) => {
 				testUSDC.address
 			);
 
-			let balanceOfFirstReferrer = await Thales.balanceOf(second);
-			console.log('balanceOfFirstReferrer before: ' + balanceOfFirstReferrer / 1e18);
+			console.log('totalSUSDToPay: ' + totalSUSDToPay / 1e18);
+			console.log('collateral quote: ' + result[0] / 1e6);
 
-			let balanceOfSecondReferrer = await Thales.balanceOf(third);
-			console.log('balanceOfSecondReferrer before: ' + balanceOfSecondReferrer / 1e18);
-
-			console.log(
-				'========================== 1st buyFromParlayWithDifferentCollateralAndReferrer ==============================='
+			let minimumReceived = await multiCollateralOnOffRamp.getMinimumReceived(
+				testUSDC.address,
+				toUnitSix(result[0] / 1e6)
 			);
+			console.log('minimum received sUSD for USDC ' + minimumReceived / 1e18);
+
+			// 	await multiCollateralOnOffRamp.setSupportedAMM(first, true, { from: owner });
+			// 	await multiCollateralOnOffRamp.onrampWithEth(toUnit(minimumNeeded / 1e18), {
+			// 		from: first,
+			// 		value: toUnit(minimumNeeded / 1e18),
+			// 	});
+
 			let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
 				parlayMarketsAddress,
 				parlayPositions,
@@ -1053,71 +984,95 @@ contract('ParlayAMM', (accounts) => {
 				slippage,
 				result[2],
 				testUSDC.address,
-				second,
+				ZERO_ADDRESS,
 				{ from: first }
 			);
-
-			let firstAnswer = await Thales.balanceOf(second);
-			assert.bnGt(firstAnswer, balanceOfFirstReferrer);
-			console.log(
-				'First referrer change: ',
-				fromUnit(balanceOfFirstReferrer),
-				fromUnit(firstAnswer)
-			);
-
-			let secondAnswer = await Thales.balanceOf(third);
-			assert.bnEqual(secondAnswer, balanceOfSecondReferrer);
-			console.log(
-				'Second referrer change: ',
-				fromUnit(balanceOfSecondReferrer),
-				fromUnit(secondAnswer)
-			);
+			// console.log("event: \n", buyParlayTX.logs[0]);
 
 			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 				amount: result[2],
 			});
+		});
 
-			result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
+		it('Multi-collateral buy from amm', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '11');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+
+			let MockWeth = artifacts.require('MockWeth');
+			let mockWeth = await MockWeth.new();
+			let userEthBalance = await web3.eth.getBalance(first);
+			console.log('userEthBalance ' + userEthBalance);
+			await multiCollateralOnOffRamp.setWETH(mockWeth.address, { from: owner });
+			await multiCollateralOnOffRamp.setSupportedCollateral(mockWeth.address, true, {
+				from: owner,
+			});
+
+			let SwapRouterMock = artifacts.require('SwapRouterMock');
+			let swapRouterMock = await SwapRouterMock.new();
+
+			await multiCollateralOnOffRamp.setSwapRouter(swapRouterMock.address, { from: owner });
+			await swapRouterMock.setDefaults(mockWeth.address, Thales.address);
+			await Thales.transfer(swapRouterMock.address, toUnit('1000'), { from: owner });
+
+			let MockPriceFeed = artifacts.require('MockPriceFeed');
+			let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(200), { from: owner });
+			await multiCollateralOnOffRamp.setPriceFeed(MockPriceFeedDeployed.address, { from: owner });
+
+			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
 				parlayMarketsAddress,
 				parlayPositions,
 				totalSUSDToPay,
-				testUSDC.address
+				mockWeth.address
 			);
 
-			balanceOfFirstReferrer = await Thales.balanceOf(second);
-			balanceOfSecondReferrer = await Thales.balanceOf(third);
+			console.log('totalSUSDToPay: ' + totalSUSDToPay / 1e18);
+			console.log('result: ' + result[0] / 1e18);
+			console.log('sUSDAfterFees: ' + result[1] / 1e18);
+			console.log('totalBuyAmount: ' + result[2] / 1e18);
+			console.log('totalQuote: ' + result[3] / 1e18);
+			console.log('skewImpact: ' + result[4] / 1e18);
+
+			let minimumNeeded = await multiCollateralOnOffRamp.getMinimumNeeded(
+				mockWeth.address,
+				totalSUSDToPay
+			);
 			console.log(
-				'========================== 2st buyFromParlayWithDifferentCollateralAndReferrer ==============================='
+				'minimumNeeded ETH to receive ' + totalSUSDToPay / 1e18 + ' is ' + minimumNeeded / 1e18
 			);
 
-			buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
+			let balanceBefore = await Thales.balanceOf(first);
+			console.log('balanceBefore: ' + balanceBefore / 1e18);
+			await multiCollateralOnOffRamp.setSupportedAMM(first, true, { from: owner });
+			await multiCollateralOnOffRamp.onrampWithEth(toUnit(minimumNeeded / 1e18), {
+				from: first,
+				value: toUnit(minimumNeeded / 1e18),
+			});
+			let balanceAfter = await Thales.balanceOf(first);
+			console.log('balanceAfter: ' + balanceAfter / 1e18);
+
+			let buyParlayTX = await ParlayAMM.buyFromParlayWithEth(
 				parlayMarketsAddress,
 				parlayPositions,
 				totalSUSDToPay,
 				slippage,
 				result[2],
-				testUSDC.address,
-				third,
-				{ from: first }
+				mockWeth.address,
+				ZERO_ADDRESS,
+				{ from: first, value: toUnit(result[0] / 1e18) }
 			);
-
-			firstAnswer = await Thales.balanceOf(second);
-			assert.bnEqual(firstAnswer, balanceOfFirstReferrer);
-			console.log(
-				'First referrer change: ',
-				fromUnit(balanceOfFirstReferrer),
-				fromUnit(firstAnswer)
-			);
-
-			secondAnswer = await Thales.balanceOf(third);
-			assert.bnGt(secondAnswer, balanceOfSecondReferrer);
-			console.log(
-				'Second referrer change: ',
-				fromUnit(balanceOfSecondReferrer),
-				fromUnit(secondAnswer)
-			);
+			console.log('event: \n', buyParlayTX.logs[0]);
 
 			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
 				account: first,

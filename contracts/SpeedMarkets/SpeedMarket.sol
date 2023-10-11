@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-import "./SpeedMarketsAMM.sol";
+import "../interfaces/ISpeedMarketsAMM.sol";
 
 contract SpeedMarket {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -35,7 +35,7 @@ contract SpeedMarket {
     int64 public finalPrice;
     Direction public result;
 
-    SpeedMarketsAMM public speedMarketsAMM;
+    ISpeedMarketsAMM public speedMarketsAMM;
 
     uint256 public createdAt;
 
@@ -46,7 +46,7 @@ contract SpeedMarket {
     function initialize(InitParams calldata params) external {
         require(!initialized, "Speed market already initialized");
         initialized = true;
-        speedMarketsAMM = SpeedMarketsAMM(params._speedMarketsAMM);
+        speedMarketsAMM = ISpeedMarketsAMM(params._speedMarketsAMM);
         user = params._user;
         asset = params._asset;
         strikeTime = params._strikeTime;

@@ -146,15 +146,12 @@ contract('SportsAMM', (accounts) => {
 		SNXRewards,
 		AddressResolver,
 		TestOdds,
-		curveSUSD,
-		testUSDC,
-		testUSDT,
-		testDAI,
 		Referrals,
 		GamesOddsObtainerDeployed,
 		SportsAMM,
 		SportAMMLiquidityPool,
-		SportAMMRiskManager;
+		SportAMMRiskManager,
+		multiCollateralOnOffRamp;
 	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
@@ -415,30 +412,7 @@ contract('SportsAMM', (accounts) => {
 		);
 		await SportPositionalMarketData.setSportsAMM(SportsAMM.address, { from: owner });
 
-		let TestUSDC = artifacts.require('TestUSDC');
-		testUSDC = await TestUSDC.new();
-		testUSDT = await TestUSDC.new();
-
 		let ERC20token = artifacts.require('Thales');
-		testDAI = await ERC20token.new();
-
-		let CurveSUSD = artifacts.require('MockCurveSUSD');
-		curveSUSD = await CurveSUSD.new(
-			Thales.address,
-			testUSDC.address,
-			testUSDT.address,
-			testDAI.address
-		);
-
-		await SportsAMM.setCurveSUSD(
-			curveSUSD.address,
-			testDAI.address,
-			testUSDC.address,
-			testUSDT.address,
-			true,
-			toUnit(0.02),
-			{ from: owner }
-		);
 
 		let SportAMMLiquidityPoolContract = artifacts.require('SportAMMLiquidityPool');
 		SportAMMLiquidityPool = await SportAMMLiquidityPoolContract.new();
@@ -514,10 +488,6 @@ contract('SportsAMM', (accounts) => {
 		await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000000'), {
 			from: defaultLiquidityProvider,
 		});
-
-		await testUSDC.mint(first, toUnit(100000));
-		await testUSDC.mint(curveSUSD.address, toUnit(100000));
-		await testUSDC.approve(SportsAMM.address, toUnit(100000), { from: first });
 	});
 
 	let rewardTokenAddress;

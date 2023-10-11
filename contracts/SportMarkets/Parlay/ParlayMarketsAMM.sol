@@ -352,14 +352,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         uint collateralQuote = multiCollateralOnOffRamp.getMinimumNeeded(collateral, _sUSDPaid);
-        // TODO: check with Kiril what exactly makes sense here
-        //        require((collateralQuote * ONE) / (_expectedPayout) <= (ONE + _additionalSlippage), "Slippage too high!");
 
         uint exactReceived;
 
         if (isEth) {
             require(collateral == multiCollateralOnOffRamp.WETH9(), "Wrong collateral sent");
-            exactReceived = multiCollateralOnOffRamp.onrampWithEth{value: collateralQuote}(collateralQuote);
+            require(msg.value >= collateralQuote, "not enough ETH sent");
+            exactReceived = multiCollateralOnOffRamp.onrampWithEth{value: msg.value}(msg.value);
         } else {
             IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
             IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralQuote);

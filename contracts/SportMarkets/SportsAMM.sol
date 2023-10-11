@@ -616,17 +616,19 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportPositionalMarket(market).exerciseOptions();
 
         uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
+        uint offramped;
 
         if (amountDiff > 0) {
             if (toEth) {
-                uint offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
+                offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
                 bool sent = payable(msg.sender).send(offramped);
                 require(sent, "Failed to send Ether");
             } else {
-                uint offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
+                offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
                 IERC20Upgradeable(collateral).safeTransfer(msg.sender, offramped);
             }
         }
+        emit ExercisedWithOfframp(msg.sender, market, collateral, toEth, amountDiff, offramped);
     }
 
     // setters
@@ -1170,4 +1172,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetSportsPositionalMarketManager(address _manager);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
+    event ExercisedWithOfframp(
+        address user,
+        address market,
+        address collateral,
+        bool toEth,
+        uint payout,
+        uint payoutInCollateral
+    );
 }

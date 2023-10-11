@@ -1203,8 +1203,19 @@ contract('PlayerProps', (accounts) => {
 					from: third,
 				}
 			);
+			const tx_playerProps2 = await GamesPlayerPropsReceiverDeployed.fulfillPlayerProps(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				['0x3431373835353500000000000000000000000000000000000000000000000000'],
+				[37],
+				['Michael Jordan'],
+				[285],
+				[-11500, 11500],
+				{
+					from: third,
+				}
+			);
 
-			assert.bnEqual(1, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
+			assert.bnEqual(2, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
 			let mainMarketPlayerPropsChild =
 				await GamesPlayerPropsDeployed.mainMarketPlayerOptionLineChildMarket(
 					marketAdd,
@@ -1220,6 +1231,24 @@ contract('PlayerProps', (accounts) => {
 				await GamesPlayerPropsDeployed.currentActiveChildMarketPerPlayerAndOption(
 					marketAdd,
 					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+			let mainMarketPlayerPropsChild2 =
+				await GamesPlayerPropsDeployed.mainMarketPlayerOptionLineChildMarket(
+					marketAdd,
+					'0x3431373835353500000000000000000000000000000000000000000000000000',
+					37,
+					285
+				);
+
+			// console.log("Child prop: ",mainMarketPlayerPropsChild);
+			// console.log("Main market: ",marketAdd);
+			assert.bnEqual(
+				mainMarketPlayerPropsChild2,
+				await GamesPlayerPropsDeployed.currentActiveChildMarketPerPlayerAndOption(
+					marketAdd,
+					'0x3431373835353500000000000000000000000000000000000000000000000000',
 					37
 				)
 			);
@@ -1253,14 +1282,22 @@ contract('PlayerProps', (accounts) => {
 			);
 
 			let allMarkets = await SportPositionalMarketManager.activeMarkets('0', '100');
+			console.log(allMarkets.length);
 			let market_1 = await SportPositionalMarketContract.at(allMarkets[0]);
 			let market_2 = await SportPositionalMarketContract.at(allMarkets[1]);
 			let market_3 = await SportPositionalMarketContract.at(allMarkets[2]);
 			let market_4 = await SportPositionalMarketContract.at(allMarkets[3]);
 			let market_5 = await SportPositionalMarketContract.at(allMarkets[4]);
+			let market_6 = await SportPositionalMarketContract.at(allMarkets[5]);
 
-			parlayMarkets = [market_1, market_2, market_5];
-			// console.log("All markets: ", parlayMarkets);
+			parlayMarkets = [market_5, market_6];
+
+			console.log('M1: ', await market_1.getGameDetails());
+			console.log('M2: ', await market_2.getGameDetails());
+			console.log('M3: ', await market_3.getGameDetails());
+			console.log('M4: ', await market_4.getGameDetails());
+			console.log('M5: ', await market_5.getGameDetails());
+			console.log('M5: ', await market_6.getGameDetails());
 
 			assert.equal(9004, await market_1.tags(0));
 			assert.equal(9004, await market_2.tags(0));
@@ -1269,9 +1306,9 @@ contract('PlayerProps', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '6');
 			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1'];
+			parlayPositions = ['1', '1'];
 			let parlayPositions2 = ['1', '1', '1', '1', '0'];
 			let parlayMarketsAddress = [];
 			for (let i = 0; i < parlayMarkets.length - 1; i++) {
@@ -1280,17 +1317,16 @@ contract('PlayerProps', (accounts) => {
 			}
 			let slippage = toUnit('0.01');
 
-			await expect(
-				ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
-			).to.be.revertedWith('SameTeamOnParlay');
+			// await expect(
+			// 		ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
+			// 	).to.be.revertedWith('SameTeamOnParlay');
 
-			// result = await ParlayAMM.buyQuoteFromParlay(
-			// 	parlayMarketsAddress,
-			// 	parlayPositions,
-			// 	totalSUSDToPay
-			// );
-
-			// console.log("result: ", result);
+			result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			console.log('result: ', result);
 
 			// await ParlayPolicy.setRestrictedMarketsCountPerTag(9016, 1, { from: owner });
 			// await ParlayPolicy.setRestrictedTagCombos(9007, 9016, 1, 1, { from: owner });

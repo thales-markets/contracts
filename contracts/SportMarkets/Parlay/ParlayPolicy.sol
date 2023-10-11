@@ -36,6 +36,9 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         consumer = sportsAMM.theRundownConsumer();
     }
 
+    // Check if two player props markets are eligible to be combined
+    // If they are not the same player, but same prop
+    // Or if they are the same player but different prop
     function areEligiblePropsMarkets(address _childMarket1, address _childMarket2)
         external
         view

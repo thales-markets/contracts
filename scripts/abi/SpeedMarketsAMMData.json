@@ -231,6 +231,26 @@
         "components": [
           {
             "internalType": "uint256",
+            "name": "numActiveMarkets",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numMaturedMarkets",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numActiveMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numMaturedMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "minBuyinAmount",
             "type": "uint256"
           },

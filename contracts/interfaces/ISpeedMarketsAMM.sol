@@ -21,9 +21,9 @@ interface ISpeedMarketsAMM {
 
     function maximumPriceDelayForResolving() external view returns (uint64);
 
-    function getTimeThresholdsForFees() external view returns (uint[] memory);
+    function timeThresholdsForFees(uint index) external view returns (uint);
 
-    function getLPFees() external view returns (uint[] memory);
+    function lpFees(uint index) external view returns (uint);
 
     function lpFee() external view returns (uint);
 
@@ -42,4 +42,6 @@ interface ISpeedMarketsAMM {
     function currentRiskPerAssetAndDirection(bytes32 _asset, SpeedMarket.Direction _direction) external view returns (uint);
 
     function whitelistedAddresses(address _wallet) external view returns (bool);
+
+    function getLengths(address user) external view returns (uint[5] memory);
 }

@@ -450,27 +450,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit MarketResolved(market, SpeedMarket(market).result(), SpeedMarket(market).isUserWinner());
     }
 
-    //////////// getters for active and matured markets/////////////////
-
-    /// @notice isKnownMarket checks if market is among matured or active markets
-    /// @param candidate Address of the market.
-    /// @return bool
-    function isKnownMarket(address candidate) public view returns (bool) {
-        return _activeMarkets.contains(candidate) || _maturedMarkets.contains(candidate);
-    }
-
-    /// @notice isActiveMarket checks if market is active market
-    /// @param candidate Address of the market.
-    /// @return bool
-    function isActiveMarket(address candidate) public view returns (bool) {
-        return _activeMarkets.contains(candidate);
-    }
-
-    /// @notice numActiveMarkets returns number of active markets
-    /// @return uint
-    function numActiveMarkets() external view returns (uint) {
-        return _activeMarkets.elements.length;
-    }
+    //////////// getters /////////////////
 
     /// @notice activeMarkets returns list of active markets
     /// @param index index of the page
@@ -478,12 +458,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @return address[] active market list
     function activeMarkets(uint index, uint pageSize) external view returns (address[] memory) {
         return _activeMarkets.getPage(index, pageSize);
-    }
-
-    /// @notice numMaturedMarkets returns number of mature markets
-    /// @return uint
-    function numMaturedMarkets() external view returns (uint) {
-        return _maturedMarkets.elements.length;
     }
 
     /// @notice maturedMarkets returns list of matured markets
@@ -494,11 +468,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         return _maturedMarkets.getPage(index, pageSize);
     }
 
-    /// @notice numActiveMarkets returns number of active markets per use
-    function numActiveMarketsPerUser(address user) external view returns (uint) {
-        return _activeMarketsPerUser[user].elements.length;
-    }
-
     /// @notice activeMarkets returns list of active markets per user
     function activeMarketsPerUser(
         uint index,
@@ -506,11 +475,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         address user
     ) external view returns (address[] memory) {
         return _activeMarketsPerUser[user].getPage(index, pageSize);
-    }
-
-    /// @notice numMaturedMarkets returns number of matured markets per use
-    function numMaturedMarketsPerUser(address user) external view returns (uint) {
-        return _maturedMarketsPerUser[user].elements.length;
     }
 
     /// @notice maturedMarkets returns list of matured markets per user
@@ -530,14 +494,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             !SpeedMarket(market).resolved();
     }
 
-    /// @notice
-    function getTimeThresholdsForFees() external view returns (uint[] memory) {
-        return timeThresholdsForFees;
-    }
-
-    /// @notice
-    function getLPFees() external view returns (uint[] memory) {
-        return lpFees;
+    /// @notice get lengths of all arrays
+    function getLengths(address user) external view returns (uint[5] memory) {
+        return [
+            _activeMarkets.elements.length,
+            _maturedMarkets.elements.length,
+            _activeMarketsPerUser[user].elements.length,
+            _maturedMarketsPerUser[user].elements.length,
+            lpFees.length
+        ];
     }
 
     //////////////////setters/////////////////

@@ -44,6 +44,10 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     struct SpeedMarketsAMMParameters {
+        uint numActiveMarkets;
+        uint numMaturedMarkets;
+        uint numActiveMarketsPerUser;
+        uint numMaturedMarketsPerUser;
         uint minBuyinAmount;
         uint maxBuyinAmount;
         uint minimalTimeToMaturity;
@@ -124,16 +128,30 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice return all AMM parameters
     function getSpeedMarketsAMMParameters(address _walletAddress) external view returns (SpeedMarketsAMMParameters memory) {
+        uint[5] memory allLengths = ISpeedMarketsAMM(speedMarketsAMM).getLengths(_walletAddress);
+
+        uint lpFeesLength = allLengths[4];
+        uint[] memory timeThresholdsForFees = new uint[](lpFeesLength);
+        uint[] memory lpFees = new uint[](lpFeesLength);
+        for (uint i = 0; i < lpFeesLength; i++) {
+            timeThresholdsForFees[i] = (ISpeedMarketsAMM(speedMarketsAMM).timeThresholdsForFees(i));
+            lpFees[i] = (ISpeedMarketsAMM(speedMarketsAMM).lpFees(i));
+        }
+
         return
             SpeedMarketsAMMParameters(
+                allLengths[0], // numActiveMarkets
+                allLengths[1], // numMaturedMarkets
+                _walletAddress != address(0) ? allLengths[2] : 0, // numActiveMarketsPerUser
+                _walletAddress != address(0) ? allLengths[3] : 0, // numMaturedMarketsPerUser
                 ISpeedMarketsAMM(speedMarketsAMM).minBuyinAmount(),
                 ISpeedMarketsAMM(speedMarketsAMM).maxBuyinAmount(),
                 ISpeedMarketsAMM(speedMarketsAMM).minimalTimeToMaturity(),
                 ISpeedMarketsAMM(speedMarketsAMM).maximalTimeToMaturity(),
                 ISpeedMarketsAMM(speedMarketsAMM).maximumPriceDelay(),
                 ISpeedMarketsAMM(speedMarketsAMM).maximumPriceDelayForResolving(),
-                ISpeedMarketsAMM(speedMarketsAMM).getTimeThresholdsForFees(),
-                ISpeedMarketsAMM(speedMarketsAMM).getLPFees(),
+                timeThresholdsForFees,
+                lpFees,
                 ISpeedMarketsAMM(speedMarketsAMM).lpFee(),
                 ISpeedMarketsAMM(speedMarketsAMM).safeBoxImpact(),
                 _walletAddress != address(0) ? ISpeedMarketsAMM(speedMarketsAMM).whitelistedAddresses(_walletAddress) : false

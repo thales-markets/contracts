@@ -61,7 +61,8 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         bool isAddressWhitelisted;
     }
 
-    function initialize(address _speedMarketsAMM) external initializer {
+    function initialize(address _owner, address _speedMarketsAMM) external initializer {
+        setOwner(_owner);
         speedMarketsAMM = _speedMarketsAMM;
     }
 

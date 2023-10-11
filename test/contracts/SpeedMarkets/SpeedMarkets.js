@@ -115,6 +115,9 @@ contract('SpeedMarkets', (accounts) => {
 				{ value: fee }
 			);
 
+			let currentRiskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'));
+			console.log('currentRiskPerAssetData', currentRiskPerAssetData);
+
 			let currentRiskPerAssetAndDirectionData =
 				await speedMarketsAMMData.getDirectionalRiskPerAsset(toBytes32('ETH'));
 			console.log('currentRiskPerAssetAndDirectionData', currentRiskPerAssetAndDirectionData);
@@ -124,7 +127,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			console.log('market created');
 
-			let ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
+			let ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
 			console.log('AMM Data ' + ammData);
 			console.log('numActiveMarkets ' + ammData.numActiveMarkets);
 			console.log('numActiveMarketsPerUser ' + ammData.numActiveMarketsPerUser);
@@ -141,7 +144,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			let balanceOfSpeedMarketAMMAfterCreation = await exoticUSD.balanceOf(speedMarketsAMM.address);
 
-			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
+			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
 			console.log('numActiveMarkets ' + ammData.numActiveMarkets);
 
 			let markets = await speedMarketsAMM.activeMarkets(0, 1);
@@ -206,7 +209,7 @@ contract('SpeedMarkets', (accounts) => {
 				strikeTime
 			);
 
-			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
+			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
 			console.log('numActiveMarkets before resolve ' + ammData.numActiveMarkets);
 
 			let balanceOfMarketBefore = await exoticUSD.balanceOf(market);
@@ -214,7 +217,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			await speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee });
 
-			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
+			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
 			console.log('numActiveMarkets after resolve ' + ammData.numActiveMarkets);
 
 			let resolved = await speedMarket.resolved();
@@ -252,7 +255,21 @@ contract('SpeedMarkets', (accounts) => {
 			let balanceSafeBox = await exoticUSD.balanceOf(safeBox);
 			console.log('balanceSafeBox ' + balanceSafeBox / 1e18);
 
-			console.log('numMaturedMarkets before resolve ' + ammData.numMaturedMarkets);
+			console.log('numActiveMarkets before batch resolve ' + ammData.numActiveMarkets);
+			console.log('numMaturedMarkets before batch resolve ' + ammData.numMaturedMarkets);
+			markets = await speedMarketsAMM.activeMarkets(0, ammData.numActiveMarkets);
+			await speedMarketsAMM.resolveMarketsBatch(
+				markets,
+				[resolvePriceFeedUpdateData, resolvePriceFeedUpdateData],
+				{
+					value: fee * ammData.numActiveMarkets,
+				}
+			);
+
+			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
+			console.log('numActiveMarkets after batch resolve ' + ammData.numActiveMarkets);
+			console.log('numMaturedMarkets after batch resolve ' + ammData.numMaturedMarkets);
+
 			console.log('numMaturedMarketsPerUser ' + ammData.numMaturedMarketsPerUser);
 		});
 	});

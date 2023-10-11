@@ -4,8 +4,6 @@ const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 
@@ -47,6 +45,10 @@ async function main() {
 		network = 'polygon';
 	}
 
+	let accounts = await ethers.getSigners();
+	let owner = accounts[0];
+
+	console.log('Owner is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 

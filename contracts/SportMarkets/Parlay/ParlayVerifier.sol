@@ -264,6 +264,7 @@ contract ParlayVerifier {
                     // the first odd is always the moneyline odd
                     // the second odd is always the totals odd
                     // pass the positions in the same order, and the default sgpFee
+                    // TODO: if below only needs to be executed for soccer, then only do it for known soccer tags?
                     address sportMarketJ = params.sportMarkets[j / 2];
                     if (params.tag2[j / 2] == 0) {
                         (odds[j / 2], odds[i], sgpFees[j / 2], sgpFees[i]) = _getSGPSingleOdds(

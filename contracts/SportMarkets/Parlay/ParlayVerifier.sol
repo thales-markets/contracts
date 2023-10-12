@@ -98,6 +98,7 @@ contract ParlayVerifier {
     /// @param _parlayPolicy the parlay policy contract
     /// @return tag1 all the tags 1 per market
     /// @return tag2 all the tags 2 per market
+    ////TODO: IIRC we said that we dont need this
     function _obtainAllTags(address[] memory sportMarkets, IParlayPolicy _parlayPolicy)
         internal
         view
@@ -156,6 +157,7 @@ contract ParlayVerifier {
     /// @param _uniqueTagsCounter number of unique tags
     /// @param _parlayPolicy the Policy Market contract
     /// @return eligible returns if the parlay satisfies all the policies
+    //TODO: IIRC we said that we dont need this
     function _getRestrictedCounts(
         uint[] memory _uniqueTags,
         uint[] memory _uniqueTagsCount,
@@ -222,7 +224,11 @@ contract ParlayVerifier {
                             revert("SameTeamOnParlay");
                         }
                     }
+                    //TODO: if its not the same sport, we really dont need to go further with SGP checks
+                    //TODO: futhermore the SGP checks below need to be done only if we are 100% sure that the two positions are on the same parent market
                     // get the SGP fee per tag1 and the tag2 from first market and tag2 from the second market, their positions as well
+
+                    // TODO: if possible I would like to have some standardization here which tag goes first, rather than having to always setup all combinations SGP fee wise. E.g. moneyline should always go before totals
                     sgpFee = params.parlayPolicy.getSgpFeePerCombination(
                         IParlayPolicy.SGPData(
                             params.tag1[i],
@@ -239,6 +245,7 @@ contract ParlayVerifier {
                             params.parlayPolicy.areEligiblePropsMarkets(params.sportMarkets[j / 2], params.sportMarkets[i])
                         ) {
                             // check if the number of player props per sport per parlay is exceeded
+                            // TODO: I am not quite clear on when this will be needed
                             uint maxGameCounter = params.parlayPolicy.maxPlayerPropsPerSport(params.tag1[j / 2]);
                             if (maxGameCounter > 0 && cachedTeams[j].gameCounter > maxGameCounter) {
                                 revert("ExceedsPlayerPropsPerMarket");
@@ -247,6 +254,7 @@ contract ParlayVerifier {
                             revert("InvalidPlayerProps");
                         }
                         // if SGP is not defined for both markets, revert
+                        // TODO: what does the first check do?
                     } else if (cachedTeams[j].gameCounter > 0 || sgpFee == 0) {
                         revert("SameTeamOnParlay");
                     }

@@ -42,6 +42,25 @@
         "internalType": "address",
         "name": "_sportMarket",
         "type": "address"
+      }
+    ],
+    "name": "getChildMarketTotalLine",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "childTotalsLine",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportMarket",
+        "type": "address"
       },
       {
         "internalType": "uint256",

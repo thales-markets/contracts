@@ -43,6 +43,8 @@ interface ITherundownConsumer {
 
     function playerProps() external view returns (address);
 
+    function oddsObtainer() external view returns (address);
+
     // write functions
     function fulfillGamesCreated(
         bytes32 _requestId,

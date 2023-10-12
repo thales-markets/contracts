@@ -38,4 +38,6 @@ interface IParlayPolicy {
         external
         view
         returns (bool samePlayerDifferentProp);
+
+    function getChildMarketTotalLine(address _sportMarket) external view returns (uint childTotalsLine);
 }

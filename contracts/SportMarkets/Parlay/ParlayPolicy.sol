@@ -16,6 +16,8 @@ import "../../interfaces/IParlayPolicy.sol";
 
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/IGamesPlayerProps.sol";
+import "../../interfaces/IGamesOddsObtainer.sol";
+import "../../interfaces/ISportPositionalMarket.sol";
 
 contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     IParlayMarketsAMM public parlayMarketsAMM;
@@ -62,6 +64,15 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
 
     function getMarketDefaultOdds(address _sportMarket, uint _position) external view returns (uint odd) {
         odd = sportsAMM.getMarketDefaultOdds(_sportMarket, false)[_position];
+    }
+
+    function getChildMarketTotalLine(address _sportMarket) external view returns (uint childTotalsLine) {
+        childTotalsLine = ISportPositionalMarket(_sportMarket).optionsCount();
+        if (childTotalsLine > 2) {
+            childTotalsLine = uint(
+                IGamesOddsObtainer(ITherundownConsumer(consumer).oddsObtainer()).childMarketTotal(_sportMarket)
+            );
+        }
     }
 
     function isTags1ComboRestricted(uint tag1, uint tag2) external view returns (bool isRestricted) {

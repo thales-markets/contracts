@@ -142,11 +142,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "position1",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "position2",
         "type": "uint256"
       },
@@ -157,7 +152,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "optionsCount",
+        "name": "totalsLine",
         "type": "uint256"
       }
     ],

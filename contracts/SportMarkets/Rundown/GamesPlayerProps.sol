@@ -589,6 +589,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         view
         returns (bool samePlayerDifferentProp)
     {
+        // todo: change so that the options match
         if (gameIdPerChildMarket[_childMarket1] == gameIdPerChildMarket[_childMarket2]) {
             if (playerIdPerChildMarket[_childMarket1] != playerIdPerChildMarket[_childMarket2]) {
                 samePlayerDifferentProp = true;

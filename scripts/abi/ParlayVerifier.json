@@ -132,6 +132,65 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "odds1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "odds2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sgpFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "optionsCount",
+        "type": "uint256"
+      }
+    ],
+    "name": "getSPGOdds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "resultOdds1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "resultOdds2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sgpFee1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sgpFee2",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_position",
         "type": "uint256"
       }

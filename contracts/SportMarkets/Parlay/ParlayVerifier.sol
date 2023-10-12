@@ -171,6 +171,7 @@ contract ParlayVerifier {
                 if (restrictedCount > 0 && restrictedCount < _uniqueTagsCount[i]) {
                     revert("RestrictedTag1Count");
                 }
+                // Potentially remove block:
                 if (eligible && i > 0) {
                     for (uint j = 0; j < i; j++) {
                         // 5. Check if the combination of tag1 exceeds the max number per combination (tag1[0], tag1[1]) (Golf H2H 1 game and Golf winner multiple)
@@ -206,7 +207,9 @@ contract ParlayVerifier {
         uint sgpFee;
         for (uint i = 0; i < params.sportMarkets.length; i++) {
             // get names of the home and away team
-            (homeId, awayId) = _getGameIds(ITherundownConsumer(params.parlayPolicy.consumer()), params.sportMarkets[i]);
+            // todo: change _getGameId into _getNameId
+            // todo: change gameId into encodedName
+            (homeId, awayId) = _getNameId(ITherundownConsumer(params.parlayPolicy.consumer()), params.sportMarkets[i]);
             for (uint j = 0; j < lastCachedIdx; j++) {
                 // if it is a same home or away team -> check for SGP
                 if (
@@ -290,7 +293,7 @@ contract ParlayVerifier {
     /// @param sportMarket The sport market to obtain the teams details
     /// @return home the hash of the name of the home team
     /// @return away the hash of the name of the away team
-    function _getGameIds(ITherundownConsumer consumer, address sportMarket)
+    function _getNameId(ITherundownConsumer consumer, address sportMarket)
         internal
         view
         returns (bytes32 home, bytes32 away)
@@ -299,6 +302,33 @@ contract ParlayVerifier {
 
         home = keccak256(abi.encodePacked(game.homeTeam));
         away = keccak256(abi.encodePacked(game.awayTeam));
+    }
+
+    function getSPGOdds(
+        uint odds1,
+        uint odds2,
+        uint position1,
+        uint position2,
+        uint sgpFee,
+        uint optionsCount
+    )
+        external
+        view
+        returns (
+            uint resultOdds1,
+            uint resultOdds2,
+            uint sgpFee1,
+            uint sgpFee2
+        )
+    {
+        (resultOdds1, resultOdds2, sgpFee1, sgpFee2) = _getSGPSingleOdds(
+            odds1,
+            odds2,
+            position1,
+            position2,
+            sgpFee,
+            optionsCount
+        );
     }
 
     /// @notice Calculate the sgpFees for the positions of two sport markets, given their odds and default sgpfee
@@ -318,7 +348,7 @@ contract ParlayVerifier {
         uint optionsCount
     )
         internal
-        pure
+        view
         returns (
             uint resultOdds1,
             uint resultOdds2,
@@ -342,12 +372,16 @@ contract ParlayVerifier {
             } else if (position2 == 0) {
                 if (odds1 < (6 * ONE_PERCENT) && odds2 < (70 * ONE_PERCENT)) {
                     sgpFee2 = sgpFee - (ONE - sgpFee);
+                } else if (odds1 >= (99 * ONE_PERCENT)) {
+                    sgpFee2 = sgpFee + ((ONE - sgpFee) - 1 * ONE_PERCENT);
                 } else if (odds1 >= (96 * ONE_PERCENT)) {
                     sgpFee2 = sgpFee + ((ONE - sgpFee) * 90 * ONE_PERCENT) / ONE;
                 } else if (odds1 >= (93 * ONE_PERCENT)) {
                     sgpFee2 = sgpFee + ((ONE - sgpFee) * 75 * ONE_PERCENT) / ONE;
                 } else if (odds1 >= (90 * ONE_PERCENT) && odds2 >= (65 * ONE_PERCENT)) {
                     sgpFee2 = sgpFee + ((ONE - sgpFee) * 90 * ONE_PERCENT) / ONE;
+                } else if (odds1 >= (83 * ONE_PERCENT) && odds2 >= (98 * ONE_PERCENT)) {
+                    sgpFee2 = sgpFee + (5 * ONE_PERCENT);
                 } else if (odds1 >= (83 * ONE_PERCENT) && odds2 >= (52 * ONE_PERCENT)) {
                     sgpFee2 = sgpFee + ((ONE - sgpFee) * 30 * ONE_PERCENT) / ONE;
                 } else if (odds1 >= (80 * ONE_PERCENT) && odds2 >= (70 * ONE_PERCENT)) {
@@ -456,14 +490,10 @@ contract ParlayVerifier {
             if (sgpFee2 > 0) {
                 uint totalQuote = (odds1 * odds2) / ONE;
                 uint totalQuoteWSGP = ((totalQuote * ONE * ONE) / sgpFee2) / ONE;
-                if (totalQuoteWSGP >= odds1 || totalQuoteWSGP >= odds2) {
-                    if (totalQuoteWSGP > odds1 && odds1 > odds2 && odds1 > totalQuote) {
-                        sgpFee = (odds1 - totalQuote) - (2 * ONE_PERCENT);
-                        sgpFee2 = ONE - sgpFee;
-                    } else if (totalQuoteWSGP > odds2 && odds2 > totalQuote) {
-                        sgpFee = (odds2 - totalQuote) - (2 * ONE_PERCENT);
-                        sgpFee2 = ONE - sgpFee;
-                    }
+                if (totalQuoteWSGP > odds1 && odds1 < odds2) {
+                    sgpFee2 = odds2 + (4 * 1e15);
+                } else if (totalQuoteWSGP > odds2 && odds2 <= odds1) {
+                    sgpFee2 = odds1 + (4 * 1e15);
                 }
             }
         }

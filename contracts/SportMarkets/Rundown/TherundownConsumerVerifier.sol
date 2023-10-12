@@ -513,6 +513,21 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         return obtainer.invalidOdds(consumer.marketPerGameId(_gameIds));
     }
 
+    /// @notice getting primary bookmaker by sports id
+    /// @param _sportIds id of a sport for fetching
+    function getAllPrimaryBookmakerIdsBySportIds(uint256[] memory _sportIds)
+        external
+        view
+        returns (uint256[] memory _bookmakerIds)
+    {
+        _bookmakerIds = new uint256[](_sportIds.length);
+
+        for (uint256 i = 0; i < _sportIds.length; i++) {
+            uint256[] memory parentIds = sportIdToBookmakerIds[_sportIds[i]];
+            _bookmakerIds[i] = parentIds.length > 0 ? parentIds[0] : defaultBookmakerIds[0];
+        }
+    }
+
     /// @notice getting bookmaker by sports id
     /// @param _sportId id of a sport for fetching
     function getBookmakerIdsBySportId(uint256 _sportId) external view returns (uint256[] memory) {

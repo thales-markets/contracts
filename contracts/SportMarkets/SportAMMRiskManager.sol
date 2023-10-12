@@ -98,6 +98,51 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         return _totalSpent <= capPerMarket * riskMultiplier;
     }
 
+    /// @notice returns all data (caps, min spread, etc.) for given sports
+    /// @param _sportIds sport ids
+    /// @return _capsPerSport caps per sport
+    /// @return _capsPerSportH caps per child H
+    /// @return _capsPerSportT caps per child T
+    /// @return _capsPerSportPP caps per child PP
+    /// @return _minSpreadSport min spread per sport
+    /// @return _minSpreadSportH min spread per child H
+    /// @return _minSpreadSportT min spread per child T
+    /// @return _minSpreadSportPP min spread per child PP
+    function getAllDataForSports(uint[] memory _sportIds)
+        external
+        view
+        returns (
+            uint[] memory _capsPerSport,
+            uint[] memory _capsPerSportH,
+            uint[] memory _capsPerSportT,
+            uint[] memory _capsPerSportPP,
+            uint[] memory _minSpreadSport,
+            uint[] memory _minSpreadSportH,
+            uint[] memory _minSpreadSportT,
+            uint[] memory _minSpreadSportPP
+        )
+    {
+        _capsPerSport = new uint[](_sportIds.length);
+        _capsPerSportH = new uint[](_sportIds.length);
+        _capsPerSportT = new uint[](_sportIds.length);
+        _capsPerSportPP = new uint[](_sportIds.length);
+        _minSpreadSport = new uint[](_sportIds.length);
+        _minSpreadSportH = new uint[](_sportIds.length);
+        _minSpreadSportT = new uint[](_sportIds.length);
+        _minSpreadSportPP = new uint[](_sportIds.length);
+
+        for (uint i = 0; i < _sportIds.length; i++) {
+            _capsPerSport[i] = capPerSport[_sportIds[i]];
+            _capsPerSportH[i] = capPerSportAndChild[_sportIds[i]][MIN_CHILD_NUMBER + 1];
+            _capsPerSportT[i] = capPerSportAndChild[_sportIds[i]][MIN_CHILD_NUMBER + 2];
+            _capsPerSportPP[i] = capPerSportAndChild[_sportIds[i]][MIN_CHILD_NUMBER + 10];
+            _minSpreadSport[i] = minSpreadPerSport[_sportIds[i]][0];
+            _minSpreadSportH[i] = minSpreadPerSport[_sportIds[i]][MIN_CHILD_NUMBER + 1];
+            _minSpreadSportT[i] = minSpreadPerSport[_sportIds[i]][MIN_CHILD_NUMBER + 2];
+            _minSpreadSportPP[i] = minSpreadPerSport[_sportIds[i]][MIN_CHILD_NUMBER + 10];
+        }
+    }
+
     /* ========== INTERNALS ========== */
 
     function _calculateRiskMultiplier(address market) internal view returns (uint toReturn) {

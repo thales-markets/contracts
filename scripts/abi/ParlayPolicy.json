@@ -646,7 +646,7 @@
     "name": "sportsAMM",
     "outputs": [
       {
-        "internalType": "contract ISportsAMM",
+        "internalType": "contract ISportsAMMTiny",
         "name": "",
         "type": "address"
       }

@@ -61735,13 +61735,13 @@
           {
             "contract": "ParlayPolicy",
             "label": "parlayMarketsAMM",
-            "type": "t_contract(IParlayMarketsAMM)95811",
+            "type": "t_contract(IParlayMarketsAMM)95802",
             "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:23"
           },
           {
             "contract": "ParlayPolicy",
             "label": "sportsAMM",
-            "type": "t_contract(ISportsAMM)97035",
+            "type": "t_contract(ISportsAMM)97026",
             "src": "contracts/SportMarkets/Parlay/ParlayPolicy.sol:24"
           },
           {
@@ -61794,10 +61794,10 @@
           }
         ],
         "types": {
-          "t_contract(IParlayMarketsAMM)95811": {
+          "t_contract(IParlayMarketsAMM)95802": {
             "label": "contract IParlayMarketsAMM"
           },
-          "t_contract(ISportsAMM)97035": {
+          "t_contract(ISportsAMM)97026": {
             "label": "contract ISportsAMM"
           },
           "t_address": {

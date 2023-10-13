@@ -9,9 +9,7 @@ import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-import "../../interfaces/ISportsAMM.sol";
-import "../../interfaces/IParlayMarketsAMM.sol";
-
+import "../../interfaces/ISportsAMMTiny.sol";
 import "../../interfaces/IParlayPolicy.sol";
 
 import "../../interfaces/ITherundownConsumer.sol";
@@ -21,7 +19,7 @@ import "../../interfaces/ISportPositionalMarket.sol";
 
 contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     IParlayMarketsAMM public parlayMarketsAMM;
-    ISportsAMM public sportsAMM;
+    ISportsAMMTiny public sportsAMM;
     address public consumer;
     mapping(uint => uint) public restrictedMarketsCount;
     // toBeRemoved:
@@ -35,7 +33,7 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
         setOwner(_owner);
         parlayMarketsAMM = IParlayMarketsAMM(_parlayMarketsAMM);
-        sportsAMM = ISportsAMM(parlayMarketsAMM.sportsAmm());
+        sportsAMM = ISportsAMMTiny(parlayMarketsAMM.sportsAmm());
         consumer = sportsAMM.theRundownConsumer();
     }
 
@@ -47,9 +45,6 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         address _childMarket2,
         uint _tag1
     ) external view returns (bool samePlayerDifferentProp) {
-        // extend all the calls here
-        // Check the sport if it is eligible first (NBA)
-        // then check if it is the same optionId for different player
         IGamesPlayerProps gamePlayerProps = IGamesPlayerProps(ITherundownConsumer(consumer).playerProps());
         if (
             eligibleSportForSamePropsCombination[_tag1] &&
@@ -155,7 +150,7 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
 
     function setParlayMarketsAMM(address _parlayMarketsAMM) external onlyOwner {
         parlayMarketsAMM = IParlayMarketsAMM(_parlayMarketsAMM);
-        sportsAMM = ISportsAMM(parlayMarketsAMM.sportsAmm());
+        sportsAMM = ISportsAMMTiny(parlayMarketsAMM.sportsAmm());
         consumer = sportsAMM.theRundownConsumer();
         emit SetParlayMarketsAMM(_parlayMarketsAMM);
     }

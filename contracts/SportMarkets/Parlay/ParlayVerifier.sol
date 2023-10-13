@@ -114,9 +114,7 @@ contract ParlayVerifier {
                 : 0;
             for (uint j = 0; j < i; j++) {
                 if (sportMarkets[i] == sportMarkets[j]) {
-                    tag1 = new uint[](0);
-                    tag2 = new uint[](0);
-                    return (tag1, tag2);
+                    revert("SameTeamOnParlay");
                 }
             }
         }
@@ -151,7 +149,18 @@ contract ParlayVerifier {
                                     params.positions[j]
                                 )
                             );
-                            if (sgpFee == 0) {
+                            if (params.tag2[j] == PLAYER_PROPS_TAG && params.tag2[i] == PLAYER_PROPS_TAG) {
+                                // check if the markets are elibible props markets
+                                if (
+                                    !params.parlayPolicy.areEligiblePropsMarkets(
+                                        params.sportMarkets[i],
+                                        params.sportMarkets[j],
+                                        params.tag1[i]
+                                    )
+                                ) {
+                                    revert("InvalidPlayerProps");
+                                }
+                            } else if (sgpFee == 0) {
                                 revert("SameTeamOnParlay");
                             } else {
                                 alreadyInSGP[i] = true;

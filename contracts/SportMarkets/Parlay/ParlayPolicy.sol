@@ -30,6 +30,7 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => mapping(uint => uint)) public restrictedTagComboCount;
     mapping(uint => mapping(uint => bool)) public restrictedTag1Combo;
     mapping(uint => uint) public maxPlayerPropsPerSport;
+    mapping(uint => bool) public eligibleSportForSamePropsCombination;
 
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
         setOwner(_owner);
@@ -41,15 +42,22 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     // Check if two player props markets are eligible to be combined
     // If they are not the same player, but same prop
     // Or if they are the same player but different prop
-    function areEligiblePropsMarkets(address _childMarket1, address _childMarket2)
-        external
-        view
-        returns (bool samePlayerDifferentProp)
-    {
-        samePlayerDifferentProp = IGamesPlayerProps(ITherundownConsumer(consumer).playerProps()).areEligiblePropsMarkets(
-            _childMarket1,
-            _childMarket2
-        );
+    function areEligiblePropsMarkets(
+        address _childMarket1,
+        address _childMarket2,
+        uint _tag1
+    ) external view returns (bool samePlayerDifferentProp) {
+        // extend all the calls here
+        // Check the sport if it is eligible first (NBA)
+        // then check if it is the same optionId for different player
+        IGamesPlayerProps gamePlayerProps = IGamesPlayerProps(ITherundownConsumer(consumer).playerProps());
+        if (
+            eligibleSportForSamePropsCombination[_tag1] &&
+            gamePlayerProps.playerIdPerChildMarket(_childMarket1) != gamePlayerProps.playerIdPerChildMarket(_childMarket2) &&
+            gamePlayerProps.optionIdPerChildMarket(_childMarket1) == gamePlayerProps.optionIdPerChildMarket(_childMarket2)
+        ) {
+            samePlayerDifferentProp = true;
+        }
     }
 
     function getSgpFeePerCombination(IParlayPolicy.SGPData memory params) external view returns (uint sgpFee) {
@@ -100,6 +108,10 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
 
     function setMaxPlayerPropsPerSport(uint tag1, uint maxPlayerPropsGames) external onlyOwner {
         maxPlayerPropsPerSport[tag1] = maxPlayerPropsGames;
+    }
+
+    function setEligibleSportForSamePropsCombination(uint _tag1, bool _eligible) external onlyOwner {
+        eligibleSportForSamePropsCombination[_tag1] = _eligible;
     }
 
     function setRestrictedTagCombos(

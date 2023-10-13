@@ -34,10 +34,11 @@ interface IParlayPolicy {
 
     function maxPlayerPropsPerSport(uint tag1) external view returns (uint);
 
-    function areEligiblePropsMarkets(address _childMarket1, address _childMarket2)
-        external
-        view
-        returns (bool samePlayerDifferentProp);
+    function areEligiblePropsMarkets(
+        address _childMarket1,
+        address _childMarket2,
+        uint _tag1
+    ) external view returns (bool samePlayerDifferentProp);
 
     function getChildMarketTotalLine(address _sportMarket) external view returns (uint childTotalsLine);
 }

@@ -584,21 +584,6 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function areEligiblePropsMarkets(address _childMarket1, address _childMarket2)
-        external
-        view
-        returns (bool samePlayerDifferentProp)
-    {
-        // todo: change so that the options match
-        if (gameIdPerChildMarket[_childMarket1] == gameIdPerChildMarket[_childMarket2]) {
-            if (playerIdPerChildMarket[_childMarket1] != playerIdPerChildMarket[_childMarket2]) {
-                samePlayerDifferentProp = true;
-            }
-        } else {
-            samePlayerDifferentProp = true;
-        }
-    }
-
     /* ========== CONTRACT MANAGEMENT ========== */
 
     /// @notice sets consumer, verifier, manager address

@@ -10,6 +10,11 @@
         "internalType": "address",
         "name": "_childMarket2",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tag1",
+        "type": "uint256"
       }
     ],
     "name": "areEligiblePropsMarkets",

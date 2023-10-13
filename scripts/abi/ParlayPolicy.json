@@ -75,6 +75,11 @@
         "internalType": "address",
         "name": "_childMarket2",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tag1",
+        "type": "uint256"
       }
     ],
     "name": "areEligiblePropsMarkets",
@@ -96,6 +101,25 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "eligibleSportForSamePropsCombination",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -471,6 +495,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tag1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_eligible",
+        "type": "bool"
+      }
+    ],
+    "name": "setEligibleSportForSamePropsCombination",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

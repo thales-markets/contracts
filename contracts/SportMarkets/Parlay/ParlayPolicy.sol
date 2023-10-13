@@ -67,11 +67,13 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function getChildMarketTotalLine(address _sportMarket) external view returns (uint childTotalsLine) {
-        childTotalsLine = ISportPositionalMarket(_sportMarket).optionsCount();
-        if (childTotalsLine > 2) {
-            childTotalsLine = uint(
-                IGamesOddsObtainer(ITherundownConsumer(consumer).oddsObtainer()).childMarketTotal(_sportMarket)
-            );
+        if (ISportPositionalMarket(_sportMarket).isChild()) {
+            childTotalsLine = ISportPositionalMarket(_sportMarket).parentMarket().optionsCount();
+            if (childTotalsLine > 2) {
+                childTotalsLine = uint(
+                    IGamesOddsObtainer(ITherundownConsumer(consumer).oddsObtainer()).childMarketTotal(_sportMarket)
+                );
+            }
         }
     }
 

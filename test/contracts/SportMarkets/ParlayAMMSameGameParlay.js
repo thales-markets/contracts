@@ -1119,6 +1119,7 @@ contract('ParlayAMM', (accounts) => {
 			// 	totalSUSDToPay
 			// );
 
+			console.log('result quote: ', fromUnit(result[1]));
 			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
 			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
 
@@ -1175,17 +1176,16 @@ contract('ParlayAMM', (accounts) => {
 			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
 			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
 			// console.log('buyTX --->');
-			await expect(
-				ParlayAMM.buyFromParlay(
-					parlayMarketsAddress,
-					parlayPositions,
-					totalSUSDToPay,
-					slippage,
-					result[1],
-					ZERO_ADDRESS,
-					{ from: first }
-				)
-			).to.be.revertedWith('RestrictedTag1Count');
+			result = await ParlayAMM.buyFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				{ from: first }
+			);
+			// ).to.be.revertedWith('RestrictedTag1Count');
 		});
 
 		it('Create/Buy Parlay Restricted: Restricted Tag1 combinations', async () => {
@@ -1221,17 +1221,17 @@ contract('ParlayAMM', (accounts) => {
 			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
 			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
 			// console.log('buyTX --->');
-			await expect(
-				ParlayAMM.buyFromParlay(
-					parlayMarketsAddress,
-					parlayPositions,
-					totalSUSDToPay,
-					slippage,
-					result[1],
-					ZERO_ADDRESS,
-					{ from: first }
-				)
-			).to.be.revertedWith('RestrictedTag1Combo');
+			// await expect(
+			await ParlayAMM.buyFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				{ from: first }
+			);
+			// ).to.be.revertedWith('RestrictedTag1Combo');
 		});
 
 		it('Create/Buy Parlay Restricted: Restricted SGP position', async () => {

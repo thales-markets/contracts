@@ -290,9 +290,8 @@ contract('ParlayAMM', (accounts) => {
 						odd1.toString(),
 						odd2.toString(),
 						0,
-						0,
 						sgpFee.toString(),
-						3
+						'250'
 					);
 					convertedResult = parseFloat(result.sgpFee2.toString());
 					convertedResult = convertedResult / 1e18;
@@ -306,7 +305,7 @@ contract('ParlayAMM', (accounts) => {
 				csvContent += rowContent + '\n';
 			}
 
-			fs.writeFileSync('./test/contracts/SportMarkets/SGP.csv', csvContent);
+			// fs.writeFileSync('./test/contracts/SportMarkets/SGP.csv', csvContent);
 		});
 	});
 });

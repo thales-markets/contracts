@@ -820,7 +820,7 @@
 		"ParlayDefaultLiquidityProvider": "0xE2c8EC9F0aF39530f00F13214ce9BA933034E59f",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27",
 		"ParlayPolicy": "0x0Df0FA512a1d9335d7CfDdDb1C890a5514367E95",
-		"ParlayPolicyImplementation": "0x3CcB61Ba29E728C9B74650d70Ae6608B9Fb0f4E8",
+		"ParlayPolicyImplementation": "0x24F5bE29A5177d8de6BaA2b9022eAA851f7b306A",
 		"GamesPlayerProps": "0x738D5996f9E87A238EbCa7352909c20EF27c54d0",
 		"GamesPlayerPropsImplementation": "0x220eAa74743CeDbf3bF2A9Cb7E088770f57B7a50",
 		"GamesPlayerPropsReceiver": "0xCEfdad247275b0657b2275DF05B677938dd6a43F",

@@ -86,7 +86,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "samePlayerDifferentProp",
+        "name": "sameGameDifferentProp",
         "type": "bool"
       }
     ],

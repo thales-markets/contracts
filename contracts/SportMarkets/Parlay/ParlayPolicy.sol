@@ -44,14 +44,13 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         address _childMarket1,
         address _childMarket2,
         uint _tag1
-    ) external view returns (bool samePlayerDifferentProp) {
+    ) external view returns (bool sameGameDifferentProp) {
         IGamesPlayerProps gamePlayerProps = IGamesPlayerProps(ITherundownConsumer(consumer).playerProps());
         if (
             eligibleSportForSamePropsCombination[_tag1] &&
-            gamePlayerProps.playerIdPerChildMarket(_childMarket1) != gamePlayerProps.playerIdPerChildMarket(_childMarket2) &&
             gamePlayerProps.optionIdPerChildMarket(_childMarket1) == gamePlayerProps.optionIdPerChildMarket(_childMarket2)
         ) {
-            samePlayerDifferentProp = true;
+            sameGameDifferentProp = true;
         }
     }
 

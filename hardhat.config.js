@@ -206,7 +206,7 @@ module.exports = {
 		},
 		optimisticGoerli: {
 			gasPrice: 10000,
-			url: 'https://goerli.optimism.io',
+			url: 'https://optimism-goerli.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
 		polygonMumbai: {

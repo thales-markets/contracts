@@ -86,7 +86,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "sameGameDifferentProp",
+        "name": "isEligible",
         "type": "bool"
       }
     ],

@@ -723,6 +723,11 @@
         "internalType": "uint256[]",
         "name": "_startTime",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "uint40[]",
+        "name": "_lastUpdated",
+        "type": "uint40[]"
       }
     ],
     "stateMutability": "view",

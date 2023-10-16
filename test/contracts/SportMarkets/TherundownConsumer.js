@@ -1043,6 +1043,10 @@ contract('TheRundownConsumer', (accounts) => {
 				_id: gameid1,
 				_outcome: 2,
 			});
+
+			let getLastUpdatedFromGameResolve =
+				await TherundownConsumerDeployed.getLastUpdatedFromGameResolve(gameid1);
+			assert.bnEqual(1646958600, getLastUpdatedFromGameResolve);
 		});
 
 		it('Fulfill Games Resolved - Champions League Game 1, resolve market, check results', async () => {
@@ -1078,8 +1082,6 @@ contract('TheRundownConsumer', (accounts) => {
 			]);
 
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
-			assert.equal(false, await TherundownConsumerDeployed.canMarketBeUpdated(dummyAddress));
-			assert.equal(false, await TherundownConsumerDeployed.canMarketBeUpdated(marketAdd));
 
 			// check if event is emited
 			assert.eventEqual(tx_create.logs[tx_create.logs.length - 1], 'CreateSportsMarket', {

@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "../../OwnedWithInit.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ITherundownConsumer.sol";
+import "../../interfaces/ISportsAMM.sol";
 
 // Libraries
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
@@ -86,6 +87,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     ISportPositionalMarket public override parentMarket;
 
     bool public override isDoubleChance;
+    uint private safeBoxImpact;
 
     /* ========== CONSTRUCTOR ========== */
     function initialize(SportPositionalMarketParameters calldata _parameters) external {
@@ -137,6 +139,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             _mint(creator, initialMint);
         }
 
+        safeBoxImpact = ISportsAMM(sportsAMM).safeBoxImpact();
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
         // about initializing its state separately
     }
@@ -472,6 +475,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             options.draw.exercise(msg.sender);
         }
         uint payout = _getPayout(homeBalance, awayBalance, drawBalance);
+        uint cancellationPayout;
 
         if (cancelled) {
             require(
@@ -479,6 +483,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
                 "Unexpired timeout/ invalid odds"
             );
             payout = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
+            cancellationPayout = calculateExtraCancellationPayout(payout);
         }
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
@@ -487,6 +492,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             }
             payout = _manager().transformCollateral(payout);
             sUSD.transfer(msg.sender, payout);
+            if (cancellationPayout > 0) {
+                cancellationPayout = _manager().transformCollateral(cancellationPayout);
+                ISportsAMM(sportsAMM).cancellationPayout(msg.sender, cancellationPayout);
+            }
         }
     }
 
@@ -520,6 +529,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
                 payout = _result() == Side.Away ? awayBalance : drawBalance;
             }
         }
+    }
+
+    function calculateExtraCancellationPayout(uint _payout) internal view returns (uint extraCancellation) {
+        extraCancellation = ((1e18 + safeBoxImpact + (2 * 1e14)) * _payout) / 1e18;
     }
 
     function restoreInvalidOdds(

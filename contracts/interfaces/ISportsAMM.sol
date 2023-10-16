@@ -91,4 +91,6 @@ interface ISportsAMM {
         uint amount,
         address collateral
     ) external view returns (uint collateralQuote, uint sUSDToPay);
+
+    function cancellationPayout(address _user, uint cancellationPayout) external;
 }

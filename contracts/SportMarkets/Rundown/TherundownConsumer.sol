@@ -62,14 +62,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public whitelistedAddresses;
 
     // Maps <RequestId, Result>
-    mapping(bytes32 => bytes[]) public requestIdGamesCreated; // deprecated see Wrapper
-    mapping(bytes32 => bytes[]) public requestIdGamesResolved; // deprecated see Wrapper
-    mapping(bytes32 => bytes[]) public requestIdGamesOdds; // deprecated see Wrapper
+    mapping(bytes32 => bytes[]) private requestIdGamesCreated; // deprecated see Wrapper
+    mapping(bytes32 => bytes[]) private requestIdGamesResolved; // deprecated see Wrapper
+    mapping(bytes32 => bytes[]) private requestIdGamesOdds; // deprecated see Wrapper
 
     // Maps <GameId, Game>
     mapping(bytes32 => GameCreate) public gameCreated;
     mapping(bytes32 => GameResolve) public gameResolved;
-    mapping(bytes32 => GameOdds) public gameOdds; // deprecated see GamesOddsObtainer
+    mapping(bytes32 => GameOdds) private gameOdds; // deprecated see GamesOddsObtainer
     mapping(bytes32 => uint) public sportsIdPerGame;
     mapping(bytes32 => bool) public gameFulfilledCreated;
     mapping(bytes32 => bool) public gameFulfilledResolved;
@@ -89,18 +89,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     // game
     GamesQueue public queues;
-    mapping(bytes32 => uint) public oddsLastPulledForGame; // deprecated see GamesOddsObtainer
-    mapping(uint => bytes32[]) public gamesPerDate; // deprecated use gamesPerDatePerSport
+    mapping(bytes32 => uint) private oddsLastPulledForGame; // deprecated see GamesOddsObtainer
+    mapping(uint => bytes32[]) private gamesPerDate; // deprecated use gamesPerDatePerSport
     mapping(uint => mapping(uint => bool)) public isSportOnADate;
-    mapping(address => bool) public invalidOdds; // deprecated see GamesOddsObtainer
+    mapping(address => bool) private invalidOdds; // deprecated see GamesOddsObtainer
     mapping(address => bool) public marketCreated;
     mapping(uint => mapping(uint => bytes32[])) public gamesPerDatePerSport;
     mapping(address => bool) public isPausedByCanceledStatus;
-    mapping(address => bool) public canMarketBeUpdated; // deprecated
+    mapping(address => bool) private canMarketBeUpdated; // deprecated
     mapping(bytes32 => uint) public gameOnADate;
 
     ITherundownConsumerVerifier public verifier;
-    mapping(bytes32 => GameOdds) public backupOdds; // deprecated see GamesOddsObtainer
+    mapping(bytes32 => GameOdds) private backupOdds; // deprecated see GamesOddsObtainer
     IGamesOddsObtainer public oddsObtainer;
     uint public maxNumberOfMarketsToResolve;
     IGamesPlayerProps public playerProps;
@@ -373,6 +373,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _gameId game id
     function getGameStartTime(bytes32 _gameId) external view returns (uint256) {
         return gameCreated[_gameId].startTime;
+    }
+
+    /// @notice view function which returns lastUpdated from GameResolved struct
+    /// @param _gameId game id
+    function getLastUpdatedFromGameResolve(bytes32 _gameId) external view returns (uint40) {
+        return gameResolved[_gameId].lastUpdated;
     }
 
     /// @notice view function which returns games on certan date and sportid
@@ -856,19 +862,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint[] _normalizedOdds
     );
     event GameResolved(bytes32 _requestId, uint _sportId, bytes32 _id, GameResolve _game, uint _queueIndex);
-    event GameOddsAdded(bytes32 _requestId, bytes32 _id, GameOdds _game, uint[] _normalizedOdds); // deprecated see GamesOddsObtainer
     event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game, uint[] _tags, uint[] _normalizedOdds);
     event ResolveSportsMarket(address _marketAddress, bytes32 _id, uint _outcome);
     event PauseSportsMarket(address _marketAddress, bool _pause);
     event CancelSportsMarket(address _marketAddress, bytes32 _id);
-    event InvalidOddsForMarket(bytes32 _requestId, address _marketAddress, bytes32 _id, GameOdds _game); // deprecated see GamesOddsObtainer
     event SupportedSportsChanged(uint _sportId, bool _isSupported);
     event SupportedResolvedStatusChanged(uint _status, bool _isSupported);
     event SupportedCancelStatusChanged(uint _status, bool _isSupported);
     event TwoPositionSportChanged(uint _sportId, bool _isTwoPosition);
-    event NewSportsMarketManager(address _sportsManager); // deprecated
-    event NewWrapperAddress(address _wrapperAddress); // deprecated
-    event NewQueueAddress(GamesQueue _queues); // deprecated
     event NewSportContracts(
         address _wrapperAddress,
         GamesQueue _queues,
@@ -878,7 +879,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         address _playerProps
     );
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
-    event OddsCircuitBreaker(address _marketAddress, bytes32 _id); // deprecated see GamesOddsObtainer
     event NewMaxNumberOfMarketsToResolve(uint _maxNumber);
     event GameTimeMovedAhead(address _market, bytes32 _gameId, uint _oldStartTime, uint _newStartTime);
     event IgnoreChildCancellationPerSportIfDraw(uint _sportId, bool _flag);

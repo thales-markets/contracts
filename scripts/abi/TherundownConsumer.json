@@ -202,59 +202,6 @@
       },
       {
         "indexed": false,
-        "internalType": "bytes32",
-        "name": "_id",
-        "type": "bytes32"
-      },
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "gameId",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "int24",
-            "name": "homeOdds",
-            "type": "int24"
-          },
-          {
-            "internalType": "int24",
-            "name": "awayOdds",
-            "type": "int24"
-          },
-          {
-            "internalType": "int24",
-            "name": "drawOdds",
-            "type": "int24"
-          }
-        ],
-        "indexed": false,
-        "internalType": "struct TherundownConsumer.GameOdds",
-        "name": "_game",
-        "type": "tuple"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256[]",
-        "name": "_normalizedOdds",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "GameOddsAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "_requestId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
@@ -363,78 +310,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bytes32",
-        "name": "_requestId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_marketAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "_id",
-        "type": "bytes32"
-      },
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "gameId",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "int24",
-            "name": "homeOdds",
-            "type": "int24"
-          },
-          {
-            "internalType": "int24",
-            "name": "awayOdds",
-            "type": "int24"
-          },
-          {
-            "internalType": "int24",
-            "name": "drawOdds",
-            "type": "int24"
-          }
-        ],
-        "indexed": false,
-        "internalType": "struct TherundownConsumer.GameOdds",
-        "name": "_game",
-        "type": "tuple"
-      }
-    ],
-    "name": "InvalidOddsForMarket",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "_maxNumber",
         "type": "uint256"
       }
     ],
     "name": "NewMaxNumberOfMarketsToResolve",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "contract GamesQueue",
-        "name": "_queues",
-        "type": "address"
-      }
-    ],
-    "name": "NewQueueAddress",
     "type": "event"
   },
   {
@@ -478,51 +359,6 @@
       }
     ],
     "name": "NewSportContracts",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_sportsManager",
-        "type": "address"
-      }
-    ],
-    "name": "NewSportsMarketManager",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_wrapperAddress",
-        "type": "address"
-      }
-    ],
-    "name": "NewWrapperAddress",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_marketAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "_id",
-        "type": "bytes32"
-      }
-    ],
-    "name": "OddsCircuitBreaker",
     "type": "event"
   },
   {
@@ -796,59 +632,6 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "backupOdds",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "int24",
-        "name": "homeOdds",
-        "type": "int24"
-      },
-      {
-        "internalType": "int24",
-        "name": "awayOdds",
-        "type": "int24"
-      },
-      {
-        "internalType": "int24",
-        "name": "drawOdds",
-        "type": "int24"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "canMarketBeUpdated",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -1074,40 +857,6 @@
         "type": "bytes32"
       }
     ],
-    "name": "gameOdds",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "int24",
-        "name": "homeOdds",
-        "type": "int24"
-      },
-      {
-        "internalType": "int24",
-        "name": "awayOdds",
-        "type": "int24"
-      },
-      {
-        "internalType": "int24",
-        "name": "drawOdds",
-        "type": "int24"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
     "name": "gameOnADate",
     "outputs": [
       {
@@ -1153,30 +902,6 @@
         "internalType": "uint40",
         "name": "lastUpdated",
         "type": "uint40"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "gamesPerDate",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -1342,6 +1067,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getLastUpdatedFromGameResolve",
+    "outputs": [
+      {
+        "internalType": "uint40",
+        "name": "",
+        "type": "uint40"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_market",
         "type": "address"
@@ -1418,25 +1162,6 @@
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "invalidOdds",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1668,25 +1393,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "oddsLastPulledForGame",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "oddsObtainer",
     "outputs": [
@@ -1826,78 +1532,6 @@
     "name": "reopenGameForCreationProcessing",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "requestIdGamesCreated",
-    "outputs": [
-      {
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "requestIdGamesOdds",
-    "outputs": [
-      {
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "requestIdGamesResolved",
-    "outputs": [
-      {
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

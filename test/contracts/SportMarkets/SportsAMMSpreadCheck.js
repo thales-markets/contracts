@@ -675,6 +675,10 @@ contract('SportsAMM', (accounts) => {
 			await SportAMMRiskManager.setMinSpreadPerSport(tagID_16, 0, toUnit('0.02'), { from: owner });
 			const min_spreadForSport = await SportAMMRiskManager.minSpreadPerSport(tagID_16, 0);
 
+			let spreads = await SportAMMRiskManager.getAllDataForSports([tagID_16]);
+			let spreadsMoney = spreads[4];
+			assert.bnEqual(spreadsMoney, toUnit('0.02'));
+
 			console.log('SETTING NEW SPREAD PER SPORT: ', 1);
 			console.log('NEW SPREAD PER SPORT 9016: ', min_spreadForSport.toString());
 

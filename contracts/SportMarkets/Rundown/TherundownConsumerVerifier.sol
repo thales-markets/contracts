@@ -475,7 +475,8 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             bool[] memory _invalidOdds,
             bool[] memory _isPausedByCanceledStatus,
             bool[] memory _isMarketPaused,
-            uint[] memory _startTime
+            uint[] memory _startTime,
+            uint40[] memory _lastUpdated
         )
     {
         uint256 arrayLength = _gameIds.length;
@@ -486,6 +487,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         _isPausedByCanceledStatus = new bool[](arrayLength);
         _isMarketPaused = new bool[](arrayLength);
         _startTime = new uint[](arrayLength);
+        _lastUpdated = new uint40[](arrayLength);
 
         for (uint256 i = 0; i < arrayLength; i++) {
             address marketAddress = consumer.marketPerGameId(_gameIds[i]);
@@ -496,6 +498,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             _isPausedByCanceledStatus[i] = consumer.isPausedByCanceledStatus(marketAddress);
             _isMarketPaused[i] = marketAddress != address(0) ? sportsManager.isMarketPaused(marketAddress) : false;
             _startTime[i] = consumer.getGameStartTime(_gameIds[i]);
+            _lastUpdated[i] = consumer.getLastUpdatedFromGameResolve(_gameIds[i]);
         }
 
         return (
@@ -505,12 +508,28 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             _invalidOdds,
             _isPausedByCanceledStatus,
             _isMarketPaused,
-            _startTime
+            _startTime,
+            _lastUpdated
         );
     }
 
     function areInvalidOdds(bytes32 _gameIds) external view returns (bool _invalidOdds) {
         return obtainer.invalidOdds(consumer.marketPerGameId(_gameIds));
+    }
+
+    /// @notice getting primary bookmaker by sports id
+    /// @param _sportIds id of a sport for fetching
+    function getAllPrimaryBookmakerIdsBySportIds(uint256[] memory _sportIds)
+        external
+        view
+        returns (uint256[] memory _bookmakerIds)
+    {
+        _bookmakerIds = new uint256[](_sportIds.length);
+
+        for (uint256 i = 0; i < _sportIds.length; i++) {
+            uint256[] memory parentIds = sportIdToBookmakerIds[_sportIds[i]];
+            _bookmakerIds[i] = parentIds.length > 0 ? parentIds[0] : defaultBookmakerIds[0];
+        }
     }
 
     /// @notice getting bookmaker by sports id

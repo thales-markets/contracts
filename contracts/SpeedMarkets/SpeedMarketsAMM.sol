@@ -315,7 +315,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         marketHasCreatedAtAttribute[address(srm)] = true;
         marketHasFeeAttribute[address(srm)] = true;
-        emit MarketCreated(
+        emit MarketCreated(address(srm), msg.sender, asset, strikeTime, price.price, direction, buyinAmount);
+        emit MarketCreatedWithFees(
             address(srm),
             msg.sender,
             asset,
@@ -634,6 +635,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     //////////////////events/////////////////
 
     event MarketCreated(
+        address market,
+        address user,
+        bytes32 asset,
+        uint strikeTime,
+        int64 strikePrice,
+        SpeedMarket.Direction direction,
+        uint buyinAmount
+    );
+    event MarketCreatedWithFees(
         address market,
         address user,
         bytes32 asset,

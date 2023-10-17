@@ -132,6 +132,16 @@
             "internalType": "uint256",
             "name": "_buyinAmount",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_safeBoxImpact",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_lpFee",
+            "type": "uint256"
           }
         ],
         "internalType": "struct SpeedMarket.InitParams",
@@ -171,6 +181,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "lpFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "int64",
@@ -204,6 +227,19 @@
         "internalType": "enum SpeedMarket.Direction",
         "name": "",
         "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "safeBoxImpact",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

@@ -17,6 +17,8 @@ contract SpeedMarket {
         int64 _strikePrice;
         Direction _direction;
         uint _buyinAmount;
+        uint _safeBoxImpact;
+        uint _lpFee;
     }
 
     enum Direction {
@@ -37,6 +39,9 @@ contract SpeedMarket {
 
     ISpeedMarketsAMM public speedMarketsAMM;
 
+    uint public safeBoxImpact;
+    uint public lpFee;
+
     uint256 public createdAt;
 
     /* ========== CONSTRUCTOR ========== */
@@ -53,6 +58,8 @@ contract SpeedMarket {
         strikePrice = params._strikePrice;
         direction = params._direction;
         buyinAmount = params._buyinAmount;
+        safeBoxImpact = params._safeBoxImpact;
+        lpFee = params._lpFee;
         speedMarketsAMM.sUSD().approve(params._speedMarketsAMM, type(uint256).max);
         createdAt = block.timestamp;
     }
@@ -65,8 +72,10 @@ contract SpeedMarket {
 
         if (finalPrice < strikePrice) {
             result = Direction.Down;
-        } else {
+        } else if (finalPrice > strikePrice) {
             result = Direction.Up;
+        } else {
+            result = direction == SpeedMarket.Direction.Up ? SpeedMarket.Direction.Down : SpeedMarket.Direction.Up;
         }
 
         if (direction == result) {

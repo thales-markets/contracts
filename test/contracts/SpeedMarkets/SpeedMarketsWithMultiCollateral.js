@@ -16,6 +16,7 @@ contract('SpeedMarkets', (accounts) => {
 		it('deploy and test', async () => {
 			let {
 				speedMarketsAMM,
+				speedMarketsAMMData,
 				balanceOfSpeedMarketAMMBefore,
 				priceFeedUpdateData,
 				fee,
@@ -84,8 +85,8 @@ contract('SpeedMarkets', (accounts) => {
 				{ value: fee, from: user }
 			);
 
-			let numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
-			console.log('numActiveMarkets ' + numActiveMarkets);
+			let ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
+			console.log('numActiveMarkets ' + ammData.numActiveMarkets);
 
 			let markets = await speedMarketsAMM.activeMarkets(0, 1);
 			let market = markets[0];
@@ -120,16 +121,16 @@ contract('SpeedMarkets', (accounts) => {
 				strikeTime
 			);
 
-			numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
-			console.log('numActiveMarkets before resolve ' + numActiveMarkets);
+			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
+			console.log('numActiveMarkets before resolve ' + ammData.numActiveMarkets);
 
 			let balanceOfMarketBefore = await exoticUSD.balanceOf(market);
 			let balanceOfUserBefore = await exoticUSD.balanceOf(owner);
 
 			await speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee });
 
-			numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
-			console.log('numActiveMarkets after resolve' + numActiveMarkets);
+			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
+			console.log('numActiveMarkets after resolve' + ammData.numActiveMarkets);
 
 			let resolved = await speedMarket.resolved();
 			console.log('resolved  is ' + resolved);

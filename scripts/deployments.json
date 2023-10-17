@@ -152,14 +152,17 @@
 		"ParlayDefaultLiquidityProviderImplementation": "0xA20Ed099894dcfC46AF290705Ff5aE4d318B0235",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"MultiCollateralOnOffRampImplementation": "0x6D40a8998CD288d396D783757cd2fAe613CbDcBB",
-		"SpeedMarketsAMMImplementation": "0xf35B20E0eb5cd70E4FA514bEEf97348A3b050813",
-		"SpeedMarketMastercopy": "0x0312228d6E1B385627D01ea15974b2c5da4393d5",
+		"SpeedMarketsAMMImplementation": "0x551d5130890fa86ea86dB09C1962B676E8334741",
+		"SpeedMarketMastercopy": "0x4c98C6fAc5d26fDBcB1108EAcfEb2D1aF65aaE39",
 		"SportAMMRiskManager": "0x4d0192E2fE94687838Eaa3BcbC3B891964B38a9D",
 		"SportAMMRiskManagerImplementation": "0x6FD14581fFe95212Fc2A70F19aB155902153D128",
 		"GamesPlayerProps": "0xE7a6C567dEF38AE2268634EA1Eb0dB80e0c7F8D2",
 		"GamesPlayerPropsImplementation": "0xf723aE78e1201bA916BA6CaCc4Dc0D43BC6a9075",
 		"GamesPlayerPropsReceiver": "0xA6cd4eB2426bACa4772b48847Ec6b83b36dB71F6",
-		"GamesPlayerPropsReceiverImplementation": "0x22f9192E4135e31E237A28bFDa725D68f63F1F5e"
+		"GamesPlayerPropsReceiverImplementation": "0x22f9192E4135e31E237A28bFDa725D68f63F1F5e",
+		"SpeedMarketsAMMUtils": "0xFbbdA571addA0AF70dCFc8CF96e962c84BDF51f0",
+		"SpeedMarketsAMMData": "0x467e14ac025499d60c417D7F00A7D9E83293F43c",
+		"SpeedMarketsAMMDataImplementation": "0x07e37c2c0eAc678650a2D8B613DB81dD2c25c452"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -276,9 +279,9 @@
 		"ParlayAMMLiquidityPoolDataImplementation": "0x0281B682Fb5Ee287B5DB7519BE9425b34Fb11503",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa475e7314f41D77FB800245DAC18Ee8a760a491F",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
-		"SpeedMarketsAMMImplementation": "0x7d5A823c6Cf4971dD693a9d9d101E608F0E2B3ae",
+		"SpeedMarketsAMMImplementation": "0x2591CF3a691BbD6503D5051267A7Cf4fBa14e0C9",
 		"MultiCollateralOnOffRampImplementation": "0xd6C3Ca569280C66090bf8827a6F7e3C25306AfB9",
-		"SpeedMarketMastercopy": "0xE80819E5EFc3CCF5D2817c7c8f1971710535C558",
+		"SpeedMarketMastercopy": "0x112aCaDdb89ef257bBef07C4F03A32F6C96dB172",
 		"SafeBoxBuyback": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203",
 		"SafeBoxBuybackImplementation": "0xd406adCC2ef2fA7f7c33c0be1a9fDD5E473aa6E2",
 		"SportAMMRiskManager": "0x4d0192E2fE94687838Eaa3BcbC3B891964B38a9D",
@@ -286,7 +289,10 @@
 		"GamesPlayerProps": "0xda835388e4f17701e352390778f9b4e2f96ad049",
 		"GamesPlayerPropsImplementation": "0xc819Ef33cE5afDb993918EAeAffa85318F5eEf22",
 		"GamesPlayerPropsReceiver": "0x5311EF5370EAf6eb428DD4eA556AA3461269Aee0",
-		"GamesPlayerPropsReceiverImplementation": "0xfeEB24491Af1b35969CA74a5f05dC1EE00e7f519"
+		"GamesPlayerPropsReceiverImplementation": "0xfeEB24491Af1b35969CA74a5f05dC1EE00e7f519",
+		"SpeedMarketsAMMUtils": "0x8149Ee832c134EF1C639510642842B2AcFdAfd50",
+		"SpeedMarketsAMMData": "0xbbE161Bf57799104eFd6524133e305BBcB7C07EA",
+		"SpeedMarketsAMMDataImplementation": "0x7A5f45DD459A9451ae9Ea1D3602c46a0018e935E"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
@@ -303,8 +309,8 @@
 		"sUSD": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"ProxyUSDC": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"Pyth": "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a",
-		"SpeedMarketsAMMImplementation": "0xA525A0A446Dd4Bd8921840564124032aAD868c93",
-		"SpeedMarketMastercopy": "0x2bbB803493890d21a5b7f22Fb9e5a1a09Aeed16a",
+		"SpeedMarketsAMMImplementation": "0x3B6da881AcFfcD86770674b87d2c7dCCc6E22B75",
+		"SpeedMarketMastercopy": "0xF0dEF46e87E02B364CbC4bE315db4fA5dD63d3B6",
 		"PositionMastercopy": "0xD2b907a94E33BFe0371B8dcbFAcf1a319b13d609",
 		"PositionalMarketMastercopy": "0x503e7F2C19384Ff68B445E21850fDC61f34434e6",
 		"PriceFeed": "0x5B5DbF38a1fcf63B58d263648EBb63b53c1de3E7",
@@ -389,7 +395,10 @@
 		"TherundownConsumerWrapper": "0x089B4c50Fe83aD172D3E6A920702fF7f61aFB8A5",
 		"SwapRouter": "0xeA05705e26C8aabeA407994ea5e9D84db217e78C",
 		"MultiCollateralOnOffRamp": "0x0946BfE3c543e0B770B7F7e508c8A566947C4278",
-		"MultiCollateralOnOffRampImplementation": "0x38a50ebB6b299361D4492D488F95e13bE0A6b693"
+		"MultiCollateralOnOffRampImplementation": "0x38a50ebB6b299361D4492D488F95e13bE0A6b693",
+		"SpeedMarketsAMMUtils": "0xEF693B28b6A4A972a111A7cc35f6Fc48675aaF31",
+		"SpeedMarketsAMMData": "0xD6155E7C948458D6Ab58f9D63E1566493b9304C1",
+		"SpeedMarketsAMMDataImplementation": "0x9c2c2EbE06E687cEE847B40F23b9F229F11F792c"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -426,8 +435,11 @@
 		"PositionalMarketDataImplementation": "0xC0EeFDCF5A815ed7ac1ef1b8Ae8302AC502f3005",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"SpeedMarketsAMM": "0x4B1aED25f1877E1E9fBECBd77EeE95BB1679c361",
-		"SpeedMarketsAMMImplementation": "0x7846ba837EE282C67EDA364C4B34398e887817Bf",
-		"SpeedMarketMastercopy": "0xBCAdF393eBE0945fAdB26F94533B26bd82c0CDdB"
+		"SpeedMarketsAMMImplementation": "0x6943C8ae10313e92B6d646ca095Aa278a8ECA4A8",
+		"SpeedMarketMastercopy": "0xD2B9ca7D67c5354D7ACa3277bA31745B423632ED",
+		"SpeedMarketsAMMUtils": "0x6061bf0F82cD730046A37CcB74AC356B1Cb49715",
+		"SpeedMarketsAMMData": "0xA30200A8eD9655d7096814D0cC1f76639aa42AED",
+		"SpeedMarketsAMMDataImplementation": "0xd54630204863F5A2A2Fd2a73946A0da3f53e8d7A"
 	},
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
@@ -828,9 +840,12 @@
 		"GamesPlayerPropsReceiverImplementation": "0xb36C532C5B497c1F030f5AB31Aa1c4Dc0125DB26",
 		"SportAMMRiskManager": "0x0E4cB41143Ca28618eA7C96c31f193c01Ee4A293",
 		"SportAMMRiskManagerImplementation": "0x1f4D90C6aaD27e382bcD4e8615d065476b19201E",
-		"SpeedMarketMastercopy": "0xa969977E42BF53f18918FD6b68fA1792a4760DF1",
+		"SpeedMarketMastercopy": "0xC2C460dA7Ce3fa819C8A33987bDD19A07CbA1167",
 		"SpeedMarketsAMM": "0x05cD078cECB32d62b304e9028C147bBCdef5Ba24",
-		"SpeedMarketsAMMImplementation": "0x1546F2C3534dc6404Dbce55a27Fba3ac1bB87174"
+		"SpeedMarketsAMMImplementation": "0xfcE150fd39484880e2935331dbB1934BfB0e0f97",
+		"SpeedMarketsAMMUtils": "0xB3DCB8Cf75B54e5C972C7770c1f20c2d2f363F2E",
+		"SpeedMarketsAMMData": "0x39d1a205F72eC54aca01013c682A1A5C1625f4f6",
+		"SpeedMarketsAMMDataImplementation": "0xC92b9E9083891C11BB6F3005e8d3c4ba2d692A57"
 	},
 	"localhost": {
 		"Airdrop": "",

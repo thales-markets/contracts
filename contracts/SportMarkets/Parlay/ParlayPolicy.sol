@@ -21,13 +21,15 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     IParlayMarketsAMM public parlayMarketsAMM;
     ISportsAMMTiny public sportsAMM;
     address public consumer;
-    mapping(uint => uint) public restrictedMarketsCount;
     // toBeRemoved:
+    // ------------------------------------------------------------------------
+    mapping(uint => uint) public restrictedMarketsCount;
     mapping(uint => bool) public isRestrictedToBeCombined;
     mapping(uint => mapping(uint => bool)) public restrictedTagCombination;
     mapping(bytes32 => mapping(uint => uint)) public restrictedTagComboCount;
     mapping(uint => mapping(uint => bool)) public restrictedTag1Combo;
     mapping(uint => uint) public maxPlayerPropsPerSport;
+    // ------------------------------------------------------------------------
     mapping(uint => bool) public eligibleSportForSamePropsCombination;
 
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
@@ -48,6 +50,7 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         IGamesPlayerProps gamePlayerProps = IGamesPlayerProps(ITherundownConsumer(consumer).playerProps());
         if (
             eligibleSportForSamePropsCombination[_tag1] &&
+            gamePlayerProps.optionIdPerChildMarket(_childMarket1) > 0 &&
             gamePlayerProps.optionIdPerChildMarket(_childMarket1) == gamePlayerProps.optionIdPerChildMarket(_childMarket2)
         ) {
             isEligible = true;
@@ -79,72 +82,9 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function isTags1ComboRestricted(uint tag1, uint tag2) external view returns (bool isRestricted) {
-        isRestricted = restrictedTag1Combo[tag1][tag2];
-    }
-
-    function isRestrictedComboEligible(
-        uint tag1,
-        uint tag2,
-        uint tag1Count,
-        uint tag2Count
-    ) external view returns (bool eligible) {
-        bytes32 tagHash = keccak256(abi.encode(tag1, tag2));
-        eligible = true;
-        uint restrictTag1 = restrictedTagComboCount[tagHash][tag1];
-        uint restrictTag2 = restrictedTagComboCount[tagHash][tag2];
-        if (restrictTag1 > 0 && restrictTag1 < tag1Count) {
-            eligible = false;
-        } else if (restrictTag2 > 0 && restrictTag2 < tag2Count) {
-            eligible = false;
-        }
-    }
-
-    function setMaxPlayerPropsPerSport(uint tag1, uint maxPlayerPropsGames) external onlyOwner {
-        maxPlayerPropsPerSport[tag1] = maxPlayerPropsGames;
-    }
-
     function setEligibleSportForSamePropsCombination(uint _tag1, bool _eligible) external onlyOwner {
         eligibleSportForSamePropsCombination[_tag1] = _eligible;
-    }
-
-    function setRestrictedTagCombos(
-        uint tag1,
-        uint tag2,
-        uint tag1Count,
-        uint tag2Count
-    ) external onlyOwner {
-        if (tag1Count > 0 || tag2Count > 0) {
-            bytes32 tagHash = keccak256(abi.encode(tag1, tag2));
-            restrictedTagCombination[tag1][tag2] = true;
-            restrictedTagComboCount[tagHash][tag1] = tag1Count;
-            restrictedTagComboCount[tagHash][tag2] = tag2Count;
-            tagHash = keccak256(abi.encode(tag2, tag1));
-            restrictedTagCombination[tag2][tag1] = true;
-            restrictedTagComboCount[tagHash][tag1] = tag1Count;
-            restrictedTagComboCount[tagHash][tag2] = tag2Count;
-        }
-    }
-
-    function setRestrictedMarketsCountPerTag(uint tag, uint count) external onlyOwner {
-        if (tag > 0) {
-            restrictedMarketsCount[tag] = count;
-        }
-    }
-
-    // function setRestrictedTagToBeCombined(uint tag, bool restricted) external onlyOwner {
-    //     if (tag > 0) {
-    //         isRestrictedToBeCombined[tag] = restricted;
-    //     }
-    // }
-
-    function setRestrictedTag1Combo(
-        uint _tag1,
-        uint _tag2,
-        bool _restricted
-    ) external onlyOwner {
-        restrictedTag1Combo[_tag1][_tag2] = _restricted;
-        restrictedTag1Combo[_tag2][_tag1] = _restricted;
+        emit SetEligibleSportForSamePropsCombination(_tag1, _eligible);
     }
 
     function setParlayMarketsAMM(address _parlayMarketsAMM) external onlyOwner {
@@ -164,4 +104,5 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     }
 
     event SetParlayMarketsAMM(address _parlayMarketsAMM);
+    event SetEligibleSportForSamePropsCombination(uint _tag1, bool _eligible);
 }

@@ -2,19 +2,11 @@
 pragma solidity ^0.8.0;
 
 // interfaces
-import "./ParlayMarket.sol";
 import "../../interfaces/IParlayMarketsAMM.sol";
 import "../../interfaces/ISportsAMM.sol";
-import "../../interfaces/IParlayMarketData.sol";
+// import "../../interfaces/IParlayMarketData.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
-import "../../interfaces/ISportPositionalMarketManager.sol";
-import "../../interfaces/IStakingThales.sol";
-import "../../interfaces/IReferrals.sol";
-import "../../interfaces/ICurveSUSD.sol";
-import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/IParlayPolicy.sol";
-
-// import "hardhat/console.sol";
 
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
@@ -87,21 +79,16 @@ contract ParlayVerifier {
         uint[] memory tags1;
         uint[] memory tags2;
         IParlayPolicy parlayPolicy = IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy());
-        (tags1, tags2) = _obtainAllTags(params.sportMarkets, parlayPolicy);
+        (tags1, tags2) = _obtainAllTags(params.sportMarkets);
         (odds, sgpFees) = _checkSGPAndGetOdds(CheckSGP(params.sportMarkets, params.positions, tags1, tags2, parlayPolicy));
     }
 
     /// @notice Obtain all the tags for each position and calculate unique ones
     /// @param sportMarkets the sport markets for the parlay
-    /// @param _parlayPolicy the parlay policy contract
     /// @return tag1 all the tags 1 per market
     /// @return tag2 all the tags 2 per market
     ////TODO: IIRC we said that we dont need this
-    function _obtainAllTags(address[] memory sportMarkets, IParlayPolicy _parlayPolicy)
-        internal
-        view
-        returns (uint[] memory tag1, uint[] memory tag2)
-    {
+    function _obtainAllTags(address[] memory sportMarkets) internal view returns (uint[] memory tag1, uint[] memory tag2) {
         tag1 = new uint[](sportMarkets.length);
         tag2 = new uint[](sportMarkets.length);
         address sportMarket;

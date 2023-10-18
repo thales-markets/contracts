@@ -1143,97 +1143,6 @@ contract('ParlayAMM', (accounts) => {
 			});
 		});
 
-		it('Create/Buy Parlay Restricted: Tag1 count', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1', '1'];
-			let parlayPositions2 = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
-			}
-			let slippage = toUnit('0.01');
-			// console.log('buyQuote --->');
-			let result = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
-
-			let calculateSkew = result.skewImpact;
-			// await ParlayAMM.calculateSkewImpact(
-			// 	parlayMarketsAddress,
-			// 	parlayPositions,
-			// 	totalSUSDToPay
-			// );
-
-			await ParlayPolicy.setRestrictedMarketsCountPerTag(9016, 1, { from: owner });
-
-			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
-			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
-			// console.log('buyTX --->');
-			result = await ParlayAMM.buyFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[1],
-				ZERO_ADDRESS,
-				{ from: first }
-			);
-			// ).to.be.revertedWith('RestrictedTag1Count');
-		});
-
-		it('Create/Buy Parlay Restricted: Restricted Tag1 combinations', async () => {
-			await fastForward(game1NBATime - (await currentTime()) - SECOND);
-			// await fastForward((await currentTime()) - SECOND);
-			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '15');
-			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1', '1'];
-			let parlayPositions2 = ['1', '1', '1', '1'];
-			let parlayMarketsAddress = [];
-			for (let i = 0; i < parlayMarkets.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
-				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
-			}
-			let slippage = toUnit('0.01');
-			// console.log('buyQuote --->');
-			let result = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
-
-			let calculateSkew = result.skewImpact;
-			// let calculateSkew = await ParlayAMM.calculateSkewImpact(
-			// 	parlayMarketsAddress,
-			// 	parlayPositions,
-			// 	totalSUSDToPay
-			// );
-
-			await ParlayPolicy.setRestrictedTagCombos(9007, 9016, 1, 1, { from: owner });
-
-			console.log('RECALC SKEW impact: ', fromUnit(calculateSkew));
-			console.log('Result SKEW IMPACT: ', fromUnit(result.skewImpact));
-			// console.log('buyTX --->');
-			// await expect(
-			await ParlayAMM.buyFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay,
-				slippage,
-				result[1],
-				ZERO_ADDRESS,
-				{ from: first }
-			);
-			// ).to.be.revertedWith('RestrictedTag1Combo');
-		});
-
 		it('Create/Buy Parlay Restricted: Restricted SGP position', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
@@ -1297,20 +1206,16 @@ contract('ParlayAMM', (accounts) => {
 		it('Parlay policy read data', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
-			answer = await ParlayPolicy.setRestrictedTagCombos(9004, 10002, 1, 2, { from: owner });
-			answer = await ParlayPolicy.isRestrictedComboEligible(9004, 10002, 1, 2);
-			answer = await ParlayPolicy.setRestrictedTag1Combo(9004, 9016, true, { from: owner });
-			answer = await ParlayPolicy.isTags1ComboRestricted(9004, 9016);
+			answer = await ParlayPolicy.setEligibleSportForSamePropsCombination(9004, true, {
+				from: owner,
+			});
 
-			await ParlayPolicy.setRestrictedMarketsCountPerTag(9004, 2, { from: owner });
-			// await ParlayPolicy.setRestrictedTagToBeCombined(9004, true, { from: owner });
-
-			answer = await ParlayMarketData.getAllSGPFees();
-			// console.log("All SGPFees: ", answer);
-			assert.equal(answer.length, 4);
-			answer = await ParlayMarketData.getAllSGPFeesForBatch([9004, 9006]);
-			// console.log("All SGPFees for batch: ", answer);
-			assert.equal(answer.length, 2);
+			let eligible = await ParlayPolicy.areEligiblePropsMarkets(
+				parlayMarkets4[0].address,
+				parlayMarkets4[4].address,
+				9004
+			);
+			assert.equal(eligible, false);
 		});
 
 		it('Create/Buy Parlay same game parlay | final result + totals', async () => {

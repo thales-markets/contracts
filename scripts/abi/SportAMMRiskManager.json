@@ -460,6 +460,60 @@
   {
     "inputs": [
       {
+        "internalType": "uint256[]",
+        "name": "_sportIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "getAllDataForSports",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_capsPerSport",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_capsPerSportH",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_capsPerSportT",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_capsPerSportPP",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_minSpreadSport",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_minSpreadSportH",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_minSpreadSportT",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_minSpreadSportPP",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_market",
         "type": "address"

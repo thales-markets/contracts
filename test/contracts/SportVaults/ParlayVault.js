@@ -11,6 +11,7 @@ const WEEK = 604800;
 
 const hour = 60 * 60;
 const day = 24 * 60 * 60;
+const week = 7 * day;
 
 const { fastForward, toUnit, fromUnit, currentTime } = require('../../utils')();
 
@@ -917,6 +918,9 @@ contract('Parlay Vault', (accounts) => {
 		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
 
 		await ParlayAMM.setPolicyAddresses(ParlayPolicy.address, { from: owner });
+		await vault.setSafeBoxParams(safeBox, toUnit(0.2), {
+			from: owner,
+		});
 	});
 
 	describe('Test parlays vault', () => {
@@ -1364,6 +1368,31 @@ contract('Parlay Vault', (accounts) => {
 
 			profitAndLossPerRound = await vault.profitAndLossPerRound(round - 1);
 			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
+		});
+
+		it('If round is positive, send share to SafeBox', async() => {
+			const AMOUNT = 50;
+			
+			await vault.deposit(toUnit(500), { from: first });
+			await vault.startVault({ from: owner });
+
+			await Thales.transfer(vault.address, toUnit(AMOUNT), {
+				from: first
+			});
+
+			const safeBoxImpact = await vault.safeBoxImpact();
+
+			let startSafeBoxBalance = await Thales.balanceOf(safeBox);
+			console.log('startSafeBoxBalance ' + startSafeBoxBalance / 1e18);
+
+			await fastForward(week);
+
+			await vault.closeRound();
+
+			let safeBoxBalanceAfterClosingRound = await Thales.balanceOf(safeBox);
+			console.log('safeBoxBalanceAfterClosingRound ' + safeBoxBalanceAfterClosingRound / 1e18);
+
+			assert.equal((Number(startSafeBoxBalance / 1e18) + Number(AMOUNT * (safeBoxImpact / 1e18))).toFixed(4), (safeBoxBalanceAfterClosingRound / 1e18).toFixed(4));
 		});
 	});
 });

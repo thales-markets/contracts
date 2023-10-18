@@ -16,6 +16,10 @@ const DAY = 86400;
 const WEEK = 604800;
 const YEAR = 31556926;
 
+const { toWei } = require('web3-utils');
+
+const toUnitSix = (amount) => toBN(toWei(amount.toString(), 'ether') / 1e12);
+
 const {
 	fastForward,
 	toUnit,
@@ -557,7 +561,7 @@ contract('ParlayAMM', (accounts) => {
 			parlayAMMfee,
 			safeBoxImpact,
 			toUnit(0.05),
-			toUnit(1860),
+			toUnit(2000),
 			{
 				from: owner,
 			}
@@ -965,6 +969,22 @@ contract('ParlayAMM', (accounts) => {
 				totalSUSDToPay,
 				testUSDC.address
 			);
+
+			console.log('totalSUSDToPay: ' + totalSUSDToPay / 1e18);
+			console.log('collateral quote: ' + result[0] / 1e6);
+
+			let minimumReceived = await multiCollateralOnOffRamp.getMinimumReceived(
+				testUSDC.address,
+				toUnitSix(result[0] / 1e6)
+			);
+			console.log('minimum received sUSD for USDC ' + minimumReceived / 1e18);
+
+			// 	await multiCollateralOnOffRamp.setSupportedAMM(first, true, { from: owner });
+			// 	await multiCollateralOnOffRamp.onrampWithEth(toUnit(minimumNeeded / 1e18), {
+			// 		from: first,
+			// 		value: toUnit(minimumNeeded / 1e18),
+			// 	});
+
 			let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
 				parlayMarketsAddress,
 				parlayPositions,

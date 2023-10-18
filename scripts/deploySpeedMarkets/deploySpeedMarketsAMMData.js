@@ -1,17 +1,11 @@
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
+
 const { getTargetAddress, setTargetAddress } = require('../helpers');
-const { toBytes32 } = require('../../index');
-const w3utils = require('web3-utils');
 
 async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let thalesAddress, ProxyERC20sUSDaddress;
-
-	let proxySUSD;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -24,25 +18,31 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
-		proxySUSD = getTargetAddress('ProxysUSD', network);
 	}
 
 	if (networkObj.chainId == 420) {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
-		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
 	if (networkObj.chainId == 42161) {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
-		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
 
 	if (networkObj.chainId == 8453) {
 		networkObj.name = 'baseMainnet';
 		network = 'baseMainnet';
-		proxySUSD = getTargetAddress('ProxyUSDC', network);
+	}
+
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
 	}
 
 	let accounts = await ethers.getSigners();
@@ -52,34 +52,35 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	const MultiCollateralOnOffRamp = await ethers.getContractFactory('MultiCollateralOnOffRamp');
-	let MultiCollateralOnOffRampDeployed = await upgrades.deployProxy(MultiCollateralOnOffRamp, [
+	const SpeedMarketsAMMData = await ethers.getContractFactory('SpeedMarketsAMMData');
+	const SpeedAMMAddress = getTargetAddress('SpeedMarketsAMM', network);
+	console.log('SpeedMarketsAMM found at: ', SpeedAMMAddress);
+
+	await delay(2000);
+	const SpeedMarketsAMMDataDeployed = await upgrades.deployProxy(SpeedMarketsAMMData, [
 		owner.address,
-		proxySUSD,
+		SpeedAMMAddress,
 	]);
-	await MultiCollateralOnOffRampDeployed.deployed();
+	await delay(2000);
+	await SpeedMarketsAMMDataDeployed.deployed();
 
-	console.log('MultiCollateralOnOffRamp proxy:', MultiCollateralOnOffRampDeployed.address);
+	console.log('SpeedMarketsAMMData Deployed on', SpeedMarketsAMMDataDeployed.address);
+	setTargetAddress('SpeedMarketsAMMData', network, SpeedMarketsAMMDataDeployed.address);
 
-	const MultiCollateralOnOffRampImplementation = await getImplementationAddress(
+	await delay(65000);
+	const SpeedMarketsAMMDataImplementation = await getImplementationAddress(
 		ethers.provider,
-		MultiCollateralOnOffRampDeployed.address
+		SpeedMarketsAMMDataDeployed.address
 	);
 
-	console.log('Implementation MultiCollateralOnOffRamp: ', MultiCollateralOnOffRampImplementation);
+	console.log('Implementation SpeedMarketsAMMData: ', SpeedMarketsAMMDataImplementation);
+	setTargetAddress('SpeedMarketsAMMDataImplementation', network, SpeedMarketsAMMDataImplementation);
 
-	setTargetAddress('MultiCollateralOnOffRamp', network, MultiCollateralOnOffRampDeployed.address);
-	setTargetAddress(
-		'MultiCollateralOnOffRampImplementation',
-		network,
-		MultiCollateralOnOffRampImplementation
-	);
-
-	delay(5000);
+	await delay(5000);
 
 	try {
 		await hre.run('verify:verify', {
-			address: MultiCollateralOnOffRampImplementation,
+			address: SpeedMarketsAMMDataImplementation,
 		});
 	} catch (e) {
 		console.log(e);

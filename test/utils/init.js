@@ -10,6 +10,11 @@ module.exports = {
 		let SpeedMarketsAMMContract = artifacts.require('SpeedMarketsAMM');
 		let speedMarketsAMM = await SpeedMarketsAMMContract.new();
 
+		let SpeedMarketsAMMDataContract = artifacts.require('SpeedMarketsAMMData');
+		let speedMarketsAMMData = await SpeedMarketsAMMDataContract.new();
+		await speedMarketsAMMData.initialize(owner, speedMarketsAMM.address);
+		await speedMarketsAMMData.setSpeedMarketsAMM(speedMarketsAMM.address, { from: owner });
+
 		let ExoticUSD = artifacts.require('ExoticUSD');
 		let exoticUSD = await ExoticUSD.new();
 
@@ -54,7 +59,11 @@ module.exports = {
 		await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(100));
 		await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('BTC'), toUnit(100));
 		await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.02));
-		await speedMarketsAMM.setLPFee(toUnit(0.01));
+		await speedMarketsAMM.setLPFeeParams(
+			[15, 30, 60, 120],
+			[toUnit(0.18), toUnit(0.13), toUnit(0.08), toUnit(0.05)],
+			toUnit(0.04)
+		);
 
 		await speedMarketsAMM.setAssetToPythID(
 			toBytes32('ETH'),
@@ -100,8 +109,15 @@ module.exports = {
 			from: owner,
 		});
 
+		let SpeedMarketsAMMUtilsContract = artifacts.require('SpeedMarketsAMMUtils');
+		let speedMarketsAMMUtils = await SpeedMarketsAMMUtilsContract.new();
+		await speedMarketsAMM.setAMMUtils(speedMarketsAMMUtils.address, {
+			from: owner,
+		});
+
 		return {
 			speedMarketsAMM,
+			speedMarketsAMMData,
 			balanceOfSpeedMarketAMMBefore,
 			priceFeedUpdateData,
 			fee,

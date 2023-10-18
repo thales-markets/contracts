@@ -369,6 +369,17 @@ contract SportsAMMUtils {
         parentMarket = address(parentMarketContract);
     }
 
+    function getParentMarketPositionsImpactDoubleChance(address market, uint amount) public view returns (int) {
+        (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = getParentMarketPositions(
+            market
+        );
+
+        int firstPriceImpact = sportsAMM.buyPriceImpact(parentMarket, position1, amount);
+        int secondPriceImpact = sportsAMM.buyPriceImpact(parentMarket, position2, amount);
+
+        return (firstPriceImpact + secondPriceImpact) / 2;
+    }
+
     function getParentMarketPositionAddresses(address market)
         public
         view
@@ -488,5 +499,48 @@ contract SportsAMMUtils {
         tag1 = sportMarket.tags(0);
         tag2 = sportMarket.isChild() ? sportMarket.tags(1) : 0;
         tag3 = sportMarket.isChild() && sportMarket.tags(1) == TAG_NUMBER_PLAYERS ? sportMarket.tags(2) : 0;
+    }
+
+    function getAvailableHigherForPositions(
+        address market,
+        ISportsAMM.Position positionFirst,
+        ISportsAMM.Position positionSecond,
+        bool inverse,
+        SportAMMLiquidityPool liquidityPool
+    ) public view returns (uint _availableHigher) {
+        (uint baseOddsFirst, uint baseOddsSecond) = obtainOddsMulti(market, positionFirst, positionSecond);
+
+        baseOddsFirst = sportsAMM.floorBaseOdds(baseOddsFirst, market);
+        baseOddsSecond = sportsAMM.floorBaseOdds(baseOddsSecond, market);
+
+        (uint balanceFirst, uint balanceSecond) = getBalanceOfPositionsOnMarketByPositions(
+            market,
+            liquidityPool.getMarketPool(market),
+            positionFirst,
+            positionSecond
+        );
+
+        uint _availableOtherSideFirst = sportsAMM.availableToBuyFromAMMWithBaseOdds(
+            market,
+            positionFirst,
+            baseOddsFirst,
+            balanceFirst,
+            true
+        );
+        uint _availableOtherSideSecond = sportsAMM.availableToBuyFromAMMWithBaseOdds(
+            market,
+            positionSecond,
+            baseOddsSecond,
+            balanceSecond,
+            true
+        );
+
+        _availableHigher = _availableOtherSideFirst;
+        if (
+            (inverse && _availableOtherSideFirst > _availableOtherSideSecond) ||
+            (!inverse && _availableOtherSideFirst <= _availableOtherSideSecond)
+        ) {
+            _availableHigher = _availableOtherSideSecond;
+        }
     }
 }

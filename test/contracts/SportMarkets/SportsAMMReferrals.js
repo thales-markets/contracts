@@ -220,6 +220,7 @@ contract('SportsAMM', (accounts) => {
 
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
+		await Referrals.setReferrerFees(toUnit(0.005), toUnit(0.0075), toUnit(0.01), { from: owner });
 
 		await SportsAMM.initialize(owner, Thales.address, toUnit('0.02'), toUnit('0.2'), DAY, {
 			from: owner,

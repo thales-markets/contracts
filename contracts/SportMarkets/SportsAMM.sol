@@ -343,7 +343,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         _availableOtherSide = _getAvailableHigherForPositions(market, positionFirst, positionSecond, false);
     }
 
-    function floorBaseOdds(uint baseOdds, address market) internal view returns (uint) {
+    function floorBaseOdds(uint baseOdds, address market) public view returns (uint) {
         uint minOdds = _minOddsForMarket(market);
         return baseOdds < minOdds ? minOdds : baseOdds;
     }
@@ -353,7 +353,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position positionFirst,
         ISportsAMM.Position positionSecond,
         bool inverse
-    ) internal view returns (uint _availableHigher) {
+    ) internal view returns (uint) {
         return sportAmmUtils.getAvailableHigherForPositions(market, positionFirst, positionSecond, inverse, liquidityPool);
     }
 

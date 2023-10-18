@@ -969,6 +969,10 @@ contract('ParlayAMM', (accounts) => {
 
 			assert.bnEqual(balanceOfSecondReferrerAfter, toUnit('1000.05'));
 
+			let safeBoxBalanceAfter = await Thales.balanceOf(safeBox);
+			console.log('safeBoxBalanceAfter : ' + safeBoxBalanceAfter / 1e18);
+			assert.bnEqual(safeBoxBalanceAfter, toUnit('0.15'));
+
 			let firstAnswer = await Thales.balanceOf(second);
 			console.log(
 				'First referrer change: ',

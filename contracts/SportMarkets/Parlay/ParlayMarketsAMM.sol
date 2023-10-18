@@ -91,9 +91,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
     bool public multicollateralEnabled;
 
-    receive() external payable {}
-
     address public parlayPolicy;
+
+    receive() external payable {}
 
     function initialize(
         address _owner,

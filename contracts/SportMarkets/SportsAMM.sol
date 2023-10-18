@@ -917,7 +917,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint baseOdds,
         uint balance,
         bool useBalance
-    ) internal view returns (uint availableAmount) {
+    ) public view returns (uint availableAmount) {
         if (baseOdds > 0 && baseOdds < maxSupportedOdds) {
             baseOdds = (baseOdds * (ONE + min_spread)) / ONE;
             balance = useBalance

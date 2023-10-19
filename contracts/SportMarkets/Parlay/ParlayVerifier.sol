@@ -87,7 +87,6 @@ contract ParlayVerifier {
     /// @param sportMarkets the sport markets for the parlay
     /// @return tag1 all the tags 1 per market
     /// @return tag2 all the tags 2 per market
-    ////TODO: IIRC we said that we dont need this
     function _obtainAllTags(address[] memory sportMarkets) internal view returns (uint[] memory tag1, uint[] memory tag2) {
         tag1 = new uint[](sportMarkets.length);
         tag2 = new uint[](sportMarkets.length);
@@ -353,7 +352,6 @@ contract ParlayVerifier {
                             sgpFee2 = sgpFee > 5 * ONE_PERCENT ? sgpFee - (2 * ONE_PERCENT) : sgpFee;
                         }
                     }
-                    // case when the totals odd is UNDER
                 } else {
                     if (odds2 >= (56 * ONE_PERCENT)) {
                         if (odds2 > (68 * ONE_PERCENT) && odds1 <= (15 * ONE_PERCENT)) {
@@ -504,7 +502,6 @@ contract ParlayVerifier {
             } else {
                 sgpFee2 = sgpFee;
             }
-            // Recalculation of the SGP fee in case it results in lower than the initial quotes
             if (sgpFee2 > 0) {
                 uint totalQuote = (odds1 * odds2) / ONE;
                 uint totalQuoteWSGP = ((totalQuote * ONE * ONE) / sgpFee2) / ONE;

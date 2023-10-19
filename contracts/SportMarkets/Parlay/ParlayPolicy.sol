@@ -21,15 +21,6 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
     IParlayMarketsAMM public parlayMarketsAMM;
     ISportsAMMTiny public sportsAMM;
     address public consumer;
-    // toBeRemoved:
-    // ------------------------------------------------------------------------
-    mapping(uint => uint) public restrictedMarketsCount;
-    mapping(uint => bool) public isRestrictedToBeCombined;
-    mapping(uint => mapping(uint => bool)) public restrictedTagCombination;
-    mapping(bytes32 => mapping(uint => uint)) public restrictedTagComboCount;
-    mapping(uint => mapping(uint => bool)) public restrictedTag1Combo;
-    mapping(uint => uint) public maxPlayerPropsPerSport;
-    // ------------------------------------------------------------------------
     mapping(uint => bool) public eligibleSportForSamePropsCombination;
 
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
@@ -39,9 +30,6 @@ contract ParlayPolicy is Initializable, ProxyOwned, ProxyPausable {
         consumer = sportsAMM.theRundownConsumer();
     }
 
-    // Check if two player props markets are eligible to be combined
-    // If they are not the same player, but same prop
-    // Or if they are the same player but different prop
     function areEligiblePropsMarkets(
         address _childMarket1,
         address _childMarket2,

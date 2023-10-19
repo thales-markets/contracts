@@ -97,7 +97,8 @@ async function main() {
 
 	await delay(5000);
 
-	if (networkObj.chainId != 10 || networkObj.chainId != 42161) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
+	} else {
 		await ParlayAMMDeployed.setPolicyAddresses(ParlayPolicyDeployed.address, {
 			from: owner.address,
 		});

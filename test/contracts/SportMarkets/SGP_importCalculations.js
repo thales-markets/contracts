@@ -304,7 +304,10 @@ contract('ParlayAMM', (accounts) => {
 				// console.log("diff_1AndOver: ", (diff_1AndOver)*100);
 				result1andOVER = result1andOVER / 1e18;
 				result1andOVER = 1 / result1andOVER;
-				if (diff_1AndOver > 6.0 || diff_1AndOver < -31.0) {
+				if (
+					diff_1AndOver > 4.0
+					// || diff_1AndOver < -31.0
+				) {
 					console.log(
 						'odds 1: ',
 						odds1 / 1e18,
@@ -327,7 +330,10 @@ contract('ParlayAMM', (accounts) => {
 				let diff_1andUNDER = ((odds1andUNDER - result1andUNDER) / odds1andUNDER) * 100;
 				result1andUNDER = result1andUNDER / 1e18;
 				result1andUNDER = 1 / result1andUNDER;
-				if (diff_1andUNDER > 6.0 || diff_1andUNDER < -31.0) {
+				if (
+					diff_1andUNDER > 4.0
+					// || diff_1andUNDER < -31.0
+				) {
 					console.log(
 						'odds 1: ',
 						odds1 / 1e18,
@@ -350,7 +356,10 @@ contract('ParlayAMM', (accounts) => {
 				let diff_2andOVER = ((odds2andOVER - result2andOVER) / odds2andOVER) * 100;
 				result2andOVER = result2andOVER / 1e18;
 				result2andOVER = 1 / result2andOVER;
-				if (diff_2andOVER > 6.0 || diff_2andOVER < -31.0) {
+				if (
+					diff_2andOVER > 4.0
+					// || diff_2andOVER < -31.0
+				) {
 					console.log(
 						'odds 2: ',
 						odds2 / 1e18,
@@ -374,7 +383,10 @@ contract('ParlayAMM', (accounts) => {
 				result2andUNDER = result2andUNDER / 1e18;
 				result2andUNDER = 1 / result2andUNDER;
 
-				if (diff_2andUNDER > 6.0 || diff_2andUNDER < -31.0) {
+				if (
+					diff_2andUNDER > 4.0
+					// || diff_2andUNDER < -31.0
+				) {
 					console.log(
 						'odds 2: ',
 						odds2 / 1e18,

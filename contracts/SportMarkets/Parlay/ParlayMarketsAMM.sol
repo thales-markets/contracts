@@ -765,20 +765,21 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address _sportsAMM,
         address _safeBox,
         address _referrals,
-        address _parlayMarketData,
-        address _parlayVerifier
+        address _parlayMarketData
     ) external onlyOwner {
         sportsAmm = ISportsAMM(_sportsAMM);
         sUSD.approve(address(sportsAmm), type(uint256).max);
         safeBox = _safeBox;
         referrals = _referrals;
         parlayMarketData = _parlayMarketData;
-        parlayVerifier = ParlayVerifier(_parlayVerifier);
-        emit AddressesSet(_sportsAMM, _safeBox, _referrals, _parlayMarketData, _parlayVerifier);
+        emit AddressesSet(_sportsAMM, _safeBox, _referrals, _parlayMarketData);
     }
 
-    function setPolicyAddresses(address _parlayPolicy) external onlyOwner {
+    function setVerifierAndPolicyAddresses(address _parlayVerifier, address _parlayPolicy) external onlyOwner {
+        require(_parlayVerifier != address(0) && _parlayPolicy != address(0), "InvAdd0");
         parlayPolicy = _parlayPolicy;
+        parlayVerifier = ParlayVerifier(_parlayVerifier);
+        emit VerifierAndPolicySet(_parlayVerifier, _parlayPolicy);
     }
 
     /// @notice set multicollateral onramp contract
@@ -830,13 +831,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _referrerFee,
         uint _maxAllowedRiskPerCombination
     );
-    event AddressesSet(
-        address _thalesAMM,
-        address _safeBox,
-        address _referrals,
-        address _parlayMarketData,
-        address _parlayVerifier
-    );
+    event AddressesSet(address _thalesAMM, address _safeBox, address _referrals, address _parlayMarketData);
+    event VerifierAndPolicySet(address _parlayVerifier, address _parlayPolicy);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event ExtraAmountTransferredDueToCancellation(address receiver, uint amount);
     event ParlayResolved(address _parlayMarket, address _parlayOwner, bool _userWon);

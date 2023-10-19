@@ -25,12 +25,6 @@
         "internalType": "address",
         "name": "_parlayMarketData",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_parlayVerifier",
-        "type": "address"
       }
     ],
     "name": "AddressesSet",
@@ -435,6 +429,25 @@
       }
     ],
     "name": "SetSUSD",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_parlayVerifier",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_parlayPolicy",
+        "type": "address"
+      }
+    ],
+    "name": "VerifierAndPolicySet",
     "type": "event"
   },
   {
@@ -1629,11 +1642,6 @@
         "internalType": "address",
         "name": "_parlayMarketData",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlayVerifier",
-        "type": "address"
       }
     ],
     "name": "setAddresses",
@@ -1806,19 +1814,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_parlayPolicy",
-        "type": "address"
-      }
-    ],
-    "name": "setPolicyAddresses",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256[]",
         "name": "tag1",
         "type": "uint256[]"
@@ -1896,6 +1891,24 @@
       }
     ],
     "name": "setSgpFeePerCombination",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayVerifier",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayPolicy",
+        "type": "address"
+      }
+    ],
+    "name": "setVerifierAndPolicyAddresses",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

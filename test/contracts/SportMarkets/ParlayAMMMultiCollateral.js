@@ -581,7 +581,6 @@ contract('ParlayAMM', (accounts) => {
 			safeBox,
 			Referrals.address,
 			ParlayMarketData.address,
-			ParlayVerifier.address,
 			{ from: owner }
 		);
 
@@ -732,7 +731,9 @@ contract('ParlayAMM', (accounts) => {
 		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
 		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
 
-		await ParlayAMM.setPolicyAddresses(ParlayPolicy.address, { from: owner });
+		await ParlayAMM.setVerifierAndPolicyAddresses(ParlayVerifier.address, ParlayPolicy.address, {
+			from: owner,
+		});
 	});
 
 	describe('Parlay AMM setters', () => {
@@ -754,9 +755,10 @@ contract('ParlayAMM', (accounts) => {
 			await ParlayAMM.setParameters(8, { from: owner });
 		});
 		it('set Addresses', async () => {
-			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, {
+			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, {
 				from: owner,
 			});
+			await ParlayAMM.setVerifierAndPolicyAddresses(owner, owner, { from: owner });
 		});
 		it('ParlayMarketData', async () => {
 			await ParlayMarketData.setParlayMarketsAMM(third, { from: owner });

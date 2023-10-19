@@ -924,7 +924,6 @@ contract('PlayerProps', (accounts) => {
 			safeBox,
 			Referrals.address,
 			ParlayMarketData.address,
-			ParlayVerifier.address,
 			{ from: owner }
 		);
 		ParlayMarketMastercopy = await ParlayMarketContract.new({ from: manager });
@@ -1063,8 +1062,9 @@ contract('PlayerProps', (accounts) => {
 		const ParlayPolicyContract = artifacts.require('ParlayPolicy');
 		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
 		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
-
-		await ParlayAMM.setPolicyAddresses(ParlayPolicy.address, { from: owner });
+		await ParlayAMM.setVerifierAndPolicyAddresses(ParlayVerifier.address, ParlayPolicy.address, {
+			from: owner,
+		});
 	});
 
 	describe('Player props', () => {

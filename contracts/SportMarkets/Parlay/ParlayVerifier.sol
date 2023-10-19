@@ -494,7 +494,13 @@ contract ParlayVerifier {
             if (sgpFee2 > 0) {
                 uint totalQuote = (odds1 * odds2) / ONE;
                 uint totalQuoteWSGP = ((totalQuote * ONE * ONE) / sgpFee2) / ONE;
-                if (totalQuoteWSGP > odds1 && odds1 < odds2) {
+                if (totalQuoteWSGP < (10 * ONE_PERCENT)) {
+                    if (odds1 > (10 * ONE_PERCENT)) {
+                        sgpFee2 = ((totalQuote * ONE * ONE) / (10 * ONE_PERCENT)) / ONE;
+                    } else {
+                        sgpFee2 = ((totalQuote * ONE * ONE) / (odds1 - ((odds1 * 10 * ONE_PERCENT) / ONE))) / ONE;
+                    }
+                } else if (totalQuoteWSGP > odds1 && odds1 < odds2) {
                     sgpFee2 = odds2 + (4 * 1e15);
                 } else if (totalQuoteWSGP > odds2 && odds2 <= odds1) {
                     sgpFee2 = odds1 + (4 * 1e15);

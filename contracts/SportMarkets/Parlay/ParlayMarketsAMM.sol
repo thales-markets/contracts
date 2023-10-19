@@ -197,10 +197,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint sUSDAfterFees,
             uint totalBuyAmount,
             uint totalQuote,
-            uint skewImpact
+            uint skewImpact,
+            uint[] memory finalQuotes,
+            uint[] memory amountsToBuy
         )
     {
-        (sUSDAfterFees, totalBuyAmount, totalQuote, , skewImpact, , ) = _buyQuoteFromParlay(
+        (sUSDAfterFees, totalBuyAmount, totalQuote, , skewImpact, finalQuotes, amountsToBuy) = _buyQuoteFromParlay(
             _sportMarkets,
             _positions,
             _sUSDPaid

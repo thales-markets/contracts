@@ -1172,7 +1172,7 @@ contract('ParlayAMM', (accounts) => {
 			// 	totalSUSDToPay
 			// );
 
-			await ParlayAMM.setSGPFeePerPosition('9004', '0', '10002', '1', '1', toUnit(1), {
+			await ParlayAMM.setSGPFeePerPosition(['9004', '9016'], '0', '10002', '1', '1', toUnit(1), {
 				from: owner,
 			});
 
@@ -1411,16 +1411,16 @@ contract('ParlayAMM', (accounts) => {
 				parlayMarketsAddress[i] = parlayMarkets4[i].address.toString().replace('0X', '0x');
 			}
 			let slippage = toUnit('0.01');
-			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 1, 1, toUnit(1), {
+			await ParlayAMM.setSGPFeePerPosition([9016], 10001, 10002, 1, 1, toUnit(1), {
 				from: owner,
 			});
-			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 1, 0, toUnit(1), {
+			await ParlayAMM.setSGPFeePerPosition([9016], 10001, 10002, 1, 0, toUnit(1), {
 				from: owner,
 			});
-			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 0, 1, toUnit(1), {
+			await ParlayAMM.setSGPFeePerPosition([9016], 10001, 10002, 0, 1, toUnit(1), {
 				from: owner,
 			});
-			await ParlayAMM.setSGPFeePerPosition(9016, 10001, 10002, 0, 0, toUnit(1), {
+			await ParlayAMM.setSGPFeePerPosition([9016], 10001, 10002, 0, 0, toUnit(1), {
 				from: owner,
 			});
 

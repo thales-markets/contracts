@@ -701,18 +701,21 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function setSGPFeePerPosition(
-        uint tag1,
+        uint[] calldata tag1,
         uint tag2_1,
         uint tag2_2,
         uint position_1,
         uint position_2,
         uint fee
     ) external onlyOwner {
-        require(SGPFeePerCombination[tag1][tag2_1][tag2_2] > 0, "SGP not set for tags");
-        uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_1));
-        uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_2));
-        SGPFeePerCombination[tag1][posTag2_1][posTag2_2] = fee;
-        SGPFeePerCombination[tag1][posTag2_2][posTag2_1] = fee;
+        for (uint i = 0; i < tag1.length; i++) {
+            require(SGPFeePerCombination[tag1[i]][tag2_1][tag2_2] > 0, "SGP not set for tags");
+            uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_1));
+            uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_2));
+            SGPFeePerCombination[tag1[i]][posTag2_1][posTag2_2] = fee;
+            SGPFeePerCombination[tag1[i]][posTag2_2][posTag2_1] = fee;
+            emit SetSGPFeePerPosition(tag1[i], posTag2_2, posTag2_1, fee);
+        }
     }
 
     /// @notice Updates contract parametars
@@ -843,4 +846,5 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event NewParametersSet(uint parlaySize);
     event ParlayLPSet(address parlayLP);
     event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
+    event SetSGPFeePerPosition(uint tag1, uint tag2_1, uint tag2_2, uint fee);
 }

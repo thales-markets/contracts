@@ -398,6 +398,37 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tag2_1",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tag2_2",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "fee",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetSGPFeePerPosition",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "sUSDToken",
         "type": "address"
@@ -1788,9 +1819,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint256[]",
         "name": "tag1",
-        "type": "uint256"
+        "type": "uint256[]"
       },
       {
         "internalType": "uint256",

@@ -45,6 +45,9 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     /// @return The maximum supported odd for sport
     mapping(uint => uint) public maxSpreadPerSport;
 
+    uint public dynamicLiquidityCutoffTime;
+    uint public dynamicLiquidityCutoffDivider;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -169,6 +172,20 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
                 uint capSecondTag = capPerSportAndChild[tag1][tag2];
                 toReturn = capSecondTag > 0 ? capSecondTag : capFirstTag / 2;
             }
+        }
+
+        //TODO: add dynamic liquidity here
+        (uint maturity, ) = ISportPositionalMarket(market).times();
+        uint timeToStart = maturity - block.timestamp;
+        uint cutOffLiquidity = (toReturn * ONE) / dynamicLiquidityCutoffDivider;
+        if (timeToStart >= dynamicLiquidityCutoffTime) {
+            toReturn = cutOffLiquidity;
+        } else {
+            uint remainingFromCutOff = toReturn - cutOffLiquidity;
+            toReturn =
+                cutOffLiquidity +
+                ((dynamicLiquidityCutoffTime - timeToStart) / dynamicLiquidityCutoffTime) *
+                remainingFromCutOff;
         }
     }
 

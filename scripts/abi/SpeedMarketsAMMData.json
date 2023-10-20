@@ -67,6 +67,97 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "marketsArray",
+        "type": "address[]"
+      }
+    ],
+    "name": "getChainedMarketsData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "timeFrame",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "initialStrikeTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "strikeTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "int64",
+            "name": "initialStrikePrice",
+            "type": "int64"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction[]",
+            "name": "directions",
+            "type": "uint8[]"
+          },
+          {
+            "internalType": "int64[]",
+            "name": "strikePrices",
+            "type": "int64[]"
+          },
+          {
+            "internalType": "int64[]",
+            "name": "finalPrices",
+            "type": "int64[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "resolved",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isUserWinner",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "safeBoxImpact",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMMData.ChainedMarketData[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"

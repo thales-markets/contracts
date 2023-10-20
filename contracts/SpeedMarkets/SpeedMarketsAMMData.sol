@@ -11,6 +11,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
 
 import "./SpeedMarket.sol";
+import "./ChainedSpeedMarket.sol";
 
 /// @title An AMM data fetching for Thales speed markets
 contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
@@ -29,6 +30,23 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         bool isUserWinner;
         uint safeBoxImpact;
         uint lpFee;
+        uint256 createdAt;
+    }
+
+    struct ChainedMarketData {
+        address user;
+        bytes32 asset;
+        uint64 timeFrame;
+        uint64 initialStrikeTime;
+        uint64 strikeTime;
+        int64 initialStrikePrice;
+        SpeedMarket.Direction[] directions;
+        int64[] strikePrices;
+        int64[] finalPrices;
+        uint buyinAmount;
+        bool resolved;
+        bool isUserWinner;
+        uint safeBoxImpact;
         uint256 createdAt;
     }
 
@@ -75,7 +93,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
 
     //////////////////getters/////////////////
 
-    /// @notice return all market data for an array of markets
+    /// @notice return all speed market data for an array of markets
     function getMarketsData(address[] calldata marketsArray) external view returns (MarketData[] memory) {
         MarketData[] memory markets = new MarketData[](marketsArray.length);
         for (uint i = 0; i < marketsArray.length; i++) {
@@ -98,6 +116,41 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             if (ISpeedMarketsAMM(speedMarketsAMM).marketHasCreatedAtAttribute(marketsArray[i])) {
                 markets[i].createdAt = market.createdAt();
             }
+        }
+        return markets;
+    }
+
+    /// @notice return all chained speed market data for an array of markets
+    function getChainedMarketsData(address[] calldata marketsArray) external view returns (ChainedMarketData[] memory) {
+        ChainedMarketData[] memory markets = new ChainedMarketData[](marketsArray.length);
+        for (uint i = 0; i < marketsArray.length; i++) {
+            ChainedSpeedMarket market = ChainedSpeedMarket(marketsArray[i]);
+            markets[i].user = market.user();
+            markets[i].asset = market.asset();
+            markets[i].timeFrame = market.timeFrame();
+            markets[i].initialStrikeTime = market.initialStrikeTime();
+            markets[i].strikeTime = market.strikeTime();
+            markets[i].initialStrikePrice = market.initialStrikePrice();
+
+            SpeedMarket.Direction[] memory marketDirections = new SpeedMarket.Direction[](market.numOfDirections());
+            int64[] memory marketStrikePrices = new int64[](market.numOfPrices());
+            int64[] memory marketFinalPrices = new int64[](market.numOfPrices());
+            for (uint j = 0; j < market.numOfDirections(); j++) {
+                marketDirections[j] = market.directions(j);
+                if (market.resolved() && j < market.numOfPrices()) {
+                    marketStrikePrices[j] = market.strikePrices(j);
+                    marketFinalPrices[j] = market.finalPrices(j);
+                }
+            }
+            markets[i].directions = marketDirections;
+            markets[i].strikePrices = marketStrikePrices;
+            markets[i].finalPrices = marketFinalPrices;
+
+            markets[i].buyinAmount = market.buyinAmount();
+            markets[i].resolved = market.resolved();
+            markets[i].isUserWinner = market.isUserWinner();
+            markets[i].safeBoxImpact = market.safeBoxImpact();
+            markets[i].createdAt = market.createdAt();
         }
         return markets;
     }

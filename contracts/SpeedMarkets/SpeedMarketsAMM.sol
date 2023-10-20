@@ -23,7 +23,7 @@ import "../utils/libraries/AddressSetLib.sol";
 
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IMultiCollateralOnOffRamp.sol";
-import {IReferrals} from "../interfaces/IReferrals.sol";
+import "../interfaces/IReferrals.sol";
 
 import "./SpeedMarket.sol";
 import "./SpeedMarketsAMMUtils.sol";
@@ -296,12 +296,16 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         sUSD.safeTransfer(address(srm), buyinAmount * 2);
 
         uint referrerShare;
-        if (referrals != address(0) && referrer != address(0)) {
-            uint referrerFeeByTier = IReferrals(referrals).getReferrerFee(referrer);
-            if (referrerFeeByTier > 0) {
-                referrerShare = (buyinAmount * referrerFeeByTier) / ONE;
-                sUSD.safeTransfer(referrer, referrerShare);
-                emit ReferrerPaid(referrer, msg.sender, referrerShare, buyinAmount);
+        if (referrals != address(0)) {
+            address fetchedReferrer = IReferrals(referrals).referrals(msg.sender);
+
+            if (fetchedReferrer != address(0)) {
+                uint referrerFeeByTier = IReferrals(referrals).getReferrerFee(fetchedReferrer);
+                if (referrerFeeByTier > 0) {
+                    referrerShare = (buyinAmount * referrerFeeByTier) / ONE;
+                    sUSD.safeTransfer(fetchedReferrer, referrerShare);
+                    emit ReferrerPaid(fetchedReferrer, msg.sender, referrerShare, buyinAmount);
+                }
             }
         }
         sUSD.safeTransfer(safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
@@ -542,7 +546,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetMaximumPriceDelays(_maximumPriceDelay, _maximumPriceDelayForResolving);
     }
 
-    /// @notice maximum open interest per asset
+    /// @notice maximum risk per asset
     function setMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset) external onlyOwner {
         maxRiskPerAsset[asset] = _maxRiskPerAsset;
         emit SetMaxRiskPerAsset(asset, _maxRiskPerAsset);

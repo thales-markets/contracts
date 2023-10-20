@@ -294,7 +294,8 @@ contract('ParlayAMM', (accounts) => {
 					oddsOVER.toString(),
 					0,
 					sgpFee.toString(),
-					'250'
+					'250',
+					'1'
 				);
 				result1andOVER = parseFloat(result1andOVER.sgpFee2.toString());
 				// console.log("result1andOVER: ", result1andOVER);
@@ -323,7 +324,8 @@ contract('ParlayAMM', (accounts) => {
 					oddsUNDER.toString(),
 					1,
 					sgpFee.toString(),
-					'250'
+					'250',
+					'1'
 				);
 				result1andUNDER = parseFloat(result1andUNDER.sgpFee2.toString());
 				result1andUNDER = (parseFloat(odds1) * parseFloat(oddsUNDER)) / result1andUNDER;
@@ -349,7 +351,8 @@ contract('ParlayAMM', (accounts) => {
 					oddsOVER.toString(),
 					0,
 					sgpFee.toString(),
-					'250'
+					'250',
+					'1'
 				);
 				result2andOVER = parseFloat(result2andOVER.sgpFee2.toString());
 				result2andOVER = (parseFloat(odds2) * parseFloat(oddsOVER)) / result2andOVER;
@@ -375,7 +378,8 @@ contract('ParlayAMM', (accounts) => {
 					oddsUNDER.toString(),
 					1,
 					sgpFee.toString(),
-					'250'
+					'250',
+					'1'
 				);
 				result2andUNDER = parseFloat(result2andUNDER.sgpFee2.toString());
 				result2andUNDER = (parseFloat(odds2) * parseFloat(oddsUNDER)) / result2andUNDER;
@@ -443,7 +447,8 @@ contract('ParlayAMM', (accounts) => {
 		// 				odd2.toString(),
 		// 				0,
 		// 				sgpFee.toString(),
-		// 				'250'
+		// 				'250',
+		// '1'
 		// 			);
 		// 			convertedResult = parseFloat(result.sgpFee2.toString());
 		// 			convertedResult = convertedResult / 1e18;

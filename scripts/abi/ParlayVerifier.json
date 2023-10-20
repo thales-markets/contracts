@@ -154,6 +154,11 @@
         "internalType": "uint256",
         "name": "totalsLine",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "defaultONE",
+        "type": "uint256"
       }
     ],
     "name": "getSPGOdds",

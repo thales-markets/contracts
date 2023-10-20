@@ -46,6 +46,7 @@ contract ParlayVerifier {
         uint[] positions;
         ISportsAMM sportsAMM;
         address parlayAMM;
+        uint defaultONE;
     }
 
     struct CachedMarket {
@@ -59,6 +60,7 @@ contract ParlayVerifier {
         uint[] tag1;
         uint[] tag2;
         IParlayPolicy parlayPolicy;
+        uint defaultONE;
     }
 
     /// @notice Verifying if given parlay is able to be created given the policies in state
@@ -80,7 +82,9 @@ contract ParlayVerifier {
         uint[] memory tags2;
         IParlayPolicy parlayPolicy = IParlayPolicy(IParlayMarketsAMM(params.parlayAMM).parlayPolicy());
         (tags1, tags2) = _obtainAllTags(params.sportMarkets);
-        (odds, sgpFees) = _checkSGPAndGetOdds(CheckSGP(params.sportMarkets, params.positions, tags1, tags2, parlayPolicy));
+        (odds, sgpFees) = _checkSGPAndGetOdds(
+            CheckSGP(params.sportMarkets, params.positions, tags1, tags2, parlayPolicy, params.defaultONE)
+        );
     }
 
     /// @notice Obtain all the tags for each position and calculate unique ones
@@ -163,7 +167,8 @@ contract ParlayVerifier {
                                         ),
                                         params.positions[j],
                                         sgpFee,
-                                        params.parlayPolicy.getChildMarketTotalLine(params.sportMarkets[j])
+                                        params.parlayPolicy.getChildMarketTotalLine(params.sportMarkets[j]),
+                                        params.defaultONE
                                     );
                                 } else {
                                     (odds[j], odds[i], sgpFees[j], sgpFees[i]) = _getSGPSingleOdds(
@@ -177,7 +182,8 @@ contract ParlayVerifier {
                                         ),
                                         params.positions[i],
                                         sgpFee,
-                                        params.parlayPolicy.getChildMarketTotalLine(params.sportMarkets[i])
+                                        params.parlayPolicy.getChildMarketTotalLine(params.sportMarkets[i]),
+                                        params.defaultONE
                                     );
                                 }
                             }
@@ -198,7 +204,8 @@ contract ParlayVerifier {
         uint odds2,
         uint position2,
         uint sgpFee,
-        uint totalsLine
+        uint totalsLine,
+        uint defaultONE
     )
         external
         pure
@@ -209,7 +216,14 @@ contract ParlayVerifier {
             uint sgpFee2
         )
     {
-        (resultOdds1, resultOdds2, sgpFee1, sgpFee2) = _getSGPSingleOdds(odds1, odds2, position2, sgpFee, totalsLine);
+        (resultOdds1, resultOdds2, sgpFee1, sgpFee2) = _getSGPSingleOdds(
+            odds1,
+            odds2,
+            position2,
+            sgpFee,
+            totalsLine,
+            defaultONE
+        );
     }
 
     /// @notice Calculate the sgpFees for the positions of two sport markets, given their odds and default sgpfee
@@ -225,7 +239,8 @@ contract ParlayVerifier {
         uint odds2,
         uint position2,
         uint sgpFee,
-        uint totalsLine
+        uint totalsLine,
+        uint defaultONE
     )
         internal
         pure
@@ -238,6 +253,9 @@ contract ParlayVerifier {
     {
         resultOdds1 = odds1;
         resultOdds2 = odds2;
+
+        odds1 = odds1 * defaultONE;
+        odds2 = odds2 * defaultONE;
 
         if (odds1 > 0 && odds2 > 0) {
             if (totalsLine == 2) {
@@ -536,7 +554,7 @@ contract ParlayVerifier {
         bool eligible;
         uint[] memory marketOdds;
         (eligible, marketOdds, params.sgpFees) = _verifyMarkets(
-            VerifyMarket(params.sportMarkets, params.positions, params.sportsAMM, params.parlayAMM)
+            VerifyMarket(params.sportMarkets, params.positions, params.sportsAMM, params.parlayAMM, params.defaultONE)
         );
         if (eligible && numOfMarkets == params.positions.length && numOfMarkets > 0 && numOfMarkets <= params.parlaySize) {
             finalQuotes = new uint[](numOfMarkets);

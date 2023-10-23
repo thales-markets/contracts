@@ -67,6 +67,7 @@ async function main() {
 		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
 		SafeBox = getTargetAddress('SafeBox', network);
 	}
+
 	if (networkObj.chainId == 8453) {
 		networkObj.name = 'baseMainnet';
 		network = 'baseMainnet';
@@ -76,39 +77,48 @@ async function main() {
 		SafeBox = getTargetAddress('SafeBox', network);
 	}
 
-	const ParlayVerifier = await ethers.getContractFactory('ParlayVerifier');
-
-	const ParlayVerifierDeployed = await ParlayVerifier.deploy();
-	await ParlayVerifierDeployed.deployed();
-
-	await delay(10000);
-	console.log('ParlayVerifier Deployed on', ParlayVerifierDeployed.address);
-	setTargetAddress('ParlayVerifier', network, ParlayVerifierDeployed.address);
-	await delay(60000);
-
-	const ReferralsContract = getTargetAddress('Referrals', network);
-	const ParlayMarketDataContract = getTargetAddress('ParlayMarketData', network);
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
-	const ParlayAMMDeployed = ParlayAMM.attach(ParlayAMMAddress);
+	const ParlayAMMDeployed = await ParlayAMM.attach(ParlayAMMAddress);
+	console.log('ParlayAMM found at: ', ParlayAMMAddress);
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || etworkObj.chainId == 8453) {
-	} else {
-		await ParlayAMMDeployed.setAddresses(
-			SportsAMMContract,
-			SafeBox,
-			ReferralsContract,
-			ParlayMarketDataContract,
-			ParlayVerifierDeployed.address,
-			{ from: owner.address }
-		);
-		console.log('Addresses set in ParlayAMM');
-	}
+	const ParlayPolicy = await ethers.getContractFactory('ParlayPolicy');
+
 	await delay(2000);
+	const ParlayPolicyDeployed = await upgrades.deployProxy(ParlayPolicy, [
+		owner.address,
+		ParlayAMMAddress,
+	]);
+	await delay(2000);
+	await ParlayPolicyDeployed.deployed();
+
+	console.log('ParlayPolicy Deployed on', ParlayPolicyDeployed.address);
+	setTargetAddress('ParlayPolicy', network, ParlayPolicyDeployed.address);
+
+	await delay(65000);
+	const ParlayPolicyImplementation = await getImplementationAddress(
+		ethers.provider,
+		ParlayPolicyDeployed.address
+	);
+
+	console.log('Implementation ParlayPolicy: ', ParlayPolicyImplementation);
+	setTargetAddress('ParlayPolicyImplementation', network, ParlayPolicyImplementation);
+
+	await delay(5000);
+
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 8453) {
+	} else {
+		await ParlayAMMDeployed.setPolicyAddresses(ParlayPolicyDeployed.address, {
+			from: owner.address,
+		});
+
+		console.log('ParlayPolicy address set on ParlayAMM');
+	}
+	await delay(5000);
 
 	try {
 		await hre.run('verify:verify', {
-			address: ParlayVerifierDeployed.address,
+			address: ParlayPolicyImplementation,
 		});
 	} catch (e) {
 		console.log(e);

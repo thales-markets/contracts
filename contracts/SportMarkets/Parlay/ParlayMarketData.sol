@@ -14,6 +14,9 @@ import "./ParlayMarket.sol";
 contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     using AddressSetLib for AddressSetLib.AddressSet;
     AddressSetLib.AddressSet internal _knownMarkets;
+
+    uint private constant ONE = 1e18;
+
     struct ParlayDetails {
         uint amount;
         uint sUSDPaid;
@@ -304,9 +307,9 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         uint[] memory indexes = new uint[](100);
         for (uint i = 9001; i < 9999; i++) {
             if (
-                IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 0, 10002) > 0 ||
-                IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 0, 10001) > 0 ||
-                IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 10001, 10002) > 0
+                IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 0, 10002, 3, 3) > 0 ||
+                IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 0, 10001, 3, 3) > 0 ||
+                IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(i, 10001, 10002, 3, 3) > 0
             ) {
                 indexes[numberOfFeesSet] = i;
                 ++numberOfFeesSet;
@@ -319,17 +322,23 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
                 sgpFees[i].sgpMoneylineTotals = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(
                     indexes[i],
                     0,
-                    10002
+                    10002,
+                    3,
+                    3
                 );
                 sgpFees[i].sgpMoneylineSpreads = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(
                     indexes[i],
                     0,
-                    10001
+                    10001,
+                    3,
+                    3
                 );
                 sgpFees[i].sgpSpreadsTotals = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(
                     indexes[i],
                     10001,
-                    10002
+                    10002,
+                    3,
+                    3
                 );
             }
         }
@@ -339,10 +348,37 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         sgpFees = new SGPFees[](tags.length);
         for (uint i = 0; i < tags.length; i++) {
             sgpFees[i].tag = tags[i];
-            sgpFees[i].sgpMoneylineTotals = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(tags[i], 0, 10002);
-            sgpFees[i].sgpMoneylineSpreads = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(tags[i], 0, 10001);
-            sgpFees[i].sgpSpreadsTotals = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(tags[i], 10001, 10002);
+            sgpFees[i].sgpMoneylineTotals = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(
+                tags[i],
+                0,
+                10002,
+                3,
+                3
+            );
+            sgpFees[i].sgpMoneylineSpreads = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(
+                tags[i],
+                0,
+                10001,
+                3,
+                3
+            );
+            sgpFees[i].sgpSpreadsTotals = IParlayMarketsAMM(parlayMarketsAMM).getSgpFeePerCombination(
+                tags[i],
+                10001,
+                10002,
+                3,
+                3
+            );
         }
+    }
+
+    function getCombinedMarketOdd(
+        address[] memory _sportMarkets,
+        uint[] memory _positions
+        ) external view returns(uint quote) {
+            if(_sportMarkets.length == 2 && _positions.length == 2) {
+                ( , , quote, , , , ) = IParlayMarketsAMM(parlayMarketsAMM).buyQuoteFromParlay(_sportMarkets, _positions, ONE);
+            }
     }
 
     function _getAllParlaysForGamePosition(address _sportMarket, uint _position)

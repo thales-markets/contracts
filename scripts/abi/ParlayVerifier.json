@@ -77,9 +77,9 @@
             "type": "uint256"
           },
           {
-            "internalType": "uint256",
-            "name": "sgpFee",
-            "type": "uint256"
+            "internalType": "uint256[]",
+            "name": "sgpFees",
+            "type": "uint256[]"
           },
           {
             "internalType": "contract ISportsAMM",
@@ -131,50 +131,60 @@
   {
     "inputs": [
       {
-        "internalType": "address[]",
-        "name": "_sportMarkets",
-        "type": "address[]"
-      },
-      {
         "internalType": "uint256",
-        "name": "_sUSDAfterFees",
-        "type": "uint256"
-      },
-      {
-        "internalType": "contract ISportsAMM",
-        "name": "_sportsAMM",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlayAMM",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_totalBuyAmount",
+        "name": "odds1",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_totalQuote",
+        "name": "odds2",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_oldSkew",
+        "name": "position2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sgpFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalsLine",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "defaultONE",
         "type": "uint256"
       }
     ],
-    "name": "getSkewImpact",
+    "name": "getSPGOdds",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "resultSkewImpact",
+        "name": "resultOdds1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "resultOdds2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sgpFee1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sgpFee2",
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {

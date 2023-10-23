@@ -589,7 +589,6 @@ contract('ParlayAMM', (accounts) => {
 			safeBox,
 			Referrals.address,
 			ParlayMarketData.address,
-			ParlayVerifier.address,
 			{ from: owner }
 		);
 
@@ -732,7 +731,9 @@ contract('ParlayAMM', (accounts) => {
 		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
 		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
 
-		await ParlayAMM.setPolicyAddresses(ParlayPolicy.address, { from: owner });
+		await ParlayAMM.setVerifierAndPolicyAddresses(ParlayVerifier.address, ParlayPolicy.address, {
+			from: owner,
+		});
 	});
 
 	describe('Check ParlayAMM data', () => {

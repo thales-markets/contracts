@@ -13,26 +13,9 @@ interface IParlayPolicy {
     /* ========== VIEWS / VARIABLES ========== */
     function consumer() external view returns (address);
 
-    function restrictedMarketsCount(uint tag) external view returns (uint);
-
-    function isRestrictedToBeCombined(uint tag) external view returns (bool);
-
-    function restrictedTagCombination(uint tag1, uint tag2) external view returns (bool);
-
-    function isTags1ComboRestricted(uint tag1, uint tag2) external view returns (bool isRestricted);
-
-    function isRestrictedComboEligible(
-        uint tag1,
-        uint tag2,
-        uint tag1Count,
-        uint tag2Count
-    ) external view returns (bool eligible);
-
     function getSgpFeePerCombination(SGPData memory params) external view returns (uint sgpFee);
 
     function getMarketDefaultOdds(address _sportMarket, uint _position) external view returns (uint odd);
-
-    function maxPlayerPropsPerSport(uint tag1) external view returns (uint);
 
     function areEligiblePropsMarkets(
         address _childMarket1,

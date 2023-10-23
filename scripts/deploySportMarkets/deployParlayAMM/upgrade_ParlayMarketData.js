@@ -49,11 +49,21 @@ async function main() {
 		network = 'arbitrumOne';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
 
 	const ParlayMarketDataAddress = getTargetAddress('ParlayMarketData', network);
 	const ParlayMarketData = await ethers.getContractFactory('ParlayMarketData');
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 5 || networkObj.chainId == 42161) {
+	if (
+		networkObj.chainId == 10 ||
+		networkObj.chainId == 5 ||
+		networkObj.chainId == 42161 ||
+		networkObj.chainId == 8453
+	) {
 		const implementation = await upgrades.prepareUpgrade(
 			ParlayMarketDataAddress,
 			ParlayMarketData,

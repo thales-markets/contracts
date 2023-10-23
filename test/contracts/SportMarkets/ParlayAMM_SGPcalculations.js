@@ -291,7 +291,8 @@ contract('ParlayAMM', (accounts) => {
 						odd2.toString(),
 						0,
 						sgpFee.toString(),
-						'250'
+						'250',
+						'1'
 					);
 					convertedResult = parseFloat(result.sgpFee2.toString());
 					convertedResult = convertedResult / 1e18;

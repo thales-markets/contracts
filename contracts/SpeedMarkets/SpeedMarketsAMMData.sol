@@ -9,6 +9,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
 import "../interfaces/ISpeedMarketsAMM.sol";
+import "../interfaces/IChainedSpeedMarketsAMM.sol";
 
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";
@@ -16,6 +17,8 @@ import "./ChainedSpeedMarket.sol";
 /// @title An AMM data fetching for Thales speed markets
 contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
     address public speedMarketsAMM;
+
+    address public chainedSpeedMarketsAMM;
 
     struct MarketData {
         address user;
@@ -79,16 +82,31 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         bool isAddressWhitelisted;
     }
 
+    struct ChainedSpeedMarketsAMMParameters {
+        uint numActiveMarkets;
+        uint numMaturedMarkets;
+        uint numActiveMarketsPerUser;
+        uint numMaturedMarketsPerUser;
+        uint minChainedMarkets;
+        uint maxChainedMarkets;
+        uint64 minTimeFrame;
+        uint minBuyinAmount;
+        uint maxBuyinAmount;
+        uint maxProfitPerIndividualMarket;
+        uint payoutMultiplier;
+    }
+
     function initialize(address _owner, address _speedMarketsAMM) external initializer {
         setOwner(_owner);
         speedMarketsAMM = _speedMarketsAMM;
     }
 
-    /// @notice Set speed markets AMM address
+    /// @notice Set speed and chained speed markets AMM addresses
     /// @param _speedMarketsAMM to use address for fetching data
-    function setSpeedMarketsAMM(address _speedMarketsAMM) external onlyOwner {
+    function setSpeedMarketsAMM(address _speedMarketsAMM, address _chainedSpeedMarketsAMM) external onlyOwner {
         speedMarketsAMM = _speedMarketsAMM;
-        emit SetSpeedMarketsAMM(_speedMarketsAMM);
+        chainedSpeedMarketsAMM = _chainedSpeedMarketsAMM;
+        emit SetSpeedMarketsAMM(_speedMarketsAMM, _chainedSpeedMarketsAMM);
     }
 
     //////////////////getters/////////////////
@@ -156,10 +174,15 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     /// @notice return all risk data (current and max) by specified asset
-    function getRiskPerAsset(bytes32 asset) external view returns (Risk memory) {
+    function getRiskPerAsset(bytes32 asset, bool isChained) external view returns (Risk memory) {
         Risk memory risk;
-        risk.current = ISpeedMarketsAMM(speedMarketsAMM).currentRiskPerAsset(asset);
-        risk.max = ISpeedMarketsAMM(speedMarketsAMM).maxRiskPerAsset(asset);
+        risk.current = isChained
+            ? IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).currentRiskPerAsset(asset)
+            : ISpeedMarketsAMM(speedMarketsAMM).currentRiskPerAsset(asset);
+        risk.max = isChained
+            ? IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxRiskPerAsset(asset)
+            : ISpeedMarketsAMM(speedMarketsAMM).maxRiskPerAsset(asset);
+
         return risk;
     }
 
@@ -180,7 +203,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         return risks;
     }
 
-    /// @notice return all AMM parameters
+    /// @notice return all speed AMM parameters
     function getSpeedMarketsAMMParameters(address _walletAddress) external view returns (SpeedMarketsAMMParameters memory) {
         uint[5] memory allLengths = ISpeedMarketsAMM(speedMarketsAMM).getLengths(_walletAddress);
 
@@ -212,7 +235,31 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             );
     }
 
+    /// @notice return all chained speed AMM parameters
+    function getChainedSpeedMarketsAMMParameters(address _walletAddress)
+        external
+        view
+        returns (ChainedSpeedMarketsAMMParameters memory)
+    {
+        uint[4] memory allLengths = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).getLengths(_walletAddress);
+
+        return
+            ChainedSpeedMarketsAMMParameters(
+                allLengths[0], // numActiveMarkets
+                allLengths[1], // numMaturedMarkets
+                _walletAddress != address(0) ? allLengths[2] : 0, // numActiveMarketsPerUser
+                _walletAddress != address(0) ? allLengths[3] : 0, // numMaturedMarketsPerUser
+                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minChainedMarkets(),
+                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxChainedMarkets(),
+                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minTimeFrame(),
+                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minBuyinAmount(),
+                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxBuyinAmount(),
+                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxProfitPerIndividualMarket(),
+                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).payoutMultiplier()
+            );
+    }
+
     //////////////////events/////////////////
 
-    event SetSpeedMarketsAMM(address _speedMarketsAMM);
+    event SetSpeedMarketsAMM(address _speedMarketsAMM, address _chainedSpeedMarketsAMM);
 }

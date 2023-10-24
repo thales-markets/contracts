@@ -455,6 +455,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit MarketResolved(market, SpeedMarket(market).result(), SpeedMarket(market).isUserWinner());
     }
 
+    /// @notice Transfer amount to destination address
+    function transferAmount(address _destination, uint _amount) external onlyOwner {
+        sUSD.safeTransfer(_destination, _amount);
+        emit AmountTransfered(_destination, _amount);
+    }
+
     //////////// getters /////////////////
 
     /// @notice activeMarkets returns list of active markets
@@ -676,4 +682,5 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SetAddresses(address _pyth, address _referrals, address _stakingThales);
     event SetAMMUtils(SpeedMarketsAMMUtils _speedMarketsAMMUtils);
+    event AmountTransfered(address _destination, uint _amount);
 }

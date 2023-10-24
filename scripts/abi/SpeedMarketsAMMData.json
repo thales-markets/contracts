@@ -52,6 +52,12 @@
         "internalType": "address",
         "name": "_speedMarketsAMM",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_chainedSpeedMarketsAMM",
+        "type": "address"
       }
     ],
     "name": "SetSpeedMarketsAMM",
@@ -62,6 +68,19 @@
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "chainedSpeedMarketsAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -150,6 +169,82 @@
         "internalType": "struct SpeedMarketsAMMData.ChainedMarketData[]",
         "name": "",
         "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_walletAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getChainedSpeedMarketsAMMParameters",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "numActiveMarkets",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numMaturedMarkets",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numActiveMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numMaturedMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minChainedMarkets",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxChainedMarkets",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "minTimeFrame",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minBuyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxBuyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxProfitPerIndividualMarket",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "payoutMultiplier",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMMData.ChainedSpeedMarketsAMMParameters",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -283,6 +378,11 @@
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
+      },
+      {
+        "internalType": "bool",
+        "name": "isChained",
+        "type": "bool"
       }
     ],
     "name": "getRiskPerAsset",
@@ -518,6 +618,11 @@
       {
         "internalType": "address",
         "name": "_speedMarketsAMM",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_chainedSpeedMarketsAMM",
         "type": "address"
       }
     ],

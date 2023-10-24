@@ -4,115 +4,182 @@ const { artifacts, contract } = require('hardhat');
 const { assert } = require('../../utils/common');
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
-const { roundUp } = require('big.js');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 contract('ChainedSpeedMarkets', (accounts) => {
-	const [owner, user, safeBox] = accounts;
+	const [owner, user, safeBox, referrerAddress, proxyUser] = accounts;
+	let exoticUSD, exoticOP;
+	let chainedSpeedMarketsAMM, speedMarketsAMMData, speedMarketsAMM;
+	let mockPyth, priceFeedUpdateData, fee;
+	let mockWeth, swapRouterMock;
+
+	const PAYOUT_MULTIPLIER = 1.9;
+	const DEFAULT_REFERRER_FEE = 0.005;
+	const SILVER_REFERRER_FEE = 0.0075;
+	const GOLD_REFERRER_FEE = 0.01;
+	const PYTH_ETH_PRICE = 186342931000;
+
+	before(async () => {
+		// -------------------------- Speed Markets --------------------------
+		let SpeedMarketsAMMContract = artifacts.require('SpeedMarketsAMM');
+		speedMarketsAMM = await SpeedMarketsAMMContract.new();
+
+		let SpeedMarketsAMMDataContract = artifacts.require('SpeedMarketsAMMData');
+		speedMarketsAMMData = await SpeedMarketsAMMDataContract.new();
+		await speedMarketsAMMData.initialize(owner, speedMarketsAMM.address);
+
+		let ExoticUSD = artifacts.require('ExoticUSD');
+		exoticUSD = await ExoticUSD.new();
+
+		await exoticUSD.setDefaultAmount(toUnit(5000));
+
+		await exoticUSD.mintForUser(owner);
+		let balance = await exoticUSD.balanceOf(owner);
+		console.log('Balance of owner is ' + balance / 1e18);
+
+		await exoticUSD.transfer(speedMarketsAMM.address, toUnit(100), { from: owner });
+
+		await exoticUSD.mintForUser(user);
+		balance = await exoticUSD.balanceOf(user);
+		console.log('Balance of user is ' + balance / 1e18);
+
+		let MockPriceFeed = artifacts.require('MockPriceFeed');
+		let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
+		await MockPriceFeedDeployed.setPricetoReturn(10000);
+
+		let MockPyth = artifacts.require('MockPythCustom');
+		mockPyth = await MockPyth.new(60, 1e6);
+
+		await speedMarketsAMM.initialize(owner, exoticUSD.address, mockPyth.address);
+
+		let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
+		let speedMarketMastercopy = await SpeedMarketMastercopy.new();
+
+		await speedMarketsAMM.setMastercopy(speedMarketMastercopy.address);
+		await speedMarketsAMM.setAmounts(toUnit(5), toUnit(500));
+		await speedMarketsAMM.setTimes(3600, 86400);
+		await speedMarketsAMM.setMaximumPriceDelays(60, 60);
+		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
+		await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
+		await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.02));
+		await speedMarketsAMM.setAssetToPythID(
+			toBytes32('ETH'),
+			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace'
+		);
+
+		let now = await currentTime();
+
+		priceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+			PYTH_ETH_PRICE,
+			74093100,
+			-8,
+			PYTH_ETH_PRICE,
+			74093100,
+			now
+		);
+
+		let updateDataArray = [];
+		updateDataArray[0] = priceFeedUpdateData;
+
+		fee = await mockPyth.getUpdateFee(updateDataArray);
+
+		// -------------------------- Referrals --------------------------
+		let Referrals = artifacts.require('Referrals');
+		let referrals = await Referrals.new();
+
+		await referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS);
+		await referrals.setWhitelistedAddress(speedMarketsAMM.address, true);
+		await referrals.setReferrerFees(
+			toUnit(DEFAULT_REFERRER_FEE),
+			toUnit(SILVER_REFERRER_FEE),
+			toUnit(GOLD_REFERRER_FEE)
+		);
+
+		await speedMarketsAMM.setAddresses(mockPyth.address, referrals.address, ZERO_ADDRESS, {
+			from: owner,
+		});
+
+		// -------------------------- Multi Collateral --------------------------
+		let MultiCollateralOnOffRamp = artifacts.require('MultiCollateralOnOffRamp');
+		let multiCollateralOnOffRamp = await MultiCollateralOnOffRamp.new();
+		await multiCollateralOnOffRamp.initialize(owner, exoticUSD.address);
+
+		let ExoticOP = artifacts.require('ExoticUSD');
+		exoticOP = await ExoticOP.new();
+
+		await multiCollateralOnOffRamp.setPriceFeed(MockPriceFeedDeployed.address);
+		await multiCollateralOnOffRamp.setSupportedCollateral(exoticOP.address, true);
+
+		let MockWeth = artifacts.require('MockWeth');
+		mockWeth = await MockWeth.new();
+		await multiCollateralOnOffRamp.setWETH(mockWeth.address, { from: owner });
+		await multiCollateralOnOffRamp.setSupportedCollateral(mockWeth.address, true, {
+			from: owner,
+		});
+
+		await speedMarketsAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true);
+		await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMM.address, true);
+
+		let SwapRouterMock = artifacts.require('SwapRouterMock');
+		swapRouterMock = await SwapRouterMock.new();
+
+		await multiCollateralOnOffRamp.setSwapRouter(swapRouterMock.address);
+		await swapRouterMock.setDefaults(exoticOP.address, exoticUSD.address);
+
+		await exoticUSD.mintForUser(proxyUser);
+		await exoticUSD.transfer(swapRouterMock.address, toUnit(100), { from: proxyUser });
+		balance = await exoticUSD.balanceOf(swapRouterMock.address);
+		console.log('Balance of swap router is ' + balance / 1e18);
+
+		await MockPriceFeedDeployed.setPricetoReturn(toUnit(1));
+
+		await multiCollateralOnOffRamp.setCurveSUSD(
+			exoticUSD.address,
+			exoticUSD.address,
+			exoticUSD.address,
+			exoticUSD.address,
+			true,
+			toUnit('0.01')
+		);
+
+		// -------------------------- Chained Speed Markets --------------------------
+		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
+		chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
+		await chainedSpeedMarketsAMM.initialize(owner, exoticUSD.address);
+
+		await speedMarketsAMMData.setSpeedMarketsAMM(
+			speedMarketsAMM.address,
+			chainedSpeedMarketsAMM.address,
+			{ from: owner }
+		);
+
+		await exoticUSD.transfer(chainedSpeedMarketsAMM.address, toUnit(5000), { from: owner });
+
+		let ChainedSpeedMarketMastercopy = artifacts.require('ChainedSpeedMarketMastercopy');
+		let chainedSpeedMarketMastercopy = await ChainedSpeedMarketMastercopy.new();
+
+		await chainedSpeedMarketsAMM.setMastercopy(chainedSpeedMarketMastercopy.address);
+		await chainedSpeedMarketsAMM.setAddresses(speedMarketsAMM.address, ZERO_ADDRESS);
+		await chainedSpeedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
+		await chainedSpeedMarketsAMM.setLimitParams(
+			600, // minTimeFrame
+			2, // minChainedMarkets
+			6, // maxChainedMarkets
+			toUnit(5), // minBuyinAmount
+			toUnit(20), // maxBuyinAmount
+			toUnit(500), // maxProfitPerIndividualMarket
+			toUnit(PAYOUT_MULTIPLIER)
+		);
+
+		await referrals.setWhitelistedAddress(chainedSpeedMarketsAMM.address, true);
+		await multiCollateralOnOffRamp.setSupportedAMM(chainedSpeedMarketsAMM.address, true);
+	});
 
 	describe('Test Chained speed markets ', () => {
-		it('deploy and test', async () => {
-			// -------------------------- Speed Markets --------------------------
-			let SpeedMarketsAMMContract = artifacts.require('SpeedMarketsAMM');
-			let speedMarketsAMM = await SpeedMarketsAMMContract.new();
-
-			let SpeedMarketsAMMDataContract = artifacts.require('SpeedMarketsAMMData');
-			let speedMarketsAMMData = await SpeedMarketsAMMDataContract.new();
-			await speedMarketsAMMData.initialize(owner, speedMarketsAMM.address);
-			await speedMarketsAMMData.setSpeedMarketsAMM(speedMarketsAMM.address, { from: owner });
-
-			let ExoticUSD = artifacts.require('ExoticUSD');
-			let exoticUSD = await ExoticUSD.new();
-
-			await exoticUSD.setDefaultAmount(toUnit(2000));
-
-			await exoticUSD.mintForUser(owner);
-			let balance = await exoticUSD.balanceOf(owner);
-			console.log('Balance of owner is ' + balance / 1e18);
-
-			await exoticUSD.transfer(speedMarketsAMM.address, toUnit(100), { from: owner });
-
-			await exoticUSD.mintForUser(user);
-			balance = await exoticUSD.balanceOf(user);
-			console.log('Balance of user is ' + balance / 1e18);
-
-			let MockPriceFeed = artifacts.require('MockPriceFeed');
-			let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
-			await MockPriceFeedDeployed.setPricetoReturn(10000);
-
-			let MockPyth = artifacts.require('MockPythCustom');
-			let mockPyth = await MockPyth.new(60, 1e6);
-
-			await speedMarketsAMM.initialize(owner, exoticUSD.address, mockPyth.address);
-
-			let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
-			let speedMarketMastercopy = await SpeedMarketMastercopy.new();
-
-			await speedMarketsAMM.setMastercopy(speedMarketMastercopy.address);
-			await speedMarketsAMM.setAmounts(toUnit(5), toUnit(500));
-			await speedMarketsAMM.setTimes(3600, 86400);
-			await speedMarketsAMM.setMaximumPriceDelays(30, 30);
-			await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
-			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
-			await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.02));
-			await speedMarketsAMM.setAssetToPythID(
-				toBytes32('ETH'),
-				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace'
-			);
-
-			let now = await currentTime();
-
-			let priceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
-				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
-				186342931000,
-				74093100,
-				-8,
-				186342931000,
-				74093100,
-				now
-			);
-
-			let updateDataArray = [];
-			updateDataArray[0] = priceFeedUpdateData;
-
-			let fee = await mockPyth.getUpdateFee(updateDataArray);
-
-			let Referrals = artifacts.require('Referrals');
-			let referrals = await Referrals.new();
-
-			await referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS);
-			await referrals.setWhitelistedAddress(speedMarketsAMM.address, true);
-			await referrals.setReferrerFees(toUnit(0.005), toUnit(0.0075), toUnit(0.01));
-
-			await speedMarketsAMM.setAddresses(mockPyth.address, referrals.address, ZERO_ADDRESS, {
-				from: owner,
-			});
-
-			// -------------------------- Chained Speed Markets --------------------------
-			let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
-			let chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
-			await chainedSpeedMarketsAMM.initialize(owner, exoticUSD.address);
-
-			await exoticUSD.transfer(chainedSpeedMarketsAMM.address, toUnit(1000), { from: owner });
-
-			let ChainedSpeedMarketMastercopy = artifacts.require('ChainedSpeedMarketMastercopy');
-			let chainedSpeedMarketMastercopy = await ChainedSpeedMarketMastercopy.new();
-
-			await chainedSpeedMarketsAMM.setMastercopy(chainedSpeedMarketMastercopy.address);
-			await chainedSpeedMarketsAMM.setAddresses(speedMarketsAMM.address, ZERO_ADDRESS);
-			await chainedSpeedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
-			let payoutMultiplier = 1.9;
-			await chainedSpeedMarketsAMM.setLimitParams(
-				600, // minTimeFrame
-				2, // minChainedMarkets
-				6, // maxChainedMarkets
-				toUnit(5), // minBuyinAmount
-				toUnit(20), // maxBuyinAmount
-				toUnit(500), // maxProfitPerIndividualMarket
-				toUnit(payoutMultiplier)
-			);
+		it('Should create chained speed markets with referral', async () => {
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
 
 			let buyinAmount = 10;
@@ -130,32 +197,295 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				)
 			).to.be.revertedWith('Wrong number of directions');
 
+			await expect(
+				chainedSpeedMarketsAMM.createNewMarket(
+					toBytes32('ETH'),
+					timeFrame,
+					[0, 1, 0, 0, 0, 0], // 6 directions
+					toUnit(11),
+					[priceFeedUpdateData],
+					ZERO_ADDRESS,
+					{ value: fee, from: user }
+				)
+			).to.be.revertedWith('Profit too high');
+
 			await chainedSpeedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				timeFrame,
 				[0, 1, 0, 0, 0, 0], // UP, DOWN, UP, UP, UP, UP
 				toUnit(buyinAmount),
 				[priceFeedUpdateData],
+				referrerAddress,
+				{ value: fee, from: user }
+			);
+
+			let markets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
+			let market = markets[markets.length - 1];
+			let marketDataArray = await speedMarketsAMMData.getChainedMarketsData([market]);
+			let numOfDirections = marketDataArray[0].directions.length;
+
+			console.log('Check strike times');
+			assert.equal(
+				Number(marketDataArray[0].createdAt) + timeFrame,
+				marketDataArray[0].initialStrikeTime
+			);
+			assert.equal(
+				Number(marketDataArray[0].createdAt) + numOfDirections * timeFrame,
+				marketDataArray[0].strikeTime
+			);
+
+			console.log('Check payout');
+			let marketBalance = await exoticUSD.balanceOf(market);
+			assert.equal(
+				marketBalance / 1e18,
+				(buyinAmount * PAYOUT_MULTIPLIER ** numOfDirections).toFixed(5)
+			);
+
+			console.log('Check default referrer fee');
+			let referrerBalance = await exoticUSD.balanceOf(referrerAddress);
+			assert.bnEqual(referrerBalance, toUnit(buyinAmount * DEFAULT_REFERRER_FEE)); // 0.5% from 10
+
+			console.log('Check liquidity validation');
+			await chainedSpeedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(900));
+			await expect(
+				chainedSpeedMarketsAMM.createNewMarket(
+					toBytes32('ETH'),
+					timeFrame,
+					[0, 1, 0, 0, 0, 0],
+					toUnit(buyinAmount),
+					[priceFeedUpdateData],
+					ZERO_ADDRESS,
+					{ value: fee, from: user }
+				)
+			).to.be.revertedWith('Out of liquidity');
+
+			await chainedSpeedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(2000));
+			await chainedSpeedMarketsAMM.createNewMarket(
+				toBytes32('ETH'),
+				timeFrame,
+				[0, 1, 0, 0, 0, 0], // 6 directions
+				toUnit(buyinAmount),
+				[priceFeedUpdateData],
 				ZERO_ADDRESS,
 				{ value: fee, from: user }
 			);
 
-			let markets = await chainedSpeedMarketsAMM.activeMarkets(0, 1);
-			let market = markets[0];
-			let marketData = await speedMarketsAMMData.getChainedMarketsData([market]);
-			let numOfDirections = marketData[0].directions.length;
-			// Check strike times
-			assert.equal(Number(marketData[0].createdAt) + timeFrame, marketData[0].initialStrikeTime);
-			assert.equal(
-				Number(marketData[0].createdAt) + numOfDirections * timeFrame,
-				marketData[0].strikeTime
+			await chainedSpeedMarketsAMM.createNewMarket(
+				toBytes32('ETH'),
+				timeFrame,
+				[0, 1, 0], // 3 directions
+				toUnit(buyinAmount),
+				[priceFeedUpdateData],
+				ZERO_ADDRESS,
+				{ value: fee, from: user }
 			);
-			// Check payout
-			let marketBalance = await exoticUSD.balanceOf(market);
-			assert.equal(
-				marketBalance / 1e18,
-				(buyinAmount * payoutMultiplier ** numOfDirections).toFixed(5)
+
+			await chainedSpeedMarketsAMM.createNewMarket(
+				toBytes32('ETH'),
+				timeFrame,
+				[0, 1], // 2 directions
+				toUnit(buyinAmount),
+				[priceFeedUpdateData],
+				ZERO_ADDRESS,
+				{ value: fee, from: user }
 			);
+
+			console.log('Check number of active markets');
+			let ammData = await speedMarketsAMMData.getChainedSpeedMarketsAMMParameters(user);
+			assert.equal(ammData.numActiveMarkets, 4);
+
+			console.log('Check current risk per asset');
+			markets = await chainedSpeedMarketsAMM.activeMarkets(0, ammData.numActiveMarkets);
+			marketDataArray = await speedMarketsAMMData.getChainedMarketsData(markets);
+
+			let expectedCurrentRisk = 0;
+			for (let marketData of marketDataArray) {
+				expectedCurrentRisk +=
+					buyinAmount * PAYOUT_MULTIPLIER ** marketData.directions.length -
+					buyinAmount * (1 + Number(marketData.safeBoxImpact / 1e18));
+			}
+
+			let riskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'), true);
+			assert.equal((riskPerAssetData.current / 1e18).toFixed(5), expectedCurrentRisk.toFixed(5));
+		});
+
+		it('Should create chained speed markets with different collateral', async () => {
+			await exoticOP.setDefaultAmount(toUnit(100));
+			await exoticOP.mintForUser(user);
+			let opBalance = await exoticOP.balanceOf(user);
+			console.log('OP balance of user is ' + opBalance / 1e18);
+
+			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
+			await exoticOP.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
+
+			await chainedSpeedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(5000));
+
+			let buyinAmount = 10;
+			let timeFrame = 600; // 10 min
+
+			await chainedSpeedMarketsAMM.createNewMarketWithDifferentCollateral(
+				toBytes32('ETH'),
+				timeFrame,
+				[0, 1, 1, 1, 1, 0], // 6 directions
+				[priceFeedUpdateData],
+				exoticOP.address,
+				toUnit(buyinAmount),
+				false,
+				ZERO_ADDRESS,
+				{ value: fee, from: user }
+			);
+
+			await swapRouterMock.setDefaults(mockWeth.address, exoticUSD.address);
+
+			await chainedSpeedMarketsAMM.createNewMarketWithDifferentCollateral(
+				toBytes32('ETH'),
+				timeFrame,
+				[0, 1], // 2 directions
+				[priceFeedUpdateData],
+				ZERO_ADDRESS,
+				toUnit(buyinAmount),
+				true,
+				ZERO_ADDRESS,
+				{ value: toUnit(buyinAmount + fee / 1e18), from: user }
+			);
+		});
+
+		it('Should resolve chained speed markets', async () => {
+			let activeMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
+			let market = activeMarkets[0];
+			let numOfActiveMarkets = activeMarkets.length;
+			console.log('Number of active markets', numOfActiveMarkets);
+			let marketData = await speedMarketsAMMData.getChainedMarketsData(activeMarkets);
+
+			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				Number(marketData[0].initialStrikePrice) - 500000000, // DOWN
+				74093100,
+				-8,
+				Number(marketData[0].initialStrikePrice) - 500000000,
+				74093100,
+				marketData[0].initialStrikeTime
+			);
+
+			await fastForward(86400);
+
+			let resolvedMarkets = 0;
+
+			await chainedSpeedMarketsAMM.resolveMarket(market, [[resolvePriceFeedUpdateData]], {
+				value: fee,
+				from: user,
+			});
+			resolvedMarkets++;
+
+			console.log('Check number of active markets after first resolve');
+			let curActiveMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
+			assert.equal(curActiveMarkets.length, numOfActiveMarkets - resolvedMarkets);
+
+			console.log('Check number of matured markets after first resolve');
+			let maturedMarkets = await chainedSpeedMarketsAMM.maturedMarkets(0, 10);
+			assert.equal(maturedMarkets.length, resolvedMarkets);
+
+			console.log('Check is first market resolved');
+			marketData = await speedMarketsAMMData.getChainedMarketsData([market]);
+			assert.equal(marketData[0].resolved, true);
+
+			console.log('Check is user lost on first market');
+			assert.equal(marketData[0].isUserWinner, false);
+
+			// next active market - second
+			market = activeMarkets[1];
+			marketData = await speedMarketsAMMData.getChainedMarketsData([market]);
+			resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				Number(marketData[0].initialStrikePrice) - 500000000, // DOWN
+				74093100,
+				-8,
+				Number(marketData[0].initialStrikePrice) - 500000000,
+				74093100,
+				marketData[0].initialStrikeTime
+			);
+
+			await chainedSpeedMarketsAMM.resolveMarketsBatch([market], [[resolvePriceFeedUpdateData]], {
+				value: fee,
+				from: user,
+			});
+			resolvedMarkets++;
+
+			// next active market - third
+			market = activeMarkets[2];
+			marketData = await speedMarketsAMMData.getChainedMarketsData([market]);
+			let finalPrices = [Number(marketData[0].initialStrikePrice) - 600000000]; // DOWN
+			await speedMarketsAMM.addToWhitelist(user, true, { from: owner });
+
+			await chainedSpeedMarketsAMM.resolveMarketManually(market, finalPrices, {
+				from: user,
+			});
+			resolvedMarkets++;
+
+			// next active market - fourth
+			market = activeMarkets[3];
+			marketData = await speedMarketsAMMData.getChainedMarketsData([market]);
+			finalPrices = [
+				Number(marketData[0].initialStrikePrice) + 500000000, // UP
+				Number(marketData[0].initialStrikePrice) + 300000000, // DOWN
+			];
+
+			await chainedSpeedMarketsAMM.resolveMarketManuallyBatch([market], [finalPrices], {
+				from: user,
+			});
+			resolvedMarkets++;
+
+			console.log('Check is user winner on last market');
+			marketData = await speedMarketsAMMData.getChainedMarketsData([market]);
+			assert.equal(marketData[0].isUserWinner, true);
+
+			console.log('Check number of active markets after all resolved');
+			curActiveMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
+			assert.equal(curActiveMarkets.length, numOfActiveMarkets - resolvedMarkets);
+		});
+
+		it('Should resolve chained speed markets with offramp', async () => {
+			let activeMarkets = await chainedSpeedMarketsAMM.activeMarketsPerUser(0, 10, user);
+			let maturedMarkets = await chainedSpeedMarketsAMM.maturedMarketsPerUser(0, 10, user);
+			let numOfMaturedMarkets = maturedMarkets.length;
+			console.log('Number of matured markets', numOfMaturedMarkets);
+
+			let marketData = await speedMarketsAMMData.getChainedMarketsData(activeMarkets);
+
+			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				Number(marketData[0].initialStrikePrice) - 500000000, // DOWN
+				74093100,
+				-8,
+				Number(marketData[0].initialStrikePrice) - 500000000,
+				74093100,
+				marketData[0].initialStrikeTime
+			);
+
+			let resolvedMarkets = 0;
+			let market = activeMarkets[0];
+			await chainedSpeedMarketsAMM.resolveMarketWithOfframp(
+				market,
+				[[resolvePriceFeedUpdateData]],
+				exoticOP.address,
+				false,
+				{ value: fee, from: user }
+			);
+			resolvedMarkets++;
+
+			market = activeMarkets[1];
+			await chainedSpeedMarketsAMM.resolveMarketWithOfframp(
+				market,
+				[[resolvePriceFeedUpdateData]],
+				ZERO_ADDRESS,
+				true,
+				{ value: fee, from: user }
+			);
+			resolvedMarkets++;
+
+			console.log('Check number of matured markets after all resolved');
+			maturedMarkets = await chainedSpeedMarketsAMM.maturedMarketsPerUser(0, 10, user);
+			assert.equal(maturedMarkets.length, numOfMaturedMarkets + resolvedMarkets);
 		});
 	});
 });

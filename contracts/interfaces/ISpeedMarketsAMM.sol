@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
 
 import "../interfaces/IReferrals.sol";
+import "../interfaces/IMultiCollateralOnOffRamp.sol";
 
 import "../SpeedMarkets/SpeedMarket.sol";
 
@@ -58,4 +59,8 @@ interface ISpeedMarketsAMM {
     function getLengths(address user) external view returns (uint[5] memory);
 
     function referrals() external view returns (IReferrals);
+
+    function multiCollateralOnOffRamp() external view returns (IMultiCollateralOnOffRamp);
+
+    function multicollateralEnabled() external view returns (bool);
 }

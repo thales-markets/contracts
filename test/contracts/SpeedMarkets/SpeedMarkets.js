@@ -115,12 +115,13 @@ contract('SpeedMarkets', (accounts) => {
 				{ value: fee }
 			);
 
-			let currentRiskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'));
-			console.log('currentRiskPerAssetData', currentRiskPerAssetData);
+			let riskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'), false);
+			console.log('riskPerAssetData', riskPerAssetData);
 
-			let currentRiskPerAssetAndDirectionData =
-				await speedMarketsAMMData.getDirectionalRiskPerAsset(toBytes32('ETH'));
-			console.log('currentRiskPerAssetAndDirectionData', currentRiskPerAssetAndDirectionData);
+			let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			console.log('riskPerAssetAndDirectionData', riskPerAssetAndDirectionData);
 
 			let price = await mockPyth.getPrice(pythId);
 			console.log('price of pyth Id is ' + price);
@@ -269,8 +270,13 @@ contract('SpeedMarkets', (accounts) => {
 			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
 			console.log('numActiveMarkets after batch resolve ' + ammData.numActiveMarkets);
 			console.log('numMaturedMarkets after batch resolve ' + ammData.numMaturedMarkets);
-
 			console.log('numMaturedMarketsPerUser ' + ammData.numMaturedMarketsPerUser);
+
+			let ammBalance = await exoticUSD.balanceOf(speedMarketsAMM.address);
+			console.log('Balance of AMM', ammBalance / 1e18);
+			await speedMarketsAMM.transferAmount(owner, toUnit(1));
+			ammBalance = await exoticUSD.balanceOf(speedMarketsAMM.address);
+			console.log('Balance of AMM after transfer', ammBalance / 1e18);
 		});
 	});
 });

@@ -13,7 +13,9 @@ module.exports = {
 		let SpeedMarketsAMMDataContract = artifacts.require('SpeedMarketsAMMData');
 		let speedMarketsAMMData = await SpeedMarketsAMMDataContract.new();
 		await speedMarketsAMMData.initialize(owner, speedMarketsAMM.address);
-		await speedMarketsAMMData.setSpeedMarketsAMM(speedMarketsAMM.address, { from: owner });
+		await speedMarketsAMMData.setSpeedMarketsAMM(speedMarketsAMM.address, ZERO_ADDRESS, {
+			from: owner,
+		});
 
 		let ExoticUSD = artifacts.require('ExoticUSD');
 		let exoticUSD = await ExoticUSD.new();

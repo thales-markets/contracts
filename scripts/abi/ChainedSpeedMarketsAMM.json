@@ -4,25 +4,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_whitelistAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "AddedIntoWhitelist",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint64",
         "name": "_minTimeFrame",
         "type": "uint64"
@@ -280,25 +261,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_onramper",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "SetMultiCollateralOnOffRamp",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "_safeBox",
         "type": "address"
       },
@@ -370,24 +332,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_whitelistAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "addToWhitelist",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -522,6 +466,25 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getLengths",
+    "outputs": [
+      {
+        "internalType": "uint256[4]",
+        "name": "",
+        "type": "uint256[4]"
       }
     ],
     "stateMutability": "view",
@@ -710,32 +673,6 @@
         "internalType": "uint64",
         "name": "",
         "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "multiCollateralOnOffRamp",
-    "outputs": [
-      {
-        "internalType": "contract IMultiCollateralOnOffRamp",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "multicollateralEnabled",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1015,24 +952,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_onramper",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "setMultiCollateralOnOffRamp",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_owner",
         "type": "address"
       }
@@ -1092,25 +1011,6 @@
     "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "whitelistedAddresses",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

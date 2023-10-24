@@ -60,16 +60,13 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     mapping(bytes32 => uint) public maxRiskPerAsset;
     mapping(bytes32 => uint) public currentRiskPerAsset;
 
-    IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
-    bool public multicollateralEnabled;
-
     address public chainedSpeedMarketMastercopy;
-    /// @return The address of the Speed Markets AMM contract
-    ISpeedMarketsAMM public speedMarketsAMM;
+
     /// @return The address of the Staking contract
     IStakingThales public stakingThales;
 
-    mapping(address => bool) public whitelistedAddresses;
+    /// @return The address of the Speed Markets AMM contract
+    ISpeedMarketsAMM public speedMarketsAMM;
 
     receive() external payable {}
 
@@ -109,16 +106,18 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint collateralAmount,
         bool isEth
     ) internal returns (uint buyinAmount) {
-        require(multicollateralEnabled, "Multicollateral onramp not enabled");
+        require(speedMarketsAMM.multicollateralEnabled(), "Multicollateral onramp not enabled");
         uint amountBefore = sUSD.balanceOf(address(this));
 
         uint convertedAmount;
         if (isEth) {
-            convertedAmount = multiCollateralOnOffRamp.onrampWithEth{value: collateralAmount}(collateralAmount);
+            convertedAmount = speedMarketsAMM.multiCollateralOnOffRamp().onrampWithEth{value: collateralAmount}(
+                collateralAmount
+            );
         } else {
             IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
-            IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralAmount);
-            convertedAmount = multiCollateralOnOffRamp.onramp(collateral, collateralAmount);
+            IERC20Upgradeable(collateral).approve(address(speedMarketsAMM.multiCollateralOnOffRamp()), collateralAmount);
+            convertedAmount = speedMarketsAMM.multiCollateralOnOffRamp().onramp(collateral, collateralAmount);
         }
 
         buyinAmount = (convertedAmount * (ONE - speedMarketsAMM.safeBoxImpact())) / ONE;
@@ -160,7 +159,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
         currentRiskPerAsset[asset] +=
             _getPayout(buyinAmount, directions.length) -
-            (buyinAmount * (ONE - speedMarketsAMM.safeBoxImpact())) /
+            (buyinAmount * (ONE + speedMarketsAMM.safeBoxImpact())) /
             ONE;
         require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Out of liquidity");
 
@@ -259,12 +258,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         sUSD.safeTransferFrom(user, address(this), amountDiff);
         if (amountDiff > 0) {
             if (toEth) {
-                uint offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
+                uint offramped = speedMarketsAMM.multiCollateralOnOffRamp().offrampIntoEth(amountDiff);
                 address payable _to = payable(user);
                 bool sent = _to.send(offramped);
                 require(sent, "Failed to send Ether");
             } else {
-                uint offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
+                uint offramped = speedMarketsAMM.multiCollateralOnOffRamp().offramp(collateral, amountDiff);
                 IERC20Upgradeable(collateral).safeTransfer(user, offramped);
             }
         }
@@ -292,20 +291,25 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         bytes32[] memory priceIds = new bytes32[](1);
         priceIds[0] = speedMarketsAMM.assetToPythId(ChainedSpeedMarket(market).asset());
 
-        int64[] memory prices;
+        int64[] memory prices = new int64[](priceUpdateData.length);
+        uint64 strikeTimePerDirection;
         for (uint i = 0; i < priceUpdateData.length; i++) {
+            strikeTimePerDirection =
+                ChainedSpeedMarket(market).initialStrikeTime() +
+                uint64(i * ChainedSpeedMarket(market).timeFrame());
+
             PythStructs.PriceFeed[] memory pricesPerDirection = speedMarketsAMM.pyth().parsePriceFeedUpdates{
                 value: speedMarketsAMM.pyth().getUpdateFee(priceUpdateData[i])
             }(
                 priceUpdateData[i],
                 priceIds,
-                ChainedSpeedMarket(market).strikeTime(),
-                ChainedSpeedMarket(market).strikeTime() + speedMarketsAMM.maximumPriceDelayForResolving()
+                strikeTimePerDirection,
+                strikeTimePerDirection + speedMarketsAMM.maximumPriceDelayForResolving()
             );
 
             PythStructs.Price memory price = pricesPerDirection[0].price;
             require(price.price > 0, "invalid price");
-            prices[i] = (price.price);
+            prices[i] = price.price;
         }
 
         _resolveMarketWithPrices(market, prices);
@@ -346,7 +350,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
         bytes32 asset = ChainedSpeedMarket(market).asset();
         uint buyinAmount = ChainedSpeedMarket(market).buyinAmount();
-        uint payout = buyinAmount * payoutMultiplier**ChainedSpeedMarket(market).numOfDirections();
+        uint payout = _getPayout(buyinAmount, ChainedSpeedMarket(market).numOfDirections());
 
         if (!ChainedSpeedMarket(market).isUserWinner()) {
             if (currentRiskPerAsset[asset] > payout) {
@@ -403,6 +407,16 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             !ChainedSpeedMarket(market).resolved();
     }
 
+    /// @notice get lengths of all arrays
+    function getLengths(address user) external view returns (uint[4] memory) {
+        return [
+            _activeMarkets.elements.length,
+            _maturedMarkets.elements.length,
+            _activeMarketsPerUser[user].elements.length,
+            _maturedMarketsPerUser[user].elements.length
+        ];
+    }
+
     //////////////////setters/////////////////
 
     /// @notice Set mastercopy to use to create markets
@@ -454,30 +468,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         emit SetAddresses(_speedMarketsAMM, _stakingThales);
     }
 
-    /// @notice set multicollateral onramp contract
-    function setMultiCollateralOnOffRamp(address _onramper, bool enabled) external onlyOwner {
-        if (address(multiCollateralOnOffRamp) != address(0)) {
-            sUSD.approve(address(multiCollateralOnOffRamp), 0);
-        }
-        multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(_onramper);
-        multicollateralEnabled = enabled;
-        sUSD.approve(_onramper, MAX_APPROVAL);
-        emit SetMultiCollateralOnOffRamp(_onramper, enabled);
-    }
-
-    /// @notice adding/removing whitelist address depending on a flag
-    /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
-    /// @param _flag adding or removing from whitelist (true: add, false: remove)
-    function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
-        require(_whitelistAddress != address(0));
-        whitelistedAddresses[_whitelistAddress] = _flag;
-        emit AddedIntoWhitelist(_whitelistAddress, _flag);
-    }
-
     //////////////////modifiers/////////////////
 
     modifier isAddressWhitelisted() {
-        require(whitelistedAddresses[msg.sender], "Resolver not whitelisted");
+        require(speedMarketsAMM.whitelistedAddresses(msg.sender), "Resolver not whitelisted");
         _;
     }
 
@@ -509,8 +503,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     );
     event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
-    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
-    event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SetAddresses(address _speedMarketsAMM, address _stakingThales);
 }

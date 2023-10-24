@@ -78,7 +78,7 @@ contract ChainedSpeedMarket {
         finalPrices = _finalPrices;
 
         for (uint i = 0; i < _finalPrices.length; i++) {
-            strikePrices[i] = i == 0 ? initialStrikePrice : _finalPrices[i - 1]; // previous final price is current strike price
+            strikePrices.push(i == 0 ? initialStrikePrice : _finalPrices[i - 1]); // previous final price is current strike price
             bool userWonDirection = (_finalPrices[i] < strikePrices[i] && directions[i] == SpeedMarket.Direction.Down) ||
                 (_finalPrices[i] > strikePrices[i] && directions[i] == SpeedMarket.Direction.Up);
 

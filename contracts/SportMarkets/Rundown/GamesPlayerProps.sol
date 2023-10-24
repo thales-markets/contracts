@@ -547,7 +547,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                         optionId
                     );
 
-                    (bool[] memory _hasAnyMintsArray, , ) = sportsManager.queryMintsAndMaturityStatusForPlayerProps(
+                    (bool[] memory _hasAnyMintsArray, , , ) = sportsManager.queryMintsAndMaturityStatusForPlayerProps(
                         _childArraysPerOption
                     );
 

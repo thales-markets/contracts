@@ -330,6 +330,11 @@
         "internalType": "bool[]",
         "name": "_isResolvedArray",
         "type": "bool[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_maturities",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",

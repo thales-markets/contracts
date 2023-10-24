@@ -723,6 +723,30 @@
         "internalType": "uint256[]",
         "name": "_startTime",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "uint40[]",
+        "name": "_lastUpdated",
+        "type": "uint40[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_sportIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "getAllPrimaryBookmakerIdsBySportIds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_bookmakerIds",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",

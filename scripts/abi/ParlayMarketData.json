@@ -325,6 +325,30 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "getCombinedMarketOdd",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "quote",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getParlayAMMParameters",
     "outputs": [

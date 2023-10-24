@@ -41,6 +41,10 @@ interface ITherundownConsumer {
 
     function gameFulfilledCreated(bytes32 _gameId) external view returns (bool);
 
+    function playerProps() external view returns (address);
+
+    function oddsObtainer() external view returns (address);
+
     // write functions
     function fulfillGamesCreated(
         bytes32 _requestId,
@@ -99,6 +103,8 @@ interface ITherundownConsumer {
     function sportsIdPerGame(bytes32 _gameId) external view returns (uint);
 
     function getGameStartTime(bytes32 _gameId) external view returns (uint256);
+
+    function getLastUpdatedFromGameResolve(bytes32 _gameId) external view returns (uint40);
 
     function marketPerGameId(bytes32 _gameId) external view returns (address);
 

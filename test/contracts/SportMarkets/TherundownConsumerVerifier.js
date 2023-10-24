@@ -429,6 +429,9 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			let failoverBookmaker = await verifier.getBookmakerIdsBySportId(17);
 			assert.bnEqual(1, failoverBookmaker.length);
 
+			let idsP = await verifier.getAllPrimaryBookmakerIdsBySportIds([4]);
+			assert.bnEqual(3, idsP[0]);
+
 			assert.equal(10, await verifier.minOddsForCheckingThresholdDefault());
 			assert.equal(6, await verifier.minOddsForCheckingThresholdPerSport(sportId_16));
 
@@ -511,7 +514,6 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 
 			// 980392156862745098,19607843137254901,0
-			console.log(toUnit('0.019607843137254901').toString());
 			assert.equal(
 				true,
 				await verifier.areOddsInThreshold(

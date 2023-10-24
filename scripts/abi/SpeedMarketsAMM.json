@@ -97,6 +97,67 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "strikeTime",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "int64",
+        "name": "strikePrice",
+        "type": "int64"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum SpeedMarket.Direction",
+        "name": "direction",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "buyinAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxImpact",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "lpFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "MarketCreatedWithFees",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "enum SpeedMarket.Direction",
         "name": "result",
         "type": "uint8"
@@ -205,6 +266,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "contract SpeedMarketsAMMUtils",
+        "name": "_speedMarketsAMMUtils",
+        "type": "address"
+      }
+    ],
+    "name": "SetAMMUtils",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_pyth",
         "type": "address"
@@ -249,12 +323,24 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_timeThresholds",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_lpFees",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "_lpFee",
         "type": "uint256"
       }
     ],
-    "name": "SetLPFee",
+    "name": "SetLPFeeParams",
     "type": "event"
   },
   {
@@ -535,7 +621,7 @@
       },
       {
         "internalType": "address",
-        "name": "_referrer",
+        "name": "referrer",
         "type": "address"
       }
     ],
@@ -573,7 +659,7 @@
       },
       {
         "internalType": "address",
-        "name": "_referrer",
+        "name": "referrer",
         "type": "address"
       }
     ],
@@ -621,7 +707,7 @@
       },
       {
         "internalType": "address",
-        "name": "_referrer",
+        "name": "referrer",
         "type": "address"
       }
     ],
@@ -669,7 +755,7 @@
       },
       {
         "internalType": "address",
-        "name": "_referrer",
+        "name": "referrer",
         "type": "address"
       }
     ],
@@ -724,110 +810,17 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
       }
     ],
-    "name": "getDirectionalRiskPerAsset",
+    "name": "getLengths",
     "outputs": [
       {
-        "components": [
-          {
-            "internalType": "enum SpeedMarket.Direction",
-            "name": "direction",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint256",
-            "name": "current",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "max",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMM.Risk[]",
+        "internalType": "uint256[5]",
         "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "marketsArray",
-        "type": "address[]"
-      }
-    ],
-    "name": "getMarketsData",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint64",
-            "name": "strikeTime",
-            "type": "uint64"
-          },
-          {
-            "internalType": "int64",
-            "name": "strikePrice",
-            "type": "int64"
-          },
-          {
-            "internalType": "enum SpeedMarket.Direction",
-            "name": "direction",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "resolved",
-            "type": "bool"
-          },
-          {
-            "internalType": "int64",
-            "name": "finalPrice",
-            "type": "int64"
-          },
-          {
-            "internalType": "enum SpeedMarket.Direction",
-            "name": "result",
-            "type": "uint8"
-          },
-          {
-            "internalType": "bool",
-            "name": "isUserWinner",
-            "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "createdAt",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMM.MarketData[]",
-        "name": "",
-        "type": "tuple[]"
+        "type": "uint256[5]"
       }
     ],
     "stateMutability": "view",
@@ -864,44 +857,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "candidate",
-        "type": "address"
-      }
-    ],
-    "name": "isActiveMarket",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "candidate",
-        "type": "address"
-      }
-    ],
-    "name": "isKnownMarket",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "lastPauseTime",
     "outputs": [
@@ -922,6 +877,63 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "lpFees",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "marketHasCreatedAtAttribute",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "marketHasFeeAttribute",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1155,70 +1167,6 @@
   },
   {
     "inputs": [],
-    "name": "numActiveMarkets",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
-    "name": "numActiveMarketsPerUser",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "numMaturedMarkets",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
-    "name": "numMaturedMarketsPerUser",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -1411,6 +1359,19 @@
   {
     "inputs": [
       {
+        "internalType": "contract SpeedMarketsAMMUtils",
+        "name": "_speedMarketsAMMUtils",
+        "type": "address"
+      }
+    ],
+    "name": "setAMMUtils",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_pyth",
         "type": "address"
@@ -1470,12 +1431,22 @@
   {
     "inputs": [
       {
+        "internalType": "uint256[]",
+        "name": "_timeThresholds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_lpFees",
+        "type": "uint256[]"
+      },
+      {
         "internalType": "uint256",
         "name": "_lpFee",
         "type": "uint256"
       }
     ],
-    "name": "setLPFee",
+    "name": "setLPFeeParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1685,6 +1656,25 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "timeThresholdsForFees",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

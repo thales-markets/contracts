@@ -205,10 +205,10 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    /// @notice Setting the Cap per spec. market
+    /// @notice Setting the dynamic liquidity params
     /// @param _sportID The tagID used for sport (9004)
-    /// @param _dynamicLiquidityCutoffTime when to start increasing the liquidity, if 0 assume 100% liquidity all the time since market creation
-    /// @param _dynamicLiquidityCutoffDivider if 0 use default
+    /// @param _dynamicLiquidityCutoffTime when to start increasing the liquidity linearly, if 0 assume 100% liquidity all the time since market creation
+    /// @param _dynamicLiquidityCutoffDivider e.g. if 2 it means liquidity up until cut off time is 50%, then increases linearly. if 0 use default
     function setDynamicLiquidityParamsPerSport(
         uint _sportID,
         uint _dynamicLiquidityCutoffTime,

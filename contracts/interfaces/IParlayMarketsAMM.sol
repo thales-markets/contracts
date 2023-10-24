@@ -14,6 +14,8 @@ interface IParlayMarketsAMM {
 
     function sportsAmm() external view returns (address);
 
+    function parlayPolicy() external view returns (address);
+
     function parlayAmmFee() external view returns (uint);
 
     function maxAllowedRiskPerCombination() external view returns (uint);
@@ -23,7 +25,9 @@ interface IParlayMarketsAMM {
     function getSgpFeePerCombination(
         uint tag1,
         uint tag2_1,
-        uint tag2_2
+        uint tag2_2,
+        uint position1,
+        uint position2
     ) external view returns (uint sgpFee);
 
     function riskPerCombination(

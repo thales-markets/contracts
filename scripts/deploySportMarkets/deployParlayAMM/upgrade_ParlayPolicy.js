@@ -49,32 +49,20 @@ async function main() {
 		network = 'arbitrumOne';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
-	if (networkObj.chainId == 8453) {
-		networkObj.name = 'baseMainnet';
-		network = 'baseMainnet';
-		PaymentToken = getTargetAddress('ProxyUSDC', network);
-	}
 
-	const ParlayMarketDataAddress = getTargetAddress('ParlayMarketData', network);
-	const ParlayMarketData = await ethers.getContractFactory('ParlayMarketData');
+	const ParlayPolicyAddress = getTargetAddress('ParlayPolicy', network);
+	const ParlayPolicy = await ethers.getContractFactory('ParlayPolicy');
 
-	if (
-		networkObj.chainId == 10 ||
-		networkObj.chainId == 5 ||
-		networkObj.chainId == 42161 ||
-		networkObj.chainId == 8453
-	) {
-		const implementation = await upgrades.prepareUpgrade(
-			ParlayMarketDataAddress,
-			ParlayMarketData,
-			{ gasLimit: 15000000 }
-		);
+	if (networkObj.chainId == 10 || networkObj.chainId == 5 || networkObj.chainId == 42161) {
+		const implementation = await upgrades.prepareUpgrade(ParlayPolicyAddress, ParlayPolicy, {
+			gasLimit: 15000000,
+		});
 		await delay(5000);
 
-		console.log('ParlayMarketData upgraded');
+		console.log('ParlayPolicy upgraded');
 
-		console.log('Implementation ParlayMarketData: ', implementation);
-		setTargetAddress('ParlayMarketDataImplementation', network, implementation);
+		console.log('Implementation ParlayPolicy: ', implementation);
+		setTargetAddress('ParlayPolicyImplementation', network, implementation);
 		try {
 			await hre.run('verify:verify', {
 				address: implementation,
@@ -83,23 +71,23 @@ async function main() {
 			console.log(e);
 		}
 	} else {
-		await upgrades.upgradeProxy(ParlayMarketDataAddress, ParlayMarketData);
+		await upgrades.upgradeProxy(ParlayPolicyAddress, ParlayPolicy);
 
 		await delay(60000);
 
-		const ParlayMarketDataImplementation = await getImplementationAddress(
+		const ParlayPolicyImplementation = await getImplementationAddress(
 			ethers.provider,
-			ParlayMarketDataAddress
+			ParlayPolicyAddress
 		);
 
-		console.log('Implementation ParlayMarketData: ', ParlayMarketDataImplementation);
-		setTargetAddress('ParlayMarketDataImplementation', network, ParlayMarketDataImplementation);
+		console.log('Implementation ParlayPolicy: ', ParlayPolicyImplementation);
+		setTargetAddress('ParlayPolicyImplementation', network, ParlayPolicyImplementation);
 
 		await delay(2000);
 
 		try {
 			await hre.run('verify:verify', {
-				address: ParlayMarketDataImplementation,
+				address: ParlayPolicyImplementation,
 			});
 		} catch (e) {
 			console.log(e);

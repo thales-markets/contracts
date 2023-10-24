@@ -15,9 +15,8 @@ contract('SpeedMarkets', (accounts) => {
 
 	describe('Test Speed markets ', () => {
 		it('deploy and test', async () => {
-			let { speedMarketsAMM, priceFeedUpdateData, fee, mockPyth, pythId } = await speedMarketsInit(
-				accounts
-			);
+			let { speedMarketsAMM, speedMarketsAMMData, priceFeedUpdateData, fee, mockPyth, pythId } =
+				await speedMarketsInit(accounts);
 
 			await speedMarketsAMM.createNewMarketWithDelta(
 				toBytes32('ETH'),
@@ -57,8 +56,8 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			assert.bnEqual(toUnit(0), currestRiskPerAssetAndDirection);
 
-			let numActiveMarkets = await speedMarketsAMM.numActiveMarkets();
-			console.log('numActiveMarkets after resolve' + numActiveMarkets);
+			let ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
+			console.log('numActiveMarkets after resolve' + ammData.numActiveMarkets);
 		});
 	});
 });

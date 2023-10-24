@@ -180,6 +180,7 @@ contract('ParlayAMM', (accounts) => {
 		SportsAMM,
 		SportAMMLiquidityPool,
 		ParlayAMMLiquidityPool,
+		ParlayPolicy,
 		SportAMMRiskManager,
 		multiCollateralOnOffRamp;
 	let emptyArray = [];
@@ -587,7 +588,6 @@ contract('ParlayAMM', (accounts) => {
 			safeBox,
 			Referrals.address,
 			ParlayMarketData.address,
-			ParlayVerifier.address,
 			{ from: owner }
 		);
 
@@ -720,6 +720,14 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.approve(ParlayAMMLiquidityPool.address, toUnit('10000000'), {
 			from: defaultParlayAMMLiquidityProvider,
 		});
+
+		const ParlayPolicyContract = artifacts.require('ParlayPolicy');
+		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
+		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
+
+		await ParlayAMM.setVerifierAndPolicyAddresses(ParlayVerifier.address, ParlayPolicy.address, {
+			from: owner,
+		});
 	});
 
 	describe('MultiSend coverage', () => {
@@ -752,9 +760,10 @@ contract('ParlayAMM', (accounts) => {
 			await ParlayAMM.setParameters(8, { from: owner });
 		});
 		it('set Addresses', async () => {
-			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, {
+			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, {
 				from: owner,
 			});
+			await ParlayAMM.setVerifierAndPolicyAddresses(owner, owner, { from: owner });
 		});
 		it('ParlayMarketData', async () => {
 			await ParlayMarketData.setParlayMarketsAMM(third, { from: owner });

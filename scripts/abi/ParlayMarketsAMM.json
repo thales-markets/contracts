@@ -25,12 +25,6 @@
         "internalType": "address",
         "name": "_parlayMarketData",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_parlayVerifier",
-        "type": "address"
       }
     ],
     "name": "AddressesSet",
@@ -398,12 +392,62 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "tag1",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tag2_1",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tag2_2",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "fee",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetSGPFeePerPosition",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "sUSDToken",
         "type": "address"
       }
     ],
     "name": "SetSUSD",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_parlayVerifier",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_parlayPolicy",
+        "type": "address"
+      }
+    ],
+    "name": "VerifierAndPolicySet",
     "type": "event"
   },
   {
@@ -741,35 +785,16 @@
         "internalType": "uint256",
         "name": "skewImpact",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_sportMarkets",
-        "type": "address[]"
       },
       {
         "internalType": "uint256[]",
-        "name": "_positions",
+        "name": "finalQuotes",
         "type": "uint256[]"
       },
       {
-        "internalType": "uint256",
-        "name": "_sUSDPaid",
-        "type": "uint256"
-      }
-    ],
-    "name": "calculateSkewImpact",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "resultSkew",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "amountsToBuy",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",
@@ -931,6 +956,16 @@
       {
         "internalType": "uint256",
         "name": "tag2_2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position2",
         "type": "uint256"
       }
     ],
@@ -1260,6 +1295,19 @@
   {
     "inputs": [],
     "name": "parlayMarketMastercopy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parlayPolicy",
     "outputs": [
       {
         "internalType": "address",
@@ -1604,11 +1652,6 @@
         "internalType": "address",
         "name": "_parlayMarketData",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlayVerifier",
-        "type": "address"
       }
     ],
     "name": "setAddresses",
@@ -1781,9 +1824,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint256[]",
         "name": "tag1",
-        "type": "uint256"
+        "type": "uint256[]"
       },
       {
         "internalType": "uint256",
@@ -1858,6 +1901,24 @@
       }
     ],
     "name": "setSgpFeePerCombination",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayVerifier",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayPolicy",
+        "type": "address"
+      }
+    ],
+    "name": "setVerifierAndPolicyAddresses",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

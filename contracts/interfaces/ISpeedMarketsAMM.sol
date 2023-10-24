@@ -59,8 +59,4 @@ interface ISpeedMarketsAMM {
     function getLengths(address user) external view returns (uint[5] memory);
 
     function referrals() external view returns (IReferrals);
-
-    function multiCollateralOnOffRamp() external view returns (IMultiCollateralOnOffRamp);
-
-    function multicollateralEnabled() external view returns (bool);
 }

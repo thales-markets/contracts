@@ -261,6 +261,25 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_onramper",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "SetMultiCollateralOnOffRamp",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_safeBox",
         "type": "address"
       },
@@ -679,6 +698,32 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "multiCollateralOnOffRamp",
+    "outputs": [
+      {
+        "internalType": "contract IMultiCollateralOnOffRamp",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "multicollateralEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -944,6 +989,24 @@
       }
     ],
     "name": "setMaxRiskPerAsset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_onramper",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "setMultiCollateralOnOffRamp",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

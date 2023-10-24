@@ -11,9 +11,9 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 contract('ChainedSpeedMarkets', (accounts) => {
 	const [owner, user, safeBox, referrerAddress, proxyUser] = accounts;
 	let exoticUSD, exoticOP;
-	let chainedSpeedMarketsAMM, speedMarketsAMMData, speedMarketsAMM;
+	let chainedSpeedMarketsAMM, speedMarketsAMMData, speedMarketsAMM, multiCollateralOnOffRamp;
 	let mockPyth, priceFeedUpdateData, fee;
-	let mockWeth, swapRouterMock;
+	let mockWeth, swapRouterMock, MockPriceFeedDeployed;
 
 	const PAYOUT_MULTIPLIER = 1.9;
 	const DEFAULT_REFERRER_FEE = 0.005;
@@ -46,8 +46,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		console.log('Balance of user is ' + balance / 1e18);
 
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
-		let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
-		await MockPriceFeedDeployed.setPricetoReturn(10000);
+		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
 
 		let MockPyth = artifacts.require('MockPythCustom');
 		mockPyth = await MockPyth.new(60, 1e6);
@@ -104,7 +103,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 		// -------------------------- Multi Collateral --------------------------
 		let MultiCollateralOnOffRamp = artifacts.require('MultiCollateralOnOffRamp');
-		let multiCollateralOnOffRamp = await MultiCollateralOnOffRamp.new();
+		multiCollateralOnOffRamp = await MultiCollateralOnOffRamp.new();
 		await multiCollateralOnOffRamp.initialize(owner, exoticUSD.address);
 
 		let ExoticOP = artifacts.require('ExoticUSD');
@@ -120,9 +119,6 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			from: owner,
 		});
 
-		await speedMarketsAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true);
-		await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMM.address, true);
-
 		let SwapRouterMock = artifacts.require('SwapRouterMock');
 		swapRouterMock = await SwapRouterMock.new();
 
@@ -130,7 +126,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		await swapRouterMock.setDefaults(exoticOP.address, exoticUSD.address);
 
 		await exoticUSD.mintForUser(proxyUser);
-		await exoticUSD.transfer(swapRouterMock.address, toUnit(100), { from: proxyUser });
+		await exoticUSD.transfer(swapRouterMock.address, toUnit(1000), { from: proxyUser });
 		balance = await exoticUSD.balanceOf(swapRouterMock.address);
 		console.log('Balance of swap router is ' + balance / 1e18);
 
@@ -175,7 +171,12 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		);
 
 		await referrals.setWhitelistedAddress(chainedSpeedMarketsAMM.address, true);
+
 		await multiCollateralOnOffRamp.setSupportedAMM(chainedSpeedMarketsAMM.address, true);
+		await chainedSpeedMarketsAMM.setMultiCollateralOnOffRamp(
+			multiCollateralOnOffRamp.address,
+			true
+		);
 	});
 
 	describe('Test Chained speed markets ', () => {
@@ -448,38 +449,70 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			let activeMarkets = await chainedSpeedMarketsAMM.activeMarketsPerUser(0, 10, user);
 			let maturedMarkets = await chainedSpeedMarketsAMM.maturedMarketsPerUser(0, 10, user);
 			let numOfMaturedMarkets = maturedMarkets.length;
+			console.log('Number of active markets', activeMarkets.length);
 			console.log('Number of matured markets', numOfMaturedMarkets);
 
-			let marketData = await speedMarketsAMMData.getChainedMarketsData(activeMarkets);
+			let marketDataArray = await speedMarketsAMMData.getChainedMarketsData(activeMarkets);
+			let indexWithSixDirections = marketDataArray.findIndex(
+				(marketData) => marketData.directions.length == 6
+			);
+			let indexWithTwoDirections = marketDataArray.findIndex(
+				(marketData) => marketData.directions.length == 2
+			);
 
-			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+			// Resolve market with 6 directions as AMM winner
+			let resolvePriceFeedUpdateDataWithDown = await mockPyth.createPriceFeedUpdateData(
 				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
-				Number(marketData[0].initialStrikePrice) - 500000000, // DOWN
+				Number(marketDataArray[indexWithSixDirections].initialStrikePrice) - 500000000, // DOWN
 				74093100,
 				-8,
-				Number(marketData[0].initialStrikePrice) - 500000000,
+				Number(marketDataArray[indexWithSixDirections].initialStrikePrice) - 500000000,
 				74093100,
-				marketData[0].initialStrikeTime
+				marketDataArray[indexWithSixDirections].initialStrikeTime
 			);
 
 			let resolvedMarkets = 0;
-			let market = activeMarkets[0];
+			let market = activeMarkets[indexWithSixDirections];
 			await chainedSpeedMarketsAMM.resolveMarketWithOfframp(
 				market,
-				[[resolvePriceFeedUpdateData]],
+				[[resolvePriceFeedUpdateDataWithDown]],
 				exoticOP.address,
 				false,
 				{ value: fee, from: user }
 			);
 			resolvedMarkets++;
 
-			market = activeMarkets[1];
+			// Resolve market with 2 directions as user winner
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(1000));
+			await swapRouterMock.setDefaults(exoticUSD.address, mockWeth.address);
+
+			let resolvePriceFeedUpdateDataWithUp = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				Number(marketDataArray[indexWithTwoDirections].initialStrikePrice) + 800000000, // UP
+				74093100,
+				-8,
+				Number(marketDataArray[indexWithTwoDirections].initialStrikePrice) + 800000000,
+				74093100,
+				marketDataArray[indexWithTwoDirections].initialStrikeTime
+			);
+
+			resolvePriceFeedUpdateDataWithDown = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				Number(marketDataArray[indexWithTwoDirections].initialStrikePrice) - 500000000, // DOWN
+				74093100,
+				-8,
+				Number(marketDataArray[indexWithTwoDirections].initialStrikePrice) - 500000000,
+				74093100,
+				marketDataArray[indexWithTwoDirections].strikeTime
+			);
+
+			market = activeMarkets[indexWithTwoDirections];
 			await chainedSpeedMarketsAMM.resolveMarketWithOfframp(
 				market,
-				[[resolvePriceFeedUpdateData]],
+				[[resolvePriceFeedUpdateDataWithUp], [resolvePriceFeedUpdateDataWithDown]],
 				ZERO_ADDRESS,
 				true,
-				{ value: fee, from: user }
+				{ value: 2 * fee, from: user }
 			);
 			resolvedMarkets++;
 

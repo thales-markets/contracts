@@ -68,6 +68,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     /// @return The address of the Speed Markets AMM contract
     ISpeedMarketsAMM public speedMarketsAMM;
 
+    IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
+    bool public multicollateralEnabled;
+
     receive() external payable {}
 
     function initialize(address _owner, IERC20Upgradeable _sUSD) external initializer {
@@ -106,18 +109,16 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint collateralAmount,
         bool isEth
     ) internal returns (uint buyinAmount) {
-        require(speedMarketsAMM.multicollateralEnabled(), "Multicollateral onramp not enabled");
+        require(multicollateralEnabled, "Multicollateral onramp not enabled");
         uint amountBefore = sUSD.balanceOf(address(this));
 
         uint convertedAmount;
         if (isEth) {
-            convertedAmount = speedMarketsAMM.multiCollateralOnOffRamp().onrampWithEth{value: collateralAmount}(
-                collateralAmount
-            );
+            convertedAmount = multiCollateralOnOffRamp.onrampWithEth{value: collateralAmount}(collateralAmount);
         } else {
             IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
-            IERC20Upgradeable(collateral).approve(address(speedMarketsAMM.multiCollateralOnOffRamp()), collateralAmount);
-            convertedAmount = speedMarketsAMM.multiCollateralOnOffRamp().onramp(collateral, collateralAmount);
+            IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralAmount);
+            convertedAmount = multiCollateralOnOffRamp.onramp(collateral, collateralAmount);
         }
 
         buyinAmount = (convertedAmount * (ONE - speedMarketsAMM.safeBoxImpact())) / ONE;
@@ -258,12 +259,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         sUSD.safeTransferFrom(user, address(this), amountDiff);
         if (amountDiff > 0) {
             if (toEth) {
-                uint offramped = speedMarketsAMM.multiCollateralOnOffRamp().offrampIntoEth(amountDiff);
+                uint offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
                 address payable _to = payable(user);
                 bool sent = _to.send(offramped);
                 require(sent, "Failed to send Ether");
             } else {
-                uint offramped = speedMarketsAMM.multiCollateralOnOffRamp().offramp(collateral, amountDiff);
+                uint offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
                 IERC20Upgradeable(collateral).safeTransfer(user, offramped);
             }
         }
@@ -339,24 +340,26 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     function _resolveMarketWithPrices(address market, int64[] memory _finalPrices) internal {
         ChainedSpeedMarket(market).resolve(_finalPrices);
-        _activeMarkets.remove(market);
-        _maturedMarkets.add(market);
-        address user = ChainedSpeedMarket(market).user();
+        if (ChainedSpeedMarket(market).resolved()) {
+            _activeMarkets.remove(market);
+            _maturedMarkets.add(market);
+            address user = ChainedSpeedMarket(market).user();
 
-        if (_activeMarketsPerUser[user].contains(market)) {
-            _activeMarketsPerUser[user].remove(market);
-        }
-        _maturedMarketsPerUser[user].add(market);
+            if (_activeMarketsPerUser[user].contains(market)) {
+                _activeMarketsPerUser[user].remove(market);
+            }
+            _maturedMarketsPerUser[user].add(market);
 
-        bytes32 asset = ChainedSpeedMarket(market).asset();
-        uint buyinAmount = ChainedSpeedMarket(market).buyinAmount();
-        uint payout = _getPayout(buyinAmount, ChainedSpeedMarket(market).numOfDirections());
+            bytes32 asset = ChainedSpeedMarket(market).asset();
+            uint buyinAmount = ChainedSpeedMarket(market).buyinAmount();
+            uint payout = _getPayout(buyinAmount, ChainedSpeedMarket(market).numOfDirections());
 
-        if (!ChainedSpeedMarket(market).isUserWinner()) {
-            if (currentRiskPerAsset[asset] > payout) {
-                currentRiskPerAsset[asset] -= payout;
-            } else {
-                currentRiskPerAsset[asset] = 0;
+            if (!ChainedSpeedMarket(market).isUserWinner()) {
+                if (currentRiskPerAsset[asset] > payout) {
+                    currentRiskPerAsset[asset] -= payout;
+                } else {
+                    currentRiskPerAsset[asset] = 0;
+                }
             }
         }
 
@@ -468,6 +471,17 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         emit SetAddresses(_speedMarketsAMM, _stakingThales);
     }
 
+    /// @notice set multicollateral onramp contract
+    function setMultiCollateralOnOffRamp(address _onramper, bool enabled) external onlyOwner {
+        if (address(multiCollateralOnOffRamp) != address(0)) {
+            sUSD.approve(address(multiCollateralOnOffRamp), 0);
+        }
+        multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(_onramper);
+        multicollateralEnabled = enabled;
+        sUSD.approve(_onramper, MAX_APPROVAL);
+        emit SetMultiCollateralOnOffRamp(_onramper, enabled);
+    }
+
     //////////////////modifiers/////////////////
 
     modifier isAddressWhitelisted() {
@@ -505,4 +519,5 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SetAddresses(address _speedMarketsAMM, address _stakingThales);
+    event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
 }

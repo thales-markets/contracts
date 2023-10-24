@@ -102,7 +102,8 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     /// @notice Set speed and chained speed markets AMM addresses
-    /// @param _speedMarketsAMM to use address for fetching data
+    /// @param _speedMarketsAMM to use address for fetching speed AMM data
+    /// @param _chainedSpeedMarketsAMM to use address for fetching chained speed AMM data
     function setSpeedMarketsAMM(address _speedMarketsAMM, address _chainedSpeedMarketsAMM) external onlyOwner {
         speedMarketsAMM = _speedMarketsAMM;
         chainedSpeedMarketsAMM = _chainedSpeedMarketsAMM;
@@ -155,7 +156,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             int64[] memory marketFinalPrices = new int64[](market.numOfPrices());
             for (uint j = 0; j < market.numOfDirections(); j++) {
                 marketDirections[j] = market.directions(j);
-                if (market.resolved() && j < market.numOfPrices()) {
+                if (j < market.numOfPrices()) {
                     marketStrikePrices[j] = market.strikePrices(j);
                     marketFinalPrices[j] = market.finalPrices(j);
                 }

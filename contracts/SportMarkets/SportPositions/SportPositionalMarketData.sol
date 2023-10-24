@@ -336,7 +336,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                     totalCombainedOdds[0] = newCombinedOdds;
                 }
             }
-            if (spreadMarket != address(0)) {
+            if (spreadMarket != address(0) && totalsMarket != address(0)) {
                 CombinedOdds memory newCombinedOdds;
                 newCombinedOdds.tags = [
                     ISportPositionalMarket(spreadMarket).tags(1),

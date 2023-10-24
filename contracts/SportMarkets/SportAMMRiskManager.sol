@@ -191,7 +191,7 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
             } else {
                 uint remainingFromCutOff = toReturn - cutOffLiquidity;
                 toReturn =
-                    remainingFromCutOff +
+                    cutOffLiquidity +
                     (((dynamicLiquidityCutoffTime - timeToStart) * remainingFromCutOff) / dynamicLiquidityCutoffTime);
             }
         }
@@ -216,9 +216,7 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     ) external onlyOwner {
         require(_sportID > MIN_TAG_NUMBER, "Invalid tag for sport");
         dynamicLiquidityCutoffTimePerSport[_sportID] = _dynamicLiquidityCutoffTime;
-        if (_dynamicLiquidityCutoffDivider > 0) {
-            dynamicLiquidityCutoffDividerPerSport[_sportID] = _dynamicLiquidityCutoffDivider;
-        }
+        dynamicLiquidityCutoffDividerPerSport[_sportID] = _dynamicLiquidityCutoffDivider;
         emit SetDynamicLiquidityParams(_sportID, _dynamicLiquidityCutoffTime, _dynamicLiquidityCutoffDivider);
     }
 

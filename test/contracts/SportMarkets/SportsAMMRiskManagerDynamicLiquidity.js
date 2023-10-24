@@ -109,6 +109,18 @@ contract('SportsAMMRiskManager', (accounts) => {
 			console.log('calculateCapToBeUsed: ' + calculateCapToBeUsed);
 			assert.bnEqual(toUnit(2500), calculateCapToBeUsed);
 
+			await SportAMMRiskManager.setDynamicLiquidityParamsPerSport(9001, 43200, toUnit('4'), {
+				from: owner,
+			});
+			calculateCapToBeUsed = await SportAMMRiskManager.calculateCapToBeUsed(
+				sportMarketMock.address
+			);
+			console.log('calculateCapToBeUsed: ' + calculateCapToBeUsed);
+			assert.bnEqual(toUnit(1250), calculateCapToBeUsed);
+
+			await SportAMMRiskManager.setDynamicLiquidityParamsPerSport(9001, 43200, 0, {
+				from: owner,
+			});
 			await sportMarketMock.setStartTime(now + 21600);
 			calculateCapToBeUsed = await SportAMMRiskManager.calculateCapToBeUsed(
 				sportMarketMock.address
@@ -117,6 +129,17 @@ contract('SportsAMMRiskManager', (accounts) => {
 			assert.bnLt(calculateCapToBeUsed, toUnit('3751'));
 			assert.bnGt(calculateCapToBeUsed, toUnit('3749'));
 
+			await SportAMMRiskManager.setDynamicLiquidityParamsPerSport(9001, 43200, toUnit('4'), {
+				from: owner,
+			});
+			calculateCapToBeUsed = await SportAMMRiskManager.calculateCapToBeUsed(
+				sportMarketMock.address
+			);
+			console.log('calculateCapToBeUsed: ' + calculateCapToBeUsed);
+			assert.bnLt(calculateCapToBeUsed, toUnit('3126'));
+			assert.bnGt(calculateCapToBeUsed, toUnit('3124'));
+
+			// reset and ensure its back to default values
 			await SportAMMRiskManager.setDynamicLiquidityParamsPerSport(9001, 0, 0, {
 				from: owner,
 			});

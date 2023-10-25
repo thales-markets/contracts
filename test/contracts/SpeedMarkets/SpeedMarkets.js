@@ -115,7 +115,7 @@ contract('SpeedMarkets', (accounts) => {
 				{ value: fee }
 			);
 
-			let riskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'), false);
+			let riskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'));
 			console.log('riskPerAssetData', riskPerAssetData);
 
 			let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(

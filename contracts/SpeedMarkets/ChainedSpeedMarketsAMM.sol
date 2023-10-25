@@ -49,6 +49,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     uint public maxChainedMarkets;
 
     uint64 public minTimeFrame;
+    uint64 public maxTimeFrame;
 
     uint public minBuyinAmount;
     uint public maxBuyinAmount;
@@ -57,8 +58,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     uint public payoutMultiplier;
 
-    mapping(bytes32 => uint) public maxRiskPerAsset;
-    mapping(bytes32 => uint) public currentRiskPerAsset;
+    uint public maxRisk;
+    uint public currentRisk;
 
     address public chainedSpeedMarketMastercopy;
 
@@ -148,21 +149,18 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         }
         require(speedMarketsAMM.supportedAsset(asset), "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
-        require(
-            timeFrame >= minTimeFrame && timeFrame <= speedMarketsAMM.maximalTimeToMaturity() / maxChainedMarkets,
-            "Wrong time frame"
-        );
+        require(timeFrame >= minTimeFrame && timeFrame <= maxTimeFrame, "Wrong time frame");
         require(
             directions.length >= minChainedMarkets && directions.length <= maxChainedMarkets,
             "Wrong number of directions"
         );
         require(_getPayout(buyinAmount, directions.length) <= maxProfitPerIndividualMarket, "Profit too high");
 
-        currentRiskPerAsset[asset] +=
+        currentRisk +=
             _getPayout(buyinAmount, directions.length) -
             (buyinAmount * (ONE + speedMarketsAMM.safeBoxImpact())) /
             ONE;
-        require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Out of liquidity");
+        require(currentRisk <= maxRisk, "Out of liquidity");
 
         speedMarketsAMM.pyth().updatePriceFeeds{value: speedMarketsAMM.pyth().getUpdateFee(priceUpdateData)}(
             priceUpdateData
@@ -350,15 +348,14 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             }
             _maturedMarketsPerUser[user].add(market);
 
-            bytes32 asset = ChainedSpeedMarket(market).asset();
             uint buyinAmount = ChainedSpeedMarket(market).buyinAmount();
             uint payout = _getPayout(buyinAmount, ChainedSpeedMarket(market).numOfDirections());
 
             if (!ChainedSpeedMarket(market).isUserWinner()) {
-                if (currentRiskPerAsset[asset] > payout) {
-                    currentRiskPerAsset[asset] -= payout;
+                if (currentRisk > payout) {
+                    currentRisk -= payout;
                 } else {
-                    currentRiskPerAsset[asset] = 0;
+                    currentRisk = 0;
                 }
             }
         }
@@ -432,36 +429,36 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     /// @notice Set parameters for limits and payout
     function setLimitParams(
         uint64 _minTimeFrame,
+        uint64 _maxTimeFrame,
         uint _minChainedMarkets,
         uint _maxChainedMarkets,
         uint _minBuyinAmount,
         uint _maxBuyinAmount,
         uint _maxProfitPerIndividualMarket,
+        uint _maxRisk,
         uint _payoutMultiplier
     ) external onlyOwner {
         require(_minChainedMarkets > 1, "min 2 chained markets");
         minTimeFrame = _minTimeFrame;
+        maxTimeFrame = _maxTimeFrame;
         minChainedMarkets = _minChainedMarkets;
         maxChainedMarkets = _maxChainedMarkets;
         minBuyinAmount = _minBuyinAmount;
         maxBuyinAmount = _maxBuyinAmount;
         maxProfitPerIndividualMarket = _maxProfitPerIndividualMarket;
+        maxRisk = _maxRisk;
         payoutMultiplier = _payoutMultiplier;
         emit LimitParamsChanged(
             _minTimeFrame,
+            _maxTimeFrame,
             _minChainedMarkets,
             _maxChainedMarkets,
             _minBuyinAmount,
             _maxBuyinAmount,
             _maxProfitPerIndividualMarket,
+            _maxRisk,
             _payoutMultiplier
         );
-    }
-
-    /// @notice maximum risk per asset
-    function setMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset) external onlyOwner {
-        maxRiskPerAsset[asset] = _maxRiskPerAsset;
-        emit SetMaxRiskPerAsset(asset, _maxRiskPerAsset);
     }
 
     /// @notice set corresponding addresses
@@ -508,14 +505,15 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     event MastercopyChanged(address mastercopy);
     event LimitParamsChanged(
         uint64 _minTimeFrame,
+        uint64 _maxTimeFrame,
         uint _minChainedMarkets,
         uint _maxChainedMarkets,
         uint _minBuyinAmount,
         uint _maxBuyinAmount,
         uint _maxProfitPerIndividualMarket,
+        uint _maxRisk,
         uint _payoutMultiplier
     );
-    event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
     event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SetAddresses(address _speedMarketsAMM, address _stakingThales);

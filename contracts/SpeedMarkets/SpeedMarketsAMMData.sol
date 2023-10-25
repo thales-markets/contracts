@@ -93,6 +93,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         uint minBuyinAmount;
         uint maxBuyinAmount;
         uint maxProfitPerIndividualMarket;
+        Risk risk;
         uint payoutMultiplier;
     }
 
@@ -175,15 +176,10 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     /// @notice return all risk data (current and max) by specified asset
-    function getRiskPerAsset(bytes32 asset, bool isChained) external view returns (Risk memory) {
+    function getRiskPerAsset(bytes32 asset) external view returns (Risk memory) {
         Risk memory risk;
-        risk.current = isChained
-            ? IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).currentRiskPerAsset(asset)
-            : ISpeedMarketsAMM(speedMarketsAMM).currentRiskPerAsset(asset);
-        risk.max = isChained
-            ? IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxRiskPerAsset(asset)
-            : ISpeedMarketsAMM(speedMarketsAMM).maxRiskPerAsset(asset);
-
+        risk.current = ISpeedMarketsAMM(speedMarketsAMM).currentRiskPerAsset(asset);
+        risk.max = ISpeedMarketsAMM(speedMarketsAMM).maxRiskPerAsset(asset);
         return risk;
     }
 
@@ -244,6 +240,10 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
     {
         uint[4] memory allLengths = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).getLengths(_walletAddress);
 
+        Risk memory risk;
+        risk.current = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).currentRisk();
+        risk.max = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxRisk();
+
         return
             ChainedSpeedMarketsAMMParameters(
                 allLengths[0], // numActiveMarkets
@@ -256,6 +256,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minBuyinAmount(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxBuyinAmount(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxProfitPerIndividualMarket(),
+                risk,
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).payoutMultiplier()
             );
     }

@@ -24,9 +24,9 @@ interface IChainedSpeedMarketsAMM {
 
     function payoutMultiplier() external view returns (uint);
 
-    function maxRiskPerAsset(bytes32 _asset) external view returns (uint);
+    function maxRisk() external view returns (uint);
 
-    function currentRiskPerAsset(bytes32 _asset) external view returns (uint);
+    function currentRisk() external view returns (uint);
 
     function getLengths(address user) external view returns (uint[4] memory);
 }

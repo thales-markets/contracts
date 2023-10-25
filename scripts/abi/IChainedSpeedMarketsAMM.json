@@ -1,13 +1,7 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_asset",
-        "type": "bytes32"
-      }
-    ],
-    "name": "currentRiskPerAsset",
+    "inputs": [],
+    "name": "currentRisk",
     "outputs": [
       {
         "internalType": "uint256",
@@ -77,14 +71,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_asset",
-        "type": "bytes32"
-      }
-    ],
-    "name": "maxRiskPerAsset",
+    "inputs": [],
+    "name": "maxRisk",
     "outputs": [
       {
         "internalType": "uint256",

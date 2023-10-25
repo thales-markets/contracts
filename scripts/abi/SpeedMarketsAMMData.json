@@ -237,6 +237,23 @@
             "type": "uint256"
           },
           {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "current",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "max",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct SpeedMarketsAMMData.Risk",
+            "name": "risk",
+            "type": "tuple"
+          },
+          {
             "internalType": "uint256",
             "name": "payoutMultiplier",
             "type": "uint256"
@@ -378,11 +395,6 @@
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
-      },
-      {
-        "internalType": "bool",
-        "name": "isChained",
-        "type": "bool"
       }
     ],
     "name": "getRiskPerAsset",

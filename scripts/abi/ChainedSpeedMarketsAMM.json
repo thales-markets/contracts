@@ -10,6 +10,12 @@
       },
       {
         "indexed": false,
+        "internalType": "uint64",
+        "name": "_maxTimeFrame",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "_minChainedMarkets",
         "type": "uint256"
@@ -36,6 +42,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "_maxProfitPerIndividualMarket",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxRisk",
         "type": "uint256"
       },
       {
@@ -234,25 +246,6 @@
       }
     ],
     "name": "SetAddresses",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maxRiskPerAsset",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaxRiskPerAsset",
     "type": "event"
   },
   {
@@ -472,14 +465,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "currentRiskPerAsset",
+    "inputs": [],
+    "name": "currentRisk",
     "outputs": [
       {
         "internalType": "uint256",
@@ -640,19 +627,26 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "maxRiskPerAsset",
+    "inputs": [],
+    "name": "maxRisk",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxTimeFrame",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",
@@ -927,6 +921,11 @@
         "type": "uint64"
       },
       {
+        "internalType": "uint64",
+        "name": "_maxTimeFrame",
+        "type": "uint64"
+      },
+      {
         "internalType": "uint256",
         "name": "_minChainedMarkets",
         "type": "uint256"
@@ -953,6 +952,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "_maxRisk",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_payoutMultiplier",
         "type": "uint256"
       }
@@ -971,24 +975,6 @@
       }
     ],
     "name": "setMastercopy",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxRiskPerAsset",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMaxRiskPerAsset",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

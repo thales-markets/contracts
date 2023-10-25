@@ -159,14 +159,15 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 		await chainedSpeedMarketsAMM.setMastercopy(chainedSpeedMarketMastercopy.address);
 		await chainedSpeedMarketsAMM.setAddresses(speedMarketsAMM.address, ZERO_ADDRESS);
-		await chainedSpeedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
 		await chainedSpeedMarketsAMM.setLimitParams(
 			600, // minTimeFrame
+			600, // maxTimeFrame
 			2, // minChainedMarkets
 			6, // maxChainedMarkets
 			toUnit(5), // minBuyinAmount
 			toUnit(20), // maxBuyinAmount
 			toUnit(500), // maxProfitPerIndividualMarket
+			toUnit(1000), // maxRisk
 			toUnit(PAYOUT_MULTIPLIER)
 		);
 
@@ -247,7 +248,17 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			assert.bnEqual(referrerBalance, toUnit(buyinAmount * DEFAULT_REFERRER_FEE)); // 0.5% from 10
 
 			console.log('Check liquidity validation');
-			await chainedSpeedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(900));
+			await chainedSpeedMarketsAMM.setLimitParams(
+				600, // minTimeFrame
+				600, // maxTimeFrame
+				2, // minChainedMarkets
+				6, // maxChainedMarkets
+				toUnit(5), // minBuyinAmount
+				toUnit(20), // maxBuyinAmount
+				toUnit(500), // maxProfitPerIndividualMarket
+				toUnit(900), // maxRisk DECREASED
+				toUnit(PAYOUT_MULTIPLIER)
+			);
 			await expect(
 				chainedSpeedMarketsAMM.createNewMarket(
 					toBytes32('ETH'),
@@ -260,7 +271,17 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				)
 			).to.be.revertedWith('Out of liquidity');
 
-			await chainedSpeedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(2000));
+			await chainedSpeedMarketsAMM.setLimitParams(
+				600, // minTimeFrame
+				600, // maxTimeFrame
+				2, // minChainedMarkets
+				6, // maxChainedMarkets
+				toUnit(5), // minBuyinAmount
+				toUnit(20), // maxBuyinAmount
+				toUnit(500), // maxProfitPerIndividualMarket
+				toUnit(2000), // maxRisk INCREASED
+				toUnit(PAYOUT_MULTIPLIER)
+			);
 			await chainedSpeedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				timeFrame,
@@ -292,11 +313,11 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			);
 
 			console.log('Check number of active markets');
-			let ammData = await speedMarketsAMMData.getChainedSpeedMarketsAMMParameters(user);
-			assert.equal(ammData.numActiveMarkets, 4);
+			let chainedAmmData = await speedMarketsAMMData.getChainedSpeedMarketsAMMParameters(user);
+			assert.equal(chainedAmmData.numActiveMarkets, 4);
 
 			console.log('Check current risk per asset');
-			markets = await chainedSpeedMarketsAMM.activeMarkets(0, ammData.numActiveMarkets);
+			markets = await chainedSpeedMarketsAMM.activeMarkets(0, chainedAmmData.numActiveMarkets);
 			marketDataArray = await speedMarketsAMMData.getChainedMarketsData(markets);
 
 			let expectedCurrentRisk = 0;
@@ -305,9 +326,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 					buyinAmount * PAYOUT_MULTIPLIER ** marketData.directions.length -
 					buyinAmount * (1 + Number(marketData.safeBoxImpact / 1e18));
 			}
-
-			let riskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'), true);
-			assert.equal((riskPerAssetData.current / 1e18).toFixed(5), expectedCurrentRisk.toFixed(5));
+			assert.equal((chainedAmmData.risk.current / 1e18).toFixed(5), expectedCurrentRisk.toFixed(5));
 		});
 
 		it('Should create chained speed markets with different collateral', async () => {
@@ -319,7 +338,17 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
 			await exoticOP.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
 
-			await chainedSpeedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(5000));
+			await chainedSpeedMarketsAMM.setLimitParams(
+				600, // minTimeFrame
+				600, // maxTimeFrame
+				2, // minChainedMarkets
+				6, // maxChainedMarkets
+				toUnit(5), // minBuyinAmount
+				toUnit(20), // maxBuyinAmount
+				toUnit(500), // maxProfitPerIndividualMarket
+				toUnit(5000), // maxRisk INCREASED
+				toUnit(PAYOUT_MULTIPLIER)
+			);
 
 			let buyinAmount = 10;
 			let timeFrame = 600; // 10 min

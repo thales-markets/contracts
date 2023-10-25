@@ -160,6 +160,7 @@ contract('Parlay Vault', (accounts) => {
 		SportsAMM,
 		SportAMMLiquidityPool,
 		ParlayAMMLiquidityPool,
+		ParlayPolicy,
 		SportAMMRiskManager,
 		multiCollateralOnOffRamp;
 	let emptyArray = [];
@@ -744,7 +745,6 @@ contract('Parlay Vault', (accounts) => {
 			safeBox,
 			Referrals.address,
 			ParlayMarketData.address,
-			ParlayVerifier.address,
 			{ from: owner }
 		);
 
@@ -912,6 +912,12 @@ contract('Parlay Vault', (accounts) => {
 			from: defaultParlayAMMLiquidityProvider,
 		});
 
+		const ParlayPolicyContract = artifacts.require('ParlayPolicy');
+		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
+		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
+		await ParlayAMM.setVerifierAndPolicyAddresses(ParlayVerifier.address, ParlayPolicy.address, {
+			from: owner,
+		});
 		await vault.setSafeBoxParams(safeBox, toUnit(0.2), {
 			from: owner,
 		});
@@ -1364,14 +1370,14 @@ contract('Parlay Vault', (accounts) => {
 			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
 		});
 
-		it('If round is positive, send share to SafeBox', async() => {
+		it('If round is positive, send share to SafeBox', async () => {
 			const AMOUNT = 50;
-			
+
 			await vault.deposit(toUnit(500), { from: first });
 			await vault.startVault({ from: owner });
 
 			await Thales.transfer(vault.address, toUnit(AMOUNT), {
-				from: first
+				from: first,
 			});
 
 			const safeBoxImpact = await vault.safeBoxImpact();
@@ -1386,7 +1392,10 @@ contract('Parlay Vault', (accounts) => {
 			let safeBoxBalanceAfterClosingRound = await Thales.balanceOf(safeBox);
 			console.log('safeBoxBalanceAfterClosingRound ' + safeBoxBalanceAfterClosingRound / 1e18);
 
-			assert.equal((Number(startSafeBoxBalance / 1e18) + Number(AMOUNT * (safeBoxImpact / 1e18))).toFixed(4), (safeBoxBalanceAfterClosingRound / 1e18).toFixed(4));
+			assert.equal(
+				(Number(startSafeBoxBalance / 1e18) + Number(AMOUNT * (safeBoxImpact / 1e18))).toFixed(4),
+				(safeBoxBalanceAfterClosingRound / 1e18).toFixed(4)
+			);
 		});
 	});
 });

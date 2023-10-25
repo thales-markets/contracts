@@ -301,7 +301,9 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                     IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM()).getSgpFeePerCombination(
                         newCombinedOdds.tags[0],
                         0,
-                        newCombinedOdds.tags[1]
+                        newCombinedOdds.tags[1],
+                        3,
+                        3
                     ) > 0
                 ) {
                     uint numOfOdds = ISportPositionalMarket(_mainMarket).optionsCount() > 2 ? 6 : 4;
@@ -316,7 +318,9 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                         sgpFee = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM()).getSgpFeePerCombination(
                             newCombinedOdds.tags[0],
                             0,
-                            newCombinedOdds.tags[1]
+                            newCombinedOdds.tags[1],
+                            positions[0],
+                            positions[1]
                         );
 
                         if (sgpFee > 0) {
@@ -342,7 +346,9 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                     IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM()).getSgpFeePerCombination(
                         ISportPositionalMarket(totalsMarket).tags(0),
                         newCombinedOdds.tags[0],
-                        newCombinedOdds.tags[1]
+                        newCombinedOdds.tags[1],
+                        3,
+                        3
                     ) > 0
                 ) {
                     for (uint j = 0; j < 4; j++) {
@@ -356,7 +362,9 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
                         sgpFee = IParlayMarketsAMM(ISportsAMM(sportsAMM).parlayAMM()).getSgpFeePerCombination(
                             newCombinedOdds.tags[0],
                             0,
-                            newCombinedOdds.tags[1]
+                            newCombinedOdds.tags[1],
+                            positions[0],
+                            positions[1]
                         );
 
                         if (sgpFee > 0) {

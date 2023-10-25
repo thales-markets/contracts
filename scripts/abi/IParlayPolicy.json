@@ -1,0 +1,133 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_childMarket1",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_childMarket2",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tag1",
+        "type": "uint256"
+      }
+    ],
+    "name": "areEligiblePropsMarkets",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "samePlayerDifferentProp",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "consumer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportMarket",
+        "type": "address"
+      }
+    ],
+    "name": "getChildMarketTotalLine",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "childTotalsLine",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMarketDefaultOdds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "odd",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "tag1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tag2_1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tag2_2",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "position1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "position2",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IParlayPolicy.SGPData",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "getSgpFeePerCombination",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "sgpFee",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

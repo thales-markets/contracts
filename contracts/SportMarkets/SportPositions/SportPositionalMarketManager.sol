@@ -49,7 +49,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     address public sportPositionalMarketFactory;
     bool public needsTransformingCollateral;
     mapping(address => bool) public whitelistedAddresses;
-    address public apexConsumer; // deprecated
+    address private apexConsumer; // deprecated
     uint public cancelTimeout;
     mapping(address => bool) public whitelistedCancelAddresses;
     address public oddsObtainer;
@@ -251,17 +251,20 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         returns (
             bool[] memory _hasAnyMintsArray,
             bool[] memory _isMaturedArray,
-            bool[] memory _isResolvedArray
+            bool[] memory _isResolvedArray,
+            uint[] memory _maturities
         )
     {
         _hasAnyMintsArray = new bool[](_playerPropsMarkets.length);
         _isMaturedArray = new bool[](_playerPropsMarkets.length);
         _isResolvedArray = new bool[](_playerPropsMarkets.length);
+        _maturities = new uint[](_playerPropsMarkets.length);
         for (uint i = 0; i < _playerPropsMarkets.length; i++) {
             (bool _hasAnyMints, uint _maturity) = _hasAnyMintsAndMaturityDatesForPP(_playerPropsMarkets[i]);
             _isResolvedArray[i] = _isResolvedMarket(_playerPropsMarkets[i]);
             _hasAnyMintsArray[i] = _hasAnyMints;
             _isMaturedArray[i] = _maturity <= block.timestamp;
+            _maturities[i] = _maturity;
         }
     }
 

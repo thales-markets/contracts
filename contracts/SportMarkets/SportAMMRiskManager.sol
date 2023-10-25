@@ -18,6 +18,8 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     uint public constant MIN_TAG_NUMBER = 9000;
     uint public constant MIN_CHILD_NUMBER = 10000;
     uint public constant MIN_PLAYER_PROPS_NUMBER = 11000;
+    uint public constant DEFAULT_DYNAMIC_LIQUIDITY_CUTOFF_DIVIDER = 2e18;
+    uint private constant ONE = 1e18;
 
     /* ========== RISK MANAGER STATE VARIABLES ========== */
     address public manager;
@@ -44,6 +46,9 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
 
     /// @return The maximum supported odd for sport
     mapping(uint => uint) public maxSpreadPerSport;
+
+    mapping(uint => uint) public dynamicLiquidityCutoffTimePerSport;
+    mapping(uint => uint) public dynamicLiquidityCutoffDividerPerSport;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -159,8 +164,8 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
 
     function _calculateCapToBeUsed(address market) internal view returns (uint toReturn) {
         toReturn = capPerMarket[market];
+        (uint tag1, uint tag2) = _getTagsForMarket(market);
         if (toReturn == 0) {
-            (uint tag1, uint tag2) = _getTagsForMarket(market);
             uint capFirstTag = capPerSport[tag1];
             capFirstTag = capFirstTag > 0 ? capFirstTag : defaultCapPerGame;
             toReturn = capFirstTag;
@@ -168,6 +173,26 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
             if (tag2 > 0) {
                 uint capSecondTag = capPerSportAndChild[tag1][tag2];
                 toReturn = capSecondTag > 0 ? capSecondTag : capFirstTag / 2;
+            }
+        }
+
+        uint dynamicLiquidityCutoffTime = dynamicLiquidityCutoffTimePerSport[tag1];
+        if (dynamicLiquidityCutoffTime > 0) {
+            (uint maturity, ) = ISportPositionalMarket(market).times();
+            uint timeToStart = maturity - block.timestamp;
+            uint cutOffLiquidity = (toReturn * ONE) /
+                (
+                    dynamicLiquidityCutoffDividerPerSport[tag1] > 0
+                        ? dynamicLiquidityCutoffDividerPerSport[tag1]
+                        : DEFAULT_DYNAMIC_LIQUIDITY_CUTOFF_DIVIDER
+                );
+            if (timeToStart >= dynamicLiquidityCutoffTime) {
+                toReturn = cutOffLiquidity;
+            } else {
+                uint remainingFromCutOff = toReturn - cutOffLiquidity;
+                toReturn =
+                    cutOffLiquidity +
+                    (((dynamicLiquidityCutoffTime - timeToStart) * remainingFromCutOff) / dynamicLiquidityCutoffTime);
             }
         }
     }
@@ -179,6 +204,21 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */
+
+    /// @notice Setting the dynamic liquidity params
+    /// @param _sportID The tagID used for sport (9004)
+    /// @param _dynamicLiquidityCutoffTime when to start increasing the liquidity linearly, if 0 assume 100% liquidity all the time since market creation
+    /// @param _dynamicLiquidityCutoffDivider e.g. if 2 it means liquidity up until cut off time is 50%, then increases linearly. if 0 use default
+    function setDynamicLiquidityParamsPerSport(
+        uint _sportID,
+        uint _dynamicLiquidityCutoffTime,
+        uint _dynamicLiquidityCutoffDivider
+    ) external onlyOwner {
+        require(_sportID > MIN_TAG_NUMBER, "Invalid tag for sport");
+        dynamicLiquidityCutoffTimePerSport[_sportID] = _dynamicLiquidityCutoffTime;
+        dynamicLiquidityCutoffDividerPerSport[_sportID] = _dynamicLiquidityCutoffDivider;
+        emit SetDynamicLiquidityParams(_sportID, _dynamicLiquidityCutoffTime, _dynamicLiquidityCutoffDivider);
+    }
 
     /// @notice Setting the Cap per spec. market
     /// @param _markets market addresses
@@ -368,4 +408,5 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     event SetMinSupportedOddsAndMaxSpreadPerSport(uint _sport, uint _minSupportedOddsPerSport, uint _maxSpreadPerSport);
     event SetSportOnePositional(uint _sport, bool _flag);
     event SetPlayerPropsOnePositional(uint _playerPropsOptionTag, bool _flag);
+    event SetDynamicLiquidityParams(uint _sport, uint _dynamicLiquidityCutoffTime, uint _dynamicLiquidityCutoffDivider);
 }

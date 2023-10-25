@@ -45,6 +45,8 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     /// @return The maximum supported odd for sport
     mapping(uint => uint) public maxSpreadPerSport;
 
+    address public sportsAMMCancellationPool;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(

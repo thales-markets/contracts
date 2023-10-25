@@ -17,6 +17,8 @@ interface ISportAMMRiskManager {
 
     function maxSpreadPerSport(uint tag) external view returns (uint);
 
+    function sportsAMMCancellationPool() external view returns (address);
+
     function getMinSpreadToUse(
         bool useDefaultMinSpread,
         address market,

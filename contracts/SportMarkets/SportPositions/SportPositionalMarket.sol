@@ -6,6 +6,7 @@ import "../../OwnedWithInit.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/ISportsAMM.sol";
+import "../../interfaces/ISportsAMMCancellationPool.sol";
 
 // Libraries
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
@@ -494,7 +495,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             sUSD.transfer(msg.sender, payout);
             if (cancellationPayout > 0) {
                 cancellationPayout = _manager().transformCollateral(cancellationPayout);
-                ISportsAMM(sportsAMM).cancellationPayout(msg.sender, cancellationPayout);
+                ISportsAMMCancellationPool(ISportsAMM(sportsAMM).riskManager().sportsAMMCancellationPool())
+                    .cancellationPayout(msg.sender, cancellationPayout);
             }
         }
     }

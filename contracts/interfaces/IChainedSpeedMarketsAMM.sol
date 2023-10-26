@@ -16,6 +16,8 @@ interface IChainedSpeedMarketsAMM {
 
     function minTimeFrame() external view returns (uint64);
 
+    function maxTimeFrame() external view returns (uint64);
+
     function minBuyinAmount() external view returns (uint);
 
     function maxBuyinAmount() external view returns (uint);

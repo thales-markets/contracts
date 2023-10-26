@@ -222,6 +222,11 @@
             "type": "uint64"
           },
           {
+            "internalType": "uint64",
+            "name": "maxTimeFrame",
+            "type": "uint64"
+          },
+          {
             "internalType": "uint256",
             "name": "minBuyinAmount",
             "type": "uint256"

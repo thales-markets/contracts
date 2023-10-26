@@ -90,6 +90,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         uint minChainedMarkets;
         uint maxChainedMarkets;
         uint64 minTimeFrame;
+        uint64 maxTimeFrame;
         uint minBuyinAmount;
         uint maxBuyinAmount;
         uint maxProfitPerIndividualMarket;
@@ -253,6 +254,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minChainedMarkets(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxChainedMarkets(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minTimeFrame(),
+                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxTimeFrame(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minBuyinAmount(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxBuyinAmount(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxProfitPerIndividualMarket(),

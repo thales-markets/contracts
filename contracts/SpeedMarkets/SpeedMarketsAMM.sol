@@ -240,6 +240,29 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         }
     }
 
+    function _handleReferrerAndSafeBox(address referrer, uint buyinAmount) internal returns (uint referrerShare) {
+        if (referrals != address(0)) {
+            address newOrExistingReferrer;
+            if (referrer != address(0)) {
+                IReferrals(referrals).setReferrer(referrer, msg.sender);
+                newOrExistingReferrer = referrer;
+            } else {
+                newOrExistingReferrer = IReferrals(referrals).referrals(msg.sender);
+            }
+
+            if (newOrExistingReferrer != address(0)) {
+                uint referrerFeeByTier = IReferrals(referrals).getReferrerFee(newOrExistingReferrer);
+                if (referrerFeeByTier > 0) {
+                    referrerShare = (buyinAmount * referrerFeeByTier) / ONE;
+                    sUSD.safeTransfer(newOrExistingReferrer, referrerShare);
+                    emit ReferrerPaid(newOrExistingReferrer, msg.sender, referrerShare, buyinAmount);
+                }
+            }
+        }
+
+        sUSD.safeTransfer(safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
+    }
+
     function _createNewMarket(
         bytes32 asset,
         uint64 strikeTime,
@@ -249,9 +272,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         bool transferSusd,
         address referrer
     ) internal {
-        if (referrer != address(0)) {
-            IReferrals(referrals).setReferrer(referrer, msg.sender);
-        }
         require(supportedAsset[asset], "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "wrong buy in amount");
         require(
@@ -295,20 +315,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         sUSD.safeTransfer(address(srm), buyinAmount * 2);
 
-        uint referrerShare;
-        if (referrals != address(0)) {
-            address fetchedReferrer = IReferrals(referrals).referrals(msg.sender);
-
-            if (fetchedReferrer != address(0)) {
-                uint referrerFeeByTier = IReferrals(referrals).getReferrerFee(fetchedReferrer);
-                if (referrerFeeByTier > 0) {
-                    referrerShare = (buyinAmount * referrerFeeByTier) / ONE;
-                    sUSD.safeTransfer(fetchedReferrer, referrerShare);
-                    emit ReferrerPaid(fetchedReferrer, msg.sender, referrerShare, buyinAmount);
-                }
-            }
-        }
-        sUSD.safeTransfer(safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
+        _handleReferrerAndSafeBox(referrer, buyinAmount);
 
         _activeMarkets.add(address(srm));
         _activeMarketsPerUser[msg.sender].add(address(srm));
@@ -419,7 +426,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     function _resolveMarketManually(address _market, int64 _finalPrice) internal {
-        require(canResolveMarket(_market), "Can not resolve");
+        require(canResolveMarket(_market) && !SpeedMarket(_market).isUserWinner(), "Can not resolve manually");
         _resolveMarketWithPrice(_market, _finalPrice);
     }
 

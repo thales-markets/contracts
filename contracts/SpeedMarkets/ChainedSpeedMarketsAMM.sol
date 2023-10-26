@@ -72,6 +72,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
     bool public multicollateralEnabled;
 
+    // using it to solve stack too deep
+    struct PaymentData {
+        uint payout;
+        uint safeBoxImpact;
+    }
+
     receive() external payable {}
 
     function initialize(address _owner, IERC20Upgradeable _sUSD) external initializer {
@@ -135,6 +141,34 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         }
     }
 
+    function _handleReferrerAndSafeBox(
+        address referrer,
+        uint buyinAmount,
+        uint safeBoxImpact
+    ) internal returns (uint referrerShare) {
+        IReferrals referrals = speedMarketsAMM.referrals();
+        if (address(referrals) != address(0)) {
+            address newOrExistingReferrer;
+            if (referrer != address(0)) {
+                referrals.setReferrer(referrer, msg.sender);
+                newOrExistingReferrer = referrer;
+            } else {
+                newOrExistingReferrer = referrals.referrals(msg.sender);
+            }
+
+            if (newOrExistingReferrer != address(0)) {
+                uint referrerFeeByTier = referrals.getReferrerFee(newOrExistingReferrer);
+                if (referrerFeeByTier > 0) {
+                    referrerShare = (buyinAmount * referrerFeeByTier) / ONE;
+                    sUSD.safeTransfer(newOrExistingReferrer, referrerShare);
+                    emit ReferrerPaid(newOrExistingReferrer, msg.sender, referrerShare, buyinAmount);
+                }
+            }
+        }
+
+        sUSD.safeTransfer(speedMarketsAMM.safeBox(), (buyinAmount * safeBoxImpact) / ONE - referrerShare);
+    }
+
     function _createNewMarket(
         bytes32 asset,
         uint64 timeFrame,
@@ -144,9 +178,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         bool transferSusd,
         address referrer
     ) internal {
-        if (referrer != address(0)) {
-            speedMarketsAMM.referrals().setReferrer(referrer, msg.sender);
-        }
         require(speedMarketsAMM.supportedAsset(asset), "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
         require(timeFrame >= minTimeFrame && timeFrame <= maxTimeFrame, "Wrong time frame");
@@ -154,12 +185,14 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             directions.length >= minChainedMarkets && directions.length <= maxChainedMarkets,
             "Wrong number of directions"
         );
-        require(_getPayout(buyinAmount, directions.length) <= maxProfitPerIndividualMarket, "Profit too high");
 
-        currentRisk +=
-            _getPayout(buyinAmount, directions.length) -
-            (buyinAmount * (ONE + speedMarketsAMM.safeBoxImpact())) /
-            ONE;
+        PaymentData memory paymentData;
+        paymentData.payout = _getPayout(buyinAmount, directions.length);
+        require(paymentData.payout <= maxProfitPerIndividualMarket, "Profit too high");
+
+        paymentData.safeBoxImpact = speedMarketsAMM.safeBoxImpact();
+
+        currentRisk += paymentData.payout - (buyinAmount * (ONE + paymentData.safeBoxImpact)) / ONE;
         require(currentRisk <= maxRisk, "Out of liquidity");
 
         speedMarketsAMM.pyth().updatePriceFeeds{value: speedMarketsAMM.pyth().getUpdateFee(priceUpdateData)}(
@@ -173,7 +206,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         );
 
         if (transferSusd) {
-            uint totalAmountToTransfer = (buyinAmount * (ONE + speedMarketsAMM.safeBoxImpact())) / ONE;
+            uint totalAmountToTransfer = (buyinAmount * (ONE + paymentData.safeBoxImpact)) / ONE;
             sUSD.safeTransferFrom(msg.sender, address(this), totalAmountToTransfer);
         }
 
@@ -189,31 +222,13 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 price.price,
                 directions,
                 buyinAmount,
-                speedMarketsAMM.safeBoxImpact()
+                paymentData.safeBoxImpact
             )
         );
 
-        sUSD.safeTransfer(address(csm), _getPayout(buyinAmount, directions.length));
+        sUSD.safeTransfer(address(csm), paymentData.payout);
 
-        {
-            uint referrerShare;
-            if (address(speedMarketsAMM.referrals()) != address(0)) {
-                address fetchedReferrer = speedMarketsAMM.referrals().referrals(msg.sender);
-
-                if (fetchedReferrer != address(0)) {
-                    uint referrerFeeByTier = speedMarketsAMM.referrals().getReferrerFee(fetchedReferrer);
-                    if (referrerFeeByTier > 0) {
-                        referrerShare = (buyinAmount * referrerFeeByTier) / ONE;
-                        sUSD.safeTransfer(fetchedReferrer, referrerShare);
-                        emit ReferrerPaid(fetchedReferrer, msg.sender, referrerShare, buyinAmount);
-                    }
-                }
-            }
-            sUSD.safeTransfer(
-                speedMarketsAMM.safeBox(),
-                (buyinAmount * speedMarketsAMM.safeBoxImpact()) / ONE - referrerShare
-            );
-        }
+        _handleReferrerAndSafeBox(referrer, buyinAmount, paymentData.safeBoxImpact);
 
         _activeMarkets.add(address(csm));
         _activeMarketsPerUser[msg.sender].add(address(csm));
@@ -231,7 +246,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             price.price,
             directions,
             buyinAmount,
-            speedMarketsAMM.safeBoxImpact()
+            paymentData.safeBoxImpact
         );
     }
 
@@ -332,7 +347,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     function _resolveMarketManually(address _market, int64[] calldata _finalPrices) internal {
-        require(canResolveMarket(_market), "Can not resolve");
+        require(canResolveMarket(_market) && !ChainedSpeedMarket(_market).isUserWinner(), "Can not resolve manually");
         _resolveMarketWithPrices(_market, _finalPrices);
     }
 

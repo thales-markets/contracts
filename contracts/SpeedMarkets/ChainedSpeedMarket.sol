@@ -68,13 +68,9 @@ contract ChainedSpeedMarket {
 
     function resolve(int64[] calldata _finalPrices) external onlyAMM {
         require(!resolved, "already resolved");
-        require(block.timestamp > initialStrikeTime, "not ready to be resolved");
+        require(block.timestamp > initialStrikeTime + (timeFrame * (_finalPrices.length - 1)), "not ready to be resolved");
         require(_finalPrices.length <= directions.length, "more prices than directions");
-        bool allPricesExist = _finalPrices.length == directions.length;
-        require(
-            !allPricesExist || (allPricesExist && block.timestamp > strikeTime),
-            "not ready to be resolved for all directions"
-        );
+
         finalPrices = _finalPrices;
 
         for (uint i = 0; i < _finalPrices.length; i++) {

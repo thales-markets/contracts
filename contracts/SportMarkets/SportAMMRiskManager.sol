@@ -10,6 +10,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
 // interface
 import "../interfaces/ISportPositionalMarketManager.sol";
+import "../interfaces/ISportsAMMCancellationPool.sol";
 
 /// @title Sports AMM Risk contract
 /// @author gruja
@@ -328,6 +329,13 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         emit SetPlayerPropsOnePositional(_playerPropsOptionTag, _flag);
     }
 
+    /// @notice setting SportsAMM Cancellation contract
+    /// @param _sportsAMMCancellationPool address of cancellation contract
+    function setSportsAMMCancellationPool(address _sportsAMMCancellationPool) external onlyOwner {
+        sportsAMMCancellationPool = _sportsAMMCancellationPool;
+        emit SetSportsAMMCancellationPool(_sportsAMMCancellationPool);
+    }
+
     function getMinSpreadToUse(
         bool useDefaultMinSpread,
         address market,
@@ -370,4 +378,5 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     event SetMinSupportedOddsAndMaxSpreadPerSport(uint _sport, uint _minSupportedOddsPerSport, uint _maxSpreadPerSport);
     event SetSportOnePositional(uint _sport, bool _flag);
     event SetPlayerPropsOnePositional(uint _playerPropsOptionTag, bool _flag);
+    event SetSportsAMMCancellationPool(address sportsAMMCancellationPool);
 }

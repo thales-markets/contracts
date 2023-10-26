@@ -284,6 +284,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "sportsAMMCancellationPool",
+        "type": "address"
+      }
+    ],
+    "name": "SetSportsAMMCancellationPool",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_manager",
         "type": "address"
       }
@@ -1146,6 +1159,19 @@
       }
     ],
     "name": "setSportOnePositional",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportsAMMCancellationPool",
+        "type": "address"
+      }
+    ],
+    "name": "setSportsAMMCancellationPool",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -3,16 +3,101 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "account",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_market",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "cancellationPayout",
+        "name": "_paidAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "addUserDepositPerMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "payout",
         "type": "uint256"
       }
     ],
     "name": "cancellationPayout",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_cancellationPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sUSD",
+        "type": "address"
+      }
+    ],
+    "name": "sendFunds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_paidAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateCancellationMultiplier",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

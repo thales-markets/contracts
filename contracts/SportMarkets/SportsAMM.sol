@@ -22,6 +22,7 @@ import "../interfaces/IReferrals.sol";
 import "../interfaces/ISportsAMM.sol";
 import "../interfaces/ITherundownConsumerWrapper.sol";
 import "../interfaces/ISportAMMRiskManager.sol";
+import "../interfaces/ISportsAMMCancellationPool.sol";
 
 import "./SportsAMMUtils.sol";
 import "./LiquidityPool/SportAMMLiquidityPool.sol";
@@ -906,6 +907,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, params.sUSDPaid);
         }
+
+        ISportsAMMCancellationPool(riskManager.sportsAMMCancellationPool()).updateCancellationMultiplier(
+            params.market,
+            uint8(params.position),
+            params.sUSDPaid,
+            params.amount
+        );
 
         emit BoughtFromAmm(
             msg.sender,

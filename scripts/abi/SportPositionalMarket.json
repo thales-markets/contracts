@@ -294,6 +294,11 @@
         "internalType": "uint256",
         "name": "payout",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "cancellationPayout",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

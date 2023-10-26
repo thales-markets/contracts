@@ -16,6 +16,8 @@ import "./SportPositionalMarketManager.sol";
 import "./SportPosition.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 
+import "hardhat/console.sol";
+
 contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ========== LIBRARIES ========== */
 
@@ -477,16 +479,14 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         }
         uint payout = _getPayout(homeBalance, awayBalance, drawBalance);
         uint cancellationPayout;
-
         if (cancelled) {
             require(
                 block.timestamp > cancelTimestamp.add(_manager().cancelTimeout()) && !invalidOdds,
                 "Unexpired timeout/ invalid odds"
             );
-            payout = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
-            cancellationPayout = calculateExtraCancellationPayout(payout);
+            (payout, cancellationPayout) = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
         }
-        emit OptionsExercised(msg.sender, payout);
+        emit OptionsExercised(msg.sender, payout + cancellationPayout);
         if (payout != 0) {
             if (!isDoubleChance) {
                 _decrementDeposited(payout);
@@ -495,8 +495,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             sUSD.transfer(msg.sender, payout);
             if (cancellationPayout > 0) {
                 cancellationPayout = _manager().transformCollateral(cancellationPayout);
-                ISportsAMMCancellationPool(ISportsAMM(sportsAMM).riskManager().sportsAMMCancellationPool())
-                    .cancellationPayout(msg.sender, cancellationPayout);
+                ISportsAMMCancellationPool(ISportsAMM(sportsAMM).riskManager().sportsAMMCancellationPool()).sendFunds(
+                    msg.sender,
+                    cancellationPayout,
+                    address(sUSD)
+                );
             }
         }
     }
@@ -554,18 +557,33 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         uint _homeBalance,
         uint _awayBalance,
         uint _drawBalance
-    ) public view returns (uint payout) {
+    ) public view returns (uint payout, uint cancellationPayout) {
         if (!cancelled) {
-            return 0;
+            return (0, 0);
         } else {
             if (isDoubleChance) {
                 (uint position1Odds, uint position2Odds) = _getParentPositionOdds();
                 payout = _homeBalance.mul(position1Odds).div(1e18);
                 payout = payout.add(_homeBalance.mul(position2Odds).div(1e18));
             } else {
-                payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
-                payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
-                payout = payout.add(_drawBalance.mul(drawOddsOnCancellation).div(1e18));
+                ISportsAMMCancellationPool cancellationPool = ISportsAMMCancellationPool(
+                    ISportsAMM(sportsAMM).riskManager().sportsAMMCancellationPool()
+                );
+                if (_homeBalance > 0) {
+                    cancellationPayout = cancellationPool.cancellationPayout(address(this), 0, _homeBalance);
+                    payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
+                }
+                if (_awayBalance > 0) {
+                    cancellationPayout += cancellationPool.cancellationPayout(address(this), 1, _awayBalance);
+                    payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
+                }
+                if (_drawBalance > 0) {
+                    cancellationPayout += cancellationPool.cancellationPayout(address(this), 2, _drawBalance);
+                    payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
+                }
+                if (cancellationPayout >= payout) {
+                    cancellationPayout = cancellationPayout - payout;
+                }
             }
         }
     }

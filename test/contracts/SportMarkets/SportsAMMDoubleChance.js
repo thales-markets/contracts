@@ -1030,7 +1030,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'payoutOnCancelation first homeTeamNotLoseMarket',
-				payoutOnCancelationHomeTeamNotLose / 1e18
+				payoutOnCancelationHomeTeamNotLose.payout / 1e18
 			);
 
 			let balancesAwayTeamNotLose = await homeTeamNotLoseMarket.balancesOf(first);
@@ -1044,7 +1044,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'payoutOnCancelation first awayTeamNotLoseMarket',
-				payoutOnCancelationAwayTeamNotLose / 1e18
+				payoutOnCancelationAwayTeamNotLose.payout / 1e18
 			);
 
 			let balancesAMMHomeTeamNotLose = await homeTeamNotLoseMarket.balancesOf(SportsAMM.address);
@@ -1062,7 +1062,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 			console.log(
 				'payoutOnCancelation sportsAMM homeTeamNotLoseMarket',
-				payoutOnCancelationAMM / 1e18
+				payoutOnCancelationAMM.payout / 1e18
 			);
 
 			let balances = await homeTeamNotLoseMarket.balancesOf(second);
@@ -1072,7 +1072,10 @@ contract('SportsAMM DoubleChance', (accounts) => {
 				balances[2]
 			);
 
-			console.log('payoutOnCancelation second homeTeamNotLoseMarket', payoutOnCancelation / 1e18);
+			console.log(
+				'payoutOnCancelation second homeTeamNotLoseMarket',
+				payoutOnCancelation.payout / 1e18
+			);
 			balances = await deployedMarket.balancesOf(homeTeamNotLoseMarket.address);
 			payoutOnCancelation = await deployedMarket.calculatePayoutOnCancellation(
 				balances[0],
@@ -1088,7 +1091,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			);
 			console.log(
 				'payoutOnCancelation on deployedMarket homeTeamNotLoseMArket',
-				payoutOnCancelation / 1e18
+				payoutOnCancelation.payout / 1e18
 			);
 
 			balances = await deployedMarket.balancesOf(awayTeamNotLoseMarket.address);
@@ -1106,7 +1109,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			);
 			console.log(
 				'payoutOnCancelation on deployedMarket awayTeamNotLoseMarket',
-				payoutOnCancelation / 1e18
+				payoutOnCancelation.payout / 1e18
 			);
 
 			answer = await Thales.balanceOf(first);

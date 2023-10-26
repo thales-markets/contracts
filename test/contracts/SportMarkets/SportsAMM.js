@@ -2160,7 +2160,7 @@ contract('SportsAMM', (accounts) => {
 				balances[2]
 			);
 
-			console.log('payoutOnCancelation', payoutOnCancelation / 1e18);
+			console.log('payoutOnCancelation', payoutOnCancelation.payout / 1e18);
 
 			balances = await deployedMarket.balancesOf(SportsAMM.address);
 			payoutOnCancelation = await deployedMarket.calculatePayoutOnCancellation(
@@ -2170,7 +2170,7 @@ contract('SportsAMM', (accounts) => {
 			);
 
 			console.log('Balances AMM', balances[0] / 1e18, balances[1] / 1e18, balances[2] / 1e18);
-			console.log('payoutOnCancelation sportAMM', payoutOnCancelation / 1e18);
+			console.log('payoutOnCancelation sportAMM', payoutOnCancelation.payout / 1e18);
 
 			answer = await Thales.balanceOf(SportsAMM.address);
 			console.log('Balance before exercise of SportsAMM: ', fromUnit(answer));

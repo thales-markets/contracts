@@ -262,6 +262,7 @@ contract('ParlayAMM', (accounts) => {
 		);
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
+		await Referrals.setReferrerFees(toUnit(0.005), toUnit(0.0075), toUnit(0.01), { from: owner });
 
 		await SportsAMM.initialize(owner, Thales.address, toUnit('0.02'), toUnit('0.2'), DAY, {
 			from: owner,
@@ -954,13 +955,32 @@ contract('ParlayAMM', (accounts) => {
 				{ from: first }
 			);
 
+			let referrerFeeForSecond = await Referrals.getReferrerFee(second);
+			console.log('referrerFeeForSecond : ' + referrerFeeForSecond / 1e18);
+
+			assert.bnEqual(referrerFeeForSecond, toUnit('0.005'));
+
+			let referrerForFirst = await Referrals.sportReferrals(first);
+			console.log('referrerForFirst : ' + referrerForFirst);
+
+			assert.deepEqual(referrerForFirst, second);
+
+			let balanceOfSecondReferrerAfter = await Thales.balanceOf(second);
+			console.log('balanceOfSecondReferrerAfter : ' + balanceOfSecondReferrerAfter / 1e18);
+
+			assert.bnEqual(balanceOfSecondReferrerAfter, toUnit('1000.05'));
+
+			let safeBoxBalanceAfter = await Thales.balanceOf(safeBox);
+			console.log('safeBoxBalanceAfter : ' + safeBoxBalanceAfter / 1e18);
+			assert.bnEqual(safeBoxBalanceAfter, toUnit('0.15'));
+
 			let firstAnswer = await Thales.balanceOf(second);
-			assert.bnGt(firstAnswer, balanceOfFirstReferrer);
 			console.log(
 				'First referrer change: ',
 				fromUnit(balanceOfFirstReferrer),
 				fromUnit(firstAnswer)
 			);
+			assert.bnGt(firstAnswer, balanceOfFirstReferrer);
 
 			let secondAnswer = await Thales.balanceOf(third);
 			assert.bnEqual(secondAnswer, balanceOfSecondReferrer);

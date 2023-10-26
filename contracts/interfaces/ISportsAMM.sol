@@ -91,4 +91,14 @@ interface ISportsAMM {
         uint amount,
         address collateral
     ) external view returns (uint collateralQuote, uint sUSDToPay);
+
+    function availableToBuyFromAMMWithBaseOdds(
+        address market,
+        ISportsAMM.Position position,
+        uint baseOdds,
+        uint balance,
+        bool useBalance
+    ) external view returns (uint availableAmount);
+
+    function floorBaseOdds(uint baseOdds, address market) external view returns (uint);
 }

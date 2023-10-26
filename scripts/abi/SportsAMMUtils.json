@@ -328,6 +328,45 @@
         "type": "address"
       },
       {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "positionFirst",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "positionSecond",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bool",
+        "name": "inverse",
+        "type": "bool"
+      },
+      {
+        "internalType": "contract SportAMMLiquidityPool",
+        "name": "liquidityPool",
+        "type": "address"
+      }
+    ],
+    "name": "getAvailableHigherForPositions",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_availableHigher",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
         "internalType": "address",
         "name": "addressToCheck",
         "type": "address"
@@ -608,6 +647,30 @@
         "internalType": "address",
         "name": "parentMarket",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "getParentMarketPositionsImpactDoubleChance",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "",
+        "type": "int256"
       }
     ],
     "stateMutability": "view",

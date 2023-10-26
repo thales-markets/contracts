@@ -49,23 +49,27 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     address public parlayMarketData;
     address public safeBox;
     address public referrals;
-    address public usdc;
-    address public usdt;
-    address public dai;
+
+    address private usdc; // deprecated see MultiCollateralOnOffRamp.sol
+    address private usdt; // deprecated see MultiCollateralOnOffRamp.sol
+    address private dai; // deprecated see MultiCollateralOnOffRamp.sol
 
     uint public parlayAmmFee;
     uint public parlaySize;
     uint public maxSupportedAmount;
     uint public maxSupportedOdds;
     uint public safeBoxImpact;
-    uint public referrerFee;
 
-    bool public curveOnrampEnabled;
-    bool public reducedFeesEnabled; // deprecated
+    uint private referrerFee; // deprecated, moved to Referrals.sol
+    bool private curveOnrampEnabled; // deprecated see MultiCollateralOnOffRamp.sol
+    bool private reducedFeesEnabled; // deprecated
 
     AddressSetLib.AddressSet internal _knownMarkets;
     mapping(address => bool) public resolvedParlay;
-    uint public maxAllowedPegSlippagePercentage;
+
+    // deprecated see MultiCollateralOnOffRamp.sol
+    uint private maxAllowedPegSlippagePercentage;
+
     ParlayVerifier public parlayVerifier;
     uint public minUSDAmount;
 
@@ -307,9 +311,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             true,
             _differentRecipient
         );
-        if (referrerFee > 0 && referrals != address(0)) {
-            _handleReferrer(_differentRecipient, _sUSDPaid);
-        }
+
         _transferSuprlusIfExists();
     }
 
@@ -391,9 +393,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         _buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, false, msg.sender);
-        if (referrerFee > 0 && referrals != address(0)) {
-            _handleReferrer(msg.sender, _sUSDPaid);
-        }
         _transferSuprlusIfExists();
     }
 
@@ -489,7 +488,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _positions,
             _sUSDPaid
         );
-        uint safeBoxAmount = _getSafeBoxAmount(_sUSDPaid, sUSDAfterFees, _differentRecipient);
         // apply all checks
         require(_sUSDPaid >= minUSDAmount, "Low sUSD buy");
         require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");
@@ -497,10 +495,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
 
         if (_sendSUSD) {
-            // todo send to LP
             sUSD.safeTransferFrom(msg.sender, address(this), _sUSDPaid);
         }
-        sUSD.safeTransfer(safeBox, safeBoxAmount);
+
+        uint safeBoxAmount = _handleReferrerAndSB(_sUSDPaid, sUSDAfterFees);
 
         // mint the stateful token  (ERC-20)
         // clone a parlay market
@@ -581,6 +579,20 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
     }
 
+    function _handleReferrerAndSB(uint _sUSDPaid, uint sUSDAfterFees) internal returns (uint safeBoxAmount) {
+        uint referrerShare;
+        address referrer = IReferrals(referrals).sportReferrals(msg.sender);
+        if (referrer != address(0)) {
+            uint referrerFeeByTier = IReferrals(referrals).getReferrerFee(referrer);
+            if (referrerFeeByTier > 0) {
+                referrerShare = (_sUSDPaid * referrerFeeByTier) / ONE;
+                sUSD.safeTransfer(referrer, referrerShare);
+            }
+        }
+        safeBoxAmount = _getSafeBoxAmount(_sUSDPaid, sUSDAfterFees, msg.sender);
+        sUSD.safeTransfer(safeBox, safeBoxAmount - referrerShare);
+    }
+
     function _buyPositionsFromSportAMM(
         address[] memory _sportMarkets,
         uint[] memory _positions,
@@ -642,15 +654,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (ParlayMarket(_parlayMarket).numOfResolvedSportMarkets() == ParlayMarket(_parlayMarket).numOfSportMarkets()) {
             resolvedParlay[_parlayMarket] = true;
             _knownMarkets.remove(_parlayMarket);
-        }
-    }
-
-    function _handleReferrer(address buyer, uint volume) internal {
-        address referrer = IReferrals(referrals).sportReferrals(buyer);
-        uint referrerShare = (volume * ONE) / (ONE - referrerFee) - volume;
-        if (referrer != address(0) && referrerFee > 0) {
-            sUSD.safeTransfer(referrer, referrerShare);
-            emit ReferrerPaid(referrer, buyer, referrerShare, volume);
         }
     }
 
@@ -750,7 +753,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         maxSupportedOdds = _maxSupportedOdds;
         parlayAmmFee = _parlayAMMFee;
         safeBoxImpact = _safeBoxImpact;
-        referrerFee = _referrerFee;
+        // deprecated
+        //referrerFee = _referrerFee;
         maxAllowedRiskPerCombination = _maxAllowedRiskPerCombination;
         emit SetAmounts(
             _minUSDAmount,

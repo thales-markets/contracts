@@ -139,6 +139,31 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "_sport",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_dynamicLiquidityCutoffTime",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_dynamicLiquidityCutoffDivider",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetDynamicLiquidityParams",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "_maxCap",
         "type": "uint256"
       },
@@ -306,6 +331,19 @@
   },
   {
     "inputs": [],
+    "name": "DEFAULT_DYNAMIC_LIQUIDITY_CUTOFF_DIVIDER",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "MIN_CHILD_NUMBER",
     "outputs": [
       {
@@ -447,6 +485,44 @@
   {
     "inputs": [],
     "name": "defaultRiskMultiplier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "dynamicLiquidityCutoffDividerPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "dynamicLiquidityCutoffTimePerSport",
     "outputs": [
       {
         "internalType": "uint256",
@@ -997,6 +1073,29 @@
       }
     ],
     "name": "setDefaultRiskMultiplier",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_dynamicLiquidityCutoffTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_dynamicLiquidityCutoffDivider",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDynamicLiquidityParamsPerSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

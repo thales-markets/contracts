@@ -78,6 +78,8 @@ contract('ParlayAMM', (accounts) => {
 	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
 	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
+	const SportsAMMCancellationPoolContract = artifacts.require('SportsAMMCancellationPool');
+	s;
 
 	let ParlayAMM;
 	let ParlayMarket;
@@ -182,7 +184,8 @@ contract('ParlayAMM', (accounts) => {
 		ParlayAMMLiquidityPool,
 		ParlayPolicy,
 		SportAMMRiskManager,
-		multiCollateralOnOffRamp;
+		multiCollateralOnOffRamp,
+		SportsAMMCancellationPool;
 	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
@@ -716,6 +719,12 @@ contract('ParlayAMM', (accounts) => {
 		await ParlayAMM.setVerifierAndPolicyAddresses(ParlayVerifier.address, ParlayPolicy.address, {
 			from: owner,
 		});
+		SportsAMMCancellationPool = await SportsAMMCancellationPoolContract.new({ from: manager });
+		await SportsAMMCancellationPool.initialize(SportsAMM.address, { from: owner });
+		await SportAMMRiskManager.setSportsAMMCancellationPool(SportsAMMCancellationPool.address, {
+			from: owner,
+		});
+		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('2000'), { from: owner });
 	});
 
 	describe('Parlay AMM setters', () => {

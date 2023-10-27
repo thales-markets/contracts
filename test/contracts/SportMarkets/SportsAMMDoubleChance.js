@@ -73,6 +73,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
+	const SportsAMMCancellationPoolContract = artifacts.require('SportsAMMCancellationPool');
 
 	let ThalesOracleCouncil;
 	let Thales;
@@ -152,6 +153,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 		SportsAMM,
 		SportAMMLiquidityPool,
 		multiCollateralOnOffRamp;
+	SportsAMMCancellationPool;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -540,6 +542,12 @@ contract('SportsAMM DoubleChance', (accounts) => {
 
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
+		SportsAMMCancellationPool = await SportsAMMCancellationPoolContract.new({ from: manager });
+		await SportsAMMCancellationPool.initialize(SportsAMM.address, { from: owner });
+		await SportAMMRiskManager.setSportsAMMCancellationPool(SportsAMMCancellationPool.address, {
+			from: owner,
+		});
+		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('2000'), { from: owner });
 	});
 
 	describe('Test double chance markets game', () => {

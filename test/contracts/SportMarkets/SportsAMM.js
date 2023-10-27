@@ -72,6 +72,7 @@ contract('SportsAMM', (accounts) => {
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
+	const SportsAMMCancellationPoolContract = artifacts.require('SportsAMMCancellationPool');
 
 	let ThalesOracleCouncil;
 	let Thales;
@@ -149,7 +150,8 @@ contract('SportsAMM', (accounts) => {
 		Referrals,
 		SportsAMM,
 		SportAMMLiquidityPool,
-		SportAMMRiskManager;
+		SportAMMRiskManager,
+		SportsAMMCancellationPool;
 	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
@@ -524,6 +526,12 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
+		SportsAMMCancellationPool = await SportsAMMCancellationPoolContract.new({ from: manager });
+		await SportsAMMCancellationPool.initialize(SportsAMM.address, { from: owner });
+		await SportAMMRiskManager.setSportsAMMCancellationPool(SportsAMMCancellationPool.address, {
+			from: owner,
+		});
+		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('2000'), { from: owner });
 	});
 
 	describe('Init', () => {

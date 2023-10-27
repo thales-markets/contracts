@@ -72,6 +72,7 @@ contract('SportsVauchers', (accounts) => {
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
+	const SportsAMMCancellationPoolContract = artifacts.require('SportsAMMCancellationPool');
 
 	let sportsAMMUtils;
 	let Thales;
@@ -128,7 +129,8 @@ contract('SportsVauchers', (accounts) => {
 		SportsAMM,
 		GamesOddsObtainerDeployed,
 		position,
-		SportAMMRiskManager;
+		SportAMMRiskManager,
+		SportsAMMCancellationPool;
 	let emptyArray = [];
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -436,6 +438,12 @@ contract('SportsVauchers', (accounts) => {
 		await Thales.approve(SportAMMLiquidityPool.address, toUnit('1000000'), {
 			from: defaultLiquidityProvider,
 		});
+		SportsAMMCancellationPool = await SportsAMMCancellationPoolContract.new({ from: manager });
+		await SportsAMMCancellationPool.initialize(SportsAMM.address, { from: owner });
+		await SportAMMRiskManager.setSportsAMMCancellationPool(SportsAMMCancellationPool.address, {
+			from: owner,
+		});
+		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('2000'), { from: owner });
 	});
 
 	describe('Test Sports Voucher', () => {

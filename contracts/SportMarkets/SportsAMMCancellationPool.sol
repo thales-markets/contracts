@@ -14,6 +14,7 @@ import "../interfaces/ISportPositionalMarketManagerMinimized.sol";
 import "../interfaces/ISportsAMM.sol";
 
 
+
 /// @title SportsAMM Cancellation Pool for cancelled positions
 contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -33,6 +34,40 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
         sportManager = ISportPositionalMarketManagerMinimized(address(sportsAMM.manager()));
     }
 
+    // function updateCancellationMultiplier(
+    //     address _market,
+    //     uint8 _position,
+    //     uint _paidAmount,
+    //     uint _amount
+    // ) external nonReentrant whenNotPaused {
+    //     require(msg.sender == address(sportsAMM), "InvalidSender");
+    //     uint calculatedMultiplyer = (_paidAmount * ONE) / _amount;
+    //     if (firstCancellationMultiplierForMarket[_market][_position] == 0) {
+    //         firstCancellationMultiplierForMarket[_market][_position] = calculatedMultiplyer;
+    //     } else{
+    //         if(cancellationMultiplierForMarket[_market][_position] > 0) {
+    //             cancellationMultiplierForMarket[_market][_position] = (cancellationMultiplierForMarket[_market][_position] + calculatedMultiplyer)/2;
+    //         } else {
+    //             cancellationMultiplierForMarket[_market][_position] = calculatedMultiplyer;
+    //         }
+    //     }
+    // }
+
+    // function updateCancellationMultiplier(
+    //     address _market,
+    //     uint8 _position,
+    //     uint _paidAmount,
+    //     uint _amount
+    // ) external nonReentrant whenNotPaused {
+    //     require(msg.sender == address(sportsAMM), "InvalidSender");
+    //     uint calculatedMultiplyer = (_paidAmount * ONE) / _amount;
+    //     if (firstCancellationMultiplierForMarket[_market][_position] == 0) {
+    //         firstCancellationMultiplierForMarket[_market][_position] = calculatedMultiplyer;
+    //     } else if(calculatedMultiplyer > cancellationMultiplierForMarket[_market][_position]) {
+    //         cancellationMultiplierForMarket[_market][_position] = calculatedMultiplyer;
+    //     }
+    // }
+    
     function updateCancellationMultiplier(
         address _market,
         uint8 _position,
@@ -40,10 +75,11 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
         uint _amount
     ) external nonReentrant whenNotPaused {
         require(msg.sender == address(sportsAMM), "InvalidSender");
+        uint calculatedMultiplyer = (_paidAmount * ONE) / _amount;
         if (firstCancellationMultiplierForMarket[_market][_position] == 0) {
-            firstCancellationMultiplierForMarket[_market][_position] = (_paidAmount * ONE) / _amount;
+            firstCancellationMultiplierForMarket[_market][_position] = calculatedMultiplyer;
         } else {
-            cancellationMultiplierForMarket[_market][_position] = (_paidAmount * ONE) / _amount;
+            cancellationMultiplierForMarket[_market][_position] = calculatedMultiplyer;
         }
     }
 

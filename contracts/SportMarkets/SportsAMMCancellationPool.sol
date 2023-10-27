@@ -13,7 +13,6 @@ import "../interfaces/ISportPositionalMarket.sol";
 import "../interfaces/ISportPositionalMarketManagerMinimized.sol";
 import "../interfaces/ISportsAMM.sol";
 
-import "hardhat/console.sol";
 
 /// @title SportsAMM Cancellation Pool for cancelled positions
 contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
@@ -41,14 +40,10 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
         uint _amount
     ) external nonReentrant whenNotPaused {
         require(msg.sender == address(sportsAMM), "InvalidSender");
-        console.log(">>> paidAmount: ", _paidAmount);
-        console.log(">>> amount: ", _amount);
-        console.log(">>> position: ", _position);
         if (firstCancellationMultiplierForMarket[_market][_position] == 0) {
             firstCancellationMultiplierForMarket[_market][_position] = (_paidAmount * ONE) / _amount;
         } else {
             cancellationMultiplierForMarket[_market][_position] = (_paidAmount * ONE) / _amount;
-            console.log(">>> cancellationMultiplierForMarket: ", ((_paidAmount * ONE) / _amount));
         }
     }
 
@@ -68,8 +63,6 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
     ) external view returns (uint cancelPayout) {
         // require(sportManager.isKnownMarket(msg.sender), "MarketUnknown");
         // cancelPayout = userDeposits[_account][msg.sender];
-        console.log(">> payout: ", _payout);
-        console.log(">> position: ", _position);
         uint avgCancellationMultiplier;
         if (cancellationMultiplierForMarket[_market][_position] == 0) {
             avgCancellationMultiplier = firstCancellationMultiplierForMarket[_market][_position];
@@ -80,7 +73,6 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
                 2;
         }
         cancelPayout = (_payout * avgCancellationMultiplier) / ONE;
-        console.log(">> cancellation payout: ", cancelPayout);
         // IERC20Upgradeable(_sUSD).safeTransfer(_account, cancelPayout);
     }
 

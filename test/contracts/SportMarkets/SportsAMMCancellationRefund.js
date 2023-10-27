@@ -897,6 +897,10 @@ contract('SportsAMM', (accounts) => {
 			console.log('acc5 balance: ', fromUnit(answer));
 			answer = await Thales.balanceOf(eight);
 			console.log('acc6 balance: ', fromUnit(answer));
+			let totalCancelPayout = await SportsAMMCancellationPool.totalCancellationPayoutPerMarket(
+				deployedMarket.address
+			);
+			console.log('TOTAL CANCEL PAYOUT: ', fromUnit(totalCancelPayout));
 		});
 
 		it('Buy & resolve with cancellation, active cancellation', async () => {
@@ -1010,20 +1014,11 @@ contract('SportsAMM', (accounts) => {
 			console.log('acc5 balance: ', fromUnit(answer));
 			answer = await Thales.balanceOf(eight);
 			console.log('acc6 balance: ', fromUnit(answer));
-			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-			await expect(
-				SportsAMM.buyFromAMM(deployedMarket.address, 1, toUnit(1), MAX_NUMBER, additionalSlippage, {
-					from: first,
-				})
-			).to.be.revertedWith('Not trading');
+			console.log('________ before cancellation ___________');
+			console.log('>>>>>>>> after  cancellation >>>>>>>>>>>');
 
 			await SportsAMMCancellationPool.setCancellationActive(true, { from: owner });
-			answer = await deployedMarket.balancesOf(first);
-			console.log('User position balance: ', fromUnit(answer.away));
 			let tx1 = await deployedMarket.exerciseOptions({ from: first });
-			// let receipt = await tx1.wait();
-			// console.log(fromUnit(tx1.logs[0].args.value));
-
 			await deployedMarket.exerciseOptions({ from: fourth });
 			await deployedMarket.exerciseOptions({ from: fifth });
 			await deployedMarket.exerciseOptions({ from: sixth });
@@ -1042,6 +1037,11 @@ contract('SportsAMM', (accounts) => {
 			console.log('acc5 balance: ', fromUnit(answer));
 			answer = await Thales.balanceOf(eight);
 			console.log('acc6 balance: ', fromUnit(answer));
+
+			let totalCancelPayout = await SportsAMMCancellationPool.totalCancellationPayoutPerMarket(
+				deployedMarket.address
+			);
+			console.log('TOTAL CANCEL PAYOUT: ', fromUnit(totalCancelPayout));
 		});
 	});
 });

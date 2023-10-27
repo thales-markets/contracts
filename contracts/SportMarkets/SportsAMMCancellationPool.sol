@@ -21,8 +21,11 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
     uint private constant ONE = 1e18;
     ISportsAMM public sportsAMM;
     ISportPositionalMarketManagerMinimized public sportManager;
+    bool public newCancellationActive;
+    mapping(address => mapping(uint => uint)) public firstCancellationMultiplierForMarket;
     mapping(address => mapping(uint => uint)) public cancellationMultiplierForMarket;
     mapping(address => mapping(address => uint)) public userDeposits;
+    mapping(address => uint) public totalCancellationPayoutPerMarket;
 
     function initialize(address _sportsAMM) public initializer {
         setOwner(msg.sender);
@@ -41,9 +44,12 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
         console.log(">>> paidAmount: ", _paidAmount);
         console.log(">>> amount: ", _amount);
         console.log(">>> position: ", _position);
-        cancellationMultiplierForMarket[_market][_position] = (_paidAmount * ONE) / _amount;
-        console.log(">>> cancellationMultiplierForMarket: ", ((_paidAmount * ONE) / _amount));
-        console.log(">>> cancellationMultiplierForMarket: ", cancellationMultiplierForMarket[_market][_position]);
+        if (firstCancellationMultiplierForMarket[_market][_position] == 0) {
+            firstCancellationMultiplierForMarket[_market][_position] = (_paidAmount * ONE) / _amount;
+        } else {
+            cancellationMultiplierForMarket[_market][_position] = (_paidAmount * ONE) / _amount;
+            console.log(">>> cancellationMultiplierForMarket: ", ((_paidAmount * ONE) / _amount));
+        }
     }
 
     function addUserDepositPerMarket(
@@ -64,9 +70,22 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
         // cancelPayout = userDeposits[_account][msg.sender];
         console.log(">> payout: ", _payout);
         console.log(">> position: ", _position);
-        cancelPayout = (_payout * cancellationMultiplierForMarket[_market][_position]) / ONE;
+        uint avgCancellationMultiplier;
+        if (cancellationMultiplierForMarket[_market][_position] == 0) {
+            avgCancellationMultiplier = firstCancellationMultiplierForMarket[_market][_position];
+        } else {
+            avgCancellationMultiplier =
+                (cancellationMultiplierForMarket[_market][_position] +
+                    firstCancellationMultiplierForMarket[_market][_position]) /
+                2;
+        }
+        cancelPayout = (_payout * avgCancellationMultiplier) / ONE;
         console.log(">> cancellation payout: ", cancelPayout);
         // IERC20Upgradeable(_sUSD).safeTransfer(_account, cancelPayout);
+    }
+
+    function setCancellationActive(bool _enable) external onlyOwner {
+        newCancellationActive = _enable;
     }
 
     function sendFunds(
@@ -75,6 +94,7 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
         IERC20Upgradeable _sUSD
     ) external nonReentrant whenNotPaused {
         require(sportManager.isKnownMarket(msg.sender), "MarketUnknown");
+        totalCancellationPayoutPerMarket[msg.sender] += _cancellationPayout;
         IERC20Upgradeable(_sUSD).safeTransfer(_account, _cancellationPayout);
     }
 

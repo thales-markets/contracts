@@ -9,6 +9,8 @@ interface ISportsAMMCancellationPool {
         uint payout
     ) external view returns (uint);
 
+    function newCancellationActive() external view returns (bool);
+
     function updateCancellationMultiplier(
         address _market,
         uint8 position,

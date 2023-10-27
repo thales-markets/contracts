@@ -487,6 +487,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             (payout, cancellationPayout) = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
         }
         emit OptionsExercised(msg.sender, payout + cancellationPayout);
+        emit OptionsExercised(msg.sender, cancellationPayout);
         if (payout != 0) {
             if (!isDoubleChance) {
                 _decrementDeposited(payout);
@@ -569,16 +570,23 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
                 ISportsAMMCancellationPool cancellationPool = ISportsAMMCancellationPool(
                     ISportsAMM(sportsAMM).riskManager().sportsAMMCancellationPool()
                 );
+                bool newCalculationActive = cancellationPool.newCancellationActive();
                 if (_homeBalance > 0) {
-                    cancellationPayout = cancellationPool.cancellationPayout(address(this), 0, _homeBalance);
+                    if (newCalculationActive) {
+                        cancellationPayout = cancellationPool.cancellationPayout(address(this), 0, _homeBalance);
+                    }
                     payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
                 }
                 if (_awayBalance > 0) {
-                    cancellationPayout += cancellationPool.cancellationPayout(address(this), 1, _awayBalance);
+                    if (newCalculationActive) {
+                        cancellationPayout += cancellationPool.cancellationPayout(address(this), 1, _awayBalance);
+                    }
                     payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
                 }
                 if (_drawBalance > 0) {
-                    cancellationPayout += cancellationPool.cancellationPayout(address(this), 2, _drawBalance);
+                    if (newCalculationActive) {
+                        cancellationPayout += cancellationPool.cancellationPayout(address(this), 2, _drawBalance);
+                    }
                     payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
                 }
                 if (cancellationPayout >= payout) {

@@ -347,7 +347,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     function _resolveMarketManually(address _market, int64[] calldata _finalPrices) internal {
-        require(canResolveMarket(_market) && !ChainedSpeedMarket(_market).isUserWinner(), "Can not resolve manually");
+        require(canResolveMarket(_market), "Can not resolve");
         _resolveMarketWithPrices(_market, _finalPrices, true);
     }
 

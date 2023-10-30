@@ -312,9 +312,19 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				{ value: fee, from: user }
 			);
 
+			await chainedSpeedMarketsAMM.createNewMarket(
+				toBytes32('ETH'),
+				timeFrame,
+				[0, 1], // 2 directions
+				toUnit(buyinAmount),
+				[priceFeedUpdateData],
+				ZERO_ADDRESS,
+				{ value: fee, from: user }
+			);
+
 			console.log('Check number of active markets');
 			let chainedAmmData = await speedMarketsAMMData.getChainedSpeedMarketsAMMParameters(user);
-			assert.equal(chainedAmmData.numActiveMarkets, 4);
+			assert.equal(chainedAmmData.numActiveMarkets, 5);
 
 			console.log('Check current risk per asset');
 			markets = await chainedSpeedMarketsAMM.activeMarkets(0, chainedAmmData.numActiveMarkets);
@@ -456,13 +466,46 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			market = activeMarkets[3];
 			marketData = await speedMarketsAMMData.getChainedMarketsData([market]);
 			finalPrices = [
-				Number(marketData[0].initialStrikePrice) + 500000000, // UP
-				Number(marketData[0].initialStrikePrice) + 300000000, // DOWN
+				Number(marketData[0].initialStrikePrice) - 500000000, // DOWN
 			];
 
 			await chainedSpeedMarketsAMM.resolveMarketManuallyBatch([market], [finalPrices], {
 				from: user,
 			});
+			resolvedMarkets++;
+
+			// next active market - fifth (user winner)
+			market = activeMarkets[4];
+			marketData = (await speedMarketsAMMData.getChainedMarketsData([market]))[0];
+			console.log(marketData);
+			let resolvePriceFeedUpdateDataWithUp = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				Number(marketData.initialStrikePrice) + 800000000, // UP
+				74093100,
+				-8,
+				Number(marketData.initialStrikePrice) + 800000000,
+				74093100,
+				marketData.initialStrikeTime
+			);
+
+			let resolvePriceFeedUpdateDataWithDown = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				Number(marketData.initialStrikePrice) - 500000000, // DOWN
+				74093100,
+				-8,
+				Number(marketData.initialStrikePrice) - 500000000,
+				74093100,
+				marketData.strikeTime
+			);
+
+			await chainedSpeedMarketsAMM.resolveMarket(
+				market,
+				[[resolvePriceFeedUpdateDataWithUp], [resolvePriceFeedUpdateDataWithDown]],
+				{
+					value: 2 * fee,
+					from: user,
+				}
+			);
 			resolvedMarkets++;
 
 			console.log('Check is user winner on last market');

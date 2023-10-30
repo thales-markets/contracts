@@ -326,7 +326,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             prices[i] = price.price;
         }
 
-        _resolveMarketWithPrices(market, prices);
+        _resolveMarketWithPrices(market, prices, false);
     }
 
     /// @notice admin resolve market for a given market address with finalPrice
@@ -348,11 +348,15 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     function _resolveMarketManually(address _market, int64[] calldata _finalPrices) internal {
         require(canResolveMarket(_market) && !ChainedSpeedMarket(_market).isUserWinner(), "Can not resolve manually");
-        _resolveMarketWithPrices(_market, _finalPrices);
+        _resolveMarketWithPrices(_market, _finalPrices, true);
     }
 
-    function _resolveMarketWithPrices(address market, int64[] memory _finalPrices) internal {
-        ChainedSpeedMarket(market).resolve(_finalPrices);
+    function _resolveMarketWithPrices(
+        address market,
+        int64[] memory _finalPrices,
+        bool _isManually
+    ) internal {
+        ChainedSpeedMarket(market).resolve(_finalPrices, _isManually);
         if (ChainedSpeedMarket(market).resolved()) {
             _activeMarkets.remove(market);
             _maturedMarkets.add(market);
@@ -376,6 +380,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         }
 
         emit MarketResolved(market, ChainedSpeedMarket(market).isUserWinner());
+    }
+
+    /// @notice Transfer amount to destination address
+    function transferAmount(address _destination, uint _amount) external onlyOwner {
+        sUSD.safeTransfer(_destination, _amount);
+        emit AmountTransfered(_destination, _amount);
     }
 
     //////////// getters /////////////////
@@ -533,4 +543,5 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SetAddresses(address _speedMarketsAMM, address _stakingThales);
     event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
+    event AmountTransfered(address _destination, uint _amount);
 }

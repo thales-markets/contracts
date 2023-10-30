@@ -85,6 +85,18 @@ contract('SpeedMarkets', (accounts) => {
 				{ value: fee, from: user }
 			);
 
+			await speedMarketsAMM.createNewMarketWithDifferentCollateralAndDelta(
+				toBytes32('ETH'),
+				36000,
+				0,
+				[priceFeedUpdateData],
+				exoticOP.address,
+				toUnit(10),
+				false,
+				ZERO_ADDRESS,
+				{ value: fee, from: user }
+			);
+
 			let ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
 			console.log('numActiveMarkets ' + ammData.numActiveMarkets);
 

@@ -194,6 +194,11 @@
         "internalType": "int64",
         "name": "_finalPrice",
         "type": "int64"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isManually",
+        "type": "bool"
       }
     ],
     "name": "resolve",

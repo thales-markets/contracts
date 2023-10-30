@@ -34,21 +34,35 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			assert.bnEqual(toUnit(10), currestRiskPerAssetAndDirection);
 
+			await speedMarketsAMM.createNewMarketWithDelta(
+				toBytes32('ETH'),
+				36000,
+				0,
+				toUnit(10),
+				[priceFeedUpdateData],
+				ZERO_ADDRESS,
+				{ value: fee }
+			);
+
 			let price = await mockPyth.getPrice(pythId);
 			console.log('price of pyth Id is ' + price);
 
-			let markets = await speedMarketsAMM.activeMarkets(0, 1);
+			let markets = await speedMarketsAMM.activeMarkets(0, 2);
 			let market = markets[0];
 			console.log('market is ' + market);
 
 			await fastForward(86400);
 
+			const PRICE_DOWN = 180042931000;
 			await expect(
-				speedMarketsAMM.resolveMarketManually(market, toUnit(1), { from: user })
+				speedMarketsAMM.resolveMarketManually(market, PRICE_DOWN, { from: user })
 			).to.be.revertedWith('Resolver not whitelisted');
 
 			await speedMarketsAMM.addToWhitelist(user, true);
-			await speedMarketsAMM.resolveMarketManually(market, toUnit(1), { from: user });
+			await speedMarketsAMM.resolveMarketManually(market, PRICE_DOWN, { from: user });
+
+			market = markets[1];
+			await speedMarketsAMM.resolveMarketManuallyBatch([market], [PRICE_DOWN], { from: user });
 
 			currestRiskPerAssetAndDirection = await speedMarketsAMM.currentRiskPerAssetAndDirection(
 				toBytes32('ETH'),

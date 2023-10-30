@@ -66,7 +66,7 @@ contract ChainedSpeedMarket {
         createdAt = block.timestamp;
     }
 
-    function resolve(int64[] calldata _finalPrices) external onlyAMM {
+    function resolve(int64[] calldata _finalPrices, bool _isManually) external onlyAMM {
         require(!resolved, "already resolved");
         require(block.timestamp > initialStrikeTime + (timeFrame * (_finalPrices.length - 1)), "not ready to be resolved");
         require(_finalPrices.length <= directions.length, "more prices than directions");
@@ -85,6 +85,7 @@ contract ChainedSpeedMarket {
             }
             // when last final price for last direction user won
             if (i == directions.length - 1) {
+                require(!_isManually, "Can not resolve manually");
                 isUserWinner = true;
                 resolved = true;
             }

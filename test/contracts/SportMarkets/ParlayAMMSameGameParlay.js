@@ -819,6 +819,13 @@ contract('ParlayAMM', (accounts) => {
 		await ParlayAMM.setVerifierAndPolicyAddresses(ParlayVerifier.address, ParlayPolicy.address, {
 			from: owner,
 		});
+		SportsAMMCancellationPool = await SportsAMMCancellationPoolContract.new({ from: manager });
+		await SportsAMMCancellationPool.initialize(SportsAMM.address, { from: owner });
+
+		await SportAMMRiskManager.setSportsAMMCancellationPool(SportsAMMCancellationPool.address, {
+			from: owner,
+		});
+		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('2000'), { from: owner });
 	});
 
 	describe('Parlay AMM setters', () => {

@@ -132,7 +132,8 @@ contract('SportsVauchers', (accounts) => {
 		GamesOddsObtainerDeployed,
 		position,
 		SportAMMRiskManager,
-		multiCollateralOnOffRamp;
+		multiCollateralOnOffRamp,
+		SportsAMMCancellationPool;
 	let emptyArray = [];
 
 	const game1NBATime = 1646958600;

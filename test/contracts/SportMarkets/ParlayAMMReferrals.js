@@ -181,7 +181,8 @@ contract('ParlayAMM', (accounts) => {
 		SportAMMLiquidityPool,
 		ParlayAMMLiquidityPool,
 		SportAMMRiskManager,
-		multiCollateralOnOffRamp;
+		multiCollateralOnOffRamp,
+		SportsAMMCancellationPool;
 	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
@@ -733,6 +734,13 @@ contract('ParlayAMM', (accounts) => {
 		await ParlayAMM.setVerifierAndPolicyAddresses(ParlayVerifier.address, ParlayPolicy.address, {
 			from: owner,
 		});
+		SportsAMMCancellationPool = await SportsAMMCancellationPoolContract.new({ from: manager });
+		await SportsAMMCancellationPool.initialize(SportsAMM.address, { from: owner });
+
+		await SportAMMRiskManager.setSportsAMMCancellationPool(SportsAMMCancellationPool.address, {
+			from: owner,
+		});
+		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('2000'), { from: owner });
 	});
 
 	describe('Check ParlayAMM data', () => {

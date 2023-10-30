@@ -149,7 +149,8 @@ contract('SportsAMM', (accounts) => {
 		SportsAMM,
 		SportAMMLiquidityPool,
 		SportAMMRiskManager,
-		multiCollateralOnOffRamp;
+		multiCollateralOnOffRamp,
+		SportsAMMCancellationPool;
 	let emptyArray = [];
 
 	const game1NBATime = 1646958600;

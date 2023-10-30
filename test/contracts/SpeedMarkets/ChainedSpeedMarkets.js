@@ -337,6 +337,12 @@ contract('ChainedSpeedMarkets', (accounts) => {
 					buyinAmount * (1 + Number(marketData.safeBoxImpact / 1e18));
 			}
 			assert.equal((chainedAmmData.risk.current / 1e18).toFixed(5), expectedCurrentRisk.toFixed(5));
+
+			console.log('Check AMM balance after transfer');
+			let ammBalanceBefore = await exoticUSD.balanceOf(chainedSpeedMarketsAMM.address);
+			await chainedSpeedMarketsAMM.transferAmount(owner, toUnit(2));
+			let ammBalance = await exoticUSD.balanceOf(chainedSpeedMarketsAMM.address);
+			assert.equal(ammBalanceBefore / 1e18 - ammBalance / 1e18, 2);
 		});
 
 		it('Should create chained speed markets with different collateral', async () => {
@@ -477,7 +483,6 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			// next active market - fifth (user winner)
 			market = activeMarkets[4];
 			marketData = (await speedMarketsAMMData.getChainedMarketsData([market]))[0];
-			console.log(marketData);
 			let resolvePriceFeedUpdateDataWithUp = await mockPyth.createPriceFeedUpdateData(
 				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
 				Number(marketData.initialStrikePrice) + 800000000, // UP

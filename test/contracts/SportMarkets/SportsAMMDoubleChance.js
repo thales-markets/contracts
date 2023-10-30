@@ -152,8 +152,8 @@ contract('SportsAMM DoubleChance', (accounts) => {
 		Referrals,
 		SportsAMM,
 		SportAMMLiquidityPool,
-		multiCollateralOnOffRamp;
-	SportsAMMCancellationPool;
+		multiCollateralOnOffRamp,
+		SportsAMMCancellationPool;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -547,7 +547,7 @@ contract('SportsAMM DoubleChance', (accounts) => {
 		await SportAMMRiskManager.setSportsAMMCancellationPool(SportsAMMCancellationPool.address, {
 			from: owner,
 		});
-		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('2000'), { from: owner });
+		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('20000'), { from: owner });
 	});
 
 	describe('Test double chance markets game', () => {

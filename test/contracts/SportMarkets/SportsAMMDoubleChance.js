@@ -549,7 +549,6 @@ contract('SportsAMM DoubleChance', (accounts) => {
 		});
 		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('20000'), { from: owner });
 		await SportsAMMCancellationPool.setCancellationActive(true, { from: owner });
-
 	});
 
 	describe('Test double chance markets game', () => {

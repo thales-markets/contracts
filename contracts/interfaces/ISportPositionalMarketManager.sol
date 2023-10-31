@@ -73,6 +73,7 @@ interface ISportPositionalMarketManager {
         returns (
             bool[] memory _hasAnyMintsArray,
             bool[] memory _isMaturedArray,
-            bool[] memory _isResolvedArray
+            bool[] memory _isResolvedArray,
+            uint[] memory _maturities
         );
 }

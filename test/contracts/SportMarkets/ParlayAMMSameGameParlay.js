@@ -220,7 +220,8 @@ contract('ParlayAMM', (accounts) => {
 		SportsAMM,
 		SportAMMLiquidityPool,
 		ParlayAMMLiquidityPool,
-		ParlayPolicy;
+		ParlayPolicy,
+		SportsAMMCancellationPool;
 
 	let verifier;
 

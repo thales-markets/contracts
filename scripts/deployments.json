@@ -848,15 +848,17 @@
 		"GamesPlayerPropsReceiverImplementation": "0xb36C532C5B497c1F030f5AB31Aa1c4Dc0125DB26",
 		"SportAMMRiskManager": "0x0E4cB41143Ca28618eA7C96c31f193c01Ee4A293",
 		"SportAMMRiskManagerImplementation": "0x1f4D90C6aaD27e382bcD4e8615d065476b19201E",
-		"SpeedMarketMastercopy": "0xC2C460dA7Ce3fa819C8A33987bDD19A07CbA1167",
+		"SpeedMarketMastercopy": "0x88Fd691b1d1691909A47E80d8fF2097b60F13963",
 		"SpeedMarketsAMM": "0x05cD078cECB32d62b304e9028C147bBCdef5Ba24",
-		"SpeedMarketsAMMImplementation": "0x6d289fab3ce1f29A88E91B7B9a58A267Ac413293",
+		"SpeedMarketsAMMImplementation": "0x239AE5393f6f14847351DbcE24466Ea41d0Ef463",
 		"SpeedMarketsAMMUtils": "0xB3DCB8Cf75B54e5C972C7770c1f20c2d2f363F2E",
 		"SpeedMarketsAMMData": "0x39d1a205F72eC54aca01013c682A1A5C1625f4f6",
 		"SpeedMarketsAMMDataImplementation": "0x4e5f46F4EEc8e50F2C2891F8F94ffcFB899FC46e",
-		"ChainedSpeedMarketMastercopy": "0x0ba6e9038ad070B382f65464C7cBABAbb8a64E3a",
-		"ChainedSpeedMarketsAMM": "0x354a8CED4edecb81d6639C718f6F505e21D61D19",
-		"ChainedSpeedMarketsAMMImplementation": "0xc56e0e0Ce93aa2Dd6ecABaD8C0aef456CD8DD5f4"
+		"ChainedSpeedMarketMastercopy": "0x3f5BC08a62cAe4db441889cDd5Ea90a8572a943D",
+		"ChainedSpeedMarketsAMM": "0xe9FdD4717f9dDAa7e74e9a63B559F54A38f98613",
+		"ChainedSpeedMarketsAMMImplementation": "0x854aC59A1632b60C7FEe1338AD55A947a0E7b1b5",
+		"AddressManager": "0x455fa4dCaA3981D1c9c51BedBA5321BCF9CDB802",
+		"AddressManagerImplementation": "0x7d37e319157Aa650F6B29CD302D1dDdcBb4dcE18"
 	},
 	"localhost": {
 		"Airdrop": "",

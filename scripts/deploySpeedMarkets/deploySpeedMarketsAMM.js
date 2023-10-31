@@ -68,7 +68,6 @@ async function main() {
 	let SpeedMarketsAMMDeployed = await upgrades.deployProxy(SpeedMarketsAMM, [
 		owner.address,
 		proxySUSD,
-		getTargetAddress('Pyth', network),
 	]);
 	await SpeedMarketsAMMDeployed.deployed();
 

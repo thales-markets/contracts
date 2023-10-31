@@ -187,7 +187,8 @@ contract('ParlayAMM', (accounts) => {
 		multiCollateralOnOffRamp,
 		swapRouterMock,
 		MockPriceFeedDeployed,
-		curveMock;
+		curveMock,
+		SportsAMMCancellationPool;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;

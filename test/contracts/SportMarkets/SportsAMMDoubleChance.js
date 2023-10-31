@@ -548,7 +548,6 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			from: owner,
 		});
 		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('20000'), { from: owner });
-		await SportsAMMCancellationPool.setCancellationActive(true, { from: owner });
 	});
 
 	describe('Test double chance markets game', () => {
@@ -937,7 +936,207 @@ contract('SportsAMM DoubleChance', (accounts) => {
 			console.log('Balances', fromUnit(options[0]), fromUnit(options[1]));
 		});
 
-		it('Test cancellation double chance, exercise for SportsAMM', async () => {
+		it('Test cancellation double chance, exercise for SportsAMM, no active cancellation', async () => {
+			position = 0;
+			value = 100;
+			let odds = [];
+			odds[0] = await SportsAMM.obtainOdds(homeTeamNotLoseMarket.address, 0);
+			odds[1] = await SportsAMM.obtainOdds(awayTeamNotLoseMarket.address, 0);
+			odds[2] = await SportsAMM.obtainOdds(noDrawMarket.address, 0);
+			console.log(
+				'Game odds: homeTeamNotLoseMarket=',
+				fromUnit(odds[0]),
+				', awayTeamNotLoseMarket=',
+				fromUnit(odds[1]),
+				', noDrawMarket=',
+				fromUnit(odds[2])
+			);
+			let optionsCount = await homeTeamNotLoseMarket.optionsCount();
+			console.log('Positions count homeTeamNotLoseMarket: ', optionsCount.toString());
+			optionsCount = await awayTeamNotLoseMarket.optionsCount();
+			console.log('Positions count awayTeamNotLoseMarket: ', optionsCount.toString());
+			optionsCount = await noDrawMarket.optionsCount();
+			console.log('Positions count noDrawMarket: ', optionsCount.toString());
+
+			answer = await Thales.balanceOf(first);
+			console.log('Balance before buying: ', fromUnit(answer));
+			console.log('Is parent cancelled: ', await deployedMarket.cancelled());
+
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				homeTeamNotLoseMarket.address,
+				position,
+				toUnit(value)
+			);
+
+			console.log('buy from amm quote homeTeamNotLoseMarket', buyFromAmmQuote / 1e18);
+			answer = await SportsAMM.buyFromAMM(
+				homeTeamNotLoseMarket.address,
+				position,
+				toUnit(value),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				awayTeamNotLoseMarket.address,
+				0,
+				toUnit(value)
+			);
+
+			console.log('buy from amm quote awayTeamNotLoseMarket', buyFromAmmQuote / 1e18);
+			answer = await SportsAMM.buyFromAMM(
+				awayTeamNotLoseMarket.address,
+				0,
+				toUnit(value),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				homeTeamNotLoseMarket.address,
+				0,
+				toUnit(value)
+			);
+
+			console.log('buy from amm quote homeTeamNotLoseMarket second', buyFromAmmQuote / 1e18);
+			answer = await SportsAMM.buyFromAMM(
+				homeTeamNotLoseMarket.address,
+				0,
+				toUnit(value),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: second }
+			);
+
+			let cancelTx = await TherundownConsumerDeployed.resolveMarketManually(
+				deployedMarket.address,
+				0,
+				0,
+				0,
+				false,
+				{
+					from: third,
+				}
+			);
+
+			console.log('Is parent cancelled: ', await deployedMarket.cancelled());
+
+			answer = await Thales.balanceOf(first);
+			console.log('Balance after buying: ', fromUnit(answer));
+
+			let balancesHomeTeamNotLose = await homeTeamNotLoseMarket.balancesOf(first);
+
+			let payoutOnCancelationHomeTeamNotLose =
+				await homeTeamNotLoseMarket.calculatePayoutOnCancellation(
+					balancesHomeTeamNotLose[0],
+					balancesHomeTeamNotLose[1],
+					balancesHomeTeamNotLose[2]
+				);
+
+			console.log(
+				'payoutOnCancelation first homeTeamNotLoseMarket',
+				payoutOnCancelationHomeTeamNotLose.payout / 1e18
+			);
+
+			let balancesAwayTeamNotLose = await homeTeamNotLoseMarket.balancesOf(first);
+
+			let payoutOnCancelationAwayTeamNotLose =
+				await awayTeamNotLoseMarket.calculatePayoutOnCancellation(
+					balancesAwayTeamNotLose[0],
+					balancesAwayTeamNotLose[1],
+					balancesAwayTeamNotLose[2]
+				);
+
+			console.log(
+				'payoutOnCancelation first awayTeamNotLoseMarket',
+				payoutOnCancelationAwayTeamNotLose.payout / 1e18
+			);
+
+			let balancesAMMHomeTeamNotLose = await homeTeamNotLoseMarket.balancesOf(SportsAMM.address);
+			console.log(
+				'Balances AMM homeTeamNotLoseMarket',
+				balancesAMMHomeTeamNotLose[0] / 1e18,
+				balancesAMMHomeTeamNotLose[1] / 1e18,
+				balancesAMMHomeTeamNotLose[2] / 1e18
+			);
+			let payoutOnCancelationAMM = await homeTeamNotLoseMarket.calculatePayoutOnCancellation(
+				balancesAMMHomeTeamNotLose[0],
+				balancesAMMHomeTeamNotLose[1],
+				balancesAMMHomeTeamNotLose[2]
+			);
+
+			console.log(
+				'payoutOnCancelation sportsAMM homeTeamNotLoseMarket',
+				payoutOnCancelationAMM.payout / 1e18
+			);
+
+			let balances = await homeTeamNotLoseMarket.balancesOf(second);
+			let payoutOnCancelation = await homeTeamNotLoseMarket.calculatePayoutOnCancellation(
+				balances[0],
+				balances[1],
+				balances[2]
+			);
+
+			console.log(
+				'payoutOnCancelation second homeTeamNotLoseMarket',
+				payoutOnCancelation.payout / 1e18
+			);
+			balances = await deployedMarket.balancesOf(homeTeamNotLoseMarket.address);
+			payoutOnCancelation = await deployedMarket.calculatePayoutOnCancellation(
+				balances[0],
+				balances[1],
+				balances[2]
+			);
+
+			console.log(
+				'homeTeamNotLoseMarket on deployedMarket balances',
+				balances[0] / 1e18,
+				balances[1] / 1e18,
+				balances[2] / 1e18
+			);
+			console.log(
+				'payoutOnCancelation on deployedMarket homeTeamNotLoseMArket',
+				payoutOnCancelation.payout / 1e18
+			);
+
+			balances = await deployedMarket.balancesOf(awayTeamNotLoseMarket.address);
+			payoutOnCancelation = await deployedMarket.calculatePayoutOnCancellation(
+				balances[0],
+				balances[1],
+				balances[2]
+			);
+
+			console.log(
+				'awayTeamNotLoseMarket on deployedMarket balances',
+				balances[0] / 1e18,
+				balances[1] / 1e18,
+				balances[2] / 1e18
+			);
+			console.log(
+				'payoutOnCancelation on deployedMarket awayTeamNotLoseMarket',
+				payoutOnCancelation.payout / 1e18
+			);
+
+			answer = await Thales.balanceOf(first);
+			console.log('Balance before exercise of first: ', fromUnit(answer));
+			answer = await homeTeamNotLoseMarket.exerciseOptions({ from: first });
+			answer = await awayTeamNotLoseMarket.exerciseOptions({ from: first });
+			answer = await Thales.balanceOf(first);
+			console.log('Balance after exercise of first: ', fromUnit(answer));
+
+			answer = await Thales.balanceOf(second);
+			console.log('Balance before exercise of second: ', fromUnit(answer));
+			answer = await homeTeamNotLoseMarket.exerciseOptions({ from: second });
+			answer = await Thales.balanceOf(second);
+			console.log('Balance after exercise of second: ', fromUnit(answer));
+		});
+
+		it('Test cancellation double chance, exercise for SportsAMM, active cancellation', async () => {
+			await SportsAMMCancellationPool.setCancellationActive(true, { from: owner });
+
 			position = 0;
 			value = 100;
 			let odds = [];

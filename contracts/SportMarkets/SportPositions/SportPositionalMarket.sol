@@ -16,8 +16,6 @@ import "./SportPositionalMarketManager.sol";
 import "./SportPosition.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 
-import "hardhat/console.sol";
-
 contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ========== LIBRARIES ========== */
 
@@ -223,6 +221,20 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
                 (position1, position2) = (away, draw);
             } else {
                 (position1, position2) = (home, away);
+            }
+        }
+    }
+
+    function _getParentNumberedPositions() internal view returns (uint position1, uint position2) {
+        if (isDoubleChance) {
+            if (keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("HomeTeamNotToLose"))) {
+                (position1, position2) = (0, 2);
+            } else if (
+                keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("AwayTeamNotToLose"))
+            ) {
+                (position1, position2) = (1, 2);
+            } else {
+                (position1, position2) = (0, 1);
             }
         }
     }
@@ -463,7 +475,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         // If the account holds no options, revert.
         (uint homeBalance, uint awayBalance, uint drawBalance) = _balancesOf(msg.sender);
         require(homeBalance != 0 || awayBalance != 0 || drawBalance != 0, "Nothing to exercise");
-
         if (isDoubleChance && _canExerciseParentOptions()) {
             parentMarket.exerciseOptions();
         }
@@ -479,9 +490,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         }
         uint payout = _getPayout(homeBalance, awayBalance, drawBalance);
         uint cancellationPayout;
-        console.log(address(this));
-        console.log(">>> payout: ", payout);
-        console.log(">>> cancellationPayout: ", cancellationPayout);
         if (cancelled) {
             require(
                 block.timestamp > cancelTimestamp.add(_manager().cancelTimeout()) && !invalidOdds,
@@ -489,9 +497,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             );
             (payout, cancellationPayout) = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
         }
-        console.log(address(this));
-        console.log(">>> payout: ", payout);
-        console.log(">>> cancellationPayout: ", cancellationPayout);
         emit OptionsExercised(msg.sender, payout + cancellationPayout);
         emit OptionsExercised(msg.sender, cancellationPayout);
         if (payout != 0) {
@@ -568,16 +573,22 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         if (!cancelled) {
             return (0, 0);
         } else {
+            ISportsAMMCancellationPool cancellationPool = ISportsAMMCancellationPool(
+                ISportsAMM(sportsAMM).riskManager().sportsAMMCancellationPool()
+            );
             if (isDoubleChance) {
                 (uint position1Odds, uint position2Odds) = _getParentPositionOdds();
                 payout = _homeBalance.mul(position1Odds).div(1e18);
                 payout = payout.add(_homeBalance.mul(position2Odds).div(1e18));
-                console.log("HERE");
-                console.log(">>> payout inside calculate: ", payout);
+                if (cancellationPool.newCancellationActive()) {
+                    (uint pos1, uint pos2) = _getParentNumberedPositions();
+                    cancellationPayout = cancellationPool.cancellationPayout(address(this), pos1, _homeBalance);
+                    cancellationPayout += cancellationPool.cancellationPayout(address(this), pos2, _homeBalance);
+                }
+                if (cancellationPayout >= payout) {
+                    cancellationPayout = cancellationPayout - payout;
+                }
             } else {
-                ISportsAMMCancellationPool cancellationPool = ISportsAMMCancellationPool(
-                    ISportsAMM(sportsAMM).riskManager().sportsAMMCancellationPool()
-                );
                 bool newCalculationActive = cancellationPool.newCancellationActive();
                 if (_homeBalance > 0) {
                     if (newCalculationActive) {
@@ -595,7 +606,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
                     if (newCalculationActive) {
                         cancellationPayout += cancellationPool.cancellationPayout(address(this), 2, _drawBalance);
                     }
-                    payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
+                    payout = payout.add(_drawBalance.mul(drawOddsOnCancellation).div(1e18));
                 }
                 if (cancellationPayout >= payout) {
                     cancellationPayout = cancellationPayout - payout;

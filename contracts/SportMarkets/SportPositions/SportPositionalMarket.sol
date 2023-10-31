@@ -589,13 +589,13 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
                     if (newCalculationActive) {
                         cancellationPayout += cancellationPool.cancellationPayout(address(this), 1, _awayBalance);
                     }
-                    payout += payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
+                    payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
                 }
                 if (_drawBalance > 0) {
                     if (newCalculationActive) {
                         cancellationPayout += cancellationPool.cancellationPayout(address(this), 2, _drawBalance);
                     }
-                    payout += payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
+                    payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
                 }
                 if (cancellationPayout >= payout) {
                     cancellationPayout = cancellationPayout - payout;

@@ -273,49 +273,10 @@
   },
   {
     "inputs": [],
-    "name": "pyth",
-    "outputs": [
-      {
-        "internalType": "contract IPyth",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "referrals",
-    "outputs": [
-      {
-        "internalType": "contract IReferrals",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "sUSD",
     "outputs": [
       {
         "internalType": "contract IERC20Upgradeable",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "safeBox",
-    "outputs": [
-      {
-        "internalType": "address",
         "name": "",
         "type": "address"
       }

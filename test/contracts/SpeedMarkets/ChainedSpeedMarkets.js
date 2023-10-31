@@ -45,30 +45,26 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		balance = await exoticUSD.balanceOf(user);
 		console.log('Balance of user is ' + balance / 1e18);
 
-		let MockPriceFeed = artifacts.require('MockPriceFeed');
-		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
-
-		let MockPyth = artifacts.require('MockPythCustom');
-		mockPyth = await MockPyth.new(60, 1e6);
-
-		await speedMarketsAMM.initialize(owner, exoticUSD.address, mockPyth.address);
-
 		let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
 		let speedMarketMastercopy = await SpeedMarketMastercopy.new();
 
+		await speedMarketsAMM.initialize(owner, exoticUSD.address);
 		await speedMarketsAMM.setMastercopy(speedMarketMastercopy.address);
 		await speedMarketsAMM.setAmounts(toUnit(5), toUnit(500));
 		await speedMarketsAMM.setTimes(3600, 86400);
 		await speedMarketsAMM.setMaximumPriceDelays(60, 60);
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
-		await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.02));
+		await speedMarketsAMM.setSafeBoxImpact(toUnit(0.02));
 		await speedMarketsAMM.setAssetToPythID(
 			toBytes32('ETH'),
 			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace'
 		);
 
 		let now = await currentTime();
+
+		let MockPyth = artifacts.require('MockPythCustom');
+		mockPyth = await MockPyth.new(60, 1e6);
 
 		priceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
 			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
@@ -97,19 +93,19 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			toUnit(GOLD_REFERRER_FEE)
 		);
 
-		await speedMarketsAMM.setAddresses(mockPyth.address, referrals.address, ZERO_ADDRESS, {
-			from: owner,
-		});
-
 		// -------------------------- Multi Collateral --------------------------
 		let MultiCollateralOnOffRamp = artifacts.require('MultiCollateralOnOffRamp');
 		multiCollateralOnOffRamp = await MultiCollateralOnOffRamp.new();
 		await multiCollateralOnOffRamp.initialize(owner, exoticUSD.address);
 
+		let MockPriceFeed = artifacts.require('MockPriceFeed');
+		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
+
+		await multiCollateralOnOffRamp.setPriceFeed(MockPriceFeedDeployed.address);
+
 		let ExoticOP = artifacts.require('ExoticUSD');
 		exoticOP = await ExoticOP.new();
 
-		await multiCollateralOnOffRamp.setPriceFeed(MockPriceFeedDeployed.address);
 		await multiCollateralOnOffRamp.setSupportedCollateral(exoticOP.address, true);
 
 		let MockWeth = artifacts.require('MockWeth');
@@ -141,6 +137,20 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			toUnit('0.01')
 		);
 
+		// ------------------------- Address Manager -------------------------
+		let AddressManagerContract = artifacts.require('AddressManager');
+		let addressManager = await AddressManagerContract.new();
+
+		await addressManager.initialize(
+			owner,
+			safeBox,
+			referrals.address,
+			ZERO_ADDRESS,
+			multiCollateralOnOffRamp.address,
+			mockPyth.address,
+			speedMarketsAMM.address
+		);
+
 		// -------------------------- Chained Speed Markets --------------------------
 		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
 		chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
@@ -158,7 +168,8 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		let chainedSpeedMarketMastercopy = await ChainedSpeedMarketMastercopy.new();
 
 		await chainedSpeedMarketsAMM.setMastercopy(chainedSpeedMarketMastercopy.address);
-		await chainedSpeedMarketsAMM.setAddresses(speedMarketsAMM.address, ZERO_ADDRESS);
+		await chainedSpeedMarketsAMM.setAddressManager(addressManager.address);
+		await chainedSpeedMarketsAMM.setMultiCollateralOnOffRampEnabled(true);
 		await chainedSpeedMarketsAMM.setLimitParams(
 			600, // minTimeFrame
 			600, // maxTimeFrame
@@ -174,10 +185,6 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		await referrals.setWhitelistedAddress(chainedSpeedMarketsAMM.address, true);
 
 		await multiCollateralOnOffRamp.setSupportedAMM(chainedSpeedMarketsAMM.address, true);
-		await chainedSpeedMarketsAMM.setMultiCollateralOnOffRamp(
-			multiCollateralOnOffRamp.address,
-			true
-		);
 	});
 
 	describe('Test Chained speed markets ', () => {

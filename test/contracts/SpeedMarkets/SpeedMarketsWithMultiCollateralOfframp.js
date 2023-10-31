@@ -17,6 +17,7 @@ contract('SpeedMarkets', (accounts) => {
 			let {
 				speedMarketsAMM,
 				speedMarketsAMMData,
+				addressManager,
 				priceFeedUpdateData,
 				fee,
 				mockPyth,
@@ -43,7 +44,15 @@ contract('SpeedMarkets', (accounts) => {
 
 			await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMM.address, true);
 
-			await speedMarketsAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true);
+			await addressManager.setAddresses(
+				safeBox,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS,
+				multiCollateralOnOffRamp.address,
+				mockPyth.address,
+				speedMarketsAMM.address
+			);
+			await speedMarketsAMM.setMultiCollateralOnOffRampEnabled(true);
 
 			await exoticOP.setDefaultAmount(toUnit(10000));
 			await exoticOP.mintForUser(user);
@@ -98,21 +107,9 @@ contract('SpeedMarkets', (accounts) => {
 			let strikeTime = await speedMarket.strikeTime();
 			console.log('Strike time is ' + strikeTime);
 
-			now = await currentTime();
-			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
-				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
-				196342931000,
-				74093100,
-				-8,
-				196342931000,
-				74093100,
-				now
-			);
-
 			await fastForward(86400);
 
-			now = await currentTime();
-			resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
 				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
 				196342931000,
 				74093100,
@@ -143,8 +140,14 @@ contract('SpeedMarkets', (accounts) => {
 
 			await swapRouterMock.setDefaults(exoticUSD.address, exoticOP.address);
 
-			let balanceOfUserAfterExoticOPBefore = await exoticOP.balanceOf(user);
-			console.log('balanceOfUserAfterExoticOPBefore ' + balanceOfUserAfterExoticOPBefore / 1e18);
+			let balanceOfUserBeforeExoticOP = await exoticOP.balanceOf(user);
+			console.log('balanceOfUserBeforeExoticOP ' + balanceOfUserBeforeExoticOP / 1e18);
+
+			let allowance = await exoticUSD.allowance(
+				speedMarketsAMM.address,
+				multiCollateralOnOffRamp.address
+			);
+			console.log('allowance', allowance / 1e18);
 
 			await speedMarketsAMM.resolveMarketWithOfframp(
 				market,
@@ -158,7 +161,7 @@ contract('SpeedMarkets', (accounts) => {
 			console.log('balanceOfUserAfterExoticOP ' + balanceOfUserAfterExoticOP / 1e18);
 
 			let userBalanceAfterDiff =
-				balanceOfUserAfterExoticOP / 1e18 - balanceOfUserAfterExoticOPBefore / 1e18;
+				balanceOfUserAfterExoticOP / 1e18 - balanceOfUserBeforeExoticOP / 1e18;
 			console.log('userBalanceAfterDiff ' + userBalanceAfterDiff);
 
 			assert.bnGte(toUnit(userBalanceAfterDiff), toUnit('19'));

@@ -17,6 +17,7 @@ contract('SpeedMarkets', (accounts) => {
 			let {
 				speedMarketsAMM,
 				speedMarketsAMMData,
+				addressManager,
 				balanceOfSpeedMarketAMMBefore,
 				priceFeedUpdateData,
 				fee,
@@ -42,7 +43,15 @@ contract('SpeedMarkets', (accounts) => {
 
 			await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMM.address, true);
 
-			await speedMarketsAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true);
+			await addressManager.setAddresses(
+				safeBox,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS,
+				multiCollateralOnOffRamp.address,
+				mockPyth.address,
+				speedMarketsAMM.address
+			);
+			await speedMarketsAMM.setMultiCollateralOnOffRampEnabled(true);
 
 			await exoticOP.setDefaultAmount(toUnit(100));
 			await exoticOP.mintForUser(user);

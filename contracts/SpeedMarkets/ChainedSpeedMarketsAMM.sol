@@ -25,6 +25,7 @@ import "../interfaces/IStakingThales.sol";
 import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
+import "../interfaces/IAddressManager.sol";
 
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";
@@ -63,19 +64,16 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     address public chainedSpeedMarketMastercopy;
 
-    /// @return The address of the Staking contract
-    IStakingThales public stakingThales;
-
-    /// @return The address of the Speed Markets AMM contract
-    ISpeedMarketsAMM public speedMarketsAMM;
-
-    IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
     bool public multicollateralEnabled;
 
-    // using it to solve stack too deep
-    struct PaymentData {
+    /// @return The address of the address manager contract
+    IAddressManager public addressManager;
+
+    // using this to solve stack too deep
+    struct CalcData {
         uint payout;
         uint safeBoxImpact;
+        PythStructs.Price pythPrice;
     }
 
     receive() external payable {}
@@ -94,7 +92,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         bytes[] calldata priceUpdateData,
         address referrer
     ) external payable nonReentrant notPaused {
-        _createNewMarket(asset, timeFrame, directions, buyinAmount, priceUpdateData, true, referrer);
+        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
+        _createNewMarket(asset, timeFrame, directions, buyinAmount, priceUpdateData, true, referrer, contractsAddresses);
     }
 
     function createNewMarketWithDifferentCollateral(
@@ -107,17 +106,23 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         bool isEth,
         address referrer
     ) external payable nonReentrant notPaused {
-        uint buyinAmount = _getBuyinWithConversion(collateral, collateralAmount, isEth);
-        _createNewMarket(asset, timeFrame, directions, buyinAmount, priceUpdateData, false, referrer);
+        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
+        uint buyinAmount = _getBuyinWithConversion(collateral, collateralAmount, isEth, contractsAddresses);
+        _createNewMarket(asset, timeFrame, directions, buyinAmount, priceUpdateData, false, referrer, contractsAddresses);
     }
 
     function _getBuyinWithConversion(
         address collateral,
         uint collateralAmount,
-        bool isEth
+        bool isEth,
+        IAddressManager.Addresses memory contractsAddresses
     ) internal returns (uint buyinAmount) {
         require(multicollateralEnabled, "Multicollateral onramp not enabled");
         uint amountBefore = sUSD.balanceOf(address(this));
+
+        IMultiCollateralOnOffRamp multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
+            contractsAddresses.multiCollateralOnOffRamp
+        );
 
         uint convertedAmount;
         if (isEth) {
@@ -128,6 +133,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             convertedAmount = multiCollateralOnOffRamp.onramp(collateral, collateralAmount);
         }
 
+        ISpeedMarketsAMM speedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
         buyinAmount = (convertedAmount * (ONE - speedMarketsAMM.safeBoxImpact())) / ONE;
 
         uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
@@ -144,9 +150,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     function _handleReferrerAndSafeBox(
         address referrer,
         uint buyinAmount,
-        uint safeBoxImpact
+        uint safeBoxImpact,
+        IAddressManager.Addresses memory contractsAddresses
     ) internal returns (uint referrerShare) {
-        IReferrals referrals = speedMarketsAMM.referrals();
+        IReferrals referrals = IReferrals(contractsAddresses.referrals);
         if (address(referrals) != address(0)) {
             address newOrExistingReferrer;
             if (referrer != address(0)) {
@@ -166,7 +173,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             }
         }
 
-        sUSD.safeTransfer(speedMarketsAMM.safeBox(), (buyinAmount * safeBoxImpact) / ONE - referrerShare);
+        sUSD.safeTransfer(contractsAddresses.safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
     }
 
     function _createNewMarket(
@@ -176,9 +183,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint buyinAmount,
         bytes[] memory priceUpdateData,
         bool transferSusd,
-        address referrer
+        address referrer,
+        IAddressManager.Addresses memory contractsAddresses
     ) internal {
-        require(speedMarketsAMM.supportedAsset(asset), "Asset is not supported");
+        require(ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).supportedAsset(asset), "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
         require(timeFrame >= minTimeFrame && timeFrame <= maxTimeFrame, "Wrong time frame");
         require(
@@ -186,27 +194,31 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             "Wrong number of directions"
         );
 
-        PaymentData memory paymentData;
-        paymentData.payout = _getPayout(buyinAmount, directions.length);
-        require(paymentData.payout <= maxProfitPerIndividualMarket, "Profit too high");
+        CalcData memory calcData;
+        calcData.payout = _getPayout(buyinAmount, directions.length);
+        require(calcData.payout <= maxProfitPerIndividualMarket, "Profit too high");
 
-        paymentData.safeBoxImpact = speedMarketsAMM.safeBoxImpact();
+        calcData.safeBoxImpact = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).safeBoxImpact();
 
-        currentRisk += paymentData.payout - (buyinAmount * (ONE + paymentData.safeBoxImpact)) / ONE;
+        currentRisk += calcData.payout - (buyinAmount * (ONE + calcData.safeBoxImpact)) / ONE;
         require(currentRisk <= maxRisk, "Out of liquidity");
 
-        speedMarketsAMM.pyth().updatePriceFeeds{value: speedMarketsAMM.pyth().getUpdateFee(priceUpdateData)}(
+        IPyth(contractsAddresses.pyth).updatePriceFeeds{value: IPyth(contractsAddresses.pyth).getUpdateFee(priceUpdateData)}(
             priceUpdateData
         );
 
-        PythStructs.Price memory price = speedMarketsAMM.pyth().getPrice(speedMarketsAMM.assetToPythId(asset));
+        calcData.pythPrice = IPyth(contractsAddresses.pyth).getPrice(
+            ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).assetToPythId(asset)
+        );
         require(
-            (price.publishTime + speedMarketsAMM.maximumPriceDelay()) > block.timestamp && price.price > 0,
+            (calcData.pythPrice.publishTime + ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).maximumPriceDelay()) >
+                block.timestamp &&
+                calcData.pythPrice.price > 0,
             "Stale price"
         );
 
         if (transferSusd) {
-            uint totalAmountToTransfer = (buyinAmount * (ONE + paymentData.safeBoxImpact)) / ONE;
+            uint totalAmountToTransfer = (buyinAmount * (ONE + calcData.safeBoxImpact)) / ONE;
             sUSD.safeTransferFrom(msg.sender, address(this), totalAmountToTransfer);
         }
 
@@ -219,22 +231,22 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 timeFrame,
                 uint64(block.timestamp + timeFrame),
                 uint64(block.timestamp + timeFrame * directions.length), // strike time
-                price.price,
+                calcData.pythPrice.price,
                 directions,
                 buyinAmount,
-                paymentData.safeBoxImpact
+                calcData.safeBoxImpact
             )
         );
 
-        sUSD.safeTransfer(address(csm), paymentData.payout);
+        sUSD.safeTransfer(address(csm), calcData.payout);
 
-        _handleReferrerAndSafeBox(referrer, buyinAmount, paymentData.safeBoxImpact);
+        _handleReferrerAndSafeBox(referrer, buyinAmount, calcData.safeBoxImpact, contractsAddresses);
 
         _activeMarkets.add(address(csm));
         _activeMarketsPerUser[msg.sender].add(address(csm));
 
-        if (address(stakingThales) != address(0)) {
-            stakingThales.updateVolume(msg.sender, buyinAmount);
+        if (contractsAddresses.stakingThales != address(0)) {
+            IStakingThales(contractsAddresses.stakingThales).updateVolume(msg.sender, buyinAmount);
         }
 
         emit MarketCreated(
@@ -243,10 +255,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             asset,
             timeFrame,
             uint64(block.timestamp + timeFrame * directions.length), // strike time
-            price.price,
+            calcData.pythPrice.price,
             directions,
             buyinAmount,
-            paymentData.safeBoxImpact
+            calcData.safeBoxImpact
         );
     }
 
@@ -271,6 +283,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint amountDiff = sUSD.balanceOf(user) - amountBefore;
         sUSD.safeTransferFrom(user, address(this), amountDiff);
         if (amountDiff > 0) {
+            IMultiCollateralOnOffRamp multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
+                addressManager.multiCollateralOnOffRamp()
+            );
             if (toEth) {
                 uint offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
                 address payable _to = payable(user);
@@ -302,6 +317,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     function _resolveMarket(address market, bytes[][] memory priceUpdateData) internal {
         require(canResolveMarket(market), "Can not resolve");
 
+        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
+        ISpeedMarketsAMM speedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
+
         bytes32[] memory priceIds = new bytes32[](1);
         priceIds[0] = speedMarketsAMM.assetToPythId(ChainedSpeedMarket(market).asset());
 
@@ -312,8 +330,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 ChainedSpeedMarket(market).initialStrikeTime() +
                 uint64(i * ChainedSpeedMarket(market).timeFrame());
 
-            PythStructs.PriceFeed[] memory pricesPerDirection = speedMarketsAMM.pyth().parsePriceFeedUpdates{
-                value: speedMarketsAMM.pyth().getUpdateFee(priceUpdateData[i])
+            IPyth pyth = IPyth(contractsAddresses.pyth);
+            PythStructs.PriceFeed[] memory pricesPerDirection = pyth.parsePriceFeedUpdates{
+                value: pyth.getUpdateFee(priceUpdateData[i])
             }(
                 priceUpdateData[i],
                 priceIds,
@@ -486,27 +505,26 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         );
     }
 
-    /// @notice set corresponding addresses
-    function setAddresses(address _speedMarketsAMM, address _stakingThales) external onlyOwner {
-        speedMarketsAMM = ISpeedMarketsAMM(_speedMarketsAMM);
-        stakingThales = IStakingThales(_stakingThales);
-        emit SetAddresses(_speedMarketsAMM, _stakingThales);
+    /// @notice set address manager contract address
+    function setAddressManager(address _addressManager) external onlyOwner {
+        addressManager = IAddressManager(_addressManager);
+        emit AddressManagerChanged(_addressManager);
     }
 
-    /// @notice set multicollateral onramp contract
-    function setMultiCollateralOnOffRamp(address _onramper, bool enabled) external onlyOwner {
-        if (address(multiCollateralOnOffRamp) != address(0)) {
-            sUSD.approve(address(multiCollateralOnOffRamp), 0);
+    /// @notice set multicollateral enabled
+    function setMultiCollateralOnOffRampEnabled(bool _enabled) external onlyOwner {
+        address multiCollateralOnOffRamp = addressManager.multiCollateralOnOffRamp();
+        if (multiCollateralOnOffRamp != address(0)) {
+            sUSD.approve(multiCollateralOnOffRamp, _enabled ? MAX_APPROVAL : 0);
         }
-        multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(_onramper);
-        multicollateralEnabled = enabled;
-        sUSD.approve(_onramper, MAX_APPROVAL);
-        emit SetMultiCollateralOnOffRamp(_onramper, enabled);
+        multicollateralEnabled = _enabled;
+        emit MultiCollateralOnOffRampEnabled(_enabled);
     }
 
     //////////////////modifiers/////////////////
 
     modifier isAddressWhitelisted() {
+        ISpeedMarketsAMM speedMarketsAMM = ISpeedMarketsAMM(addressManager.speedMarketsAMM());
         require(speedMarketsAMM.whitelistedAddresses(msg.sender), "Resolver not whitelisted");
         _;
     }
@@ -539,9 +557,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint _maxRisk,
         uint _payoutMultiplier
     );
-    event SetSafeBoxParams(address _safeBox, uint _safeBoxImpact);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
-    event SetAddresses(address _speedMarketsAMM, address _stakingThales);
-    event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
+    event MultiCollateralOnOffRampEnabled(bool _enabled);
     event AmountTransfered(address _destination, uint _amount);
+    event AddressManagerChanged(address _addressManager);
 }

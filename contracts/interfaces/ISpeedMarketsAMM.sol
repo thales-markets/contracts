@@ -4,19 +4,12 @@ pragma solidity >=0.5.16;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
-
-import "../interfaces/IReferrals.sol";
-import "../interfaces/IMultiCollateralOnOffRamp.sol";
-
 import "../SpeedMarkets/SpeedMarket.sol";
 
 interface ISpeedMarketsAMM {
     function sUSD() external view returns (IERC20Upgradeable);
 
     function supportedAsset(bytes32 asset) external view returns (bool);
-
-    function pyth() external view returns (IPyth);
 
     function assetToPythId(bytes32 asset) external view returns (bytes32);
 
@@ -38,8 +31,6 @@ interface ISpeedMarketsAMM {
 
     function lpFee() external view returns (uint);
 
-    function safeBox() external view returns (address);
-
     function safeBoxImpact() external view returns (uint);
 
     function marketHasCreatedAtAttribute(address _market) external view returns (bool);
@@ -57,6 +48,4 @@ interface ISpeedMarketsAMM {
     function whitelistedAddresses(address _wallet) external view returns (bool);
 
     function getLengths(address user) external view returns (uint[5] memory);
-
-    function referrals() external view returns (IReferrals);
 }

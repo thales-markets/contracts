@@ -24,6 +24,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_addressManager",
+        "type": "address"
+      }
+    ],
+    "name": "AddressManagerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_destination",
         "type": "address"
       },
@@ -209,6 +222,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "_enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "MultiCollateralOnOffRampEnabled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -285,6 +311,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_safeBoxImpact",
+        "type": "uint256"
+      }
+    ],
+    "name": "SafeBoxImpactChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "contract SpeedMarketsAMMUtils",
         "name": "_speedMarketsAMMUtils",
         "type": "address"
@@ -312,6 +351,18 @@
         "indexed": false,
         "internalType": "address",
         "name": "_stakingThales",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_safeBox",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_onramper",
         "type": "address"
       }
     ],
@@ -417,44 +468,6 @@
       }
     ],
     "name": "SetMaximumPriceDelays",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_onramper",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "SetMultiCollateralOnOffRamp",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_safeBox",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_safeBoxImpact",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetSafeBoxParams",
     "type": "event"
   },
   {
@@ -571,6 +584,19 @@
     "name": "addToWhitelist",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "addressManager",
+    "outputs": [
+      {
+        "internalType": "contract IAddressManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -863,11 +889,6 @@
         "internalType": "contract IERC20Upgradeable",
         "name": "_sUSD",
         "type": "address"
-      },
-      {
-        "internalType": "contract IPyth",
-        "name": "_pyth",
-        "type": "address"
       }
     ],
     "name": "initialize",
@@ -1134,19 +1155,6 @@
   },
   {
     "inputs": [],
-    "name": "multiCollateralOnOffRamp",
-    "outputs": [
-      {
-        "internalType": "contract IMultiCollateralOnOffRamp",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "multicollateralEnabled",
     "outputs": [
       {
@@ -1205,32 +1213,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "pyth",
-    "outputs": [
-      {
-        "internalType": "contract IPyth",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "referrals",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1351,19 +1333,6 @@
   },
   {
     "inputs": [],
-    "name": "safeBox",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "safeBoxImpact",
     "outputs": [
       {
@@ -1392,21 +1361,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_pyth",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_referrals",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_stakingThales",
+        "name": "_addressManager",
         "type": "address"
       }
     ],
-    "name": "setAddresses",
+    "name": "setAddressManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1540,17 +1499,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_onramper",
-        "type": "address"
-      },
-      {
         "internalType": "bool",
-        "name": "enabled",
+        "name": "_enabled",
         "type": "bool"
       }
     ],
-    "name": "setMultiCollateralOnOffRamp",
+    "name": "setMultiCollateralOnOffRampEnabled",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1584,17 +1538,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_safeBox",
-        "type": "address"
-      },
-      {
         "internalType": "uint256",
         "name": "_safeBoxImpact",
         "type": "uint256"
       }
     ],
-    "name": "setSafeBoxParams",
+    "name": "setSafeBoxImpact",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1641,19 +1590,6 @@
     "outputs": [
       {
         "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "stakingThales",
-    "outputs": [
-      {
-        "internalType": "contract IStakingThales",
         "name": "",
         "type": "address"
       }

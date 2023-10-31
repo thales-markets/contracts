@@ -109,19 +109,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_sportMarket",
-        "type": "address"
-      }
-    ],
-    "name": "exerciseSpecificSportMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "exerciseWiningSportMarkets",
     "outputs": [],
@@ -149,63 +136,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "fundsIssued",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getNewResolvedAndWinningPositions",
-    "outputs": [
-      {
-        "internalType": "bool[]",
-        "name": "newResolvedMarkets",
-        "type": "bool[]"
-      },
-      {
-        "internalType": "bool[]",
-        "name": "newWinningMarkets",
-        "type": "bool[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getSportMarketBalances",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "allBalances",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "hasMarketLostButHasExercisableWinningPositions",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "itHasLostButHasExercisableWinningPositions",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -279,53 +209,25 @@
   },
   {
     "inputs": [],
-    "name": "isAnySportMarketExercisable",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "isExercisable",
-        "type": "bool"
-      },
-      {
-        "internalType": "address[]",
-        "name": "exercisableMarkets",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "isAnySportMarketResolved",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "isResolved",
-        "type": "bool"
-      },
-      {
-        "internalType": "address[]",
-        "name": "resolvableMarkets",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "isParlayExercisable",
     "outputs": [
       {
         "internalType": "bool",
         "name": "isExercisable",
         "type": "bool"
-      },
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isParlayLost",
+    "outputs": [
       {
-        "internalType": "bool[]",
-        "name": "exercisedOrExercisableMarkets",
-        "type": "bool[]"
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -337,7 +239,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "finalResult",
+        "name": "hasUserWon",
         "type": "bool"
       }
     ],
@@ -365,32 +267,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "numOfAlreadyExercisedSportMarkets",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "numOfResolvedSportMarkets",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",

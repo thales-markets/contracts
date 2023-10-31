@@ -201,7 +201,7 @@ contract('ParlayAMM', (accounts) => {
 	let safeBoxImpact = toUnit('0.02');
 	let minUSDAmount = '10';
 	let maxSupportedAmount = '20000';
-	let maxSupportedOdd = '0.005';
+	let maxSupportedOdd = '0.002';
 
 	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 	let parlayMarkets = [];
@@ -916,6 +916,12 @@ contract('ParlayAMM', (accounts) => {
 				parlayPositions,
 				totalSUSDToPay
 			);
+
+			console.log('sUSDAfterFees ' + result[0] / 1e18);
+			console.log('totalAmount: ' + result[1] / 1e18);
+			console.log('total quote ' + result[2] / 1e18);
+			console.log('result[3]: ' + result[3]);
+			console.log('result[4]: ' + result[4]);
 			let buyParlayTX = await ParlayAMM.buyFromParlay(
 				parlayMarketsAddress,
 				parlayPositions,
@@ -925,7 +931,7 @@ contract('ParlayAMM', (accounts) => {
 				ZERO_ADDRESS,
 				{ from: first }
 			);
-			// console.log("event: \n", buyParlayTX.logs[0]);
+			console.log('event: \n', buyParlayTX.logs[0]);
 
 			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
 				account: first,

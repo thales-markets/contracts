@@ -98,7 +98,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     uint public maxMarketUsedInRoundCount;
 
     uint public marketsProcessedInRound;
-    
+
     address public safeBox;
     uint public safeBoxImpact;
 
@@ -309,8 +309,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         ParlayMarket parlayMarket;
         for (uint i = marketsProcessedInRound; i < endCursor; i++) {
             parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
-            (bool isExercisable, ) = parlayMarket.isParlayExercisable();
-            if (!parlayMarket.fundsIssued() && isExercisable) {
+            if (parlayMarket.isParlayExercisable()) {
                 parlayAMM.exerciseParlay(address(parlayMarket));
             }
 
@@ -423,8 +422,7 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         ParlayMarket parlayMarket;
         for (uint i = marketsProcessedInRound; i < tradingParlayMarketsPerRound[round].length; i++) {
             parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
-            (bool isExercisable, ) = parlayMarket.isParlayExercisable();
-            if (!parlayMarket.fundsIssued() && isExercisable) {
+            if (parlayMarket.isParlayExercisable()) {
                 parlayAMM.exerciseParlay(address(parlayMarket));
             }
 
@@ -601,10 +599,8 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         }
         for (uint i = 0; i < tradingParlayMarketsPerRound[round].length; i++) {
             ParlayMarket parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
-            (bool isExercisable, ) = parlayMarket.isParlayExercisable();
-            if (parlayMarket.fundsIssued()) continue;
-            else if (!parlayMarket.fundsIssued() && (isExercisable || parlayMarket.parlayAlreadyLost())) continue;
-            else if (!parlayMarket.fundsIssued() && !parlayMarket.parlayAlreadyLost()) return false;
+            if (parlayMarket.resolved() || parlayMarket.isParlayExercisable()) continue;
+            else return false;
         }
         return true;
     }

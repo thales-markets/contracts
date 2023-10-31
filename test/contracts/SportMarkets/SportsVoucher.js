@@ -498,6 +498,13 @@ contract('SportsVauchers', (accounts) => {
 
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
+		SportsAMMCancellationPool = await SportsAMMCancellationPoolContract.new({ from: manager });
+		await SportsAMMCancellationPool.initialize(SportsAMM.address, { from: owner });
+		await SportAMMRiskManager.setSportsAMMCancellationPool(SportsAMMCancellationPool.address, {
+			from: owner,
+		});
+		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('20000'), { from: owner });
+		await SportsAMMCancellationPool.setCancellationActive(true, { from: owner });
 	});
 
 	describe('Test Sports Voucher', () => {

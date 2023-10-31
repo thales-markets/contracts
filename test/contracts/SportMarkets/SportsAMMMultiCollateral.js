@@ -153,7 +153,8 @@ contract('SportsAMM', (accounts) => {
 		Referrals,
 		SportsAMM,
 		SportAMMLiquidityPool,
-		SportAMMRiskManager;
+		SportAMMRiskManager,
+		SportsAMMCancellationPool;
 	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
@@ -544,6 +545,13 @@ contract('SportsAMM', (accounts) => {
 
 		await testUSDC.mint(first, toUnitSix(1000));
 		await testUSDC.approve(SportsAMM.address, toUnitSix(1000), { from: first });
+		SportsAMMCancellationPool = await SportsAMMCancellationPoolContract.new({ from: manager });
+		await SportsAMMCancellationPool.initialize(SportsAMM.address, { from: owner });
+		await SportAMMRiskManager.setSportsAMMCancellationPool(SportsAMMCancellationPool.address, {
+			from: owner,
+		});
+		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('20000'), { from: owner });
+		await SportsAMMCancellationPool.setCancellationActive(true, { from: owner });
 	});
 
 	describe('Init', () => {

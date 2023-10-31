@@ -398,6 +398,7 @@ contract('SportsAMM', (accounts) => {
 		);
 
 		await Thales.mint(TherundownConsumerDeployed.address, toUnit('1000'));
+		await Thales.mint(owner, toUnit('100000'));
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
 			gamesQueue.address,

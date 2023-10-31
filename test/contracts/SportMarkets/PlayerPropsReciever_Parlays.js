@@ -235,7 +235,8 @@ contract('PlayerProps', (accounts) => {
 		SportsAMM,
 		SportAMMLiquidityPool,
 		ParlayAMMLiquidityPool,
-		ParlayPolicy;
+		ParlayPolicy,
+		SportsAMMCancellationPool;
 
 	let GamesPlayerPropsReceiverDeployed, GamesPlayerPropsDeployed;
 
@@ -1072,6 +1073,7 @@ contract('PlayerProps', (accounts) => {
 			from: owner,
 		});
 		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('2000'), { from: owner });
+		await SportsAMMCancellationPool.setCancellationActive(true, { from: owner });
 	});
 
 	describe('Player props', () => {

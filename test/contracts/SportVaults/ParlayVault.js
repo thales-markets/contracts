@@ -58,7 +58,7 @@ contract('Parlay Vault', (accounts) => {
 	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
 	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
-
+	const SportsAMMCancellationPoolContract = artifacts.require('SportsAMMCancellationPool');
 	let ParlayAMM;
 	let ParlayMarket;
 	let ParlayMarketData;
@@ -922,6 +922,13 @@ contract('Parlay Vault', (accounts) => {
 		await vault.setSafeBoxParams(safeBox, toUnit(0.2), {
 			from: owner,
 		});
+		SportsAMMCancellationPool = await SportsAMMCancellationPoolContract.new({ from: manager });
+		await SportsAMMCancellationPool.initialize(SportsAMM.address, { from: owner });
+		await SportAMMRiskManager.setSportsAMMCancellationPool(SportsAMMCancellationPool.address, {
+			from: owner,
+		});
+		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('20000'), { from: owner });
+		await SportsAMMCancellationPool.setCancellationActive(true, { from: owner });
 	});
 
 	describe('Test parlays vault', () => {

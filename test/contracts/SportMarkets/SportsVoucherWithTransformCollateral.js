@@ -76,7 +76,7 @@ contract('SportsVauchers', (accounts) => {
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
-
+	const SportsAMMCancellationPoolContract = artifacts.require('SportsAMMCancellationPool');
 	let sportsAMMUtils;
 	let Thales;
 	let voucher;

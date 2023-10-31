@@ -75,7 +75,7 @@ contract('SportsAMM', (accounts) => {
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
-
+	const SportsAMMCancellationPoolContract = artifacts.require('SportsAMMCancellationPool');
 	let ThalesOracleCouncil;
 	let Thales;
 	let answer;

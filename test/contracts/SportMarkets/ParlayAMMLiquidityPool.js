@@ -88,7 +88,7 @@ contract('ParlayAMM', (accounts) => {
 	const ParlayAMMLiquidityPoolDataContract = artifacts.require('ParlayAMMLiquidityPoolData');
 
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
-
+	const SportsAMMCancellationPoolContract = artifacts.require('SportsAMMCancellationPool');
 	let ParlayAMM;
 	let ParlayMarket;
 	let ParlayMarketData;
@@ -231,7 +231,8 @@ contract('ParlayAMM', (accounts) => {
 		ParlayAMMLiquidityPool,
 		ParlayAMMLiquidityPoolData,
 		ParlayPolicy,
-		multiCollateralOnOffRamp;
+		multiCollateralOnOffRamp,
+		SportsAMMCancellationPool;
 
 	let verifier;
 
@@ -876,6 +877,7 @@ contract('ParlayAMM', (accounts) => {
 			from: owner,
 		});
 		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('2000'), { from: owner });
+		await SportsAMMCancellationPool.setCancellationActive(true, { from: owner });
 	});
 
 	describe('Parlay AMM setters', () => {

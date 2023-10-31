@@ -81,7 +81,7 @@ contract('ParlayAMM', (accounts) => {
 	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
 	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
-
+	const SportsAMMCancellationPoolContract = artifacts.require('SportsAMMCancellationPool');
 	let ParlayAMM;
 	let ParlayMarket;
 	let ParlayMarketData;

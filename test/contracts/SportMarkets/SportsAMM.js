@@ -532,6 +532,7 @@ contract('SportsAMM', (accounts) => {
 			from: owner,
 		});
 		await Thales.transfer(SportsAMMCancellationPool.address, toUnit('2000'), { from: owner });
+		await SportsAMMCancellationPool.setCancellationActive(true, { from: owner });
 	});
 
 	describe('Init', () => {

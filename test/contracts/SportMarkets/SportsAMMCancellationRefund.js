@@ -156,9 +156,8 @@ contract('SportsAMM', (accounts) => {
 		Referrals,
 		SportsAMM,
 		SportAMMLiquidityPool,
-		multiCollateralOnOffRamp;
-
-	let SportsAMMCancellationPool;
+		multiCollateralOnOffRamp,
+		SportsAMMCancellationPool;
 
 	let MockConsumerWrapper;
 

@@ -73,7 +73,7 @@ contract('PlayerProps', (accounts) => {
 	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
 	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
-
+	const SportsAMMCancellationPoolContract = artifacts.require('SportsAMMCancellationPool');
 	const SportAMMLiquidityPoolRoundMastercopy = artifacts.require(
 		'SportAMMLiquidityPoolRoundMastercopy'
 	);

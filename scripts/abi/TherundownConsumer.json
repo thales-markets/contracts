@@ -311,11 +311,17 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_maxNumber",
+        "name": "_maxNumberResolve",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxNumberCreate",
         "type": "uint256"
       }
     ],
-    "name": "NewMaxNumberOfMarketsToResolve",
+    "name": "NewMaxNumberOfMarketsToResolveAndCreate",
     "type": "event"
   },
   {
@@ -1355,6 +1361,19 @@
   },
   {
     "inputs": [],
+    "name": "maxNumberOfMarketsToCreate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maxNumberOfMarketsToResolve",
     "outputs": [
       {
@@ -1635,9 +1654,14 @@
         "internalType": "uint256",
         "name": "_maxNumberOfMarketsToResolve",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxNumberOfMarketsToCreate",
+        "type": "uint256"
       }
     ],
-    "name": "setNewMaxNumberOfMarketsToResolve",
+    "name": "setNewMaxNumberOfMarketsToResolveAndResolve",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

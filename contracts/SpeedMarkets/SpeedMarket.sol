@@ -64,7 +64,7 @@ contract SpeedMarket {
         createdAt = block.timestamp;
     }
 
-    function resolve(int64 _finalPrice, bool _isManually) external onlyAMM {
+    function resolve(int64 _finalPrice) external onlyAMM {
         require(!resolved, "already resolved");
         require(block.timestamp > strikeTime, "not ready to be resolved");
         resolved = true;
@@ -79,7 +79,6 @@ contract SpeedMarket {
         }
 
         if (direction == result) {
-            require(!_isManually, "Can not resolve manually");
             speedMarketsAMM.sUSD().safeTransfer(user, speedMarketsAMM.sUSD().balanceOf(address(this)));
         } else {
             speedMarketsAMM.sUSD().safeTransfer(address(speedMarketsAMM), speedMarketsAMM.sUSD().balanceOf(address(this)));

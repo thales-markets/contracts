@@ -433,7 +433,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         require(price.price > 0, "invalid price");
 
-        _resolveMarketWithPrice(market, price.price, false);
+        _resolveMarketWithPrice(market, price.price);
     }
 
     /// @notice admin resolve market for a given market address with finalPrice
@@ -454,16 +454,16 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     function _resolveMarketManually(address _market, int64 _finalPrice) internal {
-        require(canResolveMarket(_market), "Can not resolve");
-        _resolveMarketWithPrice(_market, _finalPrice, true);
+        SpeedMarket.Direction direction = SpeedMarket(_market).direction();
+        int64 strikePrice = SpeedMarket(_market).strikePrice();
+        bool isUserWinner = (_finalPrice < strikePrice && direction == SpeedMarket.Direction.Down) ||
+            (_finalPrice > strikePrice && direction == SpeedMarket.Direction.Up);
+        require(canResolveMarket(_market) && !isUserWinner, "Can not resolve manually");
+        _resolveMarketWithPrice(_market, _finalPrice);
     }
 
-    function _resolveMarketWithPrice(
-        address market,
-        int64 _finalPrice,
-        bool _isManually
-    ) internal {
-        SpeedMarket(market).resolve(_finalPrice, _isManually);
+    function _resolveMarketWithPrice(address market, int64 _finalPrice) internal {
+        SpeedMarket(market).resolve(_finalPrice);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
         address user = SpeedMarket(market).user();

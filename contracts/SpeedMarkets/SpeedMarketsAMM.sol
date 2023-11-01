@@ -620,6 +620,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint _lpFee
     ) external onlyOwner {
         require(_timeThresholds.length == _lpFees.length, "Times and fees must have the same length");
+        delete timeThresholdsForFees;
+        delete lpFees;
         for (uint i = 0; i < _timeThresholds.length; i++) {
             timeThresholdsForFees.push(_timeThresholds[i]);
             lpFees.push(_lpFees[i]);

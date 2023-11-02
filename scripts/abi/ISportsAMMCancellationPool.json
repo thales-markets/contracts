@@ -3,29 +3,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_paidAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "addUserDepositPerMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "market",
         "type": "address"
       },

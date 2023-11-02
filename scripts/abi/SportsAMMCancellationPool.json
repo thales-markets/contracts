@@ -81,29 +81,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_paidAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "addUserDepositPerMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "",
         "type": "address"
       },
@@ -138,7 +115,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_payout",
+        "name": "_positionAmount",
         "type": "uint256"
       }
     ],
@@ -463,30 +440,6 @@
     "name": "updateCancellationMultiplier",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "userDeposits",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   }
 ]

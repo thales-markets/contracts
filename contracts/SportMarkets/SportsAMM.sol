@@ -871,7 +871,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMMCancellationPool(riskManager.sportsAMMCancellationPool()).updateCancellationMultiplier(
             params.market,
             uint8(params.position),
-            params.sUSDPaid,
+            ISportPositionalMarketManager(manager).reverseTransformCollateral(params.sUSDPaid),
             params.amount
         );
 

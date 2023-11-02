@@ -23,10 +23,10 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
     mapping(address => mapping(uint => uint)) public firstCancellationMultiplierForMarket;
     mapping(address => mapping(uint => uint)) public cancellationMultiplierForMarket;
     mapping(address => mapping(uint => uint)) public cancellationThresholdForMarket;
-    mapping(address => mapping(address => uint)) public userDeposits;
     mapping(address => uint) public totalCancellationPayoutPerMarket;
     uint public defaultCancelUpdateAmount;
 
+    /* ========== CONSTRUCTOR ========== */
     function initialize(address _sportsAMM) public initializer {
         setOwner(msg.sender);
         initNonReentrant();
@@ -35,25 +35,37 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
         defaultCancelUpdateAmount = 1000 * ONE;
     }
 
-    // function updateCancellationMultiplier(
-    //     address _market,
-    //     uint8 _position,
-    //     uint _paidAmount,
-    //     uint _amount
-    // ) external nonReentrant whenNotPaused {
-    //     require(msg.sender == address(sportsAMM), "InvalidSender");
-    //     uint calculatedMultiplyer = (_paidAmount * ONE) / _amount;
-    //     if (firstCancellationMultiplierForMarket[_market][_position] == 0) {
-    //         firstCancellationMultiplierForMarket[_market][_position] = calculatedMultiplyer;
-    //     } else{
-    //         if(cancellationMultiplierForMarket[_market][_position] > 0) {
-    //             cancellationMultiplierForMarket[_market][_position] = (cancellationMultiplierForMarket[_market][_position] + calculatedMultiplyer)/2;
-    //         } else {
-    //             cancellationMultiplierForMarket[_market][_position] = calculatedMultiplyer;
-    //         }
-    //     }
-    // }
+    /* ========== EXTERNAL VIEW FUNCTIONS ========== */
 
+    /// @notice Obtain the cancellation payout for amount of positions on given market
+    /// @param _market the sport market
+    /// @param _position the position (HOME/AWAY/DRAW)
+    /// @param _positionAmount the position amount of options placed on the market position
+    /// @return cancelPayout the cancellation payout given the position amount on the market
+    function cancellationPayout(
+        address _market,
+        uint _position,
+        uint _positionAmount
+    ) external view returns (uint cancelPayout) {
+        uint avgCancellationMultiplier;
+        if (cancellationMultiplierForMarket[_market][_position] == 0) {
+            avgCancellationMultiplier = firstCancellationMultiplierForMarket[_market][_position];
+        } else {
+            avgCancellationMultiplier =
+                (cancellationMultiplierForMarket[_market][_position] +
+                    firstCancellationMultiplierForMarket[_market][_position]) /
+                2;
+        }
+        cancelPayout = (_positionAmount * avgCancellationMultiplier) / ONE;
+    }
+
+    /* ========== EXTERNAL FUNCTIONS - UPDATING STATE and ISSUE FUNDS ========== */
+
+    /// @notice Update the cancellation multiplyer. The update is executed until the default threshold amount is reached.
+    /// @param _market the sport market
+    /// @param _position the position (HOME/AWAY/DRAW)
+    /// @param _paidAmount the amount of sUSD/USDC is paid by the user
+    /// @param _amount the amount of positions obtained by the user
     function updateCancellationMultiplier(
         address _market,
         uint8 _position,
@@ -80,45 +92,14 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
         }
     }
 
-    // function updateCancellationMultiplier(
-    //     address _market,
-    //     uint8 _position,
-    //     uint _paidAmount,
-    //     uint _amount
-    // ) external nonReentrant whenNotPaused {
-    //     require(msg.sender == address(sportsAMM), "InvalidSender");
-    //     uint calculatedMultiplyer = (_paidAmount * ONE) / _amount;
-    //     if (firstCancellationMultiplierForMarket[_market][_position] == 0) {
-    //         firstCancellationMultiplierForMarket[_market][_position] = calculatedMultiplyer;
-    //     } else {
-    //         cancellationMultiplierForMarket[_market][_position] = calculatedMultiplyer;
-    //     }
-    // }
-
-    function addUserDepositPerMarket(
-        address _user,
-        address _market,
-        uint _paidAmount
+    function sendFunds(
+        address _account,
+        uint _cancellationPayout,
+        IERC20Upgradeable _sUSD
     ) external nonReentrant whenNotPaused {
-        require(msg.sender == address(sportsAMM), "InvalidSender");
-        userDeposits[_user][_market] = _paidAmount;
-    }
-
-    function cancellationPayout(
-        address _market,
-        uint _position,
-        uint _payout
-    ) external view returns (uint cancelPayout) {
-        uint avgCancellationMultiplier;
-        if (cancellationMultiplierForMarket[_market][_position] == 0) {
-            avgCancellationMultiplier = firstCancellationMultiplierForMarket[_market][_position];
-        } else {
-            avgCancellationMultiplier =
-                (cancellationMultiplierForMarket[_market][_position] +
-                    firstCancellationMultiplierForMarket[_market][_position]) /
-                2;
-        }
-        cancelPayout = (_payout * avgCancellationMultiplier) / ONE;
+        require(sportManager.isKnownMarket(msg.sender), "MarketUnknown");
+        totalCancellationPayoutPerMarket[msg.sender] += _cancellationPayout;
+        IERC20Upgradeable(_sUSD).safeTransfer(_account, _cancellationPayout);
     }
 
     function setCancellationActive(bool _enable) external onlyOwner {
@@ -128,16 +109,6 @@ contract SportsAMMCancellationPool is Initializable, ProxyOwned, PausableUpgrade
     function setDefaultCancelUpdateAmount(uint _defaultAmount) external onlyOwner {
         defaultCancelUpdateAmount = _defaultAmount;
         emit SetDefaultCancelUpdateAmount(_defaultAmount);
-    }
-
-    function sendFunds(
-        address _account,
-        uint _cancellationPayout,
-        IERC20Upgradeable _sUSD
-    ) external nonReentrant whenNotPaused {
-        require(sportManager.isKnownMarket(msg.sender), "MarketUnknown");
-        totalCancellationPayoutPerMarket[msg.sender] += _cancellationPayout;
-        IERC20Upgradeable(_sUSD).safeTransfer(_account, _cancellationPayout);
     }
 
     function retrieveSUSDAmount(address payable _account, uint _amount) external onlyOwner {

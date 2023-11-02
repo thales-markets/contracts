@@ -18,12 +18,6 @@ interface ISportsAMMCancellationPool {
         uint _amount
     ) external;
 
-    function addUserDepositPerMarket(
-        address _user,
-        address _market,
-        uint _paidAmount
-    ) external;
-
     function sendFunds(
         address _account,
         uint _cancellationPayout,

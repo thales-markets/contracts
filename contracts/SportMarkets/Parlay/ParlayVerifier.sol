@@ -31,16 +31,6 @@ contract ParlayVerifier {
         address parlayAMM;
     }
 
-    struct FinalQuoteParameters {
-        address[] sportMarkets;
-        uint[] positions;
-        uint[] buyQuoteAmounts;
-        ISportsAMM sportsAmm;
-        uint sUSDAfterFees;
-        uint defaultONE;
-        uint[] sgpFees;
-    }
-
     struct VerifyMarket {
         address[] sportMarkets;
         uint[] positions;
@@ -566,6 +556,7 @@ contract ParlayVerifier {
                     totalQuote = 0;
                     break;
                 }
+                finalQuotes[i] = (params.defaultONE * finalQuotes[i]);
                 if (params.sgpFees[i] > 0) {
                     finalQuotes[i] = ((finalQuotes[i] * ONE * ONE) / params.sgpFees[i]) / ONE;
                 }
@@ -576,6 +567,7 @@ contract ParlayVerifier {
                     totalQuote = IParlayMarketsAMM(params.parlayAMM).maxSupportedOdds();
                 }
                 totalBuyAmount = (params.totalSUSDToPay * ONE) / totalQuote;
+                _calculateRisk(params.sportMarkets, (totalBuyAmount - params.totalSUSDToPay), params.sportsAMM.parlayAMM());
             }
 
             for (uint i = 0; i < numOfMarkets; i++) {

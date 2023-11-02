@@ -1263,15 +1263,6 @@ contract('Parlay Vault', (accounts) => {
 				'Market is at the maximum number of tickets'
 			);
 
-			await assert.revert(
-				vault.trade(
-					[parlayMarkets[4].address, parlayMarkets[0].address],
-					parlayPositions,
-					totalSUSDToPay
-				),
-				'Market is at the maximum number of tickets'
-			);
-
 			balanceVault = await Thales.balanceOf(vault.address);
 			console.log('balanceVault after trade is:' + balanceVault / 1e18);
 

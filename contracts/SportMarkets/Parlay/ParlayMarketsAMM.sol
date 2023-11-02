@@ -292,7 +292,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _differentRecipient
         );
 
-        //        _transferSuprlusIfExists();
+        _transferSuprlusIfExists();
     }
 
     function buyFromParlayWithDifferentCollateralAndReferrer(
@@ -424,6 +424,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
+    // TODO: to remove
     function resolveParlay() external notPaused onlyKnownMarkets(msg.sender) {
         if (!ParlayMarket(msg.sender).resolved()) {
             resolvedParlay[msg.sender] = true;
@@ -445,8 +446,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function triggerResolvedEvent(address _account, bool _userWon) external {
-        require(_knownMarkets.contains(msg.sender), "Not valid Parlay");
+    function triggerResolvedEvent(address _account, bool _userWon) external notPaused onlyKnownMarkets(msg.sender) {
+        resolvedParlay[msg.sender] = true;
+        _knownMarkets.remove(msg.sender);
         emit ParlayResolved(msg.sender, _account, _userWon);
     }
 

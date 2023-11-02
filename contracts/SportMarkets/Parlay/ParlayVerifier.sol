@@ -552,7 +552,7 @@ contract ParlayVerifier {
         uint numOfMarkets = params.sportMarkets.length;
         uint inverseSum;
         bool eligible;
-        //        finalQuotes = new uint[](numOfMarkets);
+        amountsToBuy = new uint[](numOfMarkets);
         (eligible, finalQuotes, params.sgpFees) = _verifyMarkets(
             VerifyMarket(params.sportMarkets, params.positions, params.sportsAMM, params.parlayAMM, params.defaultONE)
         );
@@ -571,7 +571,13 @@ contract ParlayVerifier {
                 }
                 totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
             }
-            totalBuyAmount = (params.totalSUSDToPay * ONE) / totalQuote;
+            if (totalQuote != 0) {
+                totalBuyAmount = (params.totalSUSDToPay * ONE) / totalQuote;
+            }
+
+            for (uint i = 0; i < numOfMarkets; i++) {
+                amountsToBuy[i] = (totalBuyAmount * finalQuotes[i]) / ONE;
+            }
         }
     }
 

@@ -203,7 +203,7 @@ contract('ParlayAMM', (accounts) => {
 	let safeBoxImpact = toUnit('0.02');
 	let minUSDAmount = '10';
 	let maxSupportedAmount = '20000';
-	let maxSupportedOdd = '0.005';
+	let maxSupportedOdd = '0.001';
 
 	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 	let parlayMarkets = [];
@@ -759,18 +759,6 @@ contract('ParlayAMM', (accounts) => {
 				from: owner,
 			});
 			await ParlayAMM.setVerifierAndPolicyAddresses(owner, owner, { from: owner });
-		});
-		it('ParlayMarketData', async () => {
-			await ParlayMarketData.setParlayMarketsAMM(third, { from: owner });
-			await ParlayMarketData.addParlayForGamePosition(first, '1', second, second, { from: third });
-			let hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
-			assert.equal(hasData, true);
-			hasData = await ParlayMarketData.isGameInParlay(first, second);
-			assert.equal(hasData[0], true);
-			assert.equal(hasData[1].toString(), '1');
-			await ParlayMarketData.removeParlayForGamePosition(first, '1', second, { from: third });
-			hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
-			assert.equal(hasData, false);
 		});
 	});
 

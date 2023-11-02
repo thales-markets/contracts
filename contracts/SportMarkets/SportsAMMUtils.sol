@@ -415,6 +415,8 @@ contract SportsAMMUtils {
     }
 
     function getBuyPriceImpact(PriceImpactParams memory params) public view returns (int priceImpact) {
+        //TODO rework fully to use risk per position instead of balances
+        // take starting skew impact and ending and avg out
         (uint balancePosition, , uint balanceOtherSide) = balanceOfPositionsOnMarket(
             params.market,
             params.position,

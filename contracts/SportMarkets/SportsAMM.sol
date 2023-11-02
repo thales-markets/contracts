@@ -163,6 +163,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
     bool public multicollateralEnabled;
 
+    mapping(address => mapping(uint => uint)) private riskPerMarketAndPosition; //deprecated see SportAMMRiskManager.sol
+
     receive() external payable {}
 
     /// @notice Initialize the storage in the proxy contract with the parameters.

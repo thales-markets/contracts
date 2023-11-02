@@ -403,10 +403,10 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (market.areAllPositionsResolved()) {
-                    if (market.isParlayExercisable()) {
-                        parlayAMM.exerciseParlay(marketAddress);
-                    }
+                if (market.isParlayExercisable() && !market.isUserTheWinner()) {
+                    parlayAMM.exerciseParlay(marketAddress);
+                }
+                if (market.isParlayExercisable() || market.resolved()) {
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
                 }
             }
@@ -431,10 +431,10 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             address marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (market.areAllPositionsResolved()) {
-                    if (market.isParlayExercisable()) {
-                        parlayAMM.exerciseParlay(marketAddress);
-                    }
+                if (market.isParlayExercisable() && !market.isUserTheWinner()) {
+                    parlayAMM.exerciseParlay(marketAddress);
+                }
+                if (market.isParlayExercisable() || market.resolved()) {
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
                     count += 1;
                 }
@@ -520,7 +520,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (market.isParlayExercisable()) {
+                if (market.isParlayExercisable() && !market.isUserTheWinner()) {
                     return true;
                 }
             }

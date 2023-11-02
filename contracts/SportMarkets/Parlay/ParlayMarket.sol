@@ -155,13 +155,12 @@ contract ParlayMarket is OwnedWithInit {
                 ISportPositionalMarket currentSportMarket = ISportPositionalMarket(_sportMarket);
                 uint result = uint(currentSportMarket.result());
                 if (result == 0) {
-                    finalPayout = (finalPayout * ONE) / sportMarket[i].odd;
+                    finalPayout = (finalPayout * sportMarket[i].odd) / ONE;
                 }
             }
             parlayMarketsAMM.sUSD().transfer(address(parlayOwner), finalPayout);
             parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), parlayMarketsAMM.sUSD().balanceOf(address(this)));
         }
-        parlayMarketsAMM.resolveParlay();
 
         _resolve(!isParlayLost());
     }

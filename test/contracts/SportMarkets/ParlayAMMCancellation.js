@@ -1148,55 +1148,55 @@ contract('ParlayAMM', (accounts) => {
 		describe('Multi-collateral exercise whole parlay with all cancellation', () => {
 			beforeEach(async () => {
 				await fastForward(game1NBATime - (await currentTime()) - SECOND);
-                // await fastForward((await currentTime()) - SECOND);
-                answer = await SportPositionalMarketManager.numActiveMarkets();
-                assert.equal(answer.toString(), '15');
-                let totalSUSDToPay = toUnit('10');
-                parlayPositions = ['1', '1', '1', '1', '1'];
-                let parlayMarketsAddress = [];
-                for (let i = 0; i < parlayMarkets.length; i++) {
-                    parlayMarketsAddress[i] = parlayMarkets[i].address;
-                }
-                let slippage = toUnit('0.01');
-                let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
-                    parlayMarketsAddress,
-                    parlayPositions,
-                    totalSUSDToPay,
-                    testUSDC.address
-                );
+				// await fastForward((await currentTime()) - SECOND);
+				answer = await SportPositionalMarketManager.numActiveMarkets();
+				assert.equal(answer.toString(), '15');
+				let totalSUSDToPay = toUnit('10');
+				parlayPositions = ['1', '1', '1', '1', '1'];
+				let parlayMarketsAddress = [];
+				for (let i = 0; i < parlayMarkets.length; i++) {
+					parlayMarketsAddress[i] = parlayMarkets[i].address;
+				}
+				let slippage = toUnit('0.01');
+				let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
+					parlayMarketsAddress,
+					parlayPositions,
+					totalSUSDToPay,
+					testUSDC.address
+				);
 
-                console.log('totalSUSDToPay: ' + totalSUSDToPay / 1e18);
-                console.log('collateral quote: ' + result[0] / 1e6);
+				console.log('totalSUSDToPay: ' + totalSUSDToPay / 1e18);
+				console.log('collateral quote: ' + result[0] / 1e6);
 
-                let minimumReceived = await multiCollateralOnOffRamp.getMinimumReceived(
-                    testUSDC.address,
-                    toUnitSix(result[0] / 1e6)
-                );
-                console.log('minimum received sUSD for USDC ' + minimumReceived / 1e18);
+				let minimumReceived = await multiCollateralOnOffRamp.getMinimumReceived(
+					testUSDC.address,
+					toUnitSix(result[0] / 1e6)
+				);
+				console.log('minimum received sUSD for USDC ' + minimumReceived / 1e18);
 
-                // 	await multiCollateralOnOffRamp.setSupportedAMM(first, true, { from: owner });
-                // 	await multiCollateralOnOffRamp.onrampWithEth(toUnit(minimumNeeded / 1e18), {
-                // 		from: first,
-                // 		value: toUnit(minimumNeeded / 1e18),
-                // 	});
+				// 	await multiCollateralOnOffRamp.setSupportedAMM(first, true, { from: owner });
+				// 	await multiCollateralOnOffRamp.onrampWithEth(toUnit(minimumNeeded / 1e18), {
+				// 		from: first,
+				// 		value: toUnit(minimumNeeded / 1e18),
+				// 	});
 
-                let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
-                    parlayMarketsAddress,
-                    parlayPositions,
-                    totalSUSDToPay,
-                    slippage,
-                    result[2],
-                    testUSDC.address,
-                    ZERO_ADDRESS,
-                    { from: first }
-                );
-                // console.log("event: \n", buyParlayTX.logs[0]);
+				let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
+					parlayMarketsAddress,
+					parlayPositions,
+					totalSUSDToPay,
+					slippage,
+					result[2],
+					testUSDC.address,
+					ZERO_ADDRESS,
+					{ from: first }
+				);
+				// console.log("event: \n", buyParlayTX.logs[0]);
 
-                assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
-                    account: first,
-                    sUSDPaid: totalSUSDToPay,
-                    amount: result[2],
-                });
+				assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+					account: first,
+					sUSDPaid: totalSUSDToPay,
+					amount: result[2],
+				});
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
 				parlaySingleMarketAddress = activeParlays[0];
 				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());

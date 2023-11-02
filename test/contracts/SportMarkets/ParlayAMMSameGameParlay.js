@@ -239,7 +239,7 @@ contract('ParlayAMM', (accounts) => {
 	let safeBoxImpact = toUnit('0.02');
 	let minUSDAmount = '10';
 	let maxSupportedAmount = '20000';
-	let maxSupportedOdd = '0.05';
+	let maxSupportedOdd = '0.001';
 
 	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 	let parlayMarkets = [];

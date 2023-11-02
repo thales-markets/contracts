@@ -42,6 +42,7 @@ contract ParlayMarket is OwnedWithInit {
     uint public sUSDPaid;
     uint public totalResultQuote;
     uint public numOfSportMarkets;
+    uint public numOfCancelledMarkets;
     uint public numOfResolvedSportMarkets;
     uint public numOfAlreadyExercisedSportMarkets;
 
@@ -316,13 +317,14 @@ contract ParlayMarket is OwnedWithInit {
             uint result = uint(currentSportMarket.result());
             bool isResolved = currentSportMarket.resolved();
             if (isResolved) {
-                numOfResolvedSportMarkets = numOfResolvedSportMarkets + 1;
+                ++numOfResolvedSportMarkets;
                 sportMarket[_idx].resolved = isResolved;
                 sportMarket[_idx].result = result;
                 sportMarket[_idx].hasWon = result == (sportMarket[_idx].position + 1);
                 if (result == 0) {
                     (totalResultQuote, noSkewTotalQuote) = _getCancellQuotesForMarketIndex(_idx);
                     sportMarket[_idx].isCancelled = true;
+                    ++numOfCancelledMarkets;
                 }
             }
         }
@@ -340,7 +342,11 @@ contract ParlayMarket is OwnedWithInit {
     }
 
     function _recalculateAmount() internal view returns (uint recalculated) {
-        recalculated = ((sUSDPaid * ONE * ONE) / totalResultQuote) / ONE;
+        if (numOfCancelledMarkets == numOfResolvedSportMarkets) {
+            recalculated = (sUSDPaid * (ONE + parlayMarketsAMM.safeBoxImpact())) / ONE;
+        } else {
+            recalculated = ((sUSDPaid * ONE * ONE) / totalResultQuote) / ONE;
+        }
     }
 
     function _resolve(bool _userWon) internal {

@@ -589,8 +589,8 @@ contract('SportsAMM', (accounts) => {
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));

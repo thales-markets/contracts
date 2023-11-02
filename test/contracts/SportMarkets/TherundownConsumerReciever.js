@@ -756,8 +756,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(game1NBATime, await TherundownConsumerDeployed.gameOnADate(gameid1));
@@ -987,8 +987,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
@@ -1815,7 +1815,7 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
@@ -1971,7 +1971,7 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
@@ -2131,7 +2131,7 @@ contract('TheRundownConsumer', (accounts) => {
 			);
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
@@ -2272,7 +2272,7 @@ contract('TheRundownConsumer', (accounts) => {
 			);
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
@@ -2416,7 +2416,7 @@ contract('TheRundownConsumer', (accounts) => {
 			);
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
@@ -2824,8 +2824,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
@@ -3038,8 +3038,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -3118,8 +3118,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -3240,8 +3240,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -3353,8 +3353,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -3466,8 +3466,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -3590,8 +3590,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -3720,8 +3720,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -3887,8 +3887,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -4066,8 +4066,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -4276,8 +4276,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -4708,8 +4708,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -4871,8 +4871,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 		assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 		assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-		assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-		assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+		assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+		assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 		assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 		assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -5140,8 +5140,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -5223,8 +5223,8 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
 			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -5245,7 +5245,7 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal('Atlanta Hawks', game.homeTeam);
 			assert.equal('Charlotte Hornets', game.awayTeam);
 
-			assert.bnEqual(gameTime, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(gameTime, await TherundownConsumerDeployed.getGameStartTime(gameid1));
 
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'GameCreated', {
@@ -5298,14 +5298,14 @@ contract('TheRundownConsumer', (accounts) => {
 			// market not paused
 			assert.equal(false, await deployedMarket.paused());
 
-			assert.bnNotEqual(gameTime, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnNotEqual(gameTime, await TherundownConsumerDeployed.getGameStartTime(gameid1));
 
 			maturity = await deployedMarket.times();
 			var maturityAfter = maturity[0];
 			var expiryAfter = maturity[1];
 
-			assert.bnNotEqual(maturityBefore, await gamesQueue.gameStartPerGameId(gameid1));
-			assert.bnEqual(maturityAfter, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnNotEqual(maturityBefore, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(maturityAfter, await TherundownConsumerDeployed.getGameStartTime(gameid1));
 
 			// updated values
 			console.log('Maturity before' + parseInt(maturityBefore));

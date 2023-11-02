@@ -57,7 +57,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     mapping(address => bool) public isDoubleChance;
     bool public override isDoubleChanceSupported;
     mapping(address => address[]) public doubleChanceMarketsByParent;
-    mapping(uint => bool) public doesSportSupportDoubleChance;
+    mapping(uint => bool) public override doesSportSupportDoubleChance;
     address public playerProps;
 
     /* ========== CONSTRUCTOR ========== */

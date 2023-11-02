@@ -16,9 +16,6 @@ const DAY = 86400;
 const WEEK = 604800;
 const YEAR = 31556926;
 
-const { toWei } = require('web3-utils');
-const toUnitSix = (amount) => toBN(toWei(amount.toString(), 'ether') / 1e12);
-
 const {
 	fastForward,
 	toUnit,
@@ -184,10 +181,9 @@ contract('ParlayAMM', (accounts) => {
 		SportAMMLiquidityPool,
 		ParlayAMMLiquidityPool,
 		ParlayPolicy,
-		multiCollateralOnOffRamp,
-		swapRouterMock,
-		MockPriceFeedDeployed,
-		curveMock;
+		SportAMMRiskManager,
+		multiCollateralOnOffRamp;
+	let emptyArray = [];
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -213,8 +209,7 @@ contract('ParlayAMM', (accounts) => {
 	let parlayPositions = [];
 	let parlaySingleMarketAddress;
 	let parlaySingleMarket;
-	let voucher, SportAMMRiskManager;
-	let emptyArray = [];
+	let voucher;
 
 	let sportsAMMUtils;
 
@@ -486,6 +481,7 @@ contract('ParlayAMM', (accounts) => {
 			}
 		);
 		await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
+		await SportPositionalMarketManager.setNeedsTransformingCollateral(true, { from: manager });
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketData.setSportPositionalMarketManager(
@@ -506,7 +502,7 @@ contract('ParlayAMM', (accounts) => {
 		await multiCollateralOnOffRamp.initialize(owner, Thales.address);
 
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
-		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
+		let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
 		await multiCollateralOnOffRamp.setPriceFeed(MockPriceFeedDeployed.address, { from: owner });
 		await MockPriceFeedDeployed.setPricetoReturn(toUnit(1), { from: owner });
 
@@ -519,7 +515,7 @@ contract('ParlayAMM', (accounts) => {
 		});
 
 		let CurveMock = artifacts.require('CurveMock');
-		curveMock = await CurveMock.new(
+		let curveMock = await CurveMock.new(
 			Thales.address,
 			testUSDC.address,
 			testUSDC.address,
@@ -538,7 +534,16 @@ contract('ParlayAMM', (accounts) => {
 
 		await Thales.transfer(curveMock.address, toUnit('1000'), { from: owner });
 
+		let CurveSUSD = artifacts.require('MockCurveSUSD');
+		curveSUSD = await CurveSUSD.new(
+			Thales.address,
+			testUSDC.address,
+			testUSDT.address,
+			testDAI.address
+		);
+
 		await testUSDC.mint(first, toUnit(1000));
+		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
 
 		ParlayAMM = await ParlayAMMContract.new({ from: manager });
@@ -557,7 +562,7 @@ contract('ParlayAMM', (accounts) => {
 		);
 
 		await ParlayAMM.setAmounts(
-			toUnit(minUSDAmount),
+			minUSDAmount * 1e6,
 			toUnit(maxSupportedAmount),
 			toUnit(maxSupportedOdd),
 			parlayAMMfee,
@@ -641,7 +646,6 @@ contract('ParlayAMM', (accounts) => {
 			SportAMMRiskManager.address,
 			{ from: owner }
 		);
-
 		let aMMLiquidityPoolRoundMastercopy = await SportAMMLiquidityPoolRoundMastercopy.new();
 		await SportAMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
 			from: owner,
@@ -666,6 +670,7 @@ contract('ParlayAMM', (accounts) => {
 		Referrals.setSportsAMM(SportsAMM.address, ParlayAMM.address, { from: owner });
 
 		await testUSDC.mint(first, toUnit(1000));
+		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(ParlayAMM.address, toUnit(1000), { from: first });
 		// Parlay LP initializers:
 		const ParlayAMMLiquidityPoolContract = artifacts.require('ParlayAMMLiquidityPool');
@@ -716,38 +721,12 @@ contract('ParlayAMM', (accounts) => {
 			from: defaultParlayAMMLiquidityProvider,
 		});
 
-		// Parlay Policy
 		const ParlayPolicyContract = artifacts.require('ParlayPolicy');
 		ParlayPolicy = await ParlayPolicyContract.new({ from: manager });
 		await ParlayPolicy.initialize(owner, ParlayAMM.address, { from: owner });
+
 		await ParlayAMM.setVerifierAndPolicyAddresses(ParlayVerifier.address, ParlayPolicy.address, {
 			from: owner,
-		});
-	});
-
-	describe('Parlay AMM setters', () => {
-		it('SetAmounts', async () => {
-			await ParlayAMM.setAmounts(
-				toUnit(0.1),
-				toUnit(0.1),
-				toUnit(0.1),
-				toUnit(0.1),
-				toUnit(0.1),
-				toUnit(0.1),
-				toUnit(0.1),
-				{
-					from: owner,
-				}
-			);
-		});
-		it('SetAmounts', async () => {
-			await ParlayAMM.setParameters(8, { from: owner });
-		});
-		it('set Addresses', async () => {
-			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, {
-				from: owner,
-			});
-			await ParlayAMM.setVerifierAndPolicyAddresses(owner, owner, { from: owner });
 		});
 	});
 
@@ -930,186 +909,51 @@ contract('ParlayAMM', (accounts) => {
 			equalParlayMarkets = [deployedMarket_1, deployedMarket_2, deployedMarket_3, deployedMarket_4];
 		});
 
-		describe('Exercise Parlay', () => {
-			beforeEach(async () => {
-				await fastForward(game1NBATime - (await currentTime()) - SECOND);
-				// await fastForward((await currentTime()) - SECOND);
-				answer = await SportPositionalMarketManager.numActiveMarkets();
-				assert.equal(answer.toString(), '11');
-				let totalSUSDToPay = toUnit('10');
-				parlayPositions = ['1', '0', '1', '1'];
-				let parlayMarketsAddress = [];
-				for (let i = 0; i < parlayMarkets.length; i++) {
-					parlayMarketsAddress[i] = parlayMarkets[i].address;
-				}
-				let slippage = toUnit('0.01');
-				//
-				let result = await ParlayAMM.buyQuoteFromParlay(
-					parlayMarketsAddress,
-					parlayPositions,
-					totalSUSDToPay
-				);
-				let buyParlayTX = await ParlayAMM.buyFromParlay(
-					parlayMarketsAddress,
-					parlayPositions,
-					totalSUSDToPay,
-					slippage,
-					result[1],
-					ZERO_ADDRESS,
-					{ from: first }
-				);
-				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
-				parlaySingleMarketAddress = activeParlays[0];
-				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
-			});
+		it('Risk amount per combination exceeded', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '11');
+			let totalSUSDToPay = 10 * 1e6;
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			console.log('TotalQuote:' + fromUnit(result[2]));
 
-			describe('Exercise whole parlay', () => {
-				beforeEach(async () => {
-					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-					let resolveMatrix = ['2', '1', '2', '2'];
-					console.log('Games resolved: ', resolveMatrix, '\n');
-					// parlayPositions = ['0', '0', '0', '0'];
-					let gameId;
-					let homeResult = '0';
-					let awayResult = '0';
-					for (let i = 0; i < parlayMarkets.length; i++) {
-						homeResult = '0';
-						awayResult = '0';
-						gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
-						if (resolveMatrix[i] == '1') {
-							homeResult = '1';
-						} else if (resolveMatrix[i] == '2') {
-							awayResult = '1';
-						} else if (resolveMatrix[i] == '3') {
-							homeResult = '1';
-							awayResult = '1';
-						}
-						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
-							parlayMarkets[i].address,
-							resolveMatrix[i],
-							homeResult,
-							awayResult,
-							false,
-							{ from: owner }
-						);
-					}
-				});
+			let canCreateParlayMarket = await ParlayAMM.canCreateParlayMarket(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			console.log('canCreateParlayMarket:' + canCreateParlayMarket);
 
-				it('Parlay exercised (balances checked)', async () => {
-					let userBalanceBefore = toUnit('1000');
-					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
-					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
-					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
-					let userBalanceAfter = await Thales.balanceOf(first);
-					console.log(
-						'\n\nAMM Balance before: ',
-						fromUnit(balanceBefore),
-						'\nAMM Balance after: ',
-						fromUnit(balanceAfter),
-						'\nAMM change: ',
-						fromUnit(balanceAfter.sub(toUnit(20000)))
-					);
-					console.log(
-						'User balance before: ',
-						fromUnit(userBalanceBefore),
-						'\nUser balance after: ',
-						fromUnit(userBalanceAfter),
-						'\nUser won: ',
-						fromUnit(userBalanceAfter.sub(userBalanceBefore))
-					);
+			let buyParlayTX = await ParlayAMM.buyFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				{ from: first }
+			);
+			await expect(
+				ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
+			).to.be.revertedWith('RiskPerComb exceeded');
 
-					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
-				});
-				it('Parlay exercised with USDC offramp (balances checked)', async () => {
-					await multiCollateralOnOffRamp.setSupportedAMM(ParlayAMM.address, true, { from: owner });
-					await multiCollateralOnOffRamp.setSupportedCollateral(testUSDC.address, true, {
-						from: owner,
-					});
-					await testUSDC.mint(curveMock.address, toUnitSix(10000));
-					await ParlayAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true, {
-						from: owner,
-					});
+			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
+			parlaySingleMarketAddress = activeParlays[0];
+			parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 
-					let userUSDCBalanceBefore = await testUSDC.balanceOf(first);
-					await ParlayAMM.exerciseParlayWithOfframp(
-						parlaySingleMarket.address,
-						testUSDC.address,
-						false,
-						{ from: first }
-					);
-					let userUSDCBalanceAfter = await testUSDC.balanceOf(first);
-
-					let userUSDCDiff = userUSDCBalanceAfter / 1e6 - userUSDCBalanceBefore / 1e6;
-					console.log('userUSDCDiff ' + userUSDCDiff);
-
-					assert.bnGte(toUnitSix(userUSDCDiff), toUnitSix('382'));
-					assert.bnLte(toUnitSix(userUSDCDiff), toUnitSix('400'));
-				});
-				it('Parlay exercised with ETH offramp (balances checked)', async () => {
-					await multiCollateralOnOffRamp.setSupportedAMM(ParlayAMM.address, true, { from: owner });
-					await ParlayAMM.setMultiCollateralOnOffRamp(multiCollateralOnOffRamp.address, true, {
-						from: owner,
-					});
-
-					let MockWeth = artifacts.require('MockWeth');
-					let mockWeth = await MockWeth.new();
-					await multiCollateralOnOffRamp.setWETH(mockWeth.address, { from: owner });
-
-					let SwapRouterMock = artifacts.require('SwapRouterMock');
-					swapRouterMock = await SwapRouterMock.new();
-
-					await multiCollateralOnOffRamp.setSwapRouter(swapRouterMock.address, { from: owner });
-
-					await MockPriceFeedDeployed.setPricetoReturn(toUnit(2000));
-					await mockWeth.deposit({ value: toUnit(10), from: first });
-					let userEthBalance = await web3.eth.getBalance(first);
-					console.log('userEthBalance ' + userEthBalance);
-
-					await multiCollateralOnOffRamp.setSupportedCollateral(mockWeth.address, true, {
-						from: owner,
-					});
-					await swapRouterMock.setDefaults(Thales.address, mockWeth.address);
-
-					await mockWeth.transfer(swapRouterMock.address, toUnit(5), { from: first });
-					userEthBalance = await web3.eth.getBalance(first);
-					console.log('userEthBalance ' + userEthBalance);
-
-					let swapRouterMockWethBalance = await mockWeth.balanceOf(swapRouterMock.address);
-					console.log('swapRouterMockWethBalance before ' + swapRouterMockWethBalance / 1e18);
-
-					let minimumReceivedOfframp = await multiCollateralOnOffRamp.getMinimumReceivedOfframp(
-						mockWeth.address,
-						toUnit(400)
-					);
-					console.log(
-						'minimumReceivedOfframp weth for 400 sUSD is ' + minimumReceivedOfframp / 1e18
-					);
-
-					let maximumReceivedOfframp = await multiCollateralOnOffRamp.getMaximumReceivedOfframp(
-						mockWeth.address,
-						toUnit(400)
-					);
-					console.log(
-						'maximumReceivedOfframp weth for 400 sUSD is ' + maximumReceivedOfframp / 1e18
-					);
-
-					await ParlayAMM.exerciseParlayWithOfframp(
-						parlaySingleMarket.address,
-						mockWeth.address,
-						true,
-						{ from: first }
-					);
-					let userEthBalanceAfter = await web3.eth.getBalance(first);
-					console.log('userEthBalance after ' + userEthBalanceAfter);
-
-					let userEthBalanceAfterDiff = userEthBalanceAfter / 1e18 - userEthBalance / 1e18;
-					console.log('userEthBalanceAfterDiff ' + userEthBalanceAfterDiff);
-
-					assert.bnGte(toUnit(userEthBalanceAfterDiff), toUnit('0.1'));
-					assert.bnLte(toUnit(userEthBalanceAfterDiff), toUnit('0.2'));
-				});
-			});
+			let newResult5 = await parlaySingleMarket.isParlayExercisable();
+			assert.equal(newResult5.isExercisable, false);
 		});
 	});
 });

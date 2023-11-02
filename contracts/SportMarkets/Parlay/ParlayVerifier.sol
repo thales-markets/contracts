@@ -572,6 +572,9 @@ contract ParlayVerifier {
                 totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
             }
             if (totalQuote != 0) {
+                if (totalQuote < IParlayMarketsAMM(params.parlayAMM).maxSupportedOdds()) {
+                    totalQuote = IParlayMarketsAMM(params.parlayAMM).maxSupportedOdds();
+                }
                 totalBuyAmount = (params.totalSUSDToPay * ONE) / totalQuote;
             }
 

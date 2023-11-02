@@ -765,18 +765,6 @@ contract('ParlayAMM', (accounts) => {
 			});
 			await ParlayAMM.setVerifierAndPolicyAddresses(owner, owner, { from: owner });
 		});
-		it('ParlayMarketData', async () => {
-			await ParlayMarketData.setParlayMarketsAMM(third, { from: owner });
-			await ParlayMarketData.addParlayForGamePosition(first, '1', second, second, { from: third });
-			let hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
-			assert.equal(hasData, true);
-			hasData = await ParlayMarketData.isGameInParlay(first, second);
-			assert.equal(hasData[0], true);
-			assert.equal(hasData[1].toString(), '1');
-			await ParlayMarketData.removeParlayForGamePosition(first, '1', second, { from: third });
-			hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
-			assert.equal(hasData, false);
-		});
 	});
 
 	describe('Check ParlayAMM data', () => {

@@ -787,7 +787,7 @@
 		"RangedMarketMastercopy": "0xD792b54AD28aeA550AaE878665F6a0De00793E81",
 		"ParlayAMM": "0x0ec9D8Dac2178b041f85f60E3cF13CfaA3d23e0e",
 		"ParlayAMMImplementation": "0x71DA8bB7748Be7e561d92f275FBe9773d62b6ea7",
-		"ParlayMarketMastercopy": "0xc0E5179aD74647Cc5521C3d07bad5FC58a2Bb6e4",
+		"ParlayMarketMastercopy": "0x149bD351b24A8408aC28a7BAEA89f5720a3cbF51",
 		"ParlayMarketData": "0x54822552F51cd15c09bF360958A8e417989a925b",
 		"ParlayMarketDataImplementation": "0x5A027bE94Ec9E05E3f4cDBeba2CFF2c8Fc933F6D",
 		"TherundownConsumerVerifier": "0x86991efb34B0Cf55af38E9dACE3f82CD8B70188F",
@@ -847,13 +847,15 @@
 		"GamesPlayerPropsReceiver": "0xCEfdad247275b0657b2275DF05B677938dd6a43F",
 		"GamesPlayerPropsReceiverImplementation": "0xb36C532C5B497c1F030f5AB31Aa1c4Dc0125DB26",
 		"SportAMMRiskManager": "0x0E4cB41143Ca28618eA7C96c31f193c01Ee4A293",
-		"SportAMMRiskManagerImplementation": "0x1f4D90C6aaD27e382bcD4e8615d065476b19201E",
+		"SportAMMRiskManagerImplementation": "0xFEfaDef0326A6e58bD16d8f91751028f5E804583",
 		"SpeedMarketMastercopy": "0xC2C460dA7Ce3fa819C8A33987bDD19A07CbA1167",
 		"SpeedMarketsAMM": "0x05cD078cECB32d62b304e9028C147bBCdef5Ba24",
 		"SpeedMarketsAMMImplementation": "0xfcE150fd39484880e2935331dbB1934BfB0e0f97",
 		"SpeedMarketsAMMUtils": "0xB3DCB8Cf75B54e5C972C7770c1f20c2d2f363F2E",
 		"SpeedMarketsAMMData": "0x39d1a205F72eC54aca01013c682A1A5C1625f4f6",
-		"SpeedMarketsAMMDataImplementation": "0xC92b9E9083891C11BB6F3005e8d3c4ba2d692A57"
+		"SpeedMarketsAMMDataImplementation": "0xC92b9E9083891C11BB6F3005e8d3c4ba2d692A57",
+		"SportsAMMCancellationPool": "0x43a537D4E17F54C5075f55D31050B65856402CFE",
+		"SportsAMMCancellationPoolImplementation": "0x1B456ce22fdF516558DAE6fd516953248866b093"
 	},
 	"localhost": {
 		"Airdrop": "",

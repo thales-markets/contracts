@@ -198,6 +198,7 @@ contract ParlayMarket is OwnedWithInit {
 
     function expire(address payable beneficiary) external onlyAMM {
         require(phase() == Phase.Expiry, "Ticket Expired");
+        require(!resolved, "Can't expire resolved parlay.");
         emit Expired(beneficiary);
         _selfDestruct(beneficiary);
     }

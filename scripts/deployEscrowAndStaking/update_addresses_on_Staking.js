@@ -83,6 +83,7 @@ async function main() {
 		maxRoyalePercentage,
 		SNXMultiplier,
 		AMMMultiplier,
+		0,
 		{ from: owner.address }
 	);
 	await tx.wait().then((e) => {

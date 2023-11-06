@@ -104,7 +104,8 @@ contract('StakingThales', (accounts) => {
 			'12',
 			'3',
 			'1',
-			'10'
+			'10',
+			'0'
 		);
 		await StakingThalesDeployed.connect(owner).setAddresses(
 			SNXRewardsDeployed.address,

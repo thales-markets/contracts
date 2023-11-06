@@ -195,6 +195,7 @@ async function main() {
 		0,
 		0,
 		AMMMultiplier,
+		0,
 		{ from: owner.address, gasLimit: 5000000 }
 	);
 	await tx.wait().then((e) => {

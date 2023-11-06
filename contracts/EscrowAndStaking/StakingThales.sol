@@ -128,6 +128,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     IStakingThalesBonusRewardsManager public stakingThalesBonusRewardsManager;
     IParlayAMMLiquidityPool public parlayAMMLiquidityPool;
 
+    uint public weeklyDecrement;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -244,6 +246,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param _maxThalesRoyaleRewardsPercentage maximum percentage for rewards for participation in Thales Royale
     /// @param _SNXVolumeRewardsMultiplier multiplier for SNX rewards
     /// @param _AMMVolumeRewardsMultiplier multiplier for protocol volume rewards
+    /// @param _weeklyDecrement decreasing weekly rewards
     function setStakingRewardsParameters(
         uint _fixedReward,
         uint _extraReward,
@@ -252,7 +255,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint _maxAMMVolumeRewardsPercentage,
         uint _maxThalesRoyaleRewardsPercentage,
         uint _SNXVolumeRewardsMultiplier,
-        uint _AMMVolumeRewardsMultiplier
+        uint _AMMVolumeRewardsMultiplier,
+        uint _weeklyDecrement
     ) public onlyOwner {
         fixedPeriodReward = _fixedReward;
         periodExtraReward = _extraReward;
@@ -262,6 +266,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         maxThalesRoyaleRewardsPercentage = _maxThalesRoyaleRewardsPercentage;
         SNXVolumeRewardsMultiplier = _SNXVolumeRewardsMultiplier;
         AMMVolumeRewardsMultiplier = _AMMVolumeRewardsMultiplier;
+        weeklyDecrement = _weeklyDecrement;
 
         emit StakingRewardsParametersChanged(
             _fixedReward,
@@ -271,7 +276,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             _maxAMMVolumeRewardsPercentage,
             _AMMVolumeRewardsMultiplier,
             _maxThalesRoyaleRewardsPercentage,
-            _SNXVolumeRewardsMultiplier
+            _SNXVolumeRewardsMultiplier,
+            _weeklyDecrement
         );
     }
 
@@ -582,6 +588,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             iEscrowThales.totalEscrowBalanceNotIncludedInStaking()
         );
 
+        if (weeklyDecrement > 0) {
+            fixedPeriodReward = (fixedPeriodReward * weeklyDecrement) / ONE;
+            periodExtraReward = (periodExtraReward * weeklyDecrement) / ONE;
+        }
         //Actions taken on every closed period
         currentPeriodRewards = fixedPeriodReward;
         _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
@@ -985,7 +995,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint maxAMMVolumeRewardsPercentage,
         uint maxThalesRoyaleRewardsPercentage,
         uint SNXVolumeRewardsMultiplier,
-        uint AMMVolumeRewardsMultiplier
+        uint AMMVolumeRewardsMultiplier,
+        uint weeklyDecrement
     );
     event AddressesChanged(
         address SNXRewards,

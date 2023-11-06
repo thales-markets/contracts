@@ -450,6 +450,12 @@
         "internalType": "uint256",
         "name": "AMMVolumeRewardsMultiplier",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "weeklyDecrement",
+        "type": "uint256"
       }
     ],
     "name": "StakingRewardsParametersChanged",
@@ -1871,6 +1877,11 @@
         "internalType": "uint256",
         "name": "_AMMVolumeRewardsMultiplier",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_weeklyDecrement",
+        "type": "uint256"
       }
     ],
     "name": "setStakingRewardsParameters",
@@ -2372,6 +2383,21 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "weeklyDecrement",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   }
 ]

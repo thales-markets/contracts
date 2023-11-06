@@ -224,6 +224,7 @@ contract('StakingThales', (accounts) => {
 					'3',
 					'1',
 					'10',
+					'0',
 					{ from: owner }
 				);
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
@@ -326,6 +327,7 @@ contract('StakingThales', (accounts) => {
 					'3',
 					'1',
 					'10',
+					'0',
 					{ from: owner }
 				);
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
@@ -444,6 +446,7 @@ contract('StakingThales', (accounts) => {
 					'3',
 					'1',
 					'10',
+					'0',
 					{ from: owner }
 				);
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
@@ -598,6 +601,7 @@ contract('StakingThales', (accounts) => {
 						'3',
 						'1',
 						'10',
+						'0',
 						{ from: owner }
 					);
 					answer = await StakingThalesDeployed.fixedPeriodReward.call();

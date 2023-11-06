@@ -209,7 +209,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             lpFee
         );
 
-        buyinAmount = (convertedAmount * (ONE - safeBoxImpact - lpFeeForDeltaTime)) / ONE;
+        buyinAmount = (convertedAmount * ONE) / (ONE + safeBoxImpact + lpFeeForDeltaTime);
 
         uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
         require(amountDiff >= buyinAmount, "not enough received via onramp");

@@ -990,7 +990,7 @@ contract('ParlayAMM', (accounts) => {
 				fromUnit(secondAnswer)
 			);
 
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+			assert.eventEqual(buyParlayTX.logs[3], 'ParlayMarketCreated', {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 			});
@@ -1039,7 +1039,7 @@ contract('ParlayAMM', (accounts) => {
 				fromUnit(secondAnswer)
 			);
 
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+			assert.eventEqual(buyParlayTX.logs[3], 'ParlayMarketCreated', {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 			});
@@ -1102,7 +1102,7 @@ contract('ParlayAMM', (accounts) => {
 				fromUnit(secondAnswer)
 			);
 
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+			assert.eventEqual(buyParlayTX.logs[3], 'ParlayMarketCreated', {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 				amount: result[2],
@@ -1148,7 +1148,7 @@ contract('ParlayAMM', (accounts) => {
 				fromUnit(secondAnswer)
 			);
 
-			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+			assert.eventEqual(buyParlayTX.logs[3], 'ParlayMarketCreated', {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 				amount: result[2],

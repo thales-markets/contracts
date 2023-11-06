@@ -587,6 +587,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             if (referrerFeeByTier > 0) {
                 referrerShare = (_sUSDPaid * referrerFeeByTier) / ONE;
                 sUSD.safeTransfer(referrer, referrerShare);
+                emit ReferrerPaid(referrer, msg.sender, referrerShare, _sUSDPaid);
             }
         }
         safeBoxAmount = _getSafeBoxAmount(_sUSDPaid, sUSDAfterFees, msg.sender);

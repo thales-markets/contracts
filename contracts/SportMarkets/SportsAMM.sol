@@ -615,8 +615,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         minSupportedOdds = _minSupportedOdds;
         maxSupportedOdds = _maxSupportedOdds;
         safeBoxImpact = _safeBoxImpact;
-        //TODO: deprecated
-        //referrerFee = _referrerFee;
         thresholdForOddsUpdate = _threshold;
 
         emit ParametersUpdated(
@@ -1015,6 +1013,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             if (referrerFeeByTier > 0) {
                 referrerShare = (sUSDPaid * referrerFeeByTier) / ONE;
                 sUSD.safeTransfer(referrer, referrerShare);
+                emit ReferrerPaid(referrer, msg.sender, referrerShare, sUSDPaid);
             }
         }
         uint safeBoxShare;

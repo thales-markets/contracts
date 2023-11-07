@@ -59,6 +59,8 @@ interface ISportPositionalMarket {
 
     function isChild() external view returns (bool);
 
+    function optionsInitialize() external view returns (bool);
+
     function tags(uint idx) external view returns (uint);
 
     function getTags() external view returns (uint tag1, uint tag2);
@@ -66,6 +68,8 @@ interface ISportPositionalMarket {
     function getTagsLength() external view returns (uint tagsLength);
 
     function getParentMarketPositions() external view returns (IPosition position1, IPosition position2);
+
+    function getParentMarketPositionsUint() external view returns (uint position1, uint position2);
 
     function getStampedOdds()
         external

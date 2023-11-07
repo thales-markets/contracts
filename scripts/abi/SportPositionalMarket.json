@@ -502,6 +502,24 @@
   },
   {
     "inputs": [],
+    "name": "getParentMarketPositionsUint",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "position1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position2",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getStampedOdds",
     "outputs": [
       {
@@ -658,6 +676,11 @@
             "internalType": "bool",
             "name": "isDoubleChance",
             "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "positionMastercopy",
+            "type": "address"
           }
         ],
         "internalType": "struct SportPositionalMarket.SportPositionalMarketParameters",
@@ -799,6 +822,19 @@
   },
   {
     "inputs": [],
+    "name": "optionsInitialize",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -844,6 +880,19 @@
         "internalType": "enum ISportPositionalMarket.Phase",
         "name": "",
         "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "positionMastercopy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

@@ -60,5 +60,5 @@ interface ITherundownConsumerVerifier {
 
     function getStringIDsFromBytesArrayIDs(bytes32[] memory _ids) external view returns (string[] memory);
 
-    function convertUintToString(uint8[] memory _options) external view returns (string[] memory);
+    function convertUintToString(uint _value) external view returns (string memory);
 }

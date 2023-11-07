@@ -48,14 +48,12 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
     /// @param _gameIds for which gameids market is created (Boston vs Miami etc.)
     /// @param _playerIds for which playerids market is created (12345, 678910 etc.)
     /// @param _options for which options market is created (points, assists, etc.)
-    /// @param _names for which player names market is created (Jimmy Buttler etc.)
     /// @param _lines number of points assists per option
     /// @param _linesOdds odds for lines
     function fulfillPlayerProps(
         bytes32[] memory _gameIds,
-        bytes32[] memory _playerIds,
+        uint[] memory _playerIds,
         uint8[] memory _options,
-        string[] memory _names,
         uint16[] memory _lines,
         int24[] memory _linesOdds
     ) external isAddressWhitelisted {
@@ -67,7 +65,6 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
                     _gameIds[i],
                     _playerIds[i],
                     _options[i],
-                    _names[i],
                     _lines[i],
                     _linesOdds
                 );
@@ -104,7 +101,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
     /// @param _statuses resolved statuses
     function fulfillResultOfPlayerProps(
         bytes32[] memory _gameIds,
-        bytes32[] memory _playerIds,
+        uint[] memory _playerIds,
         uint8[] memory _options,
         uint16[] memory _scores,
         uint8[] memory _statuses
@@ -154,9 +151,8 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
     function _castToPlayerProps(
         uint index,
         bytes32 _gameId,
-        bytes32 _playerId,
+        uint _playerId,
         uint8 _option,
-        string memory _name,
         uint16 _line,
         int24[] memory _linesOdds
     ) internal returns (IGamesPlayerProps.PlayerProps memory) {
@@ -165,7 +161,6 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
                 _gameId,
                 _playerId,
                 _option,
-                _name,
                 _line,
                 _linesOdds[index * 2],
                 _linesOdds[index * 2 + 1]
@@ -174,7 +169,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
 
     function _castToPlayerPropsResolver(
         bytes32 _gameId,
-        bytes32 _playerId,
+        uint _playerId,
         uint8 _option,
         uint16 _score,
         uint8 _statusId

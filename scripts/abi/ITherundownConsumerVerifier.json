@@ -210,17 +210,17 @@
   {
     "inputs": [
       {
-        "internalType": "uint8[]",
-        "name": "_options",
-        "type": "uint8[]"
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
       }
     ],
     "name": "convertUintToString",
     "outputs": [
       {
-        "internalType": "string[]",
+        "internalType": "string",
         "name": "",
-        "type": "string[]"
+        "type": "string"
       }
     ],
     "stateMutability": "view",

@@ -277,7 +277,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @return invalidOddsArray invalid odds for market
     function getPlayerPropForOption(
         bytes32[] memory _gameIds,
-        bytes32[] memory _playerIds,
+        uint[] memory _playerIds,
         uint8[] memory _optionIds
     )
         public
@@ -558,35 +558,23 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         }
     }
 
-    function convertUintToString(uint8[] memory _numbers) public pure returns (string[] memory strings) {
-        strings = new string[](_numbers.length);
-
-        for (uint256 i = 0; i < _numbers.length; i++) {
-            strings[i] = _uintToString(_numbers[i]);
-        }
-    }
-
-    function _uintToString(uint8 num) internal pure returns (string memory) {
-        if (num == 0) {
+    // Function to convert a uint to a string
+    function convertUintToString(uint value) internal pure returns (string memory) {
+        if (value == 0) {
             return "0";
         }
-
-        uint8 tempNum = num;
-        uint8 digits;
-
-        while (tempNum != 0) {
+        uint temp = value;
+        uint digits;
+        while (temp != 0) {
             digits++;
-            tempNum /= 10;
+            temp /= 10;
         }
-
         bytes memory buffer = new bytes(digits);
-
-        while (num != 0) {
-            digits--;
-            buffer[digits] = bytes1(uint8(48 + (num % 10))); // Convert to ASCII
-            num /= 10;
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint(value % 10)));
+            value /= 10;
         }
-
         return string(buffer);
     }
 

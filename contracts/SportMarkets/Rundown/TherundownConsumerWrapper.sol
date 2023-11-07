@@ -233,21 +233,22 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /// @notice Request odds update for specific player props when triggered by a market address
     /// @param _marketAddress Market address that triggered the update
+    // Function to convert an array of uint values to an array of strings
     function callUpdateOddsForSpecificPlayerProps(address _marketAddress) external whenNotPaused {
         require(msg.sender == sportsAMM, "Only Sports AMM can call this function");
         if (linkToken.balanceOf(address(this)) >= paymentOdds) {
             // Get player props data for the market
-            (address _parent, bytes32 _gameId, bytes32 _playerId, uint8 _optionId) = playerProps.getPlayerPropsDataForMarket(
+            (address _parent, bytes32 _gameId, uint _playerId, uint8 _optionId) = playerProps.getPlayerPropsDataForMarket(
                 _marketAddress
             );
 
             // Create arrays with single elements for filtering
             bytes32[] memory _gameIds = new bytes32[](1);
             _gameIds[0] = _gameId;
-            bytes32[] memory _playerIds = new bytes32[](1);
-            _playerIds[0] = _playerId;
-            uint8[] memory _optionIds = new uint8[](1);
-            _optionIds[0] = _optionId;
+            string[] memory _playerIdStrings = new string[](1);
+            _playerIdStrings[0] = verifier.convertUintToString(_playerId);
+            string[] memory _optionIdStrings = new string[](1);
+            _optionIdStrings[0] = verifier.convertUintToString(uint(_optionId));
 
             // Get sport and date information
             (uint _sportId, uint _date, ) = consumer.getGamePropsForOdds(_parent);
@@ -258,8 +259,8 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
                 _sportId,
                 _date,
                 verifier.getStringIDsFromBytesArrayIDs(_gameIds),
-                verifier.getStringIDsFromBytesArrayIDs(_playerIds),
-                verifier.convertUintToString(_optionIds)
+                _playerIdStrings, // Use the converted strings
+                _optionIdStrings // Use the converted strings
             );
 
             // Emit an event to log the update request
@@ -589,7 +590,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint256 _date,
         address _marketAddress,
         bytes32 _gameId,
-        bytes32 _playerId,
+        uint _playerId,
         uint8 _optionId
     );
 }

@@ -1769,6 +1769,21 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_ccipCollector",
+        "type": "address"
+      }
+    ],
+    "name": "setCrossChainCollector",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_escrowThalesContract",
         "type": "address"
       }

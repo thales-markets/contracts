@@ -327,6 +327,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         );
     }
 
+    function setCrossChainCollector(address _ccipCollector) external onlyOwner {
+        ccipCollector = _ccipCollector;
+    }
+
     /// @notice Set address of Escrow Thales contract
     /// @param _escrowThalesContract address of Escrow Thales contract
     function setEscrow(address _escrowThalesContract) external onlyOwner {

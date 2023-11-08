@@ -128,6 +128,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     IStakingThalesBonusRewardsManager public stakingThalesBonusRewardsManager;
     IParlayAMMLiquidityPool public parlayAMMLiquidityPool;
 
+    address public ccipCollector;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -581,17 +583,37 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         _totalEscrowedAmount = iEscrowThales.totalEscrowedRewards().sub(
             iEscrowThales.totalEscrowBalanceNotIncludedInStaking()
         );
+        if (ccipCollector != address(0)) {
+            currentPeriodRewards = 0;
+            totalStakedLastPeriodEnd = _totalStakedAmount;
+            totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
+            paused = true;
+        } else {
+            //Actions taken on every closed period
+            currentPeriodRewards = fixedPeriodReward;
+            _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
 
-        //Actions taken on every closed period
-        currentPeriodRewards = fixedPeriodReward;
-        _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
+            currentPeriodFees = feeToken.balanceOf(address(this));
 
-        currentPeriodFees = feeToken.balanceOf(address(this));
-
-        totalStakedLastPeriodEnd = _totalStakedAmount;
-        totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
+            totalStakedLastPeriodEnd = _totalStakedAmount;
+            totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
+        }
 
         emit ClosedPeriod(periodsOfStaking, lastPeriodTimeStamp);
+    }
+
+    function updateStakingRewards(
+        uint _currentPeriodRewards,
+        uint _extraRewards,
+        uint _crossChainStakedAmount,
+        uint _crossChainEscrowedAmount
+    ) external {
+        require(msg.sender == ccipCollector, "InvCCIP");
+        currentPeriodRewards = _currentPeriodRewards;
+        _totalUnclaimedRewards = _totalUnclaimedRewards.add(_currentPeriodRewards.add(_extraRewards));
+        totalStakedLastPeriodEnd = _crossChainStakedAmount;
+        totalEscrowedLastPeriodEnd = _crossChainEscrowedAmount;
+        paused = false;
     }
 
     /// @notice Stake the amount of staking token to get weekly rewards

@@ -40,11 +40,7 @@ module.exports = {
 		let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
 		await MockPriceFeedDeployed.setPricetoReturn(10000);
 
-		let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
-		let speedMarketMastercopy = await SpeedMarketMastercopy.new();
-
 		await speedMarketsAMM.initialize(owner, exoticUSD.address);
-		await speedMarketsAMM.setMastercopy(speedMarketMastercopy.address);
 		await speedMarketsAMM.setAmounts(toUnit(5), toUnit(1000));
 		await speedMarketsAMM.setTimes(3600, 86400);
 		await speedMarketsAMM.setMaximumPriceDelays(60, 30);
@@ -52,7 +48,7 @@ module.exports = {
 		await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
 		await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(100));
 		await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('BTC'), toUnit(100));
-		await speedMarketsAMM.setSafeBoxImpact(toUnit(0.02));
+		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05));
 		await speedMarketsAMM.setLPFeeParams(
 			[15, 30, 60, 120],
 			[toUnit(0.18), toUnit(0.13), toUnit(0.08), toUnit(0.05)],
@@ -102,12 +98,6 @@ module.exports = {
 		await referrals.setWhitelistedAddress(speedMarketsAMM.address, true);
 		await referrals.setReferrerFees(toUnit(0.005), toUnit(0.0075), toUnit(0.01));
 
-		let SpeedMarketsAMMUtilsContract = artifacts.require('SpeedMarketsAMMUtils');
-		let speedMarketsAMMUtils = await SpeedMarketsAMMUtilsContract.new();
-		await speedMarketsAMM.setAMMUtils(speedMarketsAMMUtils.address, {
-			from: owner,
-		});
-
 		let AddressManagerContract = artifacts.require('AddressManager');
 		let addressManager = await AddressManagerContract.new();
 
@@ -121,7 +111,20 @@ module.exports = {
 			speedMarketsAMM.address
 		);
 
-		await speedMarketsAMM.setAddressManager(addressManager.address);
+		let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
+		let speedMarketMastercopy = await SpeedMarketMastercopy.new();
+
+		let SpeedMarketsAMMUtilsContract = artifacts.require('SpeedMarketsAMMUtils');
+		let speedMarketsAMMUtils = await SpeedMarketsAMMUtilsContract.new();
+
+		await speedMarketsAMM.setAMMAddresses(
+			speedMarketMastercopy.address,
+			speedMarketsAMMUtils.address,
+			addressManager.address,
+			{
+				from: owner,
+			}
+		);
 
 		return {
 			speedMarketsAMM,

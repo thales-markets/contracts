@@ -5,6 +5,31 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_mastercopy",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "contract SpeedMarketsAMMUtils",
+        "name": "_speedMarketsAMMUtils",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_addressManager",
+        "type": "address"
+      }
+    ],
+    "name": "AMMAddressesChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_whitelistAddress",
         "type": "address"
       },
@@ -16,19 +41,6 @@
       }
     ],
     "name": "AddedIntoWhitelist",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_addressManager",
-        "type": "address"
-      }
-    ],
-    "name": "AddressManagerChanged",
     "type": "event"
   },
   {
@@ -75,43 +87,43 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "market",
+        "name": "_market",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "user",
+        "name": "_user",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "bytes32",
-        "name": "asset",
+        "name": "_asset",
         "type": "bytes32"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "strikeTime",
+        "name": "_strikeTime",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "int64",
-        "name": "strikePrice",
+        "name": "_strikePrice",
         "type": "int64"
       },
       {
         "indexed": false,
         "internalType": "enum SpeedMarket.Direction",
-        "name": "direction",
+        "name": "_direction",
         "type": "uint8"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "buyinAmount",
+        "name": "_buyinAmount",
         "type": "uint256"
       }
     ],
@@ -124,55 +136,55 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "market",
+        "name": "_market",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "user",
+        "name": "_user",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "bytes32",
-        "name": "asset",
+        "name": "_asset",
         "type": "bytes32"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "strikeTime",
+        "name": "_strikeTime",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "int64",
-        "name": "strikePrice",
+        "name": "_strikePrice",
         "type": "int64"
       },
       {
         "indexed": false,
         "internalType": "enum SpeedMarket.Direction",
-        "name": "direction",
+        "name": "_direction",
         "type": "uint8"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "buyinAmount",
+        "name": "_buyinAmount",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "safeBoxImpact",
+        "name": "_safeBoxImpact",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "lpFee",
+        "name": "_lpFee",
         "type": "uint256"
       }
     ],
@@ -185,36 +197,23 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "market",
+        "name": "_market",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "enum SpeedMarket.Direction",
-        "name": "result",
+        "name": "_result",
         "type": "uint8"
       },
       {
         "indexed": false,
         "internalType": "bool",
-        "name": "userIsWinner",
+        "name": "_userIsWinner",
         "type": "bool"
       }
     ],
     "name": "MarketResolved",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "mastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "MastercopyChanged",
     "type": "event"
   },
   {
@@ -314,59 +313,15 @@
         "internalType": "uint256",
         "name": "_safeBoxImpact",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxSkewImpact",
+        "type": "uint256"
       }
     ],
-    "name": "SafeBoxImpactChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "contract SpeedMarketsAMMUtils",
-        "name": "_speedMarketsAMMUtils",
-        "type": "address"
-      }
-    ],
-    "name": "SetAMMUtils",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_pyth",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_referrals",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_safeBox",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_onramper",
-        "type": "address"
-      }
-    ],
-    "name": "SetAddresses",
+    "name": "SafeBoxAndMaxSkewImpactChanged",
     "type": "event"
   },
   {
@@ -1090,6 +1045,19 @@
   },
   {
     "inputs": [],
+    "name": "maxSkewImpact",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maximalTimeToMaturity",
     "outputs": [
       {
@@ -1347,25 +1315,22 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_mastercopy",
+        "type": "address"
+      },
+      {
         "internalType": "contract SpeedMarketsAMMUtils",
         "name": "_speedMarketsAMMUtils",
         "type": "address"
-      }
-    ],
-    "name": "setAMMUtils",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
+      },
       {
         "internalType": "address",
         "name": "_addressManager",
         "type": "address"
       }
     ],
-    "name": "setAddressManager",
+    "name": "setAMMAddresses",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1425,19 +1390,6 @@
       }
     ],
     "name": "setLPFeeParams",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_mastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "setMastercopy",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1541,9 +1493,14 @@
         "internalType": "uint256",
         "name": "_safeBoxImpact",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxSkewImpact",
+        "type": "uint256"
       }
     ],
-    "name": "setSafeBoxImpact",
+    "name": "setSafeBoxAndMaxSkewImpact",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

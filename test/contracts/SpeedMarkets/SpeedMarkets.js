@@ -66,7 +66,7 @@ contract('SpeedMarkets', (accounts) => {
 					ZERO_ADDRESS,
 					{ value: fee }
 				)
-			).to.be.revertedWith('OI cap breached');
+			).to.be.revertedWith('Risk per asset exceeded');
 
 			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(5));
 
@@ -163,6 +163,15 @@ contract('SpeedMarkets', (accounts) => {
 
 			let marketData = await speedMarketsAMMData.getMarketsData([market]);
 			console.log('marketData ' + marketData);
+
+			const lpFeeByDeltaTime = 0.05; // set in init for above 2h market
+			const maxSkewImpact = (await speedMarketsAMM.maxSkewImpact()) / 1e18;
+			const expectedLpFee =
+				lpFeeByDeltaTime +
+				((riskPerAssetAndDirectionData[0].current / 1e18 + marketData[0].buyinAmount / 1e18) /
+					(riskPerAssetAndDirectionData[0].max / 1e18)) *
+					maxSkewImpact;
+			assert.equal(marketData[0].lpFee / 1e18, expectedLpFee.toFixed(5));
 
 			now = await currentTime();
 			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(

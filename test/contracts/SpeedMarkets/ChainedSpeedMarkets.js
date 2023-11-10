@@ -49,13 +49,17 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		let speedMarketMastercopy = await SpeedMarketMastercopy.new();
 
 		await speedMarketsAMM.initialize(owner, exoticUSD.address);
-		await speedMarketsAMM.setMastercopy(speedMarketMastercopy.address);
+		await speedMarketsAMM.setAMMAddresses(
+			speedMarketMastercopy.address,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS
+		);
 		await speedMarketsAMM.setAmounts(toUnit(5), toUnit(500));
 		await speedMarketsAMM.setTimes(3600, 86400);
 		await speedMarketsAMM.setMaximumPriceDelays(60, 60);
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
-		await speedMarketsAMM.setSafeBoxImpact(toUnit(0.02));
+		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05));
 		await speedMarketsAMM.setAssetToPythID(
 			toBytes32('ETH'),
 			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace'

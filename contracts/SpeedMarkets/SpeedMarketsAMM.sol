@@ -25,6 +25,7 @@ import "../interfaces/IStakingThales.sol";
 import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/IAddressManager.sol";
+import "../interfaces/ISpeedMarketsAMM.sol";
 
 import "./SpeedMarket.sol";
 import "./SpeedMarketsAMMUtils.sol";
@@ -320,7 +321,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         IPyth iPyth = IPyth(contractsAddresses.pyth);
         iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(priceUpdateData)}(priceUpdateData);
 
-        PythStructs.Price memory price = iPyth.getPrice(assetToPythId[asset]);
+        PythStructs.Price memory price = iPyth.getPriceUnsafe(assetToPythId[asset]);
 
         require((price.publishTime + maximumPriceDelay) > block.timestamp && price.price > 0, "Stale price");
 
@@ -559,6 +560,16 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             _maturedMarketsPerUser[user].elements.length,
             lpFees.length
         ];
+    }
+
+    /// @notice get parmas for create market
+    function getParams(bytes32 asset) external view returns (ISpeedMarketsAMM.Params memory) {
+        ISpeedMarketsAMM.Params memory params;
+        params.supportedAsset = supportedAsset[asset];
+        params.pythId = assetToPythId[asset];
+        params.safeBoxImpact = safeBoxImpact;
+        params.maximumPriceDelay = maximumPriceDelay;
+        return params;
     }
 
     //////////////////setters/////////////////

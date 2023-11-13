@@ -7,11 +7,18 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "../SpeedMarkets/SpeedMarket.sol";
 
 interface ISpeedMarketsAMM {
+    struct Params {
+        bool supportedAsset;
+        bytes32 pythId;
+        uint safeBoxImpact;
+        uint64 maximumPriceDelay;
+    }
+
     function sUSD() external view returns (IERC20Upgradeable);
 
-    function supportedAsset(bytes32 asset) external view returns (bool);
+    function supportedAsset(bytes32 _asset) external view returns (bool);
 
-    function assetToPythId(bytes32 asset) external view returns (bytes32);
+    function assetToPythId(bytes32 _asset) external view returns (bytes32);
 
     function minBuyinAmount() external view returns (uint);
 
@@ -25,9 +32,9 @@ interface ISpeedMarketsAMM {
 
     function maximumPriceDelayForResolving() external view returns (uint64);
 
-    function timeThresholdsForFees(uint index) external view returns (uint);
+    function timeThresholdsForFees(uint _index) external view returns (uint);
 
-    function lpFees(uint index) external view returns (uint);
+    function lpFees(uint _index) external view returns (uint);
 
     function lpFee() external view returns (uint);
 
@@ -47,5 +54,7 @@ interface ISpeedMarketsAMM {
 
     function whitelistedAddresses(address _wallet) external view returns (bool);
 
-    function getLengths(address user) external view returns (uint[5] memory);
+    function getLengths(address _user) external view returns (uint[5] memory);
+
+    function getParams(bytes32 _asset) external view returns (Params memory);
 }

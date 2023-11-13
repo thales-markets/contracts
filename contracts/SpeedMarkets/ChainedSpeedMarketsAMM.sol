@@ -70,10 +70,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     IAddressManager public addressManager;
 
     // using this to solve stack too deep
-    struct CalcData {
+    struct TempData {
         uint payout;
-        uint safeBoxImpact;
         PythStructs.Price pythPrice;
+        ISpeedMarketsAMM.Params speedAMMParams;
     }
 
     receive() external payable {}
@@ -186,7 +186,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         address referrer,
         IAddressManager.Addresses memory contractsAddresses
     ) internal {
-        require(ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).supportedAsset(asset), "Asset is not supported");
+        TempData memory tempData;
+        tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(asset);
+        require(tempData.speedAMMParams.supportedAsset, "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
         require(timeFrame >= minTimeFrame && timeFrame <= maxTimeFrame, "Wrong time frame");
         require(
@@ -194,31 +196,25 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             "Wrong number of directions"
         );
 
-        CalcData memory calcData;
-        calcData.payout = _getPayout(buyinAmount, directions.length);
-        require(calcData.payout <= maxProfitPerIndividualMarket, "Profit too high");
+        tempData.payout = _getPayout(buyinAmount, directions.length);
+        require(tempData.payout <= maxProfitPerIndividualMarket, "Profit too high");
 
-        calcData.safeBoxImpact = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).safeBoxImpact();
-
-        currentRisk += calcData.payout - (buyinAmount * (ONE + calcData.safeBoxImpact)) / ONE;
+        currentRisk += tempData.payout - (buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;
         require(currentRisk <= maxRisk, "Out of liquidity");
 
         IPyth(contractsAddresses.pyth).updatePriceFeeds{value: IPyth(contractsAddresses.pyth).getUpdateFee(priceUpdateData)}(
             priceUpdateData
         );
 
-        calcData.pythPrice = IPyth(contractsAddresses.pyth).getPrice(
-            ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).assetToPythId(asset)
-        );
+        tempData.pythPrice = IPyth(contractsAddresses.pyth).getPriceUnsafe(tempData.speedAMMParams.pythId);
         require(
-            (calcData.pythPrice.publishTime + ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).maximumPriceDelay()) >
-                block.timestamp &&
-                calcData.pythPrice.price > 0,
+            (tempData.pythPrice.publishTime + tempData.speedAMMParams.maximumPriceDelay) > block.timestamp &&
+                tempData.pythPrice.price > 0,
             "Stale price"
         );
 
         if (transferSusd) {
-            uint totalAmountToTransfer = (buyinAmount * (ONE + calcData.safeBoxImpact)) / ONE;
+            uint totalAmountToTransfer = (buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;
             sUSD.safeTransferFrom(msg.sender, address(this), totalAmountToTransfer);
         }
 
@@ -231,16 +227,16 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 timeFrame,
                 uint64(block.timestamp + timeFrame),
                 uint64(block.timestamp + timeFrame * directions.length), // strike time
-                calcData.pythPrice.price,
+                tempData.pythPrice.price,
                 directions,
                 buyinAmount,
-                calcData.safeBoxImpact
+                tempData.speedAMMParams.safeBoxImpact
             )
         );
 
-        sUSD.safeTransfer(address(csm), calcData.payout);
+        sUSD.safeTransfer(address(csm), tempData.payout);
 
-        _handleReferrerAndSafeBox(referrer, buyinAmount, calcData.safeBoxImpact, contractsAddresses);
+        _handleReferrerAndSafeBox(referrer, buyinAmount, tempData.speedAMMParams.safeBoxImpact, contractsAddresses);
 
         _activeMarkets.add(address(csm));
         _activeMarketsPerUser[msg.sender].add(address(csm));
@@ -255,10 +251,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             asset,
             timeFrame,
             uint64(block.timestamp + timeFrame * directions.length), // strike time
-            calcData.pythPrice.price,
+            tempData.pythPrice.price,
             directions,
             buyinAmount,
-            calcData.safeBoxImpact
+            tempData.speedAMMParams.safeBoxImpact
         );
     }
 

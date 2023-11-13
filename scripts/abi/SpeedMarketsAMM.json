@@ -827,6 +827,47 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getParams",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "supportedAsset",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "pythId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "safeBoxImpact",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "maximumPriceDelay",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct ISpeedMarketsAMM.Params",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "initNonReentrant",
     "outputs": [],

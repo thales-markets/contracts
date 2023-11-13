@@ -181,6 +181,34 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_currentPeriodRewards",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_extraRewards",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_crossChainStakedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_crossChainEscrowedAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateStakingRewards",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "account",
         "type": "address"

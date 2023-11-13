@@ -23,6 +23,7 @@ import "../interfaces/IParlayAMMLiquidityPool.sol";
 import "../interfaces/IThalesAMM.sol";
 import "../interfaces/IPositionalMarketManager.sol";
 import "../interfaces/IStakingThalesBonusRewardsManager.sol";
+import "../interfaces/ICCIPCollector.sol";
 
 /// @title A Staking contract that provides logic for staking and claiming rewards
 contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
@@ -592,6 +593,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             totalStakedLastPeriodEnd = _totalStakedAmount;
             totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
             paused = true;
+            ICCIPCollector(ccipCollector).sendOnClosePeriod(totalStakedLastPeriodEnd, totalEscrowedLastPeriodEnd);
         } else {
             //Actions taken on every closed period
             currentPeriodRewards = fixedPeriodReward;
@@ -611,8 +613,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint _extraRewards,
         uint _crossChainStakedAmount,
         uint _crossChainEscrowedAmount
-    ) external {
+    ) external nonReentrant {
         require(msg.sender == ccipCollector, "InvCCIP");
+        require(paused, "NotPaused");
         currentPeriodRewards = _currentPeriodRewards;
         _totalUnclaimedRewards = _totalUnclaimedRewards.add(_currentPeriodRewards.add(_extraRewards));
         totalStakedLastPeriodEnd = _crossChainStakedAmount;

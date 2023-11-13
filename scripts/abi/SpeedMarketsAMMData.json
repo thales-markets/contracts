@@ -504,6 +504,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "maxSkewImpact",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "safeBoxImpact",
             "type": "uint256"
           },

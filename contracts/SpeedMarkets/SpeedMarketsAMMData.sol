@@ -78,6 +78,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         uint[] timeThresholdsForFees;
         uint[] lpFees;
         uint lpFee;
+        uint maxSkewImpact;
         uint safeBoxImpact;
         bool isAddressWhitelisted;
     }
@@ -228,6 +229,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
                 timeThresholdsForFees,
                 lpFees,
                 ISpeedMarketsAMM(speedMarketsAMM).lpFee(),
+                ISpeedMarketsAMM(speedMarketsAMM).maxSkewImpact(),
                 ISpeedMarketsAMM(speedMarketsAMM).safeBoxImpact(),
                 _walletAddress != address(0) ? ISpeedMarketsAMM(speedMarketsAMM).whitelistedAddresses(_walletAddress) : false
             );

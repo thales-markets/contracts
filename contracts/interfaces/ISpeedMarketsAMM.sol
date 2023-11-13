@@ -38,6 +38,8 @@ interface ISpeedMarketsAMM {
 
     function lpFee() external view returns (uint);
 
+    function maxSkewImpact() external view returns (uint);
+
     function safeBoxImpact() external view returns (uint);
 
     function marketHasCreatedAtAttribute(address _market) external view returns (bool);

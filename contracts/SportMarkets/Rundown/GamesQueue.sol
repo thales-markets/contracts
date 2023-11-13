@@ -17,7 +17,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => bool) public existingGamesInCreatedQueue;
     uint public firstCreated;
     uint public lastCreated;
-    mapping(bytes32 => uint) public gameStartPerGameId;
+    mapping(bytes32 => uint) private gameStartPerGameId;
 
     // resolve games queue
     bytes32[] public unproccessedGames;
@@ -53,7 +53,6 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         gamesCreateQueue[lastCreated] = data;
 
         existingGamesInCreatedQueue[data] = true;
-        gameStartPerGameId[data] = startTime;
 
         emit EnqueueGamesCreated(data, sportsId, lastCreated);
     }
@@ -94,16 +93,6 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit DequeueGamesResolved(data, firstResolved - 1);
     }
 
-    /// @notice update a game start date
-    /// @param _gameId gameId which start date is updated
-    /// @param _date date
-    function updateGameStartDate(bytes32 _gameId, uint _date) public canExecuteFunction {
-        require(_date > block.timestamp, "Date must be in future");
-        require(gameStartPerGameId[_gameId] != 0, "Game not existing");
-        gameStartPerGameId[_gameId] = _date;
-        emit NewStartDateOnGame(_gameId, _date);
-    }
-
     /// @notice sets the consumer contract address, which only owner can execute
     /// @param _consumer address of a consumer contract
     function setConsumerAddress(address _consumer) external onlyOwner {
@@ -132,5 +121,4 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     event DequeueGamesResolved(bytes32 _gameId, uint _index);
     event NewConsumerAddress(address _consumer);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
-    event NewStartDateOnGame(bytes32 _gameId, uint _date);
 }

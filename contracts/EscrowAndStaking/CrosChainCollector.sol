@@ -24,16 +24,17 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
     string private s_lastReceivedText; // Store the last received text.
+
     address public masterCollector;
     address public stakingThales;
     uint64 public masterCollectorChain;
     mapping(uint => uint64) public supportedChains;
+    mapping(uint64 => uint) public chainIndex;
     mapping(uint => address) public collectorForChain;
-    mapping(uint => uint) public lastPeriodForChain;
 
+    mapping(uint => uint) public lastPeriodForChain;
     mapping(uint => mapping(uint => uint)) public chainStakedAmountInPeriod;
     mapping(uint => mapping(uint => uint)) public chainEscrowedAmountInPeriod;
-
     mapping(uint => mapping(uint => uint)) public chainBaseRewardsInPeriod;
     mapping(uint => mapping(uint => uint)) public chainExtraRewardsInPeriod;
 
@@ -45,6 +46,9 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     uint public baseRewardsPerPeriod;
     uint public extraRewardsPerPeriod;
     uint private collectedResultsPerPeriod;
+
+    bool public testingPhase;
+    uint public lastPeriodBeforeTesting;
 
     function initialize(address _router, bool _masterCollector) public initializer {
         setOwner(msg.sender);
@@ -59,6 +63,48 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     receive() external payable {}
 
+    function setTestingPhase(bool _enableTesting) external onlyOwner {
+        if (_enableTesting) {
+            lastPeriodBeforeTesting = period;
+            testingPhase = true;
+            period = 0;
+        } else {
+            testingPhase = false;
+            period = lastPeriodBeforeTesting;
+        }
+    }
+
+    function setCollectorForChain(uint64 _chainId, address _collectorAddress) external onlyOwner {
+        require(masterCollector == address(this), "NonMasterCollector");
+        if (collectorForChain[_chainId] == address(0) && _collectorAddress != address(0)) {
+            supportedChains[numOfActiveCollectors] = _chainId;
+            collectorForChain[_chainId] = _collectorAddress;
+            chainIndex[_chainId] = numOfActiveCollectors;
+            ++numOfActiveCollectors;
+        } else if (collectorForChain[_chainId] != address(0) && _collectorAddress == address(0)) {
+            --numOfActiveCollectors;
+            (collectorForChain[_chainId], supportedChains[chainIndex[_chainId]]) = (
+                collectorForChain[supportedChains[numOfActiveCollectors]],
+                supportedChains[numOfActiveCollectors]
+            );
+            delete collectorForChain[supportedChains[numOfActiveCollectors]];
+            delete supportedChains[numOfActiveCollectors];
+        }
+        emit CollectorForChainSet(_chainId, _collectorAddress);
+    }
+
+    function setMasterCollector(address _masterCollector, uint64 _materCollectorChainId) external onlyOwner {
+        masterCollector = _masterCollector;
+        masterCollectorChain = _materCollectorChainId;
+        if (block.chainid == _materCollectorChainId) {
+            supportedChains[0] = _materCollectorChainId;
+            collectorForChain[_materCollectorChainId] = _masterCollector;
+            chainIndex[_materCollectorChainId] = 0;
+            numOfActiveCollectors = 1;
+        }
+        emit MasterCollectorSet(_masterCollector, _materCollectorChainId);
+    }
+
     /// handle a received message
     function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
         s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
@@ -68,8 +114,18 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
         if (masterCollector == address(this)) {
             uint chainSelector = any2EvmMessage.sourceChainSelector;
-            if (collectorForChain[chainSelector] == sender && lastPeriodForChain[chainSelector] < period) {
-                ++lastPeriodForChain[chainSelector];
+            if (testingPhase) {
+                if (collectorForChain[chainSelector] == sender) {
+                    _calculateRewards(any2EvmMessage.data, chainSelector);
+                }
+                ++collectedResultsPerPeriod;
+                if (collectedResultsPerPeriod == numOfActiveCollectors) {
+                    // broadcast message
+                    _broadcastMessageToAll();
+                    collectedResultsPerPeriod = 0;
+                }
+            } else if (collectorForChain[chainSelector] == sender && lastPeriodForChain[chainSelector] < period) {
+                lastPeriodForChain[chainSelector] = period;
                 _calculateRewards(any2EvmMessage.data, chainSelector);
                 // perform calculations
                 ++collectedResultsPerPeriod;
@@ -93,11 +149,19 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     function _calculateRewards(bytes memory data, uint chainSelector) internal {
         (uint stakedAmount, uint escrowedAmount) = abi.decode(data, (uint, uint));
-        chainStakedAmountInPeriod[period][chainSelector] = stakedAmount;
-        chainEscrowedAmountInPeriod[period][chainSelector] = escrowedAmount;
+        _storeRewards(stakedAmount, escrowedAmount, chainSelector);
+    }
 
-        calculatedStakedAmountForPeriod[period] += stakedAmount;
-        calculatedEscrowedAmountForPeriod[period] += escrowedAmount;
+    function _storeRewards(
+        uint _stakedAmount,
+        uint _escrowedAmount,
+        uint _chainSelector
+    ) internal {
+        chainStakedAmountInPeriod[period][_chainSelector] = _stakedAmount;
+        chainEscrowedAmountInPeriod[period][_chainSelector] = _escrowedAmount;
+
+        calculatedStakedAmountForPeriod[period] += _stakedAmount;
+        calculatedEscrowedAmountForPeriod[period] += _escrowedAmount;
     }
 
     function _broadcastMessageToAll() internal {
@@ -175,8 +239,12 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     function sendOnClosePeriod(uint _totalStakedLastPeriodEnd, uint _totalEscrowedLastPeriodEnd) external {
         require(msg.sender == stakingThales, "InvSender");
-        bytes memory message = abi.encode(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd);
-        _sendMessageToChain(masterCollectorChain, message);
+        if (masterCollector == address(this) && block.chainid == masterCollectorChain) {
+            _storeRewards(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, block.chainid);
+        } else {
+            bytes memory message = abi.encode(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd);
+            _sendMessageToChain(masterCollectorChain, message);
+        }
     }
 
     /// @notice Fetches the details of the last received message.
@@ -242,4 +310,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         address sender, // The address of the sender from the source chain.
         string text // The text that was received.
     );
+
+    event CollectorForChainSet(uint64 chainId, address collectorAddress);
+    event MasterCollectorSet(address masterCollector, uint64 materCollectorChainId);
 }

@@ -30,6 +30,44 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "chainId",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "collectorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "CollectorForChainSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "masterCollector",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "materCollectorChainId",
+        "type": "uint64"
+      }
+    ],
+    "name": "MasterCollectorSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "bytes32",
         "name": "messageId",
@@ -330,6 +368,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "name": "chainIndex",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -442,6 +499,19 @@
   {
     "inputs": [],
     "name": "lastPauseTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastPeriodBeforeTesting",
     "outputs": [
       {
         "internalType": "uint256",
@@ -625,6 +695,42 @@
   {
     "inputs": [
       {
+        "internalType": "uint64",
+        "name": "_chainId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "address",
+        "name": "_collectorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setCollectorForChain",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_masterCollector",
+        "type": "address"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_materCollectorChainId",
+        "type": "uint64"
+      }
+    ],
+    "name": "setMasterCollector",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -644,6 +750,19 @@
       }
     ],
     "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_enableTesting",
+        "type": "bool"
+      }
+    ],
+    "name": "setTestingPhase",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -697,6 +816,19 @@
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "testingPhase",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

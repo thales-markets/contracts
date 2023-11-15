@@ -57,6 +57,10 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         s_router = IRouterClient(_router);
         if (_masterCollector) {
             masterCollector = address(this);
+            supportedChains[0] = uint64(block.chainid);
+            collectorForChain[uint64(block.chainid)] = address(this);
+            chainIndex[uint64(block.chainid)] = 0;
+            numOfActiveCollectors = 1;
             period = 1;
         }
     }
@@ -74,14 +78,19 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         }
     }
 
-    function setCollectorForChain(uint64 _chainId, address _collectorAddress) external onlyOwner {
+    function setCollectorForChain(
+        uint64 _chainId,
+        address _collectorAddress,
+        uint _slot
+    ) external onlyOwner {
         require(masterCollector == address(this), "NonMasterCollector");
-        if (collectorForChain[_chainId] == address(0) && _collectorAddress != address(0)) {
+        require(_slot <= numOfActiveCollectors, "SlotTooBig");
+        if (_slot == numOfActiveCollectors) {
             supportedChains[numOfActiveCollectors] = _chainId;
             collectorForChain[_chainId] = _collectorAddress;
             chainIndex[_chainId] = numOfActiveCollectors;
             ++numOfActiveCollectors;
-        } else if (collectorForChain[_chainId] != address(0) && _collectorAddress == address(0)) {
+        } else if (collectorForChain[_chainId] == address(0) && _collectorAddress == address(0)) {
             --numOfActiveCollectors;
             (collectorForChain[_chainId], supportedChains[chainIndex[_chainId]]) = (
                 collectorForChain[supportedChains[numOfActiveCollectors]],
@@ -89,20 +98,46 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             );
             delete collectorForChain[supportedChains[numOfActiveCollectors]];
             delete supportedChains[numOfActiveCollectors];
+        } else {
+            supportedChains[_slot] = _chainId;
+            collectorForChain[_chainId] = _collectorAddress;
+            chainIndex[_chainId] = _slot;
         }
+        // if (collectorForChain[_chainId] == address(0) && _collectorAddress != address(0)) {
+        //     supportedChains[numOfActiveCollectors] = _chainId;
+        //     collectorForChain[_chainId] = _collectorAddress;
+        //     chainIndex[_chainId] = numOfActiveCollectors;
+        //     ++numOfActiveCollectors;
+        // } else if (collectorForChain[_chainId] != address(0) && _collectorAddress == address(0)) {
+        //     --numOfActiveCollectors;
+        //     (collectorForChain[_chainId], supportedChains[chainIndex[_chainId]]) = (
+        //         collectorForChain[supportedChains[numOfActiveCollectors]],
+        //         supportedChains[numOfActiveCollectors]
+        //     );
+        //     delete collectorForChain[supportedChains[numOfActiveCollectors]];
+        //     delete supportedChains[numOfActiveCollectors];
+        // } else {
+        //     supportedChains[numOfActiveCollectors] = _chainId;
+        //     collectorForChain[_chainId] = _collectorAddress;
+        //     chainIndex[_chainId] = numOfActiveCollectors;
+        //     ++numOfActiveCollectors;
+        // }
         emit CollectorForChainSet(_chainId, _collectorAddress);
     }
 
     function setMasterCollector(address _masterCollector, uint64 _materCollectorChainId) external onlyOwner {
         masterCollector = _masterCollector;
         masterCollectorChain = _materCollectorChainId;
-        if (block.chainid == _materCollectorChainId) {
-            supportedChains[0] = _materCollectorChainId;
-            collectorForChain[_materCollectorChainId] = _masterCollector;
-            chainIndex[_materCollectorChainId] = 0;
-            numOfActiveCollectors = 1;
-        }
+        collectorForChain[_materCollectorChainId] = _masterCollector;
+        supportedChains[0] = _materCollectorChainId;
+        chainIndex[_materCollectorChainId] = 0;
+        numOfActiveCollectors = numOfActiveCollectors == 0 ? 1 : numOfActiveCollectors;
         emit MasterCollectorSet(_masterCollector, _materCollectorChainId);
+    }
+
+    function setCCIPRouter(address _router) external onlyOwner {
+        setRouter(_router);
+        s_router = IRouterClient(_router);
     }
 
     /// handle a received message
@@ -182,14 +217,26 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 calculatedStakedAmountForPeriod[period],
                 calculatedEscrowedAmountForPeriod[period]
             );
-            _sendMessageToChain(supportedChains[i], message);
+            if (i == 0) {
+                _updateRewards(
+                    chainBaseRewards,
+                    chainExtraRewards,
+                    calculatedStakedAmountForPeriod[period],
+                    calculatedEscrowedAmountForPeriod[period]
+                );
+            } else {
+                _sendMessageToChain(supportedChains[i], message);
+            }
         }
-        _updateRewards(
-            chainBaseRewards,
-            chainExtraRewards,
-            calculatedStakedAmountForPeriod[period],
-            calculatedEscrowedAmountForPeriod[period]
-        );
+    }
+
+    function setStakingThales(address _stakingThales) external onlyOwner {
+        stakingThales = _stakingThales;
+    }
+
+    function setPeriodRewards(uint _baseRewardsPerPeriod, uint _extraRewardsPerPeriod) external onlyOwner {
+        baseRewardsPerPeriod = _baseRewardsPerPeriod;
+        extraRewardsPerPeriod = _extraRewardsPerPeriod;
     }
 
     function _sendMessageToChain(uint64 chainSelector, bytes memory _message) internal returns (bytes32 messageId) {
@@ -211,7 +258,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         if (fees > address(this).balance) revert NotEnoughBalance(address(this).balance, fees);
 
         // Send the message through the router and store the returned message ID
-        messageId = s_router.ccipSend(chainSelector, evm2AnyMessage);
+        messageId = s_router.ccipSend{value: fees}(chainSelector, evm2AnyMessage);
 
         // Emit an event with message details
         emit MessageSent(messageId, chainSelector, collectorForChain[chainSelector], _message, address(0), fees);
@@ -239,7 +286,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     function sendOnClosePeriod(uint _totalStakedLastPeriodEnd, uint _totalEscrowedLastPeriodEnd) external {
         require(msg.sender == stakingThales, "InvSender");
-        if (masterCollector == address(this) && block.chainid == masterCollectorChain) {
+        if (masterCollector == address(this)) {
             _storeRewards(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, block.chainid);
         } else {
             bytes memory message = abi.encode(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd);
@@ -284,7 +331,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         if (fees > address(this).balance) revert NotEnoughBalance(address(this).balance, fees);
 
         // Send the message through the router and store the returned message ID
-        messageId = s_router.ccipSend(destinationChainSelector, evm2AnyMessage);
+        messageId = s_router.ccipSend{value: fees}(destinationChainSelector, evm2AnyMessage);
 
         // Emit an event with message details
         emit MessageSent(messageId, destinationChainSelector, receiver, bytes(text), address(0), fees);

@@ -54,6 +54,14 @@ module.exports = {
 				},
 			},
 			{
+				network: 'baseGoerli',
+				chainId: 84531,
+				urls: {
+					apiURL: 'https://api-goerli.basescan.org/api',
+					browserURL: 'https://goerli.basescan.org/',
+				},
+			},
+			{
 				network: 'opbnbtest',
 				chainId: 5611, // Replace with the correct chainId for the "opbnb" network
 				urls: {
@@ -79,7 +87,9 @@ module.exports = {
 			polygonMumbai: POLYGONSCAN_API_KEY,
 			bsc: BSC_API_KEY,
 			arbitrumOne: ARBITRUM_API_KEY,
+			arbitrumGoerli: ARBITRUM_API_KEY,
 			baseMainnet: BASESCAN_API_KEY,
+			baseGoerli: BASESCAN_API_KEY,
 			opbnbtest: OPBNBTEST_API_KEY,
 		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
@@ -241,6 +251,16 @@ module.exports = {
 			chainId: 5611, // Replace with the correct chainId for the "opbnb" network
 			accounts: [PRIVATE_KEY],
 			gasPrice: 20000000000,
+		},
+		arbitrumGoerli: {
+			// gasPrice: 10000,
+			url: 'https://arbitrum-goerli.infura.io/v3/' + INFURA,
+			accounts: [PRIVATE_KEY],
+		},
+		baseGoerli: {
+			gasPrice: 1000000000,
+			url: 'https://base-goerli.publicnode.com',
+			accounts: [PRIVATE_KEY],
 		},
 	},
 

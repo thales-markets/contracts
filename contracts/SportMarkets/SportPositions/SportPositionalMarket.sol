@@ -443,6 +443,12 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             options.draw.initialize(gameDetails.gameLabel, "DRAW", sportsAMM);
         }
         optionsInitialize = true;
+        emit PositionsInitialized(
+            address(this),
+            address(options.home),
+            address(options.away),
+            optionsCount > 2 ? address(options.draw) : address(0)
+        );
     }
 
     /* ---------- Custom oracle configuration ---------- */
@@ -645,4 +651,5 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     event StoredOddsOnCancellation(uint homeOdds, uint awayOdds, uint drawOdds);
     event PauseUpdated(bool _paused);
     event DatesUpdated(uint256 _maturity, uint256 _expiry);
+    event PositionsInitialized(address _market, address _home, address _away, address _draw);
 }

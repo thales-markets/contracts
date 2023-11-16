@@ -857,7 +857,7 @@
 		"MockStaking": "0x5AD0f65B40EDEc972CF981B7e0E9a6Ba77450Fb5",
 		"CCIPRouter": "0xeb52e9ae4a9fb37172978642d4c141ef53876f26",
 		"CrossChainCollector": "0x5E17486203C6c296C872229eb1Ba91C4B42df7CD",
-		"CrossChainCollectorImplementation": "0x23a742D18d6E681893E7dA35133022120de6830B"
+		"CrossChainCollectorImplementation": "0xD7573691787fc08054A5317d981dB79c4e3C8Def"
 	},
 	"arbitrumGoerli": {
 		"MockStaking": "0x0AaAfB7C3FDF2fa1E2c28627B3165C2a1f0A99c0",

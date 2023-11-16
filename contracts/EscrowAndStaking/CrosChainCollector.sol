@@ -53,6 +53,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     uint public numOfMessagesReceived;
     mapping(uint => uint64) public messagesReceivedFromChainSelector;
     mapping(uint => bytes) public messagesReceived;
+    bool public readyToBroadcast;
 
     function initialize(address _router, bool _masterCollector) public initializer {
         setOwner(msg.sender);
@@ -179,9 +180,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 }
                 ++collectedResultsPerPeriod;
                 if (collectedResultsPerPeriod == numOfActiveCollectors) {
+                    readyToBroadcast = true;
                     // broadcast message
-                    _broadcastMessageToAll();
-                    collectedResultsPerPeriod = 0;
                 }
             } else if (collectorForChain[chainSelector] == sender && lastPeriodForChain[chainSelector] < period) {
                 lastPeriodForChain[chainSelector] = period;
@@ -189,10 +189,11 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 // perform calculations
                 ++collectedResultsPerPeriod;
                 if (collectedResultsPerPeriod == numOfActiveCollectors) {
+                    readyToBroadcast = true;
                     // broadcast message
-                    _broadcastMessageToAll();
+                    // _broadcastMessageToAll();
                     ++period;
-                    collectedResultsPerPeriod = 0;
+                    // collectedResultsPerPeriod = 0;
                 }
             }
         } else if (masterCollector == sender) {
@@ -204,6 +205,14 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             abi.decode(any2EvmMessage.sender, (address)), // abi-decoding of the sender address,
             any2EvmMessage.data
         );
+    }
+
+    function broadcastMessageToAll() external onlyOwner {
+        if (readyToBroadcast) {
+            _broadcastMessageToAll();
+            collectedResultsPerPeriod = 0;
+            readyToBroadcast = false;
+        }
     }
 
     function _calculateRewards(bytes memory data, uint chainSelector) internal {

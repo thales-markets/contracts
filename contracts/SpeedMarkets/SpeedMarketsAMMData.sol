@@ -47,7 +47,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         int64[] strikePrices;
         int64[] finalPrices;
         uint buyinAmount;
-        uint payout;
+        uint payoutMultiplier;
         bool resolved;
         bool isUserWinner;
         uint safeBoxImpact;
@@ -170,7 +170,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].finalPrices = marketFinalPrices;
 
             markets[i].buyinAmount = market.buyinAmount();
-            markets[i].payout = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).sUSD().balanceOf(address(market));
+            markets[i].payoutMultiplier = market.payoutMultiplier();
             markets[i].resolved = market.resolved();
             markets[i].isUserWinner = market.isUserWinner();
             markets[i].safeBoxImpact = market.safeBoxImpact();

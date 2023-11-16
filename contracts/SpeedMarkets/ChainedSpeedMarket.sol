@@ -24,6 +24,7 @@ contract ChainedSpeedMarket {
         SpeedMarket.Direction[] _directions;
         uint _buyinAmount;
         uint _safeBoxImpact;
+        uint _payoutMultiplier;
     }
 
     address public user;
@@ -36,6 +37,7 @@ contract ChainedSpeedMarket {
     SpeedMarket.Direction[] public directions;
     uint public buyinAmount;
     uint public safeBoxImpact;
+    uint public payoutMultiplier;
 
     bool public resolved;
     int64[] public finalPrices;
@@ -62,6 +64,7 @@ contract ChainedSpeedMarket {
         directions = params._directions;
         buyinAmount = params._buyinAmount;
         safeBoxImpact = params._safeBoxImpact;
+        payoutMultiplier = params._payoutMultiplier;
         chainedMarketsAMM.sUSD().approve(params._chainedMarketsAMM, type(uint256).max);
         createdAt = block.timestamp;
     }

@@ -253,7 +253,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				marketBalance / 1e18,
 				(buyinAmount * PAYOUT_MULTIPLIER ** numOfDirections).toFixed(5)
 			);
-			assert.equal(marketDataArray[0].payout / 1e18, marketBalance / 1e18);
+			assert.equal(marketDataArray[0].payoutMultiplier / 1e18, PAYOUT_MULTIPLIER);
 
 			console.log('Check default referrer fee');
 			let referrerBalance = await exoticUSD.balanceOf(referrerAddress);

@@ -230,7 +230,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 tempData.pythPrice.price,
                 directions,
                 buyinAmount,
-                tempData.speedAMMParams.safeBoxImpact
+                tempData.speedAMMParams.safeBoxImpact,
+                payoutMultiplier
             )
         );
 

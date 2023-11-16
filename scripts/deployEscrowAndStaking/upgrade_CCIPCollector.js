@@ -126,7 +126,7 @@ async function main() {
 			gasLimit: 15000000,
 		});
 
-		await delay(60000);
+		await delay(10000);
 
 		const CrossChainCollectorImplementation = await getImplementationAddress(
 			ethers.provider,

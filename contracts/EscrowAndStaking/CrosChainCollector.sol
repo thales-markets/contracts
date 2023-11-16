@@ -45,10 +45,14 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     uint public period;
     uint public baseRewardsPerPeriod;
     uint public extraRewardsPerPeriod;
-    uint private collectedResultsPerPeriod;
+    uint public collectedResultsPerPeriod;
 
     bool public testingPhase;
     uint public lastPeriodBeforeTesting;
+
+    uint public numOfMessagesReceived;
+    mapping(uint => uint64) public messagesReceivedFromChainSelector;
+    mapping(uint => bytes) public messagesReceived;
 
     function initialize(address _router, bool _masterCollector) public initializer {
         setOwner(msg.sender);
@@ -140,12 +144,32 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         s_router = IRouterClient(_router);
     }
 
+    function ccipLocalReceive(uint _dummyNumber1, uint _dummyNumber2) external {
+        Client.Any2EVMMessage memory evm2AnyMessage = Client.Any2EVMMessage({
+            messageId: keccak256(abi.encode(_dummyNumber1, _dummyNumber2)),
+            sourceChainSelector: masterCollectorChain,
+            sender: abi.encode(address(this)), // ABI-encoded receiver address
+            data: abi.encode(_dummyNumber1, _dummyNumber2), // ABI-encoded string
+            destTokenAmounts: new Client.EVMTokenAmount[](0) // Empty array indicating no tokens are being sent
+        });
+        _ccipReceive(evm2AnyMessage);
+    }
+
+    function lastMessageFromChainSelector() external view returns (uint64 chainSelector) {
+        if (numOfMessagesReceived > 0) {
+            chainSelector = messagesReceivedFromChainSelector[numOfMessagesReceived - 1];
+        }
+    }
+
     /// handle a received message
     function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
         s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
         // decoding the message
-        s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
+        // s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
         address sender = abi.decode(any2EvmMessage.sender, (address));
+        messagesReceivedFromChainSelector[numOfMessagesReceived] = any2EvmMessage.sourceChainSelector;
+        messagesReceived[numOfMessagesReceived] = any2EvmMessage.data;
+        ++numOfMessagesReceived;
 
         if (masterCollector == address(this)) {
             uint chainSelector = any2EvmMessage.sourceChainSelector;
@@ -178,7 +202,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             any2EvmMessage.messageId,
             any2EvmMessage.sourceChainSelector, // fetch the source chain identifier (aka selector)
             abi.decode(any2EvmMessage.sender, (address)), // abi-decoding of the sender address,
-            abi.decode(any2EvmMessage.data, (string))
+            any2EvmMessage.data
         );
     }
 
@@ -246,7 +270,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array indicating no tokens are being sent
             extraArgs: Client._argsToBytes(
                 // Additional arguments, setting gas limit and non-strict sequencing mode
-                Client.EVMExtraArgsV1({gasLimit: 200_000, strict: false})
+                Client.EVMExtraArgsV1({gasLimit: 2000000, strict: false})
             ),
             // Set the feeToken  address, indicating LINK will be used for fees
             feeToken: address(0)
@@ -319,7 +343,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array indicating no tokens are being sent
             extraArgs: Client._argsToBytes(
                 // Additional arguments, setting gas limit and non-strict sequencing mode
-                Client.EVMExtraArgsV1({gasLimit: 200_000, strict: false})
+                Client.EVMExtraArgsV1({gasLimit: 2000000, strict: false})
             ),
             // Set the feeToken  address, indicating LINK will be used for fees
             feeToken: address(0)
@@ -355,7 +379,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         bytes32 indexed messageId, // The unique ID of the message.
         uint64 indexed sourceChainSelector, // The chain selector of the source chain.
         address sender, // The address of the sender from the source chain.
-        string text // The text that was received.
+        bytes data // The text that was received.
     );
 
     event CollectorForChainSet(uint64 chainId, address collectorAddress);

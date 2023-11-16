@@ -857,19 +857,19 @@
 		"MockStaking": "0x5AD0f65B40EDEc972CF981B7e0E9a6Ba77450Fb5",
 		"CCIPRouter": "0xeb52e9ae4a9fb37172978642d4c141ef53876f26",
 		"CrossChainCollector": "0x5E17486203C6c296C872229eb1Ba91C4B42df7CD",
-		"CrossChainCollectorImplementation": "0x98325F24Bb2F01F32f9D7221234F5c022d8f2D03"
+		"CrossChainCollectorImplementation": "0x23a742D18d6E681893E7dA35133022120de6830B"
 	},
 	"arbitrumGoerli": {
 		"MockStaking": "0x0AaAfB7C3FDF2fa1E2c28627B3165C2a1f0A99c0",
 		"CCIPRouter": "0xE92634289A1841A979C11C2f618B33D376e4Ba85",
 		"CrossChainCollector": "0x5707f76FD45a3F16c404c0D320aD111caA490CB2",
-		"CrossChainCollectorImplementation": "0x1a730524836Ba2d120637e976575A8d02037c781"
+		"CrossChainCollectorImplementation": "0xd5fBfB45Ee2CA203afaCb0854a67Fe3F5a0dBB4b"
 	},
 	"baseGoerli": {
 		"MockStaking": "0x600Ca2c31dD72F1e95d7258D75D463Bde46b92e1",
 		"CCIPRouter": "0xa8c0c11bf64af62cdca6f93d3769b88bdd7cb93d",
 		"CrossChainCollector": "0x61d87e7D861c2D3fE290093D5D785F1D11a8918D",
-		"CrossChainCollectorImplementation": "0x36328be745E828a17881b333248cfE956182695c"
+		"CrossChainCollectorImplementation": "0x1a730524836Ba2d120637e976575A8d02037c781"
 	},
 	"localhost": {
 		"Airdrop": "",

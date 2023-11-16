@@ -87,9 +87,9 @@
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "text",
-        "type": "string"
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
       }
     ],
     "name": "MessageReceived",
@@ -239,6 +239,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_dummyNumber1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_dummyNumber2",
+        "type": "uint256"
+      }
+    ],
+    "name": "ccipLocalReceive",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -409,6 +427,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "collectedResultsPerPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -498,6 +529,19 @@
   },
   {
     "inputs": [],
+    "name": "lastMessageFromChainSelector",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "chainSelector",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "lastPauseTime",
     "outputs": [
       {
@@ -570,6 +614,44 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "messagesReceived",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "messagesReceivedFromChainSelector",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -596,6 +678,19 @@
   {
     "inputs": [],
     "name": "numOfActiveCollectors",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "numOfMessagesReceived",
     "outputs": [
       {
         "internalType": "uint256",

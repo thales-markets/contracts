@@ -593,7 +593,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             totalStakedLastPeriodEnd = _totalStakedAmount;
             totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
             paused = true;
-            ICCIPCollector(ccipCollector).sendOnClosePeriod(totalStakedLastPeriodEnd, totalEscrowedLastPeriodEnd);
+            ICCIPCollector(ccipCollector).sendOnClosePeriod(totalStakedLastPeriodEnd, totalEscrowedLastPeriodEnd, stakingThalesBonusRewardsManager.totalRoundBonusPoints(periodsOfStaking-1));
         } else {
             //Actions taken on every closed period
             currentPeriodRewards = fixedPeriodReward;

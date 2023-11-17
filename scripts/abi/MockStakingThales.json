@@ -54,6 +54,21 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "bonusPoints",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "extraRewards",
     "outputs": [
       {
@@ -77,6 +92,11 @@
       {
         "internalType": "uint256",
         "name": "totalEscrowedLastPeriodEnd",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalBonusPoints",
         "type": "uint256"
       },
       {

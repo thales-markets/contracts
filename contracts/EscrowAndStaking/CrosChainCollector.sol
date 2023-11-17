@@ -55,6 +55,10 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     mapping(uint => bytes) public messagesReceived;
     bool public readyToBroadcast;
 
+    mapping(uint => mapping(uint => uint)) public chainBonusPointsInPeriod;
+    mapping(uint => mapping(uint => uint)) public chainCalculatedBonusPointsInPeriod;
+    mapping(uint => uint) public calculatedBonusPointsForPeriod;
+
     function initialize(address _router, bool _masterCollector) public initializer {
         setOwner(msg.sender);
         initNonReentrant();
@@ -108,25 +112,6 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             collectorForChain[_chainId] = _collectorAddress;
             chainIndex[_chainId] = _slot;
         }
-        // if (collectorForChain[_chainId] == address(0) && _collectorAddress != address(0)) {
-        //     supportedChains[numOfActiveCollectors] = _chainId;
-        //     collectorForChain[_chainId] = _collectorAddress;
-        //     chainIndex[_chainId] = numOfActiveCollectors;
-        //     ++numOfActiveCollectors;
-        // } else if (collectorForChain[_chainId] != address(0) && _collectorAddress == address(0)) {
-        //     --numOfActiveCollectors;
-        //     (collectorForChain[_chainId], supportedChains[chainIndex[_chainId]]) = (
-        //         collectorForChain[supportedChains[numOfActiveCollectors]],
-        //         supportedChains[numOfActiveCollectors]
-        //     );
-        //     delete collectorForChain[supportedChains[numOfActiveCollectors]];
-        //     delete supportedChains[numOfActiveCollectors];
-        // } else {
-        //     supportedChains[numOfActiveCollectors] = _chainId;
-        //     collectorForChain[_chainId] = _collectorAddress;
-        //     chainIndex[_chainId] = numOfActiveCollectors;
-        //     ++numOfActiveCollectors;
-        // }
         emit CollectorForChainSet(_chainId, _collectorAddress);
     }
 
@@ -190,10 +175,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 ++collectedResultsPerPeriod;
                 if (collectedResultsPerPeriod == numOfActiveCollectors) {
                     readyToBroadcast = true;
-                    // broadcast message
-                    // _broadcastMessageToAll();
                     ++period;
-                    // collectedResultsPerPeriod = 0;
                 }
             }
         } else if (masterCollector == sender) {
@@ -211,6 +193,9 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         readyToBroadcast = _setFlag;
         if (!_setFlag) {
             collectedResultsPerPeriod = 0;
+            calculatedStakedAmountForPeriod[period] = 0;
+            calculatedEscrowedAmountForPeriod[period] = 0;
+            calculatedBonusPointsForPeriod[period] = 0;
         }
     }
 
@@ -223,36 +208,46 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     }
 
     function _calculateRewards(bytes memory data, uint chainSelector) internal {
-        (uint stakedAmount, uint escrowedAmount) = abi.decode(data, (uint, uint));
-        _storeRewards(stakedAmount, escrowedAmount, chainSelector);
+        (uint stakedAmount, uint escrowedAmount, uint bonusPoints) = abi.decode(data, (uint, uint, uint));
+        _storeRewards(stakedAmount, escrowedAmount, bonusPoints, chainSelector);
     }
 
     function _storeRewards(
         uint _stakedAmount,
         uint _escrowedAmount,
+        uint _bonusPoints,
         uint _chainSelector
     ) internal {
         chainStakedAmountInPeriod[period][_chainSelector] = _stakedAmount;
         chainEscrowedAmountInPeriod[period][_chainSelector] = _escrowedAmount;
+        chainBonusPointsInPeriod[period][_chainSelector] = _bonusPoints;
 
         calculatedStakedAmountForPeriod[period] += _stakedAmount;
         calculatedEscrowedAmountForPeriod[period] += _escrowedAmount;
+        calculatedBonusPointsForPeriod[period] += _bonusPoints;
+
     }
 
     function _broadcastMessageToAll() internal {
         uint chainBaseRewards;
         uint chainExtraRewards;
+        uint chainBonusPoints;
         bytes memory message;
 
         for (uint i = 0; i < numOfActiveCollectors; i++) {
             chainBaseRewards =
                 (chainStakedAmountInPeriod[period][supportedChains[i]] * baseRewardsPerPeriod) /
                 (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
+            // chainExtraRewards =
+            //     (chainStakedAmountInPeriod[period][supportedChains[i]] * extraRewardsPerPeriod) /
+            //     (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
             chainExtraRewards =
-                (chainStakedAmountInPeriod[period][supportedChains[i]] * extraRewardsPerPeriod) /
-                (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
+                (chainBonusPointsInPeriod[period][supportedChains[i]] * extraRewardsPerPeriod) /
+                (calculatedBonusPointsForPeriod[period]);
+            
             chainBaseRewardsInPeriod[period][supportedChains[i]] = chainBaseRewards;
             chainExtraRewardsInPeriod[period][supportedChains[i]] = chainExtraRewards;
+            // chainCalculatedBonusPointsInPeriod[period][supportedChains[i]] = chainBonusPoints;
             message = abi.encode(
                 chainBaseRewards,
                 chainExtraRewards,
@@ -326,16 +321,16 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         IStakingThales(stakingThales).updateStakingRewards(_baseRewards, _extraRewards, _stakedAmount, _escrowedAmount);
     }
 
-    function sendOnClosePeriod(uint _totalStakedLastPeriodEnd, uint _totalEscrowedLastPeriodEnd) external {
+    function sendOnClosePeriod(uint _totalStakedLastPeriodEnd, uint _totalEscrowedLastPeriodEnd, uint _bonusPoints) external {
         require(msg.sender == stakingThales, "InvSender");
         if (masterCollector == address(this)) {
-            _storeRewards(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, supportedChains[0]);
+            _storeRewards(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, masterCollectorChain);
             ++collectedResultsPerPeriod;
             if (collectedResultsPerPeriod == numOfActiveCollectors) {
                 readyToBroadcast = true;
             }
         } else {
-            bytes memory message = abi.encode(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd);
+            bytes memory message = abi.encode(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints);
             _sendMessageToChain(masterCollectorChain, message);
         }
     }

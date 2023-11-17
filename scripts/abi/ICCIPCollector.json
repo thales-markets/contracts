@@ -10,6 +10,11 @@
         "internalType": "uint256",
         "name": "_totalEscrowedLastPeriodEnd",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalBonusPointsInRound",
+        "type": "uint256"
       }
     ],
     "name": "sendOnClosePeriod",

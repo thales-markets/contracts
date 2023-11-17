@@ -218,6 +218,25 @@
         "type": "uint256"
       }
     ],
+    "name": "calculatedBonusPointsForPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "calculatedEscrowedAmountForPeriod",
     "outputs": [
       {
@@ -332,6 +351,54 @@
       }
     ],
     "name": "chainBaseRewardsInPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chainBonusPointsInPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chainCalculatedBonusPointsInPeriod",
     "outputs": [
       {
         "internalType": "uint256",
@@ -799,6 +866,11 @@
       {
         "internalType": "uint256",
         "name": "_totalEscrowedLastPeriodEnd",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_bonusPoints",
         "type": "uint256"
       }
     ],

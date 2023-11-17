@@ -176,6 +176,11 @@ contract StakingThalesBonusRewardsManager is ProxyOwned, Initializable, ProxyRee
         emit SetUseNewModel(value);
     }
 
+    function setTotalBonusPointsPerRound(uint _round, uint _points) external {
+        require(msg.sender == stakingThales, "InvSender");
+        totalRoundBonusPoints[_round] = _points;
+    }
+
     /// @notice add known vaults array
     function addVaults(address[] calldata _vaults, bool add) external onlyOwner {
         require(_vaults.length > 0, "vaults addresses cannot be empty");

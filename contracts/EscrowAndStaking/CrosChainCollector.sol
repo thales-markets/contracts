@@ -62,7 +62,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     function initialize(address _router, bool _masterCollector) public initializer {
         setOwner(msg.sender);
         initNonReentrant();
-        setRouter(_router);
+        i_router = _router;
         s_router = IRouterClient(_router);
         if (_masterCollector) {
             masterCollector = address(this);
@@ -126,7 +126,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     }
 
     function setCCIPRouter(address _router) external onlyOwner {
-        setRouter(_router);
+        i_router = _router; 
         s_router = IRouterClient(_router);
     }
 

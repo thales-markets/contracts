@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 // import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
-import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
+// import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
@@ -15,8 +15,10 @@ import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
 import "../interfaces/IStakingThales.sol";
 
+import "./CCIPReceiverProxy.sol";
+
 /// @title - Cross Chain Collector contract for Thales staking rewards
-contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard, CCIPReceiver {
+contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard, CCIPReceiverProxy {
     // Custom errors to provide more descriptive revert messages.
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
 
@@ -62,7 +64,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     function initialize(address _router, bool _masterCollector) public initializer {
         setOwner(msg.sender);
         initNonReentrant();
-        i_router = _router;
+        _setRouter(_router);
         s_router = IRouterClient(_router);
         if (_masterCollector) {
             masterCollector = address(this);
@@ -126,7 +128,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     }
 
     function setCCIPRouter(address _router) external onlyOwner {
-        i_router = _router; 
+        _setRouter(_router);
         s_router = IRouterClient(_router);
     }
 

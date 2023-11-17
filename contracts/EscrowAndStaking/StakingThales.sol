@@ -99,9 +99,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     uint public totalStakedLastPeriodEnd;
     uint public totalEscrowedLastPeriodEnd;
-    address public exoticBonds;
+    address private exoticBonds;
 
-    IAddressResolver public addressResolver;
+    IAddressResolver private addressResolver;
 
     address public thalesRangedAMM;
     address public sportsAMM;
@@ -417,16 +417,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
             if (periodsOfStaking < thalesRangedAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
                 volumeforAccount = volumeforAccount.add(thalesRangedAMMVolume[account][i].amount);
-        }
-    }
-
-    /// @notice Get the exotic markets volume for the account
-    /// @param account to get exotic markets volume for
-    /// @return the exotic markets volume for the account
-    function getExoticMarketsVolume(address account) external view returns (uint volumeforAccount) {
-        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-            if (periodsOfStaking < exoticMarketsVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                volumeforAccount = volumeforAccount.add(exoticMarketsVolume[account][i].amount);
         }
     }
 

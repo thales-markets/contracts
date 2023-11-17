@@ -207,6 +207,13 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         );
     }
 
+    function setFlagBroadcastToAll(bool _setFlag) external onlyOwner {
+        readyToBroadcast = _setFlag;
+        if (!_setFlag) {
+            collectedResultsPerPeriod = 0;
+        }
+    }
+
     function broadcastMessageToAll() external onlyOwner {
         if (readyToBroadcast) {
             _broadcastMessageToAll();
@@ -244,6 +251,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             chainExtraRewards =
                 (chainStakedAmountInPeriod[period][supportedChains[i]] * extraRewardsPerPeriod) /
                 (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
+            chainBaseRewardsInPeriod[period][supportedChains[i]] = chainBaseRewards;
+            chainExtraRewardsInPeriod[period][supportedChains[i]] = chainExtraRewards;
             message = abi.encode(
                 chainBaseRewards,
                 chainExtraRewards,
@@ -320,7 +329,11 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     function sendOnClosePeriod(uint _totalStakedLastPeriodEnd, uint _totalEscrowedLastPeriodEnd) external {
         require(msg.sender == stakingThales, "InvSender");
         if (masterCollector == address(this)) {
-            _storeRewards(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, block.chainid);
+            _storeRewards(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, supportedChains[0]);
+            ++collectedResultsPerPeriod;
+            if (collectedResultsPerPeriod == numOfActiveCollectors) {
+                readyToBroadcast = true;
+            }
         } else {
             bytes memory message = abi.encode(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd);
             _sendMessageToChain(masterCollectorChain, message);

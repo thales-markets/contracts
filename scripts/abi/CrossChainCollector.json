@@ -846,6 +846,19 @@
   {
     "inputs": [
       {
+        "internalType": "bool",
+        "name": "_setFlag",
+        "type": "bool"
+      }
+    ],
+    "name": "setFlagBroadcastToAll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_masterCollector",
         "type": "address"

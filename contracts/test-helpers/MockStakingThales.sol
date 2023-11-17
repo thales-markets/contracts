@@ -32,7 +32,11 @@ contract MockStakingThales {
         uint totalBonusPoints,
         address ccipCollector
     ) external {
-        ICCIPCollector(ccipCollector).sendOnClosePeriod(totalStakedLastPeriodEnd, totalEscrowedLastPeriodEnd, totalBonusPoints);
+        ICCIPCollector(ccipCollector).sendOnClosePeriod(
+            totalStakedLastPeriodEnd,
+            totalEscrowedLastPeriodEnd,
+            totalBonusPoints
+        );
     }
 
     function updateStakingRewards(

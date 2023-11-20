@@ -163,8 +163,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
     bool public multicollateralEnabled;
 
-    mapping(address => mapping(uint => uint)) private riskPerMarketAndPosition; //deprecated see SportAMMRiskManager.sol
-
     receive() external payable {}
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
@@ -281,25 +279,17 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bool useAvailable,
         bool useDefaultMinSpread
     ) internal view returns (uint returnQuote) {
-        int skewImpact = 0;
-        if (amount == ONE) {
-            // use last skew impact for parlays quote
-            // TODO write skew impact after last buy into a variable. If none available, use 0.
-            // TODO: consider a global chance where skew impact is always stored on chain rather that calculated
-            skewImpact = 0;
-        } else {
-            if (!useAvailable) {
-                available = availableToBuyFromAMMWithBaseOdds(market, position, baseOdds, 0, false);
-            }
-            if (amount <= available) {
-                uint _availableOtherSide = _getAvailableOtherSide(market, position);
-                skewImpact = _buyPriceImpact(market, position, amount, available, _availableOtherSide);
-            }
+        if (!useAvailable) {
+            available = availableToBuyFromAMMWithBaseOdds(market, position, baseOdds, 0, false);
         }
-        baseOdds = (baseOdds * (ONE + _getMinSpreadToUse(useDefaultMinSpread, market))) / ONE;
+        if (amount <= available) {
+            uint _availableOtherSide = _getAvailableOtherSide(market, position);
+            int skewImpact = _buyPriceImpact(market, position, amount, available, _availableOtherSide);
+            baseOdds = (baseOdds * (ONE + _getMinSpreadToUse(useDefaultMinSpread, market))) / ONE;
 
-        int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
-        returnQuote = ISportPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
+            int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
+            returnQuote = ISportPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
+        }
     }
 
     function _buyFromAMMQuoteDoubleChance(
@@ -457,8 +447,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return odds Returns the default odds for the `_market` including the price impact.
     function getMarketDefaultOdds(address _market, bool isSell) public view returns (uint[] memory odds) {
         odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-        for (uint i = 0; i < odds.length; i++) {
-            odds[i] = buyFromAmmQuote(_market, ISportsAMM.Position(i), ONE);
+        if (isMarketInAMMTrading(_market)) {
+            for (uint i = 0; i < odds.length; i++) {
+                odds[i] = buyFromAmmQuote(_market, ISportsAMM.Position(i), ONE);
+            }
         }
     }
 

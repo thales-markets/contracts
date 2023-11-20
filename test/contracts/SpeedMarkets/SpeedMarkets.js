@@ -6,6 +6,7 @@ const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/init');
+const { getSkewImpact } = require('../../utils/speedMarkets');
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -36,6 +37,7 @@ contract('SpeedMarkets', (accounts) => {
 					toUnit(10),
 					[priceFeedUpdateData],
 					ZERO_ADDRESS,
+					0,
 					{ value: fee }
 				)
 			).to.be.revertedWith('revert');
@@ -50,6 +52,7 @@ contract('SpeedMarkets', (accounts) => {
 					toUnit(10),
 					[priceFeedUpdateData],
 					ZERO_ADDRESS,
+					0,
 					{ value: fee }
 				)
 			).to.be.revertedWith('Asset is not supported');
@@ -64,6 +67,7 @@ contract('SpeedMarkets', (accounts) => {
 					toUnit(11),
 					[priceFeedUpdateData],
 					ZERO_ADDRESS,
+					0,
 					{ value: fee }
 				)
 			).to.be.revertedWith('Risk per asset exceeded');
@@ -78,12 +82,19 @@ contract('SpeedMarkets', (accounts) => {
 					toUnit(6),
 					[priceFeedUpdateData],
 					ZERO_ADDRESS,
+					0,
 					{ value: fee }
 				)
 			).to.be.revertedWith('Risk per direction exceeded');
 
 			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
 			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(100));
+
+			const maxSkewImpact = (await speedMarketsAMM.maxSkewImpact()) / 1e18;
+			let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			let skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
 
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
@@ -92,6 +103,7 @@ contract('SpeedMarkets', (accounts) => {
 				toUnit(10),
 				[priceFeedUpdateData],
 				ZERO_ADDRESS,
+				skewImapct,
 				{ value: fee }
 			);
 
@@ -104,6 +116,11 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			console.log('currentRiskPerAssetAndDirection ' + currentRiskPerAssetAndDirection / 1e18);
 
+			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
+
 			console.log('buy UP for the same amount as previous DOWN');
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
@@ -112,13 +129,14 @@ contract('SpeedMarkets', (accounts) => {
 				toUnit(10),
 				[priceFeedUpdateData],
 				ZERO_ADDRESS,
+				skewImapct,
 				{ value: fee }
 			);
 
 			let riskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'));
 			console.log('riskPerAssetData', riskPerAssetData);
 
-			let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
 				toBytes32('ETH')
 			);
 			console.log('riskPerAssetAndDirectionData', riskPerAssetAndDirectionData);
@@ -133,6 +151,11 @@ contract('SpeedMarkets', (accounts) => {
 			console.log('numActiveMarkets ' + ammData.numActiveMarkets);
 			console.log('numActiveMarketsPerUser ' + ammData.numActiveMarketsPerUser);
 
+			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
+
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				now + 36000,
@@ -140,6 +163,7 @@ contract('SpeedMarkets', (accounts) => {
 				toUnit(10),
 				[priceFeedUpdateData],
 				ZERO_ADDRESS,
+				skewImapct,
 				{ value: fee }
 			);
 
@@ -165,12 +189,10 @@ contract('SpeedMarkets', (accounts) => {
 			console.log('marketData ' + marketData);
 
 			const lpFeeByDeltaTime = 0.05; // set in init for above 2h market
-			const maxSkewImpact = (await speedMarketsAMM.maxSkewImpact()) / 1e18;
 			const expectedLpFee =
 				lpFeeByDeltaTime +
-				((riskPerAssetAndDirectionData[0].current / 1e18 + marketData[0].buyinAmount / 1e18) /
-					(riskPerAssetAndDirectionData[0].max / 1e18)) *
-					maxSkewImpact;
+				getSkewImpact(riskPerAssetAndDirectionData, marketData[0].buyinAmount, maxSkewImpact) /
+					1e18;
 			assert.equal(marketData[0].lpFee / 1e18, expectedLpFee.toFixed(5));
 
 			now = await currentTime();

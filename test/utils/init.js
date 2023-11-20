@@ -1,5 +1,6 @@
 const { toBytes32 } = require('../../index');
 const { toUnit, currentTime } = require('./')();
+const { getSkewImpact } = require('./speedMarkets');
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -126,6 +127,12 @@ module.exports = {
 			}
 		);
 
+		const maxSkewImpact = (await speedMarketsAMM.maxSkewImpact()) / 1e18;
+		let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+			toBytes32('ETH')
+		);
+		let initialSkewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(0), maxSkewImpact);
+
 		return {
 			speedMarketsAMM,
 			speedMarketsAMMData,
@@ -138,6 +145,7 @@ module.exports = {
 			pythId,
 			exoticUSD,
 			referrals,
+			initialSkewImapct,
 			now,
 		};
 	},

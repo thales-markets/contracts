@@ -9,14 +9,22 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const { fastForward, toUnit } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/init');
+const { getSkewImpact } = require('../../utils/speedMarkets');
 
 contract('SpeedMarkets', (accounts) => {
 	const [user] = accounts;
 
 	describe('Test Speed markets ', () => {
 		it('deploy and test', async () => {
-			let { speedMarketsAMM, speedMarketsAMMData, priceFeedUpdateData, fee, mockPyth, pythId } =
-				await speedMarketsInit(accounts);
+			let {
+				speedMarketsAMM,
+				speedMarketsAMMData,
+				priceFeedUpdateData,
+				fee,
+				mockPyth,
+				pythId,
+				initialSkewImapct,
+			} = await speedMarketsInit(accounts);
 
 			await speedMarketsAMM.createNewMarketWithDelta(
 				toBytes32('ETH'),
@@ -25,6 +33,7 @@ contract('SpeedMarkets', (accounts) => {
 				toUnit(10),
 				[priceFeedUpdateData],
 				ZERO_ADDRESS,
+				initialSkewImapct,
 				{ value: fee }
 			);
 
@@ -34,6 +43,12 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			assert.bnEqual(toUnit(10), currestRiskPerAssetAndDirection);
 
+			const maxSkewImpact = (await speedMarketsAMM.maxSkewImpact()) / 1e18;
+			const riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			const skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
+
 			await speedMarketsAMM.createNewMarketWithDelta(
 				toBytes32('ETH'),
 				36000,
@@ -41,6 +56,7 @@ contract('SpeedMarkets', (accounts) => {
 				toUnit(10),
 				[priceFeedUpdateData],
 				ZERO_ADDRESS,
+				skewImapct,
 				{ value: fee }
 			);
 

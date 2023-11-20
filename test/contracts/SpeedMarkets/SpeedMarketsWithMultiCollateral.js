@@ -6,6 +6,7 @@ const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/init');
+const { getSkewImpact } = require('../../utils/speedMarkets');
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -82,6 +83,12 @@ contract('SpeedMarkets', (accounts) => {
 				toUnit('0.01')
 			);
 
+			const maxSkewImpact = (await speedMarketsAMM.maxSkewImpact()) / 1e18;
+			let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			let skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
+
 			await speedMarketsAMM.createNewMarketWithDifferentCollateral(
 				toBytes32('ETH'),
 				now + 36000,
@@ -91,8 +98,14 @@ contract('SpeedMarkets', (accounts) => {
 				toUnit(10),
 				false,
 				ZERO_ADDRESS,
+				skewImapct,
 				{ value: fee, from: user }
 			);
+
+			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
 
 			await speedMarketsAMM.createNewMarketWithDifferentCollateralAndDelta(
 				toBytes32('ETH'),
@@ -103,6 +116,7 @@ contract('SpeedMarkets', (accounts) => {
 				toUnit(10),
 				false,
 				ZERO_ADDRESS,
+				skewImapct,
 				{ value: fee, from: user }
 			);
 

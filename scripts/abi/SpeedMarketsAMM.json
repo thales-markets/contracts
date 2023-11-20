@@ -623,6 +623,11 @@
         "internalType": "address",
         "name": "referrer",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewImpact",
+        "type": "uint256"
       }
     ],
     "name": "createNewMarket",
@@ -661,6 +666,11 @@
         "internalType": "address",
         "name": "referrer",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewImpact",
+        "type": "uint256"
       }
     ],
     "name": "createNewMarketWithDelta",
@@ -709,6 +719,11 @@
         "internalType": "address",
         "name": "referrer",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewImpact",
+        "type": "uint256"
       }
     ],
     "name": "createNewMarketWithDifferentCollateral",
@@ -757,6 +772,11 @@
         "internalType": "address",
         "name": "referrer",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewImpact",
+        "type": "uint256"
       }
     ],
     "name": "createNewMarketWithDifferentCollateralAndDelta",

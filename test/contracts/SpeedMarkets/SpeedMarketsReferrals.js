@@ -11,9 +11,8 @@ contract('SpeedMarketsReferrals', (accounts) => {
 
 	describe('Speed markets referrals ', () => {
 		it('Should referrer receive default fee', async () => {
-			let { speedMarketsAMM, exoticUSD, priceFeedUpdateData, fee, now } = await speedMarketsInit(
-				accounts
-			);
+			let { speedMarketsAMM, exoticUSD, priceFeedUpdateData, fee, initialSkewImapct, now } =
+				await speedMarketsInit(accounts);
 
 			console.log('Create Speed Market with 10 amount and referrer default fee');
 			await speedMarketsAMM.createNewMarket(
@@ -23,6 +22,7 @@ contract('SpeedMarketsReferrals', (accounts) => {
 				toUnit(10),
 				[priceFeedUpdateData],
 				referrerAddress,
+				initialSkewImapct,
 				{ value: fee }
 			);
 
@@ -36,8 +36,15 @@ contract('SpeedMarketsReferrals', (accounts) => {
 		});
 
 		it('Should referrer receive silver fee', async () => {
-			let { speedMarketsAMM, exoticUSD, priceFeedUpdateData, fee, referrals, now } =
-				await speedMarketsInit(accounts);
+			let {
+				speedMarketsAMM,
+				exoticUSD,
+				priceFeedUpdateData,
+				fee,
+				referrals,
+				initialSkewImapct,
+				now,
+			} = await speedMarketsInit(accounts);
 
 			await referrals.setSilverAddress(referrerAddress, true);
 
@@ -49,6 +56,7 @@ contract('SpeedMarketsReferrals', (accounts) => {
 				toUnit(10),
 				[priceFeedUpdateData],
 				referrerAddress,
+				initialSkewImapct,
 				{ value: fee }
 			);
 
@@ -62,8 +70,15 @@ contract('SpeedMarketsReferrals', (accounts) => {
 		});
 
 		it('Should referrer receive gold fee', async () => {
-			let { speedMarketsAMM, exoticUSD, priceFeedUpdateData, fee, referrals, now } =
-				await speedMarketsInit(accounts);
+			let {
+				speedMarketsAMM,
+				exoticUSD,
+				priceFeedUpdateData,
+				fee,
+				referrals,
+				initialSkewImapct,
+				now,
+			} = await speedMarketsInit(accounts);
 
 			await referrals.setGoldAddress(referrerAddress, true);
 
@@ -75,6 +90,7 @@ contract('SpeedMarketsReferrals', (accounts) => {
 				toUnit(10),
 				[priceFeedUpdateData],
 				referrerAddress,
+				initialSkewImapct,
 				{ value: fee }
 			);
 

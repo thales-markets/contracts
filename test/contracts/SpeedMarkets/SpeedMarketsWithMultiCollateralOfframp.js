@@ -23,6 +23,7 @@ contract('SpeedMarkets', (accounts) => {
 				mockPyth,
 				MockPriceFeedDeployed,
 				exoticUSD,
+				initialSkewImapct,
 				now,
 			} = await speedMarketsInit(accounts);
 
@@ -92,6 +93,7 @@ contract('SpeedMarkets', (accounts) => {
 				toUnit(10),
 				false,
 				ZERO_ADDRESS,
+				initialSkewImapct,
 				{ value: fee, from: user }
 			);
 

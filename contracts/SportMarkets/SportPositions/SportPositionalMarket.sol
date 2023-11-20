@@ -87,7 +87,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     ISportPositionalMarket public override parentMarket;
 
     bool public override isDoubleChance;
-    bool public override optionsInitialize;
+    bool public override optionsInitialized;
     address public positionMastercopy;
 
     /* ========== CONSTRUCTOR ========== */
@@ -282,7 +282,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             uint draw
         )
     {
-        if (!optionsInitialize) {
+        if (!optionsInitialized) {
             return (0, 0, 0);
         }
         if (optionsCount > 2) {
@@ -397,7 +397,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _mint(address minter, uint amount) internal {
-        if (!optionsInitialize) {
+        if (!optionsInitialized) {
             _initializeOptions();
         }
         if (isDoubleChance) {
@@ -442,7 +442,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             options.draw = SportPosition(positions[2]);
             options.draw.initialize(gameDetails.gameLabel, "DRAW", sportsAMM);
         }
-        optionsInitialize = true;
+        optionsInitialized = true;
         emit PositionsInitialized(
             address(this),
             address(options.home),

@@ -59,7 +59,7 @@ interface ISportPositionalMarket {
 
     function isChild() external view returns (bool);
 
-    function optionsInitialize() external view returns (bool);
+    function optionsInitialized() external view returns (bool);
 
     function tags(uint idx) external view returns (uint);
 

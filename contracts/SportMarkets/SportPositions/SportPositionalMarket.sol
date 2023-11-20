@@ -190,7 +190,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     function getParentMarketPositionsUint() public view override returns (uint position1, uint position2) {
         if (isDoubleChance) {
             (IPosition home, , ) = parentMarket.getOptions();
-            if (address(home) == address(0)) {
+            if (_hasNotBeenInitialized(home)) {
                 if (keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("HomeTeamNotToLose"))) {
                     (position1, position2) = (0, 2);
                 } else if (
@@ -265,7 +265,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         (IPosition position1, IPosition position2) = getParentMarketPositions();
         (IPosition home, IPosition away, ) = parentMarket.getOptions();
 
-        if (address(home) == address(0)) {
+        if (_hasNotBeenInitialized(home)) {
             return (0, 0);
         }
 
@@ -449,6 +449,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             address(options.away),
             optionsCount > 2 ? address(options.draw) : address(0)
         );
+    }
+
+    function _hasNotBeenInitialized(IPosition home) internal view returns (bool) {
+        return address(home) == address(0);
     }
 
     /* ---------- Custom oracle configuration ---------- */

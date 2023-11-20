@@ -853,7 +853,7 @@
   },
   {
     "inputs": [],
-    "name": "optionsInitialize",
+    "name": "optionsInitialized",
     "outputs": [
       {
         "internalType": "bool",

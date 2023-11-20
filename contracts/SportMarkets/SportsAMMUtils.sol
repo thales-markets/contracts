@@ -182,7 +182,7 @@ contract SportsAMMUtils {
             ISportPositionalMarket(market).resolved()
         ) {
             (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-            if (address(home) == address(0)) {
+            if (_hasNotBeenInitialized(home)) {
                 return false;
             }
             if (
@@ -256,7 +256,7 @@ contract SportsAMMUtils {
         )
     {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        if (address(home) == address(0)) {
+        if (_hasNotBeenInitialized(home)) {
             return (0, 0, 0);
         }
         homeBalance = home.getBalanceOf(addressToCheck);
@@ -295,7 +295,7 @@ contract SportsAMMUtils {
         )
     {
         (IPosition home, IPosition away, ) = ISportPositionalMarket(market).getOptions();
-        if (address(home) == address(0)) {
+        if (_hasNotBeenInitialized(home)) {
             return (0, 0, 0);
         }
         uint balance = position == ISportsAMM.Position.Home
@@ -345,7 +345,7 @@ contract SportsAMMUtils {
         address addressToCheck
     ) public view returns (uint) {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        if (address(home) == address(0)) {
+        if (_hasNotBeenInitialized(home)) {
             return 0;
         }
         uint balance = position == ISportsAMM.Position.Home
@@ -371,7 +371,7 @@ contract SportsAMMUtils {
         ISportPositionalMarket parentMarketContract = ISportPositionalMarket(market).parentMarket();
         (IPosition home, IPosition away, ) = parentMarketContract.getOptions();
         parentMarket = address(parentMarketContract);
-        if (address(home) == address(0)) {
+        if (_hasNotBeenInitialized(home)) {
             (uint parentPosition1, uint parentPosition2) = ISportPositionalMarket(market).getParentMarketPositionsUint();
             position1 = parentPosition1 == 0 ? ISportsAMM.Position.Home : parentPosition1 == 1
                 ? ISportsAMM.Position.Away
@@ -564,5 +564,9 @@ contract SportsAMMUtils {
         ) {
             _availableHigher = _availableOtherSideSecond;
         }
+    }
+
+    function _hasNotBeenInitialized(IPosition home) internal view returns (bool) {
+        return address(home) == address(0);
     }
 }

@@ -173,9 +173,9 @@
         "type": "bytes32[]"
       },
       {
-        "internalType": "uint256[]",
+        "internalType": "uint64[]",
         "name": "_playerIds",
-        "type": "uint256[]"
+        "type": "uint64[]"
       },
       {
         "internalType": "uint8[]",
@@ -232,9 +232,9 @@
         "type": "bytes32[]"
       },
       {
-        "internalType": "uint256[]",
+        "internalType": "uint64[]",
         "name": "_playerIds",
-        "type": "uint256[]"
+        "type": "uint64[]"
       },
       {
         "internalType": "uint8[]",

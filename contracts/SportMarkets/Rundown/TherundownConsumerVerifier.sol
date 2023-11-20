@@ -277,7 +277,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @return invalidOddsArray invalid odds for market
     function getPlayerPropForOption(
         bytes32[] memory _gameIds,
-        uint[] memory _playerIds,
+        uint64[] memory _playerIds,
         uint8[] memory _optionIds
     )
         public

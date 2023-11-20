@@ -354,9 +354,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "_playerId",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "indexed": false,

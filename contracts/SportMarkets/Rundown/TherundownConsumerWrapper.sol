@@ -238,7 +238,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         require(msg.sender == sportsAMM, "Only Sports AMM can call this function");
         if (linkToken.balanceOf(address(this)) >= paymentOdds) {
             // Get player props data for the market
-            (address _parent, bytes32 _gameId, uint _playerId, uint8 _optionId) = playerProps.getPlayerPropsDataForMarket(
+            (address _parent, bytes32 _gameId, uint64 _playerId, uint8 _optionId) = playerProps.getPlayerPropsDataForMarket(
                 _marketAddress
             );
 
@@ -246,7 +246,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
             bytes32[] memory _gameIds = new bytes32[](1);
             _gameIds[0] = _gameId;
             string[] memory _playerIdStrings = new string[](1);
-            _playerIdStrings[0] = verifier.convertUintToString(_playerId);
+            _playerIdStrings[0] = verifier.convertUintToString(uint(_playerId));
             string[] memory _optionIdStrings = new string[](1);
             _optionIdStrings[0] = verifier.convertUintToString(uint(_optionId));
 
@@ -590,7 +590,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint256 _date,
         address _marketAddress,
         bytes32 _gameId,
-        uint _playerId,
+        uint64 _playerId,
         uint8 _optionId
     );
 }

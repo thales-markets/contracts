@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 interface IGamesPlayerProps {
     struct PlayerProps {
         bytes32 gameId;
-        uint playerId;
+        uint64 playerId;
         uint8 option;
         uint16 line;
         int24 overOdds;
@@ -14,7 +14,7 @@ interface IGamesPlayerProps {
 
     struct PlayerPropsResolver {
         bytes32 gameId;
-        uint playerId;
+        uint64 playerId;
         uint8 option;
         uint16 score;
         uint8 statusId;
@@ -35,7 +35,7 @@ interface IGamesPlayerProps {
 
     function createFulfilledForPlayerProps(
         bytes32 gameId,
-        uint playerId,
+        uint64 playerId,
         uint8 option
     ) external view returns (bool);
 
@@ -61,7 +61,7 @@ interface IGamesPlayerProps {
         external
         view
         returns (
-            uint[] memory _playerIds,
+            uint64[] memory _playerIds,
             uint8[] memory _options,
             bool[] memory _isResolved,
             address[][] memory _childMarketsPerOption
@@ -73,13 +73,13 @@ interface IGamesPlayerProps {
         returns (
             address,
             bytes32,
-            uint,
+            uint64,
             uint8
         );
 
     function getPlayerPropForOption(
         bytes32 gameId,
-        uint playerId,
+        uint64 playerId,
         uint8 option
     )
         external

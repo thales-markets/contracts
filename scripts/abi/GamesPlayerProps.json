@@ -22,9 +22,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "_playerId",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "indexed": false,
@@ -77,9 +77,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "_playerId",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "indexed": false,
@@ -354,9 +354,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint256",
@@ -498,9 +498,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -616,9 +616,9 @@
     "name": "getAllOptionsWithPlayersForGameId",
     "outputs": [
       {
-        "internalType": "uint256[]",
+        "internalType": "uint64[]",
         "name": "_playerIds",
-        "type": "uint256[]"
+        "type": "uint64[]"
       },
       {
         "internalType": "uint8[]",
@@ -666,9 +666,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "_playerId",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -723,9 +723,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -782,9 +782,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -848,9 +848,9 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -901,9 +901,9 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -1023,9 +1023,9 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -1054,9 +1054,9 @@
             "type": "bytes32"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "playerId",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
             "internalType": "uint8",
@@ -1216,9 +1216,9 @@
     "name": "playerIdPerChildMarket",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",
@@ -1251,9 +1251,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -1269,9 +1269,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "playerId",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -1345,9 +1345,9 @@
     "name": "playersInAGame",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",
@@ -1361,9 +1361,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       }
     ],
     "name": "playersInAGameFulfilled",
@@ -1385,9 +1385,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -1416,9 +1416,9 @@
             "type": "bytes32"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "playerId",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
             "internalType": "uint8",
@@ -1454,9 +1454,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",
@@ -1472,9 +1472,9 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "playerId",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "uint8",

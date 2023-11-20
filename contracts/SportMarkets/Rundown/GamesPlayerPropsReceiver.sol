@@ -52,7 +52,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
     /// @param _linesOdds odds for lines
     function fulfillPlayerProps(
         bytes32[] memory _gameIds,
-        uint[] memory _playerIds,
+        uint64[] memory _playerIds,
         uint8[] memory _options,
         uint16[] memory _lines,
         int24[] memory _linesOdds
@@ -101,7 +101,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
     /// @param _statuses resolved statuses
     function fulfillResultOfPlayerProps(
         bytes32[] memory _gameIds,
-        uint[] memory _playerIds,
+        uint64[] memory _playerIds,
         uint8[] memory _options,
         uint16[] memory _scores,
         uint8[] memory _statuses
@@ -151,7 +151,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
     function _castToPlayerProps(
         uint index,
         bytes32 _gameId,
-        uint _playerId,
+        uint64 _playerId,
         uint8 _option,
         uint16 _line,
         int24[] memory _linesOdds
@@ -169,7 +169,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
 
     function _castToPlayerPropsResolver(
         bytes32 _gameId,
-        uint _playerId,
+        uint64 _playerId,
         uint8 _option,
         uint16 _score,
         uint8 _statusId

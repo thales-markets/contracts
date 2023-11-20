@@ -36,20 +36,20 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     address public playerPropsReceiver;
 
     // game properties
-    mapping(bytes32 => mapping(uint => mapping(uint8 => IGamesPlayerProps.PlayerProps))) public playerProp;
+    mapping(bytes32 => mapping(uint64 => mapping(uint8 => IGamesPlayerProps.PlayerProps))) public playerProp;
     mapping(uint => bool) public doesSportSupportPlayerProps;
     mapping(address => bytes32) public gameIdPerChildMarket;
-    mapping(address => uint) public playerIdPerChildMarket;
+    mapping(address => uint64) public playerIdPerChildMarket;
     mapping(address => uint8) public optionIdPerChildMarket;
 
     // market props
     mapping(address => mapping(uint => address)) public mainMarketChildMarketIndex;
     mapping(address => bool) public mainMarketPausedPlayerProps;
     mapping(address => uint) public numberOfChildMarkets;
-    mapping(address => mapping(uint => mapping(uint8 => mapping(uint => address))))
+    mapping(address => mapping(uint64 => mapping(uint8 => mapping(uint => address))))
         public mainMarketChildMarketPerPlayerAndOptionIndex;
-    mapping(address => mapping(uint => mapping(uint8 => uint))) public numberOfChildMarketsPerPlayerAndOption;
-    mapping(address => mapping(uint => mapping(uint8 => mapping(uint16 => address))))
+    mapping(address => mapping(uint64 => mapping(uint8 => uint))) public numberOfChildMarketsPerPlayerAndOption;
+    mapping(address => mapping(uint64 => mapping(uint8 => mapping(uint16 => address))))
         public mainMarketPlayerOptionLineChildMarket;
     mapping(address => address) public childMarketMainMarket;
     mapping(address => mapping(uint => mapping(uint8 => address))) public currentActiveChildMarketPerPlayerAndOption;
@@ -57,17 +57,18 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public normalizedOddsForMarketFulfilled;
     mapping(address => bool) public childMarketCreated;
     mapping(address => uint16) public childMarketLine;
-    mapping(bytes32 => mapping(uint => mapping(uint8 => bool))) public invalidOddsForPlayerProps;
-    mapping(bytes32 => mapping(uint => mapping(uint8 => bool))) public createFulfilledForPlayerProps;
-    mapping(bytes32 => mapping(uint => mapping(uint8 => bool))) public resolveFulfilledForPlayerProps;
+    mapping(bytes32 => mapping(uint64 => mapping(uint8 => bool))) public invalidOddsForPlayerProps;
+    mapping(bytes32 => mapping(uint64 => mapping(uint8 => bool))) public createFulfilledForPlayerProps;
+    mapping(bytes32 => mapping(uint64 => mapping(uint8 => bool))) public resolveFulfilledForPlayerProps;
     mapping(address => bool) public pausedByInvalidOddsOnMain;
     mapping(address => bool) public pausedByCircuitBreakerOnMain;
     mapping(address => bool) public playerPropsAddedForMain;
 
-    mapping(bytes32 => uint[]) public playersInAGame;
-    mapping(bytes32 => mapping(uint => bool)) public playersInAGameFulfilled;
-    mapping(bytes32 => mapping(uint => uint8[])) public allOptionsPerPlayer;
-    mapping(bytes32 => mapping(uint => mapping(uint8 => IGamesPlayerProps.PlayerPropsResolver))) public resolvedPlayerProps;
+    mapping(bytes32 => uint64[]) public playersInAGame;
+    mapping(bytes32 => mapping(uint64 => bool)) public playersInAGameFulfilled;
+    mapping(bytes32 => mapping(uint64 => uint8[])) public allOptionsPerPlayer;
+    mapping(bytes32 => mapping(uint64 => mapping(uint8 => IGamesPlayerProps.PlayerPropsResolver)))
+        public resolvedPlayerProps;
     mapping(address => bool) public childMarketResolved;
     mapping(uint => string) public playerNamePerId;
 
@@ -175,7 +176,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     function cancelMarketFromManager(address _market) external onlyManager {
         address parent = childMarketMainMarket[_market];
         bytes32 gameId = gameIdPerChildMarket[_market];
-        uint playerId = playerIdPerChildMarket[_market];
+        uint64 playerId = playerIdPerChildMarket[_market];
         uint8 option = optionIdPerChildMarket[_market];
         uint numberOfChildsPerOptions = numberOfChildMarketsPerPlayerAndOption[parent][playerId][option];
         if (!childMarketResolved[_market]) {
@@ -296,7 +297,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     function _setNormalizedOdds(
         address _market,
         bytes32 _gameId,
-        uint _playerId,
+        uint64 _playerId,
         uint8 _option
     ) internal {
         normalizedOddsForMarket[_market] = _getNormalizedOddsForPlayerProps(_gameId, _playerId, _option);
@@ -360,7 +361,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         address _main,
         address _child,
         uint16 _line,
-        uint _playerId,
+        uint64 _playerId,
         uint8 _option,
         uint _type
     ) internal {
@@ -411,7 +412,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
 
     function _getNormalizedOddsForPlayerProps(
         bytes32 _gameId,
-        uint _playerId,
+        uint64 _playerId,
         uint8 _option
     ) internal view returns (uint[] memory) {
         int[] memory odds = new int[](2);
@@ -438,7 +439,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
 
     function _getAllChildMarketsForParentPlayerOption(
         address _parent,
-        uint _player,
+        uint64 _player,
         uint8 _option
     ) internal view returns (address[] memory _children) {
         uint num = numberOfChildMarketsPerPlayerAndOption[_parent][_player][_option];
@@ -460,7 +461,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         returns (
             address,
             bytes32,
-            uint,
+            uint64,
             uint8
         )
     {
@@ -481,7 +482,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
 
     function getPlayerPropForOption(
         bytes32 _gameId,
-        uint _playerId,
+        uint64 _playerId,
         uint8 _option
     )
         external
@@ -506,7 +507,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         external
         view
         returns (
-            uint[] memory _playerIds,
+            uint64[] memory _playerIds,
             uint8[] memory _options,
             bool[] memory _isResolved,
             bool[] memory _hasMintsOnChildren
@@ -518,18 +519,18 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         uint256 totalCombinations = 0;
 
         for (uint256 i = 0; i < playersInAGame[_gameId].length; i++) {
-            uint playerId = playersInAGame[_gameId][i];
+            uint64 playerId = playersInAGame[_gameId][i];
             totalCombinations += allOptionsPerPlayer[_gameId][playerId].length;
         }
 
-        _playerIds = new uint[](totalCombinations);
+        _playerIds = new uint64[](totalCombinations);
         _options = new uint8[](totalCombinations);
         _isResolved = new bool[](totalCombinations);
         _hasMintsOnChildren = new bool[](totalCombinations);
 
         uint256 index = 0;
         for (uint256 i = 0; i < playersInAGame[_gameId].length; i++) {
-            uint playerId = playersInAGame[_gameId][i];
+            uint64 playerId = playersInAGame[_gameId][i];
             uint8[] memory playerOptions = allOptionsPerPlayer[_gameId][playerId];
 
             for (uint256 j = 0; j < playerOptions.length; j++) {
@@ -636,7 +637,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         address _main,
         address _child,
         bytes32 _gameId,
-        uint _playerId,
+        uint64 _playerId,
         string _playerName,
         uint16 _line,
         uint8 _option,
@@ -644,5 +645,5 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         uint _type
     );
     event ResolveChildMarket(address _child, uint _outcome, address _main, uint16 _score);
-    event InvalidOddsForMarket(address _main, bytes32 _gameId, uint _playerId, uint8 option);
+    event InvalidOddsForMarket(address _main, bytes32 _gameId, uint64 _playerId, uint8 option);
 }

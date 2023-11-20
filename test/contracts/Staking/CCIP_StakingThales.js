@@ -15,146 +15,189 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const { fastForward, toUnit, fromUnit, currentTime } = require('../../utils')();
 const { encodeCall, convertToDecimals } = require('../../utils/helpers');
 
-contract('CCIP StakingThales', (accounts) => {
+contract('CCIP Staking', (accounts) => {
 	const [firstVault, firstLP, firstAMM, owner] = accounts;
 	const [staker, secondStaker, thirdStaker, dummy] = accounts;
 
-	describe('Test CCIP with Mock Staking Thales ', () => {
-		it('deploy and test', async () => {
-			let CrossChainCollector = artifacts.require('CrossChainCollector');
-			let stakingThalesBonusRewardsManager = await StakingThalesBonusRewardsManager.new();
+	let CCIPCollectorA;
+	let CCIPCollectorB;
 
-			let StakingThalesMock = artifacts.require('StakingThalesMock');
-			let stakingThalesMock = await StakingThalesMock.new();
+	let StakingMockA;
+	let StakingMockB;
 
-			await stakingThalesBonusRewardsManager.initialize(owner, stakingThalesMock.address);
+	let StakingThalesBonusRewardsManagerA;
+	let StakingThalesBonusRewardsManagerB;
 
-			await stakingThalesMock.setStakingThalesBonusRewardsManager(
-				stakingThalesBonusRewardsManager.address,
+	let CCIPRouter;
+
+	describe('Test CCIP solution ', () => {
+		beforeEach(async () => {
+			let CCIPCollectorContract = artifacts.require('CrossChainCollector');
+			CCIPCollectorA = CCIPCollectorContract.new();
+			CCIPCollectorB = CCIPCollectorContract.new();
+
+			let StakingThalesMockContract = artifacts.require('StakingThalesMock');
+			StakingMockA = await StakingThalesMockContract.new();
+			StakingMockB = await StakingThalesMockContract.new();
+
+			let CCIPRouterContract = artifacts.require('MockCCIPRouter');
+			CCIPRouter = await CCIPRouterContract.new();
+
+			let StakingThalesBonusRewardsManagerContract = artifacts.require(
+				'StakingThalesBonusRewardsManager'
+			);
+			StakingThalesBonusRewardsManagerA = await StakingThalesBonusRewardsManagerContract.new();
+			StakingThalesBonusRewardsManagerB = await StakingThalesBonusRewardsManagerContract.new();
+
+			await StakingThalesBonusRewardsManagerA.initialize(owner, StakingMockA.address);
+			await StakingThalesBonusRewardsManagerB.initialize(owner, StakingMockB.address);
+
+			await StakingMockA.setStakingThalesBonusRewardsManager(
+				StakingThalesBonusRewardsManagerA.address,
 				{ from: owner }
 			);
-			await stakingThalesMock.stake(toUnit(100000), {
+			await StakingMockB.setStakingThalesBonusRewardsManager(
+				StakingThalesBonusRewardsManagerB.address,
+				{ from: owner }
+			);
+
+			await StakingMockA.stake(toUnit(100000), {
 				from: staker,
 			});
 
-			await stakingThalesMock.stake(toUnit(200000), {
+			await StakingMockA.stake(toUnit(200000), {
 				from: secondStaker,
 			});
 
-			await stakingThalesMock.stake(toUnit(500000), {
+			await StakingMockA.stake(toUnit(500000), {
 				from: thirdStaker,
 			});
 
-			await stakingThalesBonusRewardsManager.setStakingBaseDivider(100000, { from: owner });
+			await StakingThalesBonusRewardsManagerA.setStakingBaseDivider(100000, { from: owner });
+			await StakingThalesBonusRewardsManagerA.setMaxStakingMultiplier(toUnit(4), { from: owner });
 
-			await stakingThalesBonusRewardsManager.setMaxStakingMultiplier(toUnit(4), { from: owner });
+			await StakingMockB.stake(toUnit(100000), {
+				from: staker,
+			});
 
-			let stakerMultiplier = await stakingThalesBonusRewardsManager.getStakingMultiplier(staker);
+			await StakingMockB.stake(toUnit(200000), {
+				from: secondStaker,
+			});
+
+			await StakingMockB.stake(toUnit(500000), {
+				from: thirdStaker,
+			});
+
+			await StakingThalesBonusRewardsManagerB.setStakingBaseDivider(100000, { from: owner });
+			await StakingThalesBonusRewardsManagerB.setMaxStakingMultiplier(toUnit(4), { from: owner });
+		});
+		it('deploy and test', async () => {
+			let stakerMultiplier = await StakingThalesBonusRewardsManagerA.getStakingMultiplier(staker);
 			console.log('stakerMultiplier: ' + stakerMultiplier / 1e18);
 
-			let secondStakerMultiplier = await stakingThalesBonusRewardsManager.getStakingMultiplier(
+			let secondStakerMultiplier = await StakingThalesBonusRewardsManagerA.getStakingMultiplier(
 				secondStaker
 			);
 			console.log('secondStakerMultiplier: ' + secondStakerMultiplier / 1e18);
 
-			let thirdStakerMultiplier = await stakingThalesBonusRewardsManager.getStakingMultiplier(
+			let thirdStakerMultiplier = await StakingThalesBonusRewardsManagerA.getStakingMultiplier(
 				thirdStaker
 			);
 			console.log('thirdStakerMultiplier: ' + thirdStakerMultiplier / 1e18);
 
-			await stakingThalesBonusRewardsManager.setMultipliers(toUnit(0.25), toUnit(0.5), toUnit(1), {
+			await StakingThalesBonusRewardsManagerA.setMultipliers(toUnit(0.25), toUnit(0.5), toUnit(1), {
 				from: owner,
 			});
 
 			await assert.revert(
-				stakingThalesMock.updateVolumeWithOrigin(staker, toUnit(1), firstVault, {
+				StakingMockA.updateVolumeWithOrigin(staker, toUnit(1), firstVault, {
 					from: owner,
 				}),
 				'Only allowed for known origin'
 			);
 
-			await stakingThalesBonusRewardsManager.setKnownVault(firstVault, true, { from: owner });
+			await StakingThalesBonusRewardsManagerA.setKnownVault(firstVault, true, { from: owner });
 
-			await stakingThalesMock.updateVolumeWithOrigin(staker, toUnit(10), firstVault, {
+			await StakingMockA.updateVolumeWithOrigin(staker, toUnit(10), firstVault, {
 				from: owner,
 			});
 
-			let stakerVolume = await stakingThalesBonusRewardsManager.userRoundBonusPoints(staker, 0);
+			let stakerVolume = await StakingThalesBonusRewardsManagerA.userRoundBonusPoints(staker, 0);
 			console.log('stakerVolume: ' + stakerVolume / 1e18);
 
-			let totalRoundBonusPoints = await stakingThalesBonusRewardsManager.totalRoundBonusPoints(0);
+			let totalRoundBonusPoints = await StakingThalesBonusRewardsManagerA.totalRoundBonusPoints(0);
 			console.log('totalRoundBonusPoints: ' + totalRoundBonusPoints / 1e18);
 
 			let stakerVaultBaseVolume =
-				await stakingThalesBonusRewardsManager.userVaultBasePointsPerRound(staker, 0);
+				await StakingThalesBonusRewardsManagerA.userVaultBasePointsPerRound(staker, 0);
 			console.log('stakerVaultBaseVolume: ' + stakerVaultBaseVolume / 1e18);
 
 			let totalVaultBasePointsPerRound =
-				await stakingThalesBonusRewardsManager.totalVaultBasePointsPerRound(0);
+				await StakingThalesBonusRewardsManagerA.totalVaultBasePointsPerRound(0);
 			console.log('totalVaultBasePointsPerRound: ' + totalVaultBasePointsPerRound / 1e18);
 
-			await stakingThalesBonusRewardsManager.setKnownLiquidityPool(firstLP, true, { from: owner });
+			await StakingThalesBonusRewardsManagerA.setKnownLiquidityPool(firstLP, true, { from: owner });
 
-			await stakingThalesMock.updateVolumeWithOrigin(secondStaker, toUnit(10), firstLP, {
+			await StakingMockA.updateVolumeWithOrigin(secondStaker, toUnit(10), firstLP, {
 				from: owner,
 			});
 
-			let secondStakerPoints = await stakingThalesBonusRewardsManager.userRoundBonusPoints(
+			let secondStakerPoints = await StakingThalesBonusRewardsManagerA.userRoundBonusPoints(
 				secondStaker,
 				0
 			);
 			console.log('secondStakerPoints: ' + secondStakerPoints / 1e18);
 
-			totalRoundBonusPoints = await stakingThalesBonusRewardsManager.totalRoundBonusPoints(0);
+			totalRoundBonusPoints = await StakingThalesBonusRewardsManagerA.totalRoundBonusPoints(0);
 			console.log('totalRoundBonusPoints: ' + totalRoundBonusPoints / 1e18);
 
-			await stakingThalesBonusRewardsManager.setKnownTradingAMM(firstAMM, true, { from: owner });
+			await StakingThalesBonusRewardsManagerA.setKnownTradingAMM(firstAMM, true, { from: owner });
 
-			await stakingThalesMock.updateVolumeWithOrigin(thirdStaker, toUnit(10), firstAMM, {
+			await StakingMockA.updateVolumeWithOrigin(thirdStaker, toUnit(10), firstAMM, {
 				from: owner,
 			});
 
-			let thirdStakerPoints = await stakingThalesBonusRewardsManager.userRoundBonusPoints(
+			let thirdStakerPoints = await StakingThalesBonusRewardsManagerA.userRoundBonusPoints(
 				thirdStaker,
 				0
 			);
 			console.log('thirdStakerPoints: ' + thirdStakerPoints / 1e18);
 
-			totalRoundBonusPoints = await stakingThalesBonusRewardsManager.totalRoundBonusPoints(0);
+			totalRoundBonusPoints = await StakingThalesBonusRewardsManagerA.totalRoundBonusPoints(0);
 			console.log('totalRoundBonusPoints: ' + totalRoundBonusPoints / 1e18);
 
-			await stakingThalesMock.updateVolumeWithOrigin(secondStaker, toUnit(10), firstAMM, {
+			await StakingMockA.updateVolumeWithOrigin(secondStaker, toUnit(10), firstAMM, {
 				from: owner,
 			});
 
-			secondStakerPoints = await stakingThalesBonusRewardsManager.userRoundBonusPoints(
+			secondStakerPoints = await StakingThalesBonusRewardsManagerA.userRoundBonusPoints(
 				secondStaker,
 				0
 			);
 			console.log('secondStakerPoints: ' + secondStakerPoints / 1e18);
 
-			totalRoundBonusPoints = await stakingThalesBonusRewardsManager.totalRoundBonusPoints(0);
+			totalRoundBonusPoints = await StakingThalesBonusRewardsManagerA.totalRoundBonusPoints(0);
 			console.log('totalRoundBonusPoints: ' + totalRoundBonusPoints / 1e18);
 
-			let firstStakerShare = await stakingThalesBonusRewardsManager.getUserRoundBonusShare(
+			let firstStakerShare = await StakingThalesBonusRewardsManagerA.getUserRoundBonusShare(
 				staker,
 				0
 			);
 			console.log('firstStakerShare: ' + firstStakerShare / 1e18);
 
-			let secondStakerShare = await stakingThalesBonusRewardsManager.getUserRoundBonusShare(
+			let secondStakerShare = await StakingThalesBonusRewardsManagerA.getUserRoundBonusShare(
 				secondStaker,
 				0
 			);
 			console.log('secondStakerShare: ' + secondStakerShare / 1e18);
 
-			let thirdStakerShare = await stakingThalesBonusRewardsManager.getUserRoundBonusShare(
+			let thirdStakerShare = await StakingThalesBonusRewardsManagerA.getUserRoundBonusShare(
 				thirdStaker,
 				0
 			);
 			console.log('thirdStakerShare: ' + thirdStakerShare / 1e18);
 
-			let thirdStakerRewards = await stakingThalesMock.getRewards(thirdStaker);
+			let thirdStakerRewards = await StakingMockA.getRewards(thirdStaker);
 			console.log('thirdStakerRewards: ' + thirdStakerRewards / 1e18);
 		});
 	});

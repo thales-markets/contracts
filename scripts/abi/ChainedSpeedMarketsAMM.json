@@ -146,6 +146,12 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "payoutMultiplier",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "safeBoxImpact",
         "type": "uint256"
       }

@@ -252,7 +252,6 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     function _broadcastMessageToAll() internal {
         uint chainBaseRewards;
         uint chainExtraRewards;
-        uint chainBonusPoints;
         bytes memory message;
 
         for (uint i = 0; i < numOfActiveCollectors; i++) {

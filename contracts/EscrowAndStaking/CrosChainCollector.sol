@@ -17,6 +17,8 @@ import "../interfaces/IStakingThales.sol";
 
 import "./CCIPReceiverProxy.sol";
 
+import "hardhat/console.sol";
+
 /// @title - Cross Chain Collector contract for Thales staking rewards
 contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard, CCIPReceiverProxy {
     // Custom errors to provide more descriptive revert messages.
@@ -61,22 +63,31 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     mapping(uint => mapping(uint => uint)) public chainCalculatedBonusPointsInPeriod;
     mapping(uint => uint) public calculatedBonusPointsForPeriod;
 
-    function initialize(address _router, bool _masterCollector) public initializer {
+    function initialize(
+        address _router,
+        bool _masterCollector,
+        uint64 _masterCollectorSelector
+    ) public initializer {
         setOwner(msg.sender);
         initNonReentrant();
         _setRouter(_router);
         s_router = IRouterClient(_router);
         if (_masterCollector) {
             masterCollector = address(this);
-            supportedChains[0] = uint64(block.chainid);
-            collectorForChain[uint64(block.chainid)] = address(this);
-            chainIndex[uint64(block.chainid)] = 0;
+            masterCollectorChain = _masterCollectorSelector;
+            supportedChains[0] = _masterCollectorSelector;
+            collectorForChain[_masterCollectorSelector] = address(this);
+            chainIndex[_masterCollectorSelector] = 0;
             numOfActiveCollectors = 1;
             period = 1;
         }
     }
 
     receive() external payable {}
+
+    function isMasterCollector() external view returns (bool isMaster) {
+        isMaster = masterCollector == address(this);
+    }
 
     function setTestingPhase(bool _enableTesting) external onlyOwner {
         if (_enableTesting) {
@@ -159,8 +170,12 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         messagesReceived[numOfMessagesReceived] = any2EvmMessage.data;
         ++numOfMessagesReceived;
 
+        console.log(">>> sender: ", sender);
+        console.log(">>> sourceChain: ", any2EvmMessage.sourceChainSelector);
+
         if (masterCollector == address(this)) {
             uint chainSelector = any2EvmMessage.sourceChainSelector;
+            console.log("Sender matches: ", collectorForChain[chainSelector]);
             if (testingPhase) {
                 if (collectorForChain[chainSelector] == sender) {
                     _calculateRewards(any2EvmMessage.data, chainSelector);
@@ -177,7 +192,6 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 ++collectedResultsPerPeriod;
                 if (collectedResultsPerPeriod == numOfActiveCollectors) {
                     readyToBroadcast = true;
-                    ++period;
                 }
             }
         } else if (masterCollector == sender) {
@@ -206,6 +220,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             _broadcastMessageToAll();
             collectedResultsPerPeriod = 0;
             readyToBroadcast = false;
+            ++period;
         }
     }
 
@@ -223,11 +238,15 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         chainStakedAmountInPeriod[period][_chainSelector] = _stakedAmount;
         chainEscrowedAmountInPeriod[period][_chainSelector] = _escrowedAmount;
         chainBonusPointsInPeriod[period][_chainSelector] = _bonusPoints;
+        console.log(">>> chainSelector: ", _chainSelector);
+        console.log(">>> period: ", period);
+        console.log(">>> stakedAmount: ", chainStakedAmountInPeriod[period][_chainSelector]);
+        console.log(">>> escrowedAmount: ", chainEscrowedAmountInPeriod[period][_chainSelector]);
+        console.log(">>> bonusPoints: ", chainBonusPointsInPeriod[period][_chainSelector]);
 
         calculatedStakedAmountForPeriod[period] += _stakedAmount;
         calculatedEscrowedAmountForPeriod[period] += _escrowedAmount;
         calculatedBonusPointsForPeriod[period] += _bonusPoints;
-
     }
 
     function _broadcastMessageToAll() internal {
@@ -237,18 +256,29 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         bytes memory message;
 
         for (uint i = 0; i < numOfActiveCollectors; i++) {
+            console.log(">>>> here");
+            console.log(">>>> supportedChain:", supportedChains[i]);
+            console.log(">>> period: ", period);
+            console.log(">>>> stakedAmount:", chainStakedAmountInPeriod[period][supportedChains[i]]);
+            console.log(">>>> calculatedStakedAmountForPeriod:", calculatedStakedAmountForPeriod[period]);
+            console.log(">>>> calculatedEscrowedAmountForPeriod:", calculatedEscrowedAmountForPeriod[period]);
             chainBaseRewards =
                 (chainStakedAmountInPeriod[period][supportedChains[i]] * baseRewardsPerPeriod) /
                 (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
+
+            console.log(">>> chainBaseRewards: ", chainBaseRewards);
             // chainExtraRewards =
             //     (chainStakedAmountInPeriod[period][supportedChains[i]] * extraRewardsPerPeriod) /
             //     (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
             chainExtraRewards =
                 (chainBonusPointsInPeriod[period][supportedChains[i]] * extraRewardsPerPeriod) /
                 (calculatedBonusPointsForPeriod[period]);
-            
+
+            console.log(">>> chainExtraRewards: ", chainExtraRewards);
             chainBaseRewardsInPeriod[period][supportedChains[i]] = chainBaseRewards;
             chainExtraRewardsInPeriod[period][supportedChains[i]] = chainExtraRewards;
+
+            console.log(">>> supportedChain: ", i, supportedChains[i]);
             // chainCalculatedBonusPointsInPeriod[period][supportedChains[i]] = chainBonusPoints;
             message = abi.encode(
                 chainBaseRewards,
@@ -323,7 +353,11 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         IStakingThales(stakingThales).updateStakingRewards(_baseRewards, _extraRewards, _stakedAmount, _escrowedAmount);
     }
 
-    function sendOnClosePeriod(uint _totalStakedLastPeriodEnd, uint _totalEscrowedLastPeriodEnd, uint _bonusPoints) external {
+    function sendOnClosePeriod(
+        uint _totalStakedLastPeriodEnd,
+        uint _totalEscrowedLastPeriodEnd,
+        uint _bonusPoints
+    ) external {
         require(msg.sender == stakingThales, "InvSender");
         if (masterCollector == address(this)) {
             _storeRewards(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, masterCollectorChain);

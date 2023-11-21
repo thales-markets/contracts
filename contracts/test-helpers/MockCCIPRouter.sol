@@ -33,6 +33,9 @@ contract MockCCIPRouter {
             destTokenAmounts: new Client.EVMTokenAmount[](0)
         });
         IAny2EVMMessageReceiver(receiver).ccipReceive(messageToBeReceved);
+        emit MessageSent(msg.sender, receiver, message.data);
         return messageId;
     }
+
+    event MessageSent(address sender, address receiver, bytes message);
 }

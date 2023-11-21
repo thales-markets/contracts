@@ -866,9 +866,9 @@
         "type": "address[]"
       },
       {
-        "internalType": "bytes[][]",
+        "internalType": "bytes[][][]",
         "name": "priceUpdateData",
-        "type": "bytes[][]"
+        "type": "bytes[][][]"
       }
     ],
     "name": "resolveMarketsBatch",

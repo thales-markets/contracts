@@ -297,7 +297,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     /// @notice resolveMarkets in a batch
-    function resolveMarketsBatch(address[] calldata markets, bytes[][] calldata priceUpdateData)
+    function resolveMarketsBatch(address[] calldata markets, bytes[][][] calldata priceUpdateData)
         external
         payable
         nonReentrant
@@ -305,9 +305,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     {
         for (uint i = 0; i < markets.length; i++) {
             if (canResolveMarket(markets[i])) {
-                bytes[][] memory subarray = new bytes[][](1);
-                subarray[0] = priceUpdateData[i];
-                _resolveMarket(markets[i], subarray);
+                _resolveMarket(markets[i], priceUpdateData[i]);
             }
         }
     }

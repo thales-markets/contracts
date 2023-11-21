@@ -463,7 +463,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				marketData[0].initialStrikeTime
 			);
 
-			await chainedSpeedMarketsAMM.resolveMarketsBatch([market], [[resolvePriceFeedUpdateData]], {
+			await chainedSpeedMarketsAMM.resolveMarketsBatch([market], [[[resolvePriceFeedUpdateData]]], {
 				value: fee,
 				from: user,
 			});

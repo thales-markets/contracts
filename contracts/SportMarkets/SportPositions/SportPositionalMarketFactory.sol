@@ -51,9 +51,6 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
 
         SportPositionalMarket pom = SportPositionalMarket(Clones.clone(positionalMarketMastercopy));
         address[] memory positions = new address[](_parameters.positionCount);
-        for (uint i = 0; i < _parameters.positionCount; i++) {
-            positions[i] = address(SportPosition(Clones.clone(positionMastercopy)));
-        }
 
         pom.initialize(
             SportPositionalMarket.SportPositionalMarketParameters(
@@ -71,7 +68,8 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
                 _parameters.tags,
                 _parameters.isChild,
                 _parameters.parentMarket,
-                _parameters.isDoubleChance
+                _parameters.isDoubleChance,
+                positionMastercopy
             )
         );
         emit MarketCreated(

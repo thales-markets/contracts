@@ -53,6 +53,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         bool isChild;
         address parentMarket;
         bool isDoubleChance;
+        address positionMastercopy;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -86,6 +87,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     ISportPositionalMarket public override parentMarket;
 
     bool public override isDoubleChance;
+    bool public override optionsInitialized;
+    address public positionMastercopy;
 
     /* ========== CONSTRUCTOR ========== */
     function initialize(SportPositionalMarketParameters calldata _parameters) external {
@@ -108,35 +111,13 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         isDoubleChance = _parameters.isDoubleChance;
         parentMarket = ISportPositionalMarket(_parameters.parentMarket);
         require(optionsCount == _parameters.positions.length, "Position count mismatch");
-
-        // Instantiate the options themselves
-        options.home = SportPosition(_parameters.positions[0]);
-        options.away = SportPosition(_parameters.positions[1]);
-        // abi.encodePacked("sUP: ", _oracleKey)
-        // consider naming the option: sUpBTC>50@2021.12.31
         if (_parameters.isChild) {
             isChild = true;
-            require(tags.length > 1, "Child markets must have more then one tag");
-            if (tags[1] == 10001) {
-                options.home.initialize(gameDetails.gameLabel, "HOME", _parameters.sportsAMM);
-                options.away.initialize(gameDetails.gameLabel, "AWAY", _parameters.sportsAMM);
-            } else if (tags[1] == 10002 || tags[1] == 10010) {
-                options.home.initialize(gameDetails.gameLabel, "OVER", _parameters.sportsAMM);
-                options.away.initialize(gameDetails.gameLabel, "UNDER", _parameters.sportsAMM);
-            }
-        } else {
-            options.home.initialize(gameDetails.gameLabel, "HOME", _parameters.sportsAMM);
-            options.away.initialize(gameDetails.gameLabel, "AWAY", _parameters.sportsAMM);
-        }
-
-        if (optionsCount > 2) {
-            options.draw = SportPosition(_parameters.positions[2]);
-            options.draw.initialize(gameDetails.gameLabel, "DRAW", _parameters.sportsAMM);
         }
         if (initialMint > 0) {
             _mint(creator, initialMint);
         }
-
+        positionMastercopy = _parameters.positionMastercopy;
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
         // about initializing its state separately
     }
@@ -206,6 +187,23 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         return (gameDetails.gameId, gameDetails.gameLabel);
     }
 
+    function getParentMarketPositionsUint() public view override returns (uint position1, uint position2) {
+        if (isDoubleChance) {
+            (IPosition home, , ) = parentMarket.getOptions();
+            if (_hasNotBeenInitialized(home)) {
+                if (keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("HomeTeamNotToLose"))) {
+                    (position1, position2) = (0, 2);
+                } else if (
+                    keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("AwayTeamNotToLose"))
+                ) {
+                    (position1, position2) = (1, 2);
+                } else {
+                    (position1, position2) = (0, 1);
+                }
+            }
+        }
+    }
+
     function getParentMarketPositions() public view override returns (IPosition position1, IPosition position2) {
         if (isDoubleChance) {
             (IPosition home, IPosition away, IPosition draw) = parentMarket.getOptions();
@@ -267,6 +265,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         (IPosition position1, IPosition position2) = getParentMarketPositions();
         (IPosition home, IPosition away, ) = parentMarket.getOptions();
 
+        if (_hasNotBeenInitialized(home)) {
+            return (0, 0);
+        }
+
         odds1 = position1 == home ? homeOddsParent : position1 == away ? awayOddsParent : drawOddsParent;
         odds2 = position2 == home ? homeOddsParent : position2 == away ? awayOddsParent : drawOddsParent;
     }
@@ -280,6 +282,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             uint draw
         )
     {
+        if (!optionsInitialized) {
+            return (0, 0, 0);
+        }
         if (optionsCount > 2) {
             return (
                 options.home.getBalanceOf(account),
@@ -392,6 +397,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _mint(address minter, uint amount) internal {
+        if (!optionsInitialized) {
+            _initializeOptions();
+        }
         if (isDoubleChance) {
             options.home.mint(minter, amount);
             emit Mint(Side.Home, minter, amount);
@@ -405,6 +413,46 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
                 emit Mint(Side.Draw, minter, amount);
             }
         }
+    }
+
+    function _initializeOptions() internal {
+        address[] memory positions = new address[](optionsCount);
+        for (uint i = 0; i < optionsCount; i++) {
+            positions[i] = address(SportPosition(Clones.clone(positionMastercopy)));
+        }
+
+        // Instantiate the options themselves
+        options.home = SportPosition(positions[0]);
+        options.away = SportPosition(positions[1]);
+        if (isChild) {
+            require(tags.length > 1, "Child markets must have more then one tag");
+            if (tags[1] == 10001) {
+                options.home.initialize(gameDetails.gameLabel, "HOME", sportsAMM);
+                options.away.initialize(gameDetails.gameLabel, "AWAY", sportsAMM);
+            } else if (tags[1] == 10002 || tags[1] == 10010) {
+                options.home.initialize(gameDetails.gameLabel, "OVER", sportsAMM);
+                options.away.initialize(gameDetails.gameLabel, "UNDER", sportsAMM);
+            }
+        } else {
+            options.home.initialize(gameDetails.gameLabel, "HOME", sportsAMM);
+            options.away.initialize(gameDetails.gameLabel, "AWAY", sportsAMM);
+        }
+
+        if (optionsCount > 2) {
+            options.draw = SportPosition(positions[2]);
+            options.draw.initialize(gameDetails.gameLabel, "DRAW", sportsAMM);
+        }
+        optionsInitialized = true;
+        emit PositionsInitialized(
+            address(this),
+            address(options.home),
+            address(options.away),
+            optionsCount > 2 ? address(options.draw) : address(0)
+        );
+    }
+
+    function _hasNotBeenInitialized(IPosition home) internal view returns (bool) {
+        return address(home) == address(0);
     }
 
     /* ---------- Custom oracle configuration ---------- */
@@ -607,4 +655,5 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     event StoredOddsOnCancellation(uint homeOdds, uint awayOdds, uint drawOdds);
     event PauseUpdated(bool _paused);
     event DatesUpdated(uint256 _maturity, uint256 _expiry);
+    event PositionsInitialized(address _market, address _home, address _away, address _draw);
 }

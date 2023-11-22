@@ -230,6 +230,7 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
             address liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
             (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+            require(address(home) != address(0), "0A");
             IPosition target = position == ISportsAMM.Position.Home ? home : away;
             if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
                 target = position == ISportsAMM.Position.Away ? away : draw;

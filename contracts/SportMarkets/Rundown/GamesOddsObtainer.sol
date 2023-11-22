@@ -94,7 +94,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
 
             address _main = consumer.marketPerGameId(_game.gameId);
             _setNormalizedOdds(_main, _game.gameId, true);
-            if (doesSportSupportSpreadAndTotal[_sportId]) {
+            if (doesSportSupportSpreadAndTotal[_sportId] || numberOfChildMarkets[_main] > 0) {
                 _obtainTotalAndSpreadOdds(_game, _main);
             }
 

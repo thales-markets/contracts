@@ -184,6 +184,76 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_totalStakedLastPeriodEnd",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_totalEscrowedLastPeriodEnd",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_bonusPoints",
+        "type": "uint256"
+      }
+    ],
+    "name": "SentOnClosePeriod",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_router",
+        "type": "address"
+      }
+    ],
+    "name": "SetCCIPRouter",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_baseRewardsPerPeriod",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_extraRewardsPerPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetPeriodRewards",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "SetStakingThales",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -265,24 +335,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_dummyNumber1",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_dummyNumber2",
-        "type": "uint256"
-      }
-    ],
-    "name": "ccipLocalReceive",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -398,30 +450,6 @@
         "type": "uint256"
       }
     ],
-    "name": "chainCalculatedBonusPointsInPeriod",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
     "name": "chainEscrowedAmountInPeriod",
     "outputs": [
       {
@@ -460,12 +488,31 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chainSelector",
+    "outputs": [
+      {
         "internalType": "uint64",
         "name": "",
         "type": "uint64"
       }
     ],
-    "name": "chainIndex",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "name": "chainSelectorIndex",
     "outputs": [
       {
         "internalType": "uint256",
@@ -521,7 +568,7 @@
         "type": "uint256"
       }
     ],
-    "name": "collectorForChain",
+    "name": "collectorAddress",
     "outputs": [
       {
         "internalType": "address",
@@ -540,24 +587,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getLastReceivedMessageDetails",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "messageId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "string",
-        "name": "text",
-        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -625,7 +654,7 @@
     "outputs": [
       {
         "internalType": "uint64",
-        "name": "chainSelector",
+        "name": "chainSelector_",
         "type": "uint64"
       }
     ],
@@ -848,35 +877,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint64",
-        "name": "destinationChainSelector",
-        "type": "uint64"
-      },
-      {
-        "internalType": "address",
-        "name": "receiver",
-        "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "text",
-        "type": "string"
-      }
-    ],
-    "name": "sendMessage",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "messageId",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_totalStakedLastPeriodEnd",
         "type": "uint256"
@@ -929,19 +929,6 @@
       }
     ],
     "name": "setCollectorForChain",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "_setFlag",
-        "type": "bool"
-      }
-    ],
-    "name": "setFlagBroadcastToAll",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1042,25 +1029,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "supportedChains",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
       }
     ],
     "stateMutability": "view",

@@ -17,7 +17,6 @@ import "../interfaces/IStakingThales.sol";
 
 import "./CCIPReceiverProxy.sol";
 
-import "hardhat/console.sol";
 
 /// @title - Cross Chain Collector contract for Thales staking rewards
 contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard, CCIPReceiverProxy {
@@ -25,16 +24,14 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
 
     IRouterClient private s_router;
-
-    bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
-    string private s_lastReceivedText; // Store the last received text.
+    address public stakingThales;
 
     address public masterCollector;
-    address public stakingThales;
     uint64 public masterCollectorChain;
-    mapping(uint => uint64) public supportedChains;
-    mapping(uint64 => uint) public chainIndex;
-    mapping(uint => address) public collectorForChain;
+    
+    mapping(uint => uint64) public chainSelector;
+    mapping(uint64 => uint) public chainSelectorIndex;
+    mapping(uint => address) public collectorAddress;
 
     mapping(uint => uint) public lastPeriodForChain;
     mapping(uint => mapping(uint => uint)) public chainStakedAmountInPeriod;
@@ -60,9 +57,10 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     bool public readyToBroadcast;
 
     mapping(uint => mapping(uint => uint)) public chainBonusPointsInPeriod;
-    mapping(uint => mapping(uint => uint)) public chainCalculatedBonusPointsInPeriod;
     mapping(uint => uint) public calculatedBonusPointsForPeriod;
 
+
+    /* ========== INITIALIZERS ========== */
     function initialize(
         address _router,
         bool _masterCollector,
@@ -75,9 +73,9 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         if (_masterCollector) {
             masterCollector = address(this);
             masterCollectorChain = _masterCollectorSelector;
-            supportedChains[0] = _masterCollectorSelector;
-            collectorForChain[_masterCollectorSelector] = address(this);
-            chainIndex[_masterCollectorSelector] = 0;
+            chainSelector[0] = _masterCollectorSelector;
+            collectorAddress[_masterCollectorSelector] = address(this);
+            chainSelectorIndex[_masterCollectorSelector] = 0;
             numOfActiveCollectors = 1;
             period = 1;
         }
@@ -85,110 +83,76 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     receive() external payable {}
 
+    /* ========== VIEW FUNCTIONS ========== */
+
     function isMasterCollector() external view returns (bool isMaster) {
         isMaster = masterCollector == address(this);
     }
+    
 
-    function setTestingPhase(bool _enableTesting) external onlyOwner {
-        if (_enableTesting) {
-            lastPeriodBeforeTesting = period;
-            testingPhase = true;
-            period = 0;
-        } else {
-            testingPhase = false;
-            period = lastPeriodBeforeTesting;
-        }
-    }
-
-    function setCollectorForChain(
-        uint64 _chainId,
-        address _collectorAddress,
-        uint _slot
-    ) external onlyOwner {
-        require(masterCollector == address(this), "NonMasterCollector");
-        require(_slot <= numOfActiveCollectors, "SlotTooBig");
-        if (_slot == numOfActiveCollectors) {
-            supportedChains[numOfActiveCollectors] = _chainId;
-            collectorForChain[_chainId] = _collectorAddress;
-            chainIndex[_chainId] = numOfActiveCollectors;
-            ++numOfActiveCollectors;
-        } else if (collectorForChain[_chainId] == address(0) && _collectorAddress == address(0)) {
-            --numOfActiveCollectors;
-            (collectorForChain[_chainId], supportedChains[chainIndex[_chainId]]) = (
-                collectorForChain[supportedChains[numOfActiveCollectors]],
-                supportedChains[numOfActiveCollectors]
-            );
-            delete collectorForChain[supportedChains[numOfActiveCollectors]];
-            delete supportedChains[numOfActiveCollectors];
-        } else {
-            supportedChains[_slot] = _chainId;
-            collectorForChain[_chainId] = _collectorAddress;
-            chainIndex[_chainId] = _slot;
-        }
-        emit CollectorForChainSet(_chainId, _collectorAddress);
-    }
-
-    function setMasterCollector(address _masterCollector, uint64 _materCollectorChainId) external onlyOwner {
-        masterCollector = _masterCollector;
-        masterCollectorChain = _materCollectorChainId;
-        collectorForChain[_materCollectorChainId] = _masterCollector;
-        supportedChains[0] = _materCollectorChainId;
-        chainIndex[_materCollectorChainId] = 0;
-        numOfActiveCollectors = numOfActiveCollectors == 0 ? 1 : numOfActiveCollectors;
-        emit MasterCollectorSet(_masterCollector, _materCollectorChainId);
-    }
-
-    function setCCIPRouter(address _router) external onlyOwner {
-        _setRouter(_router);
-        s_router = IRouterClient(_router);
-    }
-
-    function ccipLocalReceive(uint _dummyNumber1, uint _dummyNumber2) external {
-        Client.Any2EVMMessage memory evm2AnyMessage = Client.Any2EVMMessage({
-            messageId: keccak256(abi.encode(_dummyNumber1, _dummyNumber2)),
-            sourceChainSelector: masterCollectorChain,
-            sender: abi.encode(address(this)), // ABI-encoded receiver address
-            data: abi.encode(_dummyNumber1, _dummyNumber2), // ABI-encoded string
-            destTokenAmounts: new Client.EVMTokenAmount[](0) // Empty array indicating no tokens are being sent
-        });
-        _ccipReceive(evm2AnyMessage);
-    }
-
-    function lastMessageFromChainSelector() external view returns (uint64 chainSelector) {
+    function lastMessageFromChainSelector() external view returns (uint64 chainSelector_) {
         if (numOfMessagesReceived > 0) {
-            chainSelector = messagesReceivedFromChainSelector[numOfMessagesReceived - 1];
+            chainSelector_ = messagesReceivedFromChainSelector[numOfMessagesReceived - 1];
         }
     }
+
+    /* ========== EXTERNAL FUNCTIONS ========== */
+
+    function sendOnClosePeriod(
+        uint _totalStakedLastPeriodEnd,
+        uint _totalEscrowedLastPeriodEnd,
+        uint _bonusPoints
+    ) external {
+        require(msg.sender == stakingThales, "InvSender");
+        if (masterCollector == address(this)) {
+            _storeRewards(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, masterCollectorChain);
+            ++collectedResultsPerPeriod;
+            if (collectedResultsPerPeriod == numOfActiveCollectors) {
+                readyToBroadcast = true;
+            }
+        } else {
+            bytes memory message = abi.encode(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints);
+            _sendMessageToChain(masterCollectorChain, message);
+        }
+        emit SentOnClosePeriod(
+            _totalStakedLastPeriodEnd,
+            _totalEscrowedLastPeriodEnd,
+            _bonusPoints
+        );
+    }
+
+    function broadcastMessageToAll() external onlyOwner {
+        if (readyToBroadcast) {
+            _broadcastMessageToAll();
+            collectedResultsPerPeriod = 0;
+            readyToBroadcast = false;
+            ++period;
+        }
+    }
+
+    /* ========== INTERNAL FUNCTIONS ========== */
 
     /// handle a received message
     function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
-        s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
         // decoding the message
-        // s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
         address sender = abi.decode(any2EvmMessage.sender, (address));
         messagesReceivedFromChainSelector[numOfMessagesReceived] = any2EvmMessage.sourceChainSelector;
         messagesReceived[numOfMessagesReceived] = any2EvmMessage.data;
         ++numOfMessagesReceived;
 
-        console.log(">>> sender: ", sender);
-        console.log(">>> sourceChain: ", any2EvmMessage.sourceChainSelector);
-
         if (masterCollector == address(this)) {
-            uint chainSelector = any2EvmMessage.sourceChainSelector;
-            console.log("Sender matches: ", collectorForChain[chainSelector]);
+            uint sourceChainSelector = any2EvmMessage.sourceChainSelector;
             if (testingPhase) {
-                if (collectorForChain[chainSelector] == sender) {
-                    _calculateRewards(any2EvmMessage.data, chainSelector);
+                if (collectorAddress[sourceChainSelector] == sender) {
+                    _calculateRewards(any2EvmMessage.data, sourceChainSelector);
                 }
                 ++collectedResultsPerPeriod;
                 if (collectedResultsPerPeriod == numOfActiveCollectors) {
                     readyToBroadcast = true;
-                    // broadcast message
                 }
-            } else if (collectorForChain[chainSelector] == sender && lastPeriodForChain[chainSelector] < period) {
-                lastPeriodForChain[chainSelector] = period;
-                _calculateRewards(any2EvmMessage.data, chainSelector);
-                // perform calculations
+            } else if (collectorAddress[sourceChainSelector] == sender && lastPeriodForChain[sourceChainSelector] < period) {
+                lastPeriodForChain[sourceChainSelector] = period;
+                _calculateRewards(any2EvmMessage.data, sourceChainSelector);
                 ++collectedResultsPerPeriod;
                 if (collectedResultsPerPeriod == numOfActiveCollectors) {
                     readyToBroadcast = true;
@@ -205,28 +169,20 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         );
     }
 
-    function setFlagBroadcastToAll(bool _setFlag) external onlyOwner {
-        readyToBroadcast = _setFlag;
-        if (!_setFlag) {
-            collectedResultsPerPeriod = 0;
-            calculatedStakedAmountForPeriod[period] = 0;
-            calculatedEscrowedAmountForPeriod[period] = 0;
-            calculatedBonusPointsForPeriod[period] = 0;
-        }
-    }
+    // function setFlagBroadcastToAll(bool _setFlag) external onlyOwner {
+    //     readyToBroadcast = _setFlag;
+    //     if (!_setFlag) {
+    //         collectedResultsPerPeriod = 0;
+    //         calculatedStakedAmountForPeriod[period] = 0;
+    //         calculatedEscrowedAmountForPeriod[period] = 0;
+    //         calculatedBonusPointsForPeriod[period] = 0;
+    //     }
+    // }
 
-    function broadcastMessageToAll() external onlyOwner {
-        if (readyToBroadcast) {
-            _broadcastMessageToAll();
-            collectedResultsPerPeriod = 0;
-            readyToBroadcast = false;
-            ++period;
-        }
-    }
 
-    function _calculateRewards(bytes memory data, uint chainSelector) internal {
+    function _calculateRewards(bytes memory data, uint _chainSelector) internal {
         (uint stakedAmount, uint escrowedAmount, uint bonusPoints) = abi.decode(data, (uint, uint, uint));
-        _storeRewards(stakedAmount, escrowedAmount, bonusPoints, chainSelector);
+        _storeRewards(stakedAmount, escrowedAmount, bonusPoints, _chainSelector);
     }
 
     function _storeRewards(
@@ -238,11 +194,6 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         chainStakedAmountInPeriod[period][_chainSelector] = _stakedAmount;
         chainEscrowedAmountInPeriod[period][_chainSelector] = _escrowedAmount;
         chainBonusPointsInPeriod[period][_chainSelector] = _bonusPoints;
-        console.log(">>> chainSelector: ", _chainSelector);
-        console.log(">>> period: ", period);
-        console.log(">>> stakedAmount: ", chainStakedAmountInPeriod[period][_chainSelector]);
-        console.log(">>> escrowedAmount: ", chainEscrowedAmountInPeriod[period][_chainSelector]);
-        console.log(">>> bonusPoints: ", chainBonusPointsInPeriod[period][_chainSelector]);
 
         calculatedStakedAmountForPeriod[period] += _stakedAmount;
         calculatedEscrowedAmountForPeriod[period] += _escrowedAmount;
@@ -255,30 +206,17 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         bytes memory message;
 
         for (uint i = 0; i < numOfActiveCollectors; i++) {
-            console.log(">>>> here");
-            console.log(">>>> supportedChain:", supportedChains[i]);
-            console.log(">>> period: ", period);
-            console.log(">>>> stakedAmount:", chainStakedAmountInPeriod[period][supportedChains[i]]);
-            console.log(">>>> calculatedStakedAmountForPeriod:", calculatedStakedAmountForPeriod[period]);
-            console.log(">>>> calculatedEscrowedAmountForPeriod:", calculatedEscrowedAmountForPeriod[period]);
             chainBaseRewards =
-                (chainStakedAmountInPeriod[period][supportedChains[i]] * baseRewardsPerPeriod) /
+                (chainStakedAmountInPeriod[period][chainSelector[i]] * baseRewardsPerPeriod) /
                 (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
 
-            console.log(">>> chainBaseRewards: ", chainBaseRewards);
-            // chainExtraRewards =
-            //     (chainStakedAmountInPeriod[period][supportedChains[i]] * extraRewardsPerPeriod) /
-            //     (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
             chainExtraRewards =
-                (chainBonusPointsInPeriod[period][supportedChains[i]] * extraRewardsPerPeriod) /
+                (chainBonusPointsInPeriod[period][chainSelector[i]] * extraRewardsPerPeriod) /
                 (calculatedBonusPointsForPeriod[period]);
 
-            console.log(">>> chainExtraRewards: ", chainExtraRewards);
-            chainBaseRewardsInPeriod[period][supportedChains[i]] = chainBaseRewards;
-            chainExtraRewardsInPeriod[period][supportedChains[i]] = chainExtraRewards;
+            chainBaseRewardsInPeriod[period][chainSelector[i]] = chainBaseRewards;
+            chainExtraRewardsInPeriod[period][chainSelector[i]] = chainExtraRewards;
 
-            console.log(">>> supportedChain: ", i, supportedChains[i]);
-            // chainCalculatedBonusPointsInPeriod[period][supportedChains[i]] = chainBonusPoints;
             message = abi.encode(
                 chainBaseRewards,
                 chainExtraRewards,
@@ -293,23 +231,14 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                     calculatedEscrowedAmountForPeriod[period]
                 );
             } else {
-                _sendMessageToChain(supportedChains[i], message);
+                _sendMessageToChain(chainSelector[i], message);
             }
         }
     }
 
-    function setStakingThales(address _stakingThales) external onlyOwner {
-        stakingThales = _stakingThales;
-    }
-
-    function setPeriodRewards(uint _baseRewardsPerPeriod, uint _extraRewardsPerPeriod) external onlyOwner {
-        baseRewardsPerPeriod = _baseRewardsPerPeriod;
-        extraRewardsPerPeriod = _extraRewardsPerPeriod;
-    }
-
-    function _sendMessageToChain(uint64 chainSelector, bytes memory _message) internal returns (bytes32 messageId) {
+    function _sendMessageToChain(uint64 _chainSelector, bytes memory _message) internal returns (bytes32 messageId) {
         Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
-            receiver: abi.encode(collectorForChain[chainSelector]), // ABI-encoded receiver address
+            receiver: abi.encode(collectorAddress[_chainSelector]), // ABI-encoded receiver address
             data: _message, // ABI-encoded string
             tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array indicating no tokens are being sent
             extraArgs: Client._argsToBytes(
@@ -321,15 +250,15 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         });
 
         // Get the fee required to send the message
-        uint256 fees = s_router.getFee(chainSelector, evm2AnyMessage);
+        uint256 fees = s_router.getFee(_chainSelector, evm2AnyMessage);
 
         if (fees > address(this).balance) revert NotEnoughBalance(address(this).balance, fees);
 
         // Send the message through the router and store the returned message ID
-        messageId = s_router.ccipSend{value: fees}(chainSelector, evm2AnyMessage);
+        messageId = s_router.ccipSend{value: fees}(_chainSelector, evm2AnyMessage);
 
         // Emit an event with message details
-        emit MessageSent(messageId, chainSelector, collectorForChain[chainSelector], _message, address(0), fees);
+        emit MessageSent(messageId, _chainSelector, collectorAddress[_chainSelector], _message, address(0), fees);
 
         // Return the message ID
         return messageId;
@@ -352,69 +281,75 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         IStakingThales(stakingThales).updateStakingRewards(_baseRewards, _extraRewards, _stakedAmount, _escrowedAmount);
     }
 
-    function sendOnClosePeriod(
-        uint _totalStakedLastPeriodEnd,
-        uint _totalEscrowedLastPeriodEnd,
-        uint _bonusPoints
-    ) external {
-        require(msg.sender == stakingThales, "InvSender");
-        if (masterCollector == address(this)) {
-            _storeRewards(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, masterCollectorChain);
-            ++collectedResultsPerPeriod;
-            if (collectedResultsPerPeriod == numOfActiveCollectors) {
-                readyToBroadcast = true;
-            }
+    /* ========== CONTRACT SETTERS FUNCTIONS ========== */
+
+    function setStakingThales(address _stakingThales) external onlyOwner {
+        stakingThales = _stakingThales;
+        emit SetStakingThales(_stakingThales);
+    }
+
+    function setCCIPRouter(address _router) external onlyOwner {
+        _setRouter(_router);
+        s_router = IRouterClient(_router);
+        emit SetCCIPRouter(_router);
+    }
+
+    function setPeriodRewards(uint _baseRewardsPerPeriod, uint _extraRewardsPerPeriod) external onlyOwner {
+        baseRewardsPerPeriod = _baseRewardsPerPeriod;
+        extraRewardsPerPeriod = _extraRewardsPerPeriod;
+        emit SetPeriodRewards(_baseRewardsPerPeriod, _extraRewardsPerPeriod);
+    }
+
+    function setMasterCollector(address _masterCollector, uint64 _materCollectorChainId) external onlyOwner {
+        masterCollector = _masterCollector;
+        masterCollectorChain = _materCollectorChainId;
+        collectorAddress[_materCollectorChainId] = _masterCollector;
+        chainSelector[0] = _materCollectorChainId;
+        chainSelectorIndex[_materCollectorChainId] = 0;
+        numOfActiveCollectors = numOfActiveCollectors == 0 ? 1 : numOfActiveCollectors;
+        emit MasterCollectorSet(_masterCollector, _materCollectorChainId);
+    }
+
+    function setCollectorForChain(
+        uint64 _chainId,
+        address _collectorAddress,
+        uint _slot
+    ) external onlyOwner {
+        require(masterCollector == address(this), "NonMasterCollector");
+        require(_slot <= numOfActiveCollectors, "SlotTooBig");
+        if (_slot == numOfActiveCollectors) {
+            chainSelector[numOfActiveCollectors] = _chainId;
+            collectorAddress[_chainId] = _collectorAddress;
+            chainSelectorIndex[_chainId] = numOfActiveCollectors;
+            ++numOfActiveCollectors;
+        } else if (collectorAddress[_chainId] == address(0) && _collectorAddress == address(0)) {
+            --numOfActiveCollectors;
+            (collectorAddress[_chainId], chainSelector[chainSelectorIndex[_chainId]]) = (
+                collectorAddress[chainSelector[numOfActiveCollectors]],
+                chainSelector[numOfActiveCollectors]
+            );
+            delete collectorAddress[chainSelector[numOfActiveCollectors]];
+            delete chainSelector[numOfActiveCollectors];
         } else {
-            bytes memory message = abi.encode(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints);
-            _sendMessageToChain(masterCollectorChain, message);
+            chainSelector[_slot] = _chainId;
+            collectorAddress[_chainId] = _collectorAddress;
+            chainSelectorIndex[_chainId] = _slot;
+        }
+        emit CollectorForChainSet(_chainId, _collectorAddress);
+    }
+
+    function setTestingPhase(bool _enableTesting) external onlyOwner {
+        if (_enableTesting) {
+            lastPeriodBeforeTesting = period;
+            testingPhase = true;
+            period = 0;
+        } else {
+            testingPhase = false;
+            period = lastPeriodBeforeTesting;
         }
     }
 
-    /// @notice Fetches the details of the last received message.
-    /// @return messageId The ID of the last received message.
-    /// @return text The last received text.
-    function getLastReceivedMessageDetails() external view returns (bytes32 messageId, string memory text) {
-        return (s_lastReceivedMessageId, s_lastReceivedText);
-    }
-
-    /// @notice Sends data to receiver on the destination chain.
-    /// @dev Assumes your contract has sufficient LINK.
-    /// @param destinationChainSelector The identifier (aka selector) for the destination blockchain.
-    /// @param receiver The address of the recipient on the destination blockchain.
-    /// @param text The string text to be sent.
-    /// @return messageId The ID of the message that was sent.
-    function sendMessage(
-        uint64 destinationChainSelector,
-        address receiver,
-        string calldata text
-    ) external onlyOwner returns (bytes32 messageId) {
-        // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
-        Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
-            receiver: abi.encode(receiver), // ABI-encoded receiver address
-            data: abi.encode(text), // ABI-encoded string
-            tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array indicating no tokens are being sent
-            extraArgs: Client._argsToBytes(
-                // Additional arguments, setting gas limit and non-strict sequencing mode
-                Client.EVMExtraArgsV1({gasLimit: 2000000, strict: false})
-            ),
-            // Set the feeToken  address, indicating LINK will be used for fees
-            feeToken: address(0)
-        });
-
-        // Get the fee required to send the message
-        uint256 fees = s_router.getFee(destinationChainSelector, evm2AnyMessage);
-
-        if (fees > address(this).balance) revert NotEnoughBalance(address(this).balance, fees);
-
-        // Send the message through the router and store the returned message ID
-        messageId = s_router.ccipSend{value: fees}(destinationChainSelector, evm2AnyMessage);
-
-        // Emit an event with message details
-        emit MessageSent(messageId, destinationChainSelector, receiver, bytes(text), address(0), fees);
-
-        // Return the message ID
-        return messageId;
-    }
+    /* ========== EVENTS ========== */
 
     // Event emitted when a message is sent to another chain.
     event MessageSent(
@@ -436,4 +371,9 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     event CollectorForChainSet(uint64 chainId, address collectorAddress);
     event MasterCollectorSet(address masterCollector, uint64 materCollectorChainId);
+    event SetPeriodRewards(uint _baseRewardsPerPeriod, uint _extraRewardsPerPeriod);
+    event SetCCIPRouter(address _router);
+    event SetStakingThales(address _stakingThales);
+    event SentOnClosePeriod(uint _totalStakedLastPeriodEnd, uint _totalEscrowedLastPeriodEnd, uint _bonusPoints);
+
 }

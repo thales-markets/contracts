@@ -399,6 +399,11 @@ contract('CCIP Staking', (accounts) => {
 			await CCIPCollectorA.setCCIPRouter(CCIPRouter.address, { from: owner });
 			assert.equal(await CCIPCollectorA.getRouter(), CCIPRouter.address);
 		});
+		it('CCIP: set chain selector to 0 and back', async () => {
+			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			await CCIPCollectorA.setCollectorForChain(0, ZERO_ADDRESS, 1, { from: owner });
+			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+		});
 		it('CCIP: equal rewards distribution', async () => {
 			await StakingMockA.stake(toUnit(1000), {
 				from: staker,

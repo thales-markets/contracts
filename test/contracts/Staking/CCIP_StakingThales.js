@@ -70,6 +70,19 @@ contract('CCIP Staking', (accounts) => {
 				{ from: owner }
 			);
 		});
+		it('StakingRewards: add Vaults, add LPs, set Manager', async () => {
+			await StakingThalesBonusRewardsManagerA.addVaults(
+				[CCIPRouter.address, CCIPCollectorA.address, CCIPCollectorB.address],
+				true,
+				{ from: owner }
+			);
+			await StakingThalesBonusRewardsManagerA.addLPs(
+				[CCIPRouter.address, CCIPCollectorA.address, CCIPCollectorB.address],
+				true,
+				{ from: owner }
+			);
+			await StakingThalesBonusRewardsManagerA.setManager(staker, { from: owner });
+		});
 		it('deploy and test', async () => {
 			await StakingMockA.stake(toUnit(100000), {
 				from: staker,

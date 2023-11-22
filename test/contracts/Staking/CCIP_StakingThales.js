@@ -395,6 +395,10 @@ contract('CCIP Staking', (accounts) => {
 				parseFloat(fromUnit(extraRewardsA)) / parseFloat(fromUnit(extraRewardsB))
 			);
 		});
+		it('CCIP: set and check Router', async () => {
+			await CCIPCollectorA.setCCIPRouter(CCIPRouter.address, { from: owner });
+			assert.equal(await CCIPCollectorA.getRouter(), CCIPRouter.address);
+		});
 		it('CCIP: equal rewards distribution', async () => {
 			await StakingMockA.stake(toUnit(1000), {
 				from: staker,
@@ -511,6 +515,205 @@ contract('CCIP Staking', (accounts) => {
 			console.log('CCIP B: ', CCIPCollectorB.address);
 			collectedResults = await CCIPCollectorA.collectedResultsPerPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
+
+			totalStakedA = await StakingMockA.stakedAmount();
+			totalEscrowedA = await StakingMockA.escrowedAmount();
+
+			totalStakedB = await StakingMockB.stakedAmount();
+			totalEscrowedB = await StakingMockB.escrowedAmount();
+			console.log('totalStakedA: ', fromUnit(totalStakedA));
+			console.log('totalEscrowedA: ', fromUnit(totalEscrowedA));
+
+			console.log('totalStakedB: ', fromUnit(totalStakedB));
+			console.log('totalEscrowedB: ', fromUnit(totalEscrowedB));
+
+			pausedA = await StakingMockA.paused();
+			pausedB = await StakingMockB.paused();
+			console.log('pausedA: ', pausedA);
+			console.log('pausedB: ', pausedB);
+
+			let readyToBroadcast = await CCIPCollectorA.readyToBroadcast();
+			assert.equal(readyToBroadcast, true);
+
+			console.log('Ready to broadcast update: ', readyToBroadcast);
+			console.log('Broadcast messages!');
+			let activeCollectors = await CCIPCollectorA.numOfActiveCollectors();
+			console.log('numOfActiveCollectors: ', activeCollectors.toString());
+
+			await CCIPCollectorA.broadcastMessageToAll({ from: owner });
+
+			pausedA = await StakingMockA.paused();
+			pausedB = await StakingMockB.paused();
+			console.log('pausedA: ', pausedA);
+			console.log('pausedB: ', pausedB);
+
+			totalStakedA = await StakingMockA.stakedAmount();
+			totalEscrowedA = await StakingMockA.escrowedAmount();
+			let fixedRewardsA = await StakingMockA.fixedRewards();
+			let fixedRewardsB = await StakingMockB.fixedRewards();
+			let extraRewardsA = await StakingMockA.extraRewards();
+			let extraRewardsB = await StakingMockB.extraRewards();
+
+			totalStakedB = await StakingMockB.stakedAmount();
+			totalEscrowedB = await StakingMockB.escrowedAmount();
+			totalPointsA = await StakingThalesBonusRewardsManagerA.totalRoundBonusPoints(roundA);
+			totalPointsB = await StakingThalesBonusRewardsManagerB.totalRoundBonusPoints(roundB);
+			roundA = await StakingMockA.round();
+			roundB = await StakingMockB.round();
+			console.log('roundA: ', roundA.toString());
+			console.log('roundB: ', roundB.toString());
+
+			console.log('totalStakedA: ', fromUnit(totalStakedA));
+			console.log('totalEscrowedA: ', fromUnit(totalEscrowedA));
+
+			console.log('totalStakedB: ', fromUnit(totalStakedB));
+			console.log('totalEscrowedB: ', fromUnit(totalEscrowedB));
+
+			console.log('fixedRewardsA: ', fromUnit(fixedRewardsA));
+			console.log('extraRewardsA: ', fromUnit(extraRewardsA));
+			console.log('fixedRewardsB: ', fromUnit(fixedRewardsB));
+			console.log('extraRewardsB: ', fromUnit(extraRewardsB));
+			console.log('totalPointsA: ', fromUnit(totalPointsA));
+			console.log('totalPointsB: ', fromUnit(totalPointsB));
+			console.log(
+				'ratio points: ',
+				parseFloat(fromUnit(totalPointsA)) / parseFloat(fromUnit(totalPointsB))
+			);
+			console.log(
+				'ratio extra: ',
+				parseFloat(fromUnit(extraRewardsA)) / parseFloat(fromUnit(extraRewardsB))
+			);
+
+			assert.equal(fromUnit(fixedRewardsA), fromUnit(fixedRewardsB));
+			assert.equal(fromUnit(extraRewardsA) * 10, fromUnit(extraRewardsB));
+			assert.equal(fromUnit(totalPointsA) * 10, fromUnit(totalPointsB));
+			assert.equal(
+				parseFloat(fromUnit(totalPointsA)) / parseFloat(fromUnit(totalPointsB)),
+				parseFloat(fromUnit(extraRewardsA)) / parseFloat(fromUnit(extraRewardsB))
+			);
+		});
+
+		it('CCIP: equal rewards distribution', async () => {
+			await StakingMockA.stake(toUnit(1000), {
+				from: staker,
+			});
+
+			await StakingMockA.stake(toUnit(1000), {
+				from: secondStaker,
+			});
+
+			await StakingMockA.stake(toUnit(1000), {
+				from: thirdStaker,
+			});
+
+			await StakingThalesBonusRewardsManagerA.setStakingBaseDivider(100000, { from: owner });
+			await StakingThalesBonusRewardsManagerA.setMaxStakingMultiplier(toUnit(4), { from: owner });
+
+			await StakingMockB.stake(toUnit(1000), {
+				from: staker,
+			});
+
+			await StakingMockB.stake(toUnit(1000), {
+				from: secondStaker,
+			});
+
+			await StakingMockB.stake(toUnit(1000), {
+				from: thirdStaker,
+			});
+
+			await StakingThalesBonusRewardsManagerB.setStakingBaseDivider(100000, { from: owner });
+			await StakingThalesBonusRewardsManagerB.setMaxStakingMultiplier(toUnit(4), { from: owner });
+			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, { from: owner });
+			let masterCollectorInB = await CCIPCollectorB.masterCollector();
+			let masterCollectorChainInB = await CCIPCollectorB.masterCollectorChain();
+			assert.equal(masterCollectorInB, CCIPCollectorA.address);
+			console.log(
+				'Master collector in B: ',
+				masterCollectorInB,
+				' chainId: ',
+				masterCollectorChainInB.toString()
+			);
+			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
+			console.log('isMasterCollectorA: ', isMasterCollectorA);
+
+			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), { from: owner });
+			await CCIPCollectorA.setTestingPhase(true, { from: owner });
+			await CCIPCollectorB.setTestingPhase(true, { from: owner });
+			let baseRewardsPerPeriod = await CCIPCollectorA.baseRewardsPerPeriod();
+			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
+			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
+			console.log('extraRewardsPerPeriod: ', fromUnit(extraRewardsPerPeriod));
+			let collectedResults = await CCIPCollectorA.collectedResultsPerPeriod();
+			console.log('collectedResults in period: ', collectedResults.toString());
+
+			let totalStakedA = await StakingMockA.stakedAmount();
+			let totalEscrowedA = await StakingMockA.escrowedAmount();
+
+			let totalStakedB = await StakingMockB.stakedAmount();
+			let totalEscrowedB = await StakingMockB.escrowedAmount();
+			console.log('totalStakedA: ', fromUnit(totalStakedA));
+			console.log('totalEscrowedA: ', fromUnit(totalEscrowedA));
+
+			console.log('totalStakedB: ', fromUnit(totalStakedB));
+			console.log('totalEscrowedB: ', fromUnit(totalEscrowedB));
+
+			await StakingThalesBonusRewardsManagerA.setMultipliers(toUnit(0.25), toUnit(0.5), toUnit(1), {
+				from: owner,
+			});
+			await StakingThalesBonusRewardsManagerB.setMultipliers(toUnit(0.25), toUnit(0.5), toUnit(1), {
+				from: owner,
+			});
+
+			await StakingThalesBonusRewardsManagerA.setKnownLiquidityPool(firstLP, true, { from: owner });
+			await StakingThalesBonusRewardsManagerA.setKnownTradingAMM(firstAMM, true, { from: owner });
+
+			await StakingMockA.updateVolumeWithOrigin(staker, toUnit(10), firstAMM, {
+				from: owner,
+			});
+
+			await StakingMockA.updateVolumeWithOrigin(secondStaker, toUnit(10), firstLP, {
+				from: owner,
+			});
+
+			await StakingThalesBonusRewardsManagerB.setKnownLiquidityPool(firstLP, true, { from: owner });
+			await StakingThalesBonusRewardsManagerB.setKnownTradingAMM(firstAMM, true, { from: owner });
+
+			await StakingMockB.updateVolumeWithOrigin(staker, toUnit(100), firstAMM, {
+				from: owner,
+			});
+
+			await StakingMockB.updateVolumeWithOrigin(secondStaker, toUnit(100), firstLP, {
+				from: owner,
+			});
+
+			let roundA = await StakingMockA.round();
+			let roundB = await StakingMockB.round();
+			let totalPointsA = await StakingThalesBonusRewardsManagerA.totalRoundBonusPoints(roundA);
+			let totalPointsB = await StakingThalesBonusRewardsManagerB.totalRoundBonusPoints(roundB);
+
+			console.log('roundA: ', roundA.toString());
+			console.log('totalPointsA: ', fromUnit(totalPointsA));
+			console.log('roundB: ', roundB.toString());
+			console.log('totalPointsB: ', fromUnit(totalPointsB));
+
+			let pausedA = await StakingMockA.paused();
+			let pausedB = await StakingMockB.paused();
+			console.log('pausedA: ', pausedA);
+			console.log('pausedB: ', pausedB);
+
+			console.log('Closing round \n ----------------');
+
+			await StakingMockA.closePeriod();
+			collectedResults = await CCIPCollectorA.collectedResultsPerPeriod();
+			console.log('collectedResults in period: ', collectedResults.toString());
+			await StakingMockB.closePeriod();
+			console.log('CCIP B: ', CCIPCollectorB.address);
+			collectedResults = await CCIPCollectorA.collectedResultsPerPeriod();
+			console.log('collectedResults in period: ', collectedResults.toString());
+
+			let lastMessageFromChainSelector = CCIPCollectorA.lastMessageFromChainSelector();
+			console.log('Message from chainSelector: ', lastMessageFromChainSelector.toString());
 
 			totalStakedA = await StakingMockA.stakedAmount();
 			totalEscrowedA = await StakingMockA.escrowedAmount();

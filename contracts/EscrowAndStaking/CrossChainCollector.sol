@@ -169,16 +169,6 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         );
     }
 
-    // function setFlagBroadcastToAll(bool _setFlag) external onlyOwner {
-    //     readyToBroadcast = _setFlag;
-    //     if (!_setFlag) {
-    //         collectedResultsPerPeriod = 0;
-    //         calculatedStakedAmountForPeriod[period] = 0;
-    //         calculatedEscrowedAmountForPeriod[period] = 0;
-    //         calculatedBonusPointsForPeriod[period] = 0;
-    //     }
-    // }
-
 
     function _calculateRewards(bytes memory data, uint _chainSelector) internal {
         (uint stakedAmount, uint escrowedAmount, uint bonusPoints) = abi.decode(data, (uint, uint, uint));

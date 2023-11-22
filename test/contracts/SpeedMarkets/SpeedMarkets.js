@@ -94,7 +94,7 @@ contract('SpeedMarkets', (accounts) => {
 			let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
 				toBytes32('ETH')
 			);
-			let skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
+			let skewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
 
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
@@ -119,7 +119,7 @@ contract('SpeedMarkets', (accounts) => {
 			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
 				toBytes32('ETH')
 			);
-			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
+			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
 
 			console.log('buy UP for the same amount as previous DOWN');
 			await speedMarketsAMM.createNewMarket(
@@ -154,7 +154,7 @@ contract('SpeedMarkets', (accounts) => {
 			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
 				toBytes32('ETH')
 			);
-			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
+			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
 
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
@@ -190,9 +190,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			const lpFeeByDeltaTime = 0.05; // set in init for above 2h market
 			const expectedLpFee =
-				lpFeeByDeltaTime +
-				getSkewImpact(riskPerAssetAndDirectionData, marketData[0].buyinAmount, maxSkewImpact) /
-					1e18;
+				lpFeeByDeltaTime + getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact) / 1e18;
 			assert.equal(marketData[0].lpFee / 1e18, expectedLpFee.toFixed(5));
 
 			now = await currentTime();

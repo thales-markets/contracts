@@ -275,6 +275,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint64 strikeTime,
         uint skewImapct
     ) internal returns (uint lpFeeWithSkew) {
+        // LP fee by delta time + skew impact based on risk per direction and asset
+        uint skew = (((currentRiskPerAssetAndDirection[asset][direction] * ONE) /
+            maxRiskPerAssetAndDirection[asset][direction]) * maxSkewImpact) / ONE;
+        require(skew <= skewImapct + SKEW_SLIPPAGE, "Skew slippage exceeded");
+
         SpeedMarket.Direction oppositeDirection = direction == SpeedMarket.Direction.Up
             ? SpeedMarket.Direction.Down
             : SpeedMarket.Direction.Up;
@@ -293,10 +298,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             );
         }
 
-        // LP fee by delta time + skew impact based on risk per direction and asset
-        uint skew = (((currentRiskPerAssetAndDirection[asset][direction] * ONE) /
-            maxRiskPerAssetAndDirection[asset][direction]) * maxSkewImpact) / ONE;
-        require(skew <= skewImapct + SKEW_SLIPPAGE, "Skew slippage exceeded");
+        currentRiskPerAsset[asset] += (buyinAmount * (ONE - safeBoxImpact - lpFeeWithSkew)) / ONE;
+        require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
 
         lpFeeWithSkew =
             speedMarketsAMMUtils.getFeeByTimeThreshold(
@@ -306,9 +309,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 lpFee
             ) +
             skew;
-
-        currentRiskPerAsset[asset] += (buyinAmount * (ONE - safeBoxImpact - lpFeeWithSkew)) / ONE;
-        require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
     }
 
     function _handleReferrerAndSafeBox(

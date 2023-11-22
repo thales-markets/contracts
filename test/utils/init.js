@@ -131,7 +131,7 @@ module.exports = {
 		let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
 			toBytes32('ETH')
 		);
-		let initialSkewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(0), maxSkewImpact);
+		let initialSkewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
 
 		return {
 			speedMarketsAMM,

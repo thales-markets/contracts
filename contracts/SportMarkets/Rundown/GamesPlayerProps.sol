@@ -52,7 +52,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => mapping(uint64 => mapping(uint8 => mapping(uint16 => address))))
         public mainMarketPlayerOptionLineChildMarket;
     mapping(address => address) public childMarketMainMarket;
-    mapping(address => mapping(uint => mapping(uint8 => address))) public currentActiveChildMarketPerPlayerAndOption;
+    mapping(address => mapping(uint64 => mapping(uint8 => address))) public currentActiveChildMarketPerPlayerAndOption;
     mapping(address => uint[]) public normalizedOddsForMarket;
     mapping(address => bool) public normalizedOddsForMarketFulfilled;
     mapping(address => bool) public childMarketCreated;

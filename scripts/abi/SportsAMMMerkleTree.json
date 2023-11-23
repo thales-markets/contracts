@@ -7,6 +7,12 @@
         "internalType": "address",
         "name": "_sportsAMM",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_riskManager",
+        "type": "address"
       }
     ],
     "name": "AddressesUpdated",
@@ -152,6 +158,11 @@
         "internalType": "contract ISportsAMM",
         "name": "_sportsAmm",
         "type": "address"
+      },
+      {
+        "internalType": "contract ISportAMMRiskManager",
+        "name": "_riskManager",
+        "type": "address"
       }
     ],
     "name": "initialize",
@@ -213,6 +224,19 @@
   },
   {
     "inputs": [],
+    "name": "riskManager",
+    "outputs": [
+      {
+        "internalType": "contract ISportAMMRiskManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "root",
     "outputs": [
       {
@@ -229,6 +253,11 @@
       {
         "internalType": "address",
         "name": "_sportsAMM",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_riskManager",
         "type": "address"
       }
     ],

@@ -164,6 +164,25 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "_sportID",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_isMerkleTree",
+        "type": "bool"
+      }
+    ],
+    "name": "SetIsMerkleTreeSport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "_maxCap",
         "type": "uint256"
       },
@@ -781,6 +800,25 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "isMerkleTreeSport",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_totalSpent",
         "type": "uint256"
       },
@@ -1096,6 +1134,24 @@
       }
     ],
     "name": "setDynamicLiquidityParamsPerSport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isMerkleTree",
+        "type": "bool"
+      }
+    ],
+    "name": "setIsMerkleTreeSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

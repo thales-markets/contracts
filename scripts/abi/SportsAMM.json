@@ -682,6 +682,87 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "baseOdds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "useSafeBoxSkewImpact",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "available",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "useAvailable",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "useDefaultMinSpread",
+        "type": "bool"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "isDoubleChance",
+            "type": "bool"
+          },
+          {
+            "internalType": "enum ISportsAMM.Position",
+            "name": "position1",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum ISportsAMM.Position",
+            "name": "position2",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "parentMarket",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ISportsAMM.DoubleChanceStruct",
+        "name": "dcs",
+        "type": "tuple"
+      }
+    ],
+    "name": "buyFromAmmQuoteWithBaseOdds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "returnQuote",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "collateral",
         "type": "address"
@@ -774,6 +855,47 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "getDoubleChanceStruct",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "isDoubleChance",
+            "type": "bool"
+          },
+          {
+            "internalType": "enum ISportsAMM.Position",
+            "name": "position1",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum ISportsAMM.Position",
+            "name": "position2",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "parentMarket",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ISportsAMM.DoubleChanceStruct",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",

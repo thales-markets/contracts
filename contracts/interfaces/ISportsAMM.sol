@@ -21,6 +21,13 @@ interface ISportsAMM {
         uint additionalSlippage;
     }
 
+    struct DoubleChanceStruct {
+        bool isDoubleChance;
+        ISportsAMM.Position position1;
+        ISportsAMM.Position position2;
+        address parentMarket;
+    }
+
     function theRundownConsumer() external view returns (address);
 
     function riskManager() external view returns (ISportAMMRiskManager riskManager);
@@ -101,4 +108,18 @@ interface ISportsAMM {
     ) external view returns (uint availableAmount);
 
     function floorBaseOdds(uint baseOdds, address market) external view returns (uint);
+
+    function buyFromAmmQuoteWithBaseOdds(
+        address market,
+        ISportsAMM.Position position,
+        uint amount,
+        uint baseOdds,
+        uint useSafeBoxSkewImpact,
+        uint available,
+        bool useAvailable,
+        bool useDefaultMinSpread,
+        DoubleChanceStruct memory dcs
+    ) external view returns (uint);
+
+    function getDoubleChanceStruct(address market) external view returns (DoubleChanceStruct memory);
 }

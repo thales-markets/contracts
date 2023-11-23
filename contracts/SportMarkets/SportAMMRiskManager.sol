@@ -50,6 +50,8 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     mapping(uint => uint) public dynamicLiquidityCutoffTimePerSport;
     mapping(uint => uint) public dynamicLiquidityCutoffDividerPerSport;
 
+    mapping(uint => bool) public isMerkleTreeSport;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -366,6 +368,11 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         emit SetPlayerPropsOnePositional(_playerPropsOptionTag, _flag);
     }
 
+    function setIsMerkleTreeSport(uint _sportID, bool _isMerkleTree) external onlyOwner {
+        isMerkleTreeSport[_sportID] = _isMerkleTree;
+        emit SetIsMerkleTreeSport(_sportID, _isMerkleTree);
+    }
+
     function getMinSpreadToUse(
         bool useDefaultMinSpread,
         address market,
@@ -409,4 +416,5 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     event SetSportOnePositional(uint _sport, bool _flag);
     event SetPlayerPropsOnePositional(uint _playerPropsOptionTag, bool _flag);
     event SetDynamicLiquidityParams(uint _sport, uint _dynamicLiquidityCutoffTime, uint _dynamicLiquidityCutoffDivider);
+    event SetIsMerkleTreeSport(uint _sportID, bool _isMerkleTree);
 }

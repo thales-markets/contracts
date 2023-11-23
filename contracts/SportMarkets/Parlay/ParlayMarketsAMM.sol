@@ -510,8 +510,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             marketQuotes
         );
 
-        emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
-
         _knownMarkets.add(address(parlayMarket));
         sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
 
@@ -522,6 +520,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         // buy the positions
         sUSD.safeTransfer(address(parlayMarket), totalAmount);
         _storeRisk(_sportMarkets, (totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)));
+
+        emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
 
         emit ParlayMarketCreated(
             address(parlayMarket),

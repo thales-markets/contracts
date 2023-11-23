@@ -563,6 +563,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         require(ISportPositionalMarketManager(manager).isKnownMarket(market), "unknown market");
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+        require(address(home) != address(0), "0A");
         (uint homeBalance, uint awayBalance, uint drawBalance) = ISportPositionalMarket(market).balancesOf(msg.sender);
 
         _sendFromIfNotZero(msg.sender, address(home), address(this), homeBalance);
@@ -970,6 +971,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         _sendIfNotZero(address(sUSD), _liquidityPool, sUSD.balanceOf(address(this)));
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+        require(address(home) != address(0), "0A");
 
         (uint homeBalance, uint awayBalance, uint drawBalance) = ISportPositionalMarket(market).balancesOf(address(this));
 

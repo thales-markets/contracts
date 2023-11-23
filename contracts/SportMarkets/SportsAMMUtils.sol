@@ -182,6 +182,9 @@ contract SportsAMMUtils {
             ISportPositionalMarket(market).resolved()
         ) {
             (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+            if (_hasNotBeenInitialized(home)) {
+                return false;
+            }
             if (
                 (home.getBalanceOf(address(toCheck)) > 0) ||
                 (away.getBalanceOf(address(toCheck)) > 0) ||
@@ -252,7 +255,11 @@ contract SportsAMMUtils {
             uint drawBalance
         )
     {
+        // check if balanceOf from ISportPositionalMarket can be used
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+        if (_hasNotBeenInitialized(home)) {
+            return (0, 0, 0);
+        }
         homeBalance = home.getBalanceOf(addressToCheck);
         awayBalance = away.getBalanceOf(addressToCheck);
         if (ISportPositionalMarket(market).optionsCount() == 3) {
@@ -289,6 +296,9 @@ contract SportsAMMUtils {
         )
     {
         (IPosition home, IPosition away, ) = ISportPositionalMarket(market).getOptions();
+        if (_hasNotBeenInitialized(home)) {
+            return (0, 0, 0);
+        }
         uint balance = position == ISportsAMM.Position.Home
             ? home.getBalanceOf(addressToCheck)
             : away.getBalanceOf(addressToCheck);
@@ -335,10 +345,17 @@ contract SportsAMMUtils {
         ISportsAMM.Position position,
         address addressToCheck
     ) public view returns (uint) {
-        (uint home, uint away, uint draw) = ISportPositionalMarket(market).balancesOf(addressToCheck);
-        uint balance = position == ISportsAMM.Position.Home ? home : away;
+        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+        if (_hasNotBeenInitialized(home)) {
+            return 0;
+        }
+        uint balance = position == ISportsAMM.Position.Home
+            ? home.getBalanceOf(addressToCheck)
+            : away.getBalanceOf(addressToCheck);
         if (ISportPositionalMarket(market).optionsCount() == 3 && position != ISportsAMM.Position.Home) {
-            balance = position == ISportsAMM.Position.Away ? away : draw;
+            balance = position == ISportsAMM.Position.Away
+                ? away.getBalanceOf(addressToCheck)
+                : draw.getBalanceOf(addressToCheck);
         }
         return balance;
     }
@@ -353,16 +370,26 @@ contract SportsAMMUtils {
         )
     {
         ISportPositionalMarket parentMarketContract = ISportPositionalMarket(market).parentMarket();
-        (IPosition parentPosition1, IPosition parentPosition2) = ISportPositionalMarket(market).getParentMarketPositions();
         (IPosition home, IPosition away, ) = parentMarketContract.getOptions();
-        position1 = parentPosition1 == home ? ISportsAMM.Position.Home : parentPosition1 == away
-            ? ISportsAMM.Position.Away
-            : ISportsAMM.Position.Draw;
-        position2 = parentPosition2 == home ? ISportsAMM.Position.Home : parentPosition2 == away
-            ? ISportsAMM.Position.Away
-            : ISportsAMM.Position.Draw;
-
         parentMarket = address(parentMarketContract);
+        if (_hasNotBeenInitialized(home)) {
+            (uint parentPosition1, uint parentPosition2) = ISportPositionalMarket(market).getParentMarketPositionsUint();
+            position1 = parentPosition1 == 0 ? ISportsAMM.Position.Home : parentPosition1 == 1
+                ? ISportsAMM.Position.Away
+                : ISportsAMM.Position.Draw;
+            position2 = parentPosition2 == 0 ? ISportsAMM.Position.Home : parentPosition2 == 1
+                ? ISportsAMM.Position.Away
+                : ISportsAMM.Position.Draw;
+        } else {
+            (IPosition parentPosition1, IPosition parentPosition2) = ISportPositionalMarket(market)
+                .getParentMarketPositions();
+            position1 = parentPosition1 == home ? ISportsAMM.Position.Home : parentPosition1 == away
+                ? ISportsAMM.Position.Away
+                : ISportsAMM.Position.Draw;
+            position2 = parentPosition2 == home ? ISportsAMM.Position.Home : parentPosition2 == away
+                ? ISportsAMM.Position.Away
+                : ISportsAMM.Position.Draw;
+        }
     }
 
     function getParentMarketPositionsImpactDoubleChance(address market, uint amount) public view returns (int) {
@@ -538,5 +565,9 @@ contract SportsAMMUtils {
         ) {
             _availableHigher = _availableOtherSideSecond;
         }
+    }
+
+    function _hasNotBeenInitialized(IPosition home) internal view returns (bool) {
+        return address(home) == address(0);
     }
 }

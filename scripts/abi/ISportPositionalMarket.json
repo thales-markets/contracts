@@ -161,6 +161,24 @@
   },
   {
     "inputs": [],
+    "name": "getParentMarketPositionsUint",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "position1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position2",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getStampedOdds",
     "outputs": [
       {
@@ -273,6 +291,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "optionsInitialized",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

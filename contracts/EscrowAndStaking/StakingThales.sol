@@ -330,6 +330,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     function setCrossChainCollector(address _ccipCollector) external onlyOwner {
         ccipCollector = _ccipCollector;
+        emit CrossChainCollectorSet(_ccipCollector);
     }
 
     /// @notice Set address of Escrow Thales contract
@@ -583,14 +584,16 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             totalStakedLastPeriodEnd = _totalStakedAmount;
             totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
             paused = true;
-            ICCIPCollector(ccipCollector).sendOnClosePeriod(totalStakedLastPeriodEnd, totalEscrowedLastPeriodEnd, stakingThalesBonusRewardsManager.totalRoundBonusPoints(periodsOfStaking-1));
+            ICCIPCollector(ccipCollector).sendOnClosePeriod(
+                totalStakedLastPeriodEnd,
+                totalEscrowedLastPeriodEnd,
+                stakingThalesBonusRewardsManager.totalRoundBonusPoints(periodsOfStaking - 1)
+            );
         } else {
             //Actions taken on every closed period
             currentPeriodRewards = fixedPeriodReward;
             _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
-
             currentPeriodFees = feeToken.balanceOf(address(this));
-
             totalStakedLastPeriodEnd = _totalStakedAmount;
             totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
         }
@@ -1027,4 +1030,5 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event CanClaimOnBehalfChanged(address sender, address account, bool canClaimOnBehalf);
     event SupportedAMMVaultSet(address vault, bool value);
     event SupportedSportVaultSet(address vault, bool value);
+    event CrossChainCollectorSet(address _ccipCollector);
 }

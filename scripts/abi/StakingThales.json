@@ -179,6 +179,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_ccipCollector",
+        "type": "address"
+      }
+    ],
+    "name": "CrossChainCollectorSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "destAccount",
         "type": "address"
       }

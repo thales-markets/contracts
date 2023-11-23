@@ -28,12 +28,6 @@
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "_playerName",
-        "type": "string"
-      },
-      {
-        "indexed": false,
         "internalType": "uint16",
         "name": "_line",
         "type": "uint16"
@@ -1087,6 +1081,11 @@
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
       }
     ],
     "name": "obtainPlayerProps",
@@ -1219,25 +1218,6 @@
         "internalType": "uint64",
         "name": "",
         "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "playerNamePerId",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
       }
     ],
     "stateMutability": "view",

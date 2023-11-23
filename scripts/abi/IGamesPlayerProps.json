@@ -303,6 +303,11 @@
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
       }
     ],
     "name": "obtainPlayerProps",

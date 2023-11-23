@@ -70,7 +70,6 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => mapping(uint64 => mapping(uint8 => IGamesPlayerProps.PlayerPropsResolver)))
         public resolvedPlayerProps;
     mapping(address => bool) public childMarketResolved;
-    mapping(uint => string) public playerNamePerId;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -98,8 +97,12 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     /// @notice main function for player props
     /// @param _player player props struct see @ IGamesPlayerProps.PlayerProps
     /// @param _sportId sport id
-    function obtainPlayerProps(IGamesPlayerProps.PlayerProps memory _player, uint _sportId) external canExecute {
-        address _main = consumer.marketPerGameId(_player.gameId);
+    /// @param _main sport id
+    function obtainPlayerProps(
+        IGamesPlayerProps.PlayerProps memory _player,
+        uint _sportId,
+        address _main
+    ) external canExecute {
         // if main is created and not paused and also sport support player props
         if (_main != address(0) && doesSportSupportPlayerProps[_sportId]) {
             if (_areOddsAndLinesValidForPlayer(_player)) {
@@ -113,7 +116,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                     pausedByCircuitBreakerOnMain[_main] = false;
                 }
                 playerProp[_player.gameId][_player.playerId][_player.option] = _player;
-                address playerPropsMarket = _obtainPlayerProps(_player, _main);
+                address playerPropsMarket = _obtainPlayerProps(_player, _main, _sportId);
                 mainMarketPausedPlayerProps[_main] = false;
                 playerPropsAddedForMain[_main] = true;
 
@@ -228,10 +231,14 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     /* ========== INTERNALS ========== */
 
     function _areOddsAndLinesValidForPlayer(IGamesPlayerProps.PlayerProps memory _player) internal view returns (bool) {
-        return verifier.areOddsAndLinesValidForPlayer(_player.line, _player.overOdds, _player.underOdds);
+        return _player.line > 0 && _player.overOdds != 0 && _player.underOdds != 0;
     }
 
-    function _obtainPlayerProps(IGamesPlayerProps.PlayerProps memory _player, address _main) internal returns (address) {
+    function _obtainPlayerProps(
+        IGamesPlayerProps.PlayerProps memory _player,
+        address _main,
+        uint _sportId
+    ) internal returns (address) {
         bool isNewMarket = numberOfChildMarkets[_main] == 0;
         address currentActiveChildMarket = currentActiveChildMarketPerPlayerAndOption[_main][_player.playerId][
             _player.option
@@ -239,7 +246,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         address currentMarket = mainMarketPlayerOptionLineChildMarket[_main][_player.playerId][_player.option][_player.line];
 
         if (isNewMarket || currentMarket == address(0)) {
-            address newMarket = _createMarketForPlayerProps(_player, _main);
+            address newMarket = _createMarketForPlayerProps(_player, _main, _sportId);
 
             currentActiveChildMarketPerPlayerAndOption[_main][_player.playerId][_player.option] = newMarket;
 
@@ -304,12 +311,13 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         normalizedOddsForMarketFulfilled[_market] = true;
     }
 
-    function _createMarketForPlayerProps(IGamesPlayerProps.PlayerProps memory _player, address _mainMarket)
-        internal
-        returns (address _playerMarket)
-    {
+    function _createMarketForPlayerProps(
+        IGamesPlayerProps.PlayerProps memory _player,
+        address _mainMarket,
+        uint _sportId
+    ) internal returns (address _playerMarket) {
         // create
-        uint[] memory tags = _calculateTags(consumer.sportsIdPerGame(_player.gameId), _player.option);
+        uint[] memory tags = _calculateTags(_sportId, _player.option);
         sportsManager.createMarket(
             _player.gameId,
             _append(_player), // gameLabel
@@ -339,7 +347,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         return
             string(
                 abi.encodePacked(
-                    playerNamePerId[_player.playerId],
+                    Strings.toString(_player.playerId),
                     " - ",
                     Strings.toString(_player.option),
                     " - ",
@@ -365,7 +373,6 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         uint8 _option,
         uint _type
     ) internal {
-        consumer.setGameIdPerChildMarket(_gameId, _child);
         gameIdPerChildMarket[_child] = _gameId;
         playerIdPerChildMarket[_child] = _playerId;
         optionIdPerChildMarket[_child] = _option;
@@ -385,7 +392,6 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
             _child,
             _gameId,
             _playerId,
-            playerNamePerId[_playerId],
             _line,
             _option,
             _getNormalizedChildOdds(_child),
@@ -638,7 +644,6 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         address _child,
         bytes32 _gameId,
         uint64 _playerId,
-        string _playerName,
         uint16 _line,
         uint8 _option,
         uint[] _normalizedOdds,

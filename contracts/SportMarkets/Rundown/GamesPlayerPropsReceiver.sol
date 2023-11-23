@@ -70,7 +70,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
                 );
                 // game needs to be fulfilled and market needed to be created
                 if (consumer.gameFulfilledCreated(_gameIds[i]) && consumer.marketPerGameId(_gameIds[i]) != address(0)) {
-                    playerProps.obtainPlayerProps(player, sportId);
+                    playerProps.obtainPlayerProps(player, sportId, consumer.marketPerGameId(_gameIds[i]));
                 }
             }
         }
@@ -88,7 +88,7 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
                 consumer.marketPerGameId(player.gameId) != address(0) &&
                 isValidOptionPerSport[sportId][player.option]
             ) {
-                playerProps.obtainPlayerProps(player, sportId);
+                playerProps.obtainPlayerProps(player, sportId, consumer.marketPerGameId(player.gameId));
             }
         }
     }

@@ -20,7 +20,11 @@ interface IGamesPlayerProps {
         uint8 statusId;
     }
 
-    function obtainPlayerProps(PlayerProps memory _player, uint _sportId) external;
+    function obtainPlayerProps(
+        PlayerProps memory _player,
+        uint _sportId,
+        address _main
+    ) external;
 
     function resolvePlayerProps(PlayerPropsResolver memory _result) external;
 

@@ -280,17 +280,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bool useDefaultMinSpread
     ) internal view returns (uint returnQuote) {
         int skewImpact = 0;
-        if (amount == ONE) {
-            // for parlays use with no skew
-            skewImpact = 0;
-        } else {
-            if (!useAvailable) {
-                available = availableToBuyFromAMMWithBaseOdds(market, position, baseOdds, 0, false);
-            }
-            if (amount <= available) {
-                uint _availableOtherSide = _getAvailableOtherSide(market, position);
-                skewImpact = _buyPriceImpact(market, position, amount, available, _availableOtherSide);
-            }
+        if (!useAvailable) {
+            available = availableToBuyFromAMMWithBaseOdds(market, position, baseOdds, 0, false);
+        }
+        if (amount <= available) {
+            uint _availableOtherSide = _getAvailableOtherSide(market, position);
+            skewImpact = _buyPriceImpact(market, position, amount, available, _availableOtherSide);
         }
         baseOdds = (baseOdds * (ONE + _getMinSpreadToUse(useDefaultMinSpread, market))) / ONE;
 

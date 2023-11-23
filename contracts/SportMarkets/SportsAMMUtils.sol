@@ -159,7 +159,7 @@ contract SportsAMMUtils {
         uint baseOdds,
         uint balance,
         uint max_spread
-    ) public view returns (uint availableAmount) {
+    ) public pure returns (uint availableAmount) {
         uint discountedPrice = (baseOdds * (ONE - max_spread / 2)) / ONE;
         uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
         if ((capUsed + additionalBufferFromSelling) > spentOnThisGame) {
@@ -335,14 +335,10 @@ contract SportsAMMUtils {
         ISportsAMM.Position position,
         address addressToCheck
     ) public view returns (uint) {
-        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        uint balance = position == ISportsAMM.Position.Home
-            ? home.getBalanceOf(addressToCheck)
-            : away.getBalanceOf(addressToCheck);
+        (uint home, uint away, uint draw) = ISportPositionalMarket(market).balancesOf(addressToCheck);
+        uint balance = position == ISportsAMM.Position.Home ? home : away;
         if (ISportPositionalMarket(market).optionsCount() == 3 && position != ISportsAMM.Position.Home) {
-            balance = position == ISportsAMM.Position.Away
-                ? away.getBalanceOf(addressToCheck)
-                : draw.getBalanceOf(addressToCheck);
+            balance = position == ISportsAMM.Position.Away ? away : draw;
         }
         return balance;
     }

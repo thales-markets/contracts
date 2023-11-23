@@ -97,6 +97,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     address public parlayPolicy;
 
+    mapping(address => mapping(uint => uint)) public riskPerMarketAndPosition;
+
     receive() external payable {}
 
     function initialize(
@@ -478,6 +480,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");
         require((totalAmount - _sUSDPaid) <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
         require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
+
+        for (uint i = 0; i < _sportMarkets.length; i++) {
+            riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] += amountsToBuy[i];
+            require(
+                riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] < maxAllowedRiskPerCombination / 2,
+                "Risk per individual market and position exceeded"
+            );
+        }
 
         if (_sendSUSD) {
             sUSD.safeTransferFrom(msg.sender, address(this), _sUSDPaid);

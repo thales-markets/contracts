@@ -115,28 +115,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     function createNewMarket(
         bytes32 asset,
         uint64 strikeTime,
-        SpeedMarket.Direction direction,
-        uint buyinAmount,
-        bytes[] calldata priceUpdateData,
-        address referrer,
-        uint skewImpact
-    ) external payable nonReentrant notPaused {
-        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        _createNewMarket(
-            asset,
-            strikeTime,
-            direction,
-            buyinAmount,
-            priceUpdateData,
-            true,
-            referrer,
-            skewImpact,
-            contractsAddresses
-        );
-    }
-
-    function createNewMarketWithDelta(
-        bytes32 asset,
         uint64 delta,
         SpeedMarket.Direction direction,
         uint buyinAmount,
@@ -147,7 +125,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
         _createNewMarket(
             asset,
-            uint64(block.timestamp + delta),
+            strikeTime == 0 ? uint64(block.timestamp + delta) : strikeTime,
             direction,
             buyinAmount,
             priceUpdateData,
@@ -161,29 +139,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     function createNewMarketWithDifferentCollateral(
         bytes32 asset,
         uint64 strikeTime,
-        SpeedMarket.Direction direction,
-        bytes[] calldata priceUpdateData,
-        address collateral,
-        uint collateralAmount,
-        bool isEth,
-        address referrer,
-        uint skewImpact
-    ) external payable nonReentrant notPaused {
-        _createNewMarketWithDifferentCollateral(
-            asset,
-            strikeTime,
-            direction,
-            priceUpdateData,
-            collateral,
-            collateralAmount,
-            isEth,
-            referrer,
-            skewImpact
-        );
-    }
-
-    function createNewMarketWithDifferentCollateralAndDelta(
-        bytes32 asset,
         uint64 delta,
         SpeedMarket.Direction direction,
         bytes[] calldata priceUpdateData,
@@ -195,7 +150,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     ) external payable nonReentrant notPaused {
         _createNewMarketWithDifferentCollateral(
             asset,
-            uint64(block.timestamp + delta),
+            strikeTime == 0 ? uint64(block.timestamp + delta) : strikeTime,
             direction,
             priceUpdateData,
             collateral,
@@ -268,6 +223,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         );
     }
 
+    function _getSkewByAssetAndDirection(bytes32 _asset, SpeedMarket.Direction _direction) internal returns (uint) {
+        return
+            (((currentRiskPerAssetAndDirection[_asset][_direction] * ONE) /
+                maxRiskPerAssetAndDirection[_asset][_direction]) * maxSkewImpact) / ONE;
+    }
+
     function _handleRiskAndGetFee(
         bytes32 asset,
         SpeedMarket.Direction direction,
@@ -275,14 +236,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint64 strikeTime,
         uint skewImapct
     ) internal returns (uint lpFeeWithSkew) {
-        // LP fee by delta time + skew impact based on risk per direction and asset
-        uint skew = (((currentRiskPerAssetAndDirection[asset][direction] * ONE) /
-            maxRiskPerAssetAndDirection[asset][direction]) * maxSkewImpact) / ONE;
+        uint skew = _getSkewByAssetAndDirection(asset, direction);
         require(skew <= skewImapct + SKEW_SLIPPAGE, "Skew slippage exceeded");
 
         SpeedMarket.Direction oppositeDirection = direction == SpeedMarket.Direction.Up
             ? SpeedMarket.Direction.Down
             : SpeedMarket.Direction.Up;
+
+        // calculate discount as half of skew for opposite direction
+        uint discount = skew == 0 ? _getSkewByAssetAndDirection(asset, oppositeDirection) / 2 : 0;
 
         // decrease risk for opposite directionif there is, otherwise increase risk for current direction
         if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
@@ -301,6 +263,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         currentRiskPerAsset[asset] += (buyinAmount * (ONE - safeBoxImpact - lpFeeWithSkew)) / ONE;
         require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
 
+        // LP fee by delta time + skew impact based on risk per direction and asset - discount as half of opposite skew
         lpFeeWithSkew =
             speedMarketsAMMUtils.getFeeByTimeThreshold(
                 uint64(strikeTime - block.timestamp),
@@ -308,7 +271,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 lpFees,
                 lpFee
             ) +
-            skew;
+            skew -
+            discount;
     }
 
     function _handleReferrerAndSafeBox(

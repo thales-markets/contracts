@@ -26,8 +26,9 @@ contract('SpeedMarkets', (accounts) => {
 				initialSkewImapct,
 			} = await speedMarketsInit(accounts);
 
-			await speedMarketsAMM.createNewMarketWithDelta(
+			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
+				0,
 				36000,
 				0,
 				toUnit(10),
@@ -49,8 +50,9 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			const skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
 
-			await speedMarketsAMM.createNewMarketWithDelta(
+			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
+				0,
 				36000,
 				0,
 				toUnit(10),

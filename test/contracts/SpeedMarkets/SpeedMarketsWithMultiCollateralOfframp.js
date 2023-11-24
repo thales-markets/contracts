@@ -88,6 +88,7 @@ contract('SpeedMarkets', (accounts) => {
 				toBytes32('ETH'),
 				now + 36000,
 				0,
+				0,
 				[priceFeedUpdateData],
 				exoticOP.address,
 				toUnit(10),

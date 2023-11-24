@@ -34,6 +34,7 @@ contract('SpeedMarkets', (accounts) => {
 					toBytes32('BTC'),
 					now + 36000,
 					0,
+					0,
 					toUnit(10),
 					[priceFeedUpdateData],
 					ZERO_ADDRESS,
@@ -48,6 +49,7 @@ contract('SpeedMarkets', (accounts) => {
 				speedMarketsAMM.createNewMarket(
 					toBytes32('ETH'),
 					now + 36000,
+					0,
 					0,
 					toUnit(10),
 					[priceFeedUpdateData],
@@ -64,6 +66,7 @@ contract('SpeedMarkets', (accounts) => {
 					toBytes32('ETH'),
 					now + 36000,
 					0,
+					0,
 					toUnit(11),
 					[priceFeedUpdateData],
 					ZERO_ADDRESS,
@@ -78,6 +81,7 @@ contract('SpeedMarkets', (accounts) => {
 				speedMarketsAMM.createNewMarket(
 					toBytes32('ETH'),
 					now + 36000,
+					0,
 					0,
 					toUnit(6),
 					[priceFeedUpdateData],
@@ -99,6 +103,7 @@ contract('SpeedMarkets', (accounts) => {
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				now + 36000,
+				0,
 				0,
 				toUnit(10),
 				[priceFeedUpdateData],
@@ -125,6 +130,7 @@ contract('SpeedMarkets', (accounts) => {
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				now + 36000,
+				0,
 				1,
 				toUnit(10),
 				[priceFeedUpdateData],
@@ -159,6 +165,7 @@ contract('SpeedMarkets', (accounts) => {
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				now + 36000,
+				0,
 				0,
 				toUnit(10),
 				[priceFeedUpdateData],

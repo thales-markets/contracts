@@ -93,6 +93,7 @@ contract('SpeedMarkets', (accounts) => {
 				toBytes32('ETH'),
 				now + 36000,
 				0,
+				0,
 				[priceFeedUpdateData],
 				exoticOP.address,
 				toUnit(10),
@@ -107,8 +108,9 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
 
-			await speedMarketsAMM.createNewMarketWithDifferentCollateralAndDelta(
+			await speedMarketsAMM.createNewMarketWithDifferentCollateral(
 				toBytes32('ETH'),
+				0,
 				36000,
 				0,
 				[priceFeedUpdateData],

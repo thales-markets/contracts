@@ -19,6 +19,7 @@ contract('SpeedMarketsReferrals', (accounts) => {
 				toBytes32('ETH'),
 				now + 36000,
 				0,
+				0,
 				toUnit(10),
 				[priceFeedUpdateData],
 				referrerAddress,
@@ -53,6 +54,7 @@ contract('SpeedMarketsReferrals', (accounts) => {
 				toBytes32('ETH'),
 				now + 36000,
 				0,
+				0,
 				toUnit(10),
 				[priceFeedUpdateData],
 				referrerAddress,
@@ -86,6 +88,7 @@ contract('SpeedMarketsReferrals', (accounts) => {
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				now + 36000,
+				0,
 				0,
 				toUnit(10),
 				[priceFeedUpdateData],

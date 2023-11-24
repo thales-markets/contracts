@@ -571,7 +571,7 @@ contract ParlayVerifier {
             }
 
             for (uint i = 0; i < numOfMarkets; i++) {
-                amountsToBuy[i] = (totalBuyAmount * finalQuotes[i]) / ONE;
+                amountsToBuy[i] = (ONE * params.totalSUSDToPay) / finalQuotes[i];
             }
         }
     }

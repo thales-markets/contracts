@@ -484,7 +484,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         for (uint i = 0; i < _sportMarkets.length; i++) {
             riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] += amountsToBuy[i];
             require(
-                riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] < maxAllowedRiskPerCombination,
+                riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] <
+                    sportsAmm.riskManager().calculateCapToBeUsed(_sportMarkets[i]),
                 "Risk per individual market and position exceeded"
             );
         }

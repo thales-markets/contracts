@@ -26,7 +26,6 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
         bytes32 gameId;
         string gameLabel;
         uint[2] times; // [maturity, expiry]
-        uint initialMint;
         uint positionCount;
         address theRundownConsumer;
         uint[] tags;
@@ -60,8 +59,6 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
                 _parameters.gameId,
                 _parameters.gameLabel,
                 _parameters.times,
-                _parameters.initialMint,
-                _parameters.theRundownConsumer,
                 sportsAMM,
                 _parameters.positionCount,
                 positions,
@@ -78,7 +75,7 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
             _parameters.gameLabel,
             _parameters.times[0],
             _parameters.times[1],
-            _parameters.initialMint,
+            0,
             _parameters.positionCount,
             _parameters.tags,
             _parameters.isChild,

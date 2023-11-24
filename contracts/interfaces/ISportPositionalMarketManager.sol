@@ -48,7 +48,6 @@ interface ISportPositionalMarketManager {
         bytes32 gameId,
         string memory gameLabel,
         uint maturity,
-        uint initialMint, // initial sUSD to mint options for,
         uint positionCount,
         uint[] memory tags,
         bool isChild,

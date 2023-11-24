@@ -216,19 +216,6 @@
         "type": "address"
       }
     ],
-    "name": "SetTherundownConsumer",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
     "name": "SetsUSD",
     "type": "event"
   },
@@ -622,19 +609,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "initialMint",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "components": [
@@ -667,16 +641,6 @@
             "internalType": "uint256[2]",
             "name": "times",
             "type": "uint256[2]"
-          },
-          {
-            "internalType": "uint256",
-            "name": "deposit",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "theRundownConsumer",
-            "type": "address"
           },
           {
             "internalType": "address",
@@ -897,6 +861,24 @@
   },
   {
     "inputs": [],
+    "name": "parentTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "maturity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expiry",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -1033,19 +1015,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_theRundownConsumer",
-        "type": "address"
-      }
-    ],
-    "name": "setTherundownConsumer",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_address",
         "type": "address"
       }
@@ -1089,19 +1058,6 @@
   },
   {
     "inputs": [],
-    "name": "theRundownConsumer",
-    "outputs": [
-      {
-        "internalType": "contract ITherundownConsumer",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "times",
     "outputs": [
       {
@@ -1111,7 +1067,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "expiry",
+        "name": "destruction",
         "type": "uint256"
       }
     ],

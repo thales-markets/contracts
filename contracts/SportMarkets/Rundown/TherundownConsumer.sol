@@ -504,7 +504,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 _gameId,
                 string(abi.encodePacked(game.homeTeam, " vs ", game.awayTeam)), // gameLabel
                 game.startTime, //maturity
-                0, //initialMint
                 twoPositionSport[sportsIdPerGame[_gameId]] ? 2 : 3,
                 tags, //tags
                 false,

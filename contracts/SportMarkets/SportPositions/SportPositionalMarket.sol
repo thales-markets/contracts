@@ -44,8 +44,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         bytes32 gameId;
         string gameLabel;
         uint[2] times; // [maturity, expiry]
-        uint deposit; // sUSD deposit
-        address theRundownConsumer;
         address sportsAMM;
         uint positionCount;
         address[] positions;
@@ -60,9 +58,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     Options public options;
     uint public override optionsCount;
-    Times public override times;
+    Times public parentTime;
     GameDetails public gameDetails;
-    ITherundownConsumer public theRundownConsumer;
     IERC20 public sUSD;
     address public sportsAMM;
     uint[] public override tags;
@@ -71,7 +68,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     // `deposited` tracks the sum of all deposits.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
     uint public override deposited;
-    uint public override initialMint;
     address public override creator;
     bool public override resolved;
     bool public override cancelled;
@@ -95,31 +91,25 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         require(!initialized, "Positional Market already initialized");
         initialized = true;
         initOwner(_parameters.owner);
+
+        optionsCount = _parameters.positionCount;
+        require(optionsCount == _parameters.positions.length, "Position count mismatch");
+
         sUSD = _parameters.sUSD;
         creator = _parameters.creator;
-        theRundownConsumer = ITherundownConsumer(_parameters.theRundownConsumer);
+        if (_parameters.isChild || _parameters.isDoubleChance) {
+            isChild = _parameters.isChild;
+            isDoubleChance = _parameters.isDoubleChance;
+            parentMarket = ISportPositionalMarket(_parameters.parentMarket);
+        } else {
+            parentTime = Times(_parameters.times[0], _parameters.times[1]);
+        }
 
         gameDetails = GameDetails(_parameters.gameId, _parameters.gameLabel);
-
         tags = _parameters.tags;
-        times = Times(_parameters.times[0], _parameters.times[1]);
 
-        deposited = _parameters.deposit;
-        initialMint = _parameters.deposit;
-        optionsCount = _parameters.positionCount;
         sportsAMM = _parameters.sportsAMM;
-        isDoubleChance = _parameters.isDoubleChance;
-        parentMarket = ISportPositionalMarket(_parameters.parentMarket);
-        require(optionsCount == _parameters.positions.length, "Position count mismatch");
-        if (_parameters.isChild) {
-            isChild = true;
-        }
-        if (initialMint > 0) {
-            _mint(creator, initialMint);
-        }
         positionMastercopy = _parameters.positionMastercopy;
-        // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
-        // about initializing its state separately
     }
 
     /* ---------- External Contracts ---------- */
@@ -130,12 +120,22 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     /* ---------- Phases ---------- */
 
+    function _times() internal view returns (Times memory _parentTime) {
+        if (isChild || isDoubleChance) {
+            (uint maturity, uint expiry) = parentMarket.times();
+            _parentTime = Times(maturity, expiry);
+            return _parentTime;
+        }
+        return parentTime;
+    }
+
     function _matured() internal view returns (bool) {
-        return times.maturity < block.timestamp;
+        uint timeMaturity = isChild ? _times().maturity : _times().maturity;
+        return timeMaturity < block.timestamp;
     }
 
     function _expired() internal view returns (bool) {
-        return resolved && (times.expiry < block.timestamp || deposited == 0);
+        return resolved && (_times().expiry < block.timestamp || deposited == 0);
     }
 
     function _isPaused() internal view returns (bool) {
@@ -155,6 +155,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         return tags.length;
     }
 
+    function times() external view override returns (uint maturity, uint destruction) {
+        Times memory time = _times();
+        return (time.maturity, time.expiry);
+    }
+
     function phase() external view override returns (Phase) {
         if (!_matured()) {
             return Phase.Trading;
@@ -171,9 +176,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         emit PauseUpdated(_paused);
     }
 
-    function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused noDoubleChance {
+    function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused noChildMarket {
         require(_maturity > block.timestamp, "Maturity must be in a future");
-        times = Times(_maturity, _expiry);
+        parentTime = Times(_maturity, _expiry);
         emit DatesUpdated(_maturity, _expiry);
     }
 
@@ -456,10 +461,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     /* ---------- Custom oracle configuration ---------- */
-    function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
-        theRundownConsumer = ITherundownConsumer(_theRundownConsumer);
-        emit SetTherundownConsumer(_theRundownConsumer);
-    }
 
     function setsUSD(address _address) external onlyOwner {
         sUSD = IERC20(_address);
@@ -486,7 +487,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     function stampOdds() internal {
         uint[] memory odds = new uint[](optionsCount);
-        odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(address(this));
+        odds = ITherundownConsumer(creator).getNormalizedOddsForMarket(address(this));
         if (odds[0] == 0 || odds[1] == 0) {
             invalidOdds = true;
         }
@@ -637,8 +638,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         _;
     }
 
-    modifier noDoubleChance() {
-        require(!isDoubleChance, "Not supported for double chance markets");
+    modifier noChildMarket() {
+        require(!isChild, "Not supported for childs");
         _;
     }
 
@@ -650,7 +651,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     event OptionsExercised(address indexed account, uint value);
     event OptionsBurned(address indexed account, uint value);
     event SetsUSD(address _address);
-    event SetTherundownConsumer(address _address);
     event Expired(address beneficiary);
     event StoredOddsOnCancellation(uint homeOdds, uint awayOdds, uint drawOdds);
     event PauseUpdated(bool _paused);

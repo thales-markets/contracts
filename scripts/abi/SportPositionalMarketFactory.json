@@ -201,11 +201,6 @@
           },
           {
             "internalType": "uint256",
-            "name": "initialMint",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
             "name": "positionCount",
             "type": "uint256"
           },

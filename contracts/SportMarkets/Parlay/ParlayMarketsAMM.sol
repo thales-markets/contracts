@@ -176,7 +176,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint initialQuote,
             uint skewImpact,
             uint[] memory finalQuotes,
-            uint[] memory amountsToBuy
+            uint[] memory risksIncurred
         )
     {
         (
@@ -186,7 +186,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             initialQuote,
             skewImpact,
             finalQuotes,
-            amountsToBuy
+            risksIncurred
         ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid);
     }
 
@@ -205,10 +205,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint totalQuote,
             uint skewImpact,
             uint[] memory finalQuotes,
-            uint[] memory amountsToBuy
+            uint[] memory risksIncurred
         )
     {
-        (sUSDAfterFees, totalBuyAmount, totalQuote, , skewImpact, finalQuotes, amountsToBuy) = _buyQuoteFromParlay(
+        (sUSDAfterFees, totalBuyAmount, totalQuote, , skewImpact, finalQuotes, risksIncurred) = _buyQuoteFromParlay(
             _sportMarkets,
             _positions,
             _sUSDPaid
@@ -467,10 +467,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     ) internal {
         uint totalAmount;
         uint totalQuote;
-        uint[] memory amountsToBuy = new uint[](_sportMarkets.length);
+        uint[] memory risksIncurred = new uint[](_sportMarkets.length);
         uint[] memory marketQuotes = new uint[](_sportMarkets.length);
         uint sUSDAfterFees;
-        (sUSDAfterFees, totalAmount, totalQuote, , , marketQuotes, amountsToBuy) = _buyQuoteFromParlay(
+        (sUSDAfterFees, totalAmount, totalQuote, , , marketQuotes, risksIncurred) = _buyQuoteFromParlay(
             _sportMarkets,
             _positions,
             _sUSDPaid
@@ -482,7 +482,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
 
         for (uint i = 0; i < _sportMarkets.length; i++) {
-            riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] += amountsToBuy[i];
+            riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] += risksIncurred[i];
             require(
                 riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] <
                     sportsAmm.riskManager().calculateCapToBeUsed(_sportMarkets[i]),
@@ -550,22 +550,23 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint initialQuote,
             uint skewImpact,
             uint[] memory finalQuotes,
-            uint[] memory amountsToBuy
+            uint[] memory risksIncurred
         )
     {
         sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee))) * _sUSDPaid) / ONE;
-        (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = parlayVerifier.calculateInitialQuotesForParlay(
-            ParlayVerifier.InitialQuoteParameters(
-                _sportMarkets,
-                _positions,
-                sportManager.reverseTransformCollateral(sUSDAfterFees),
-                parlaySize,
-                sportManager.reverseTransformCollateral(1),
-                finalQuotes,
-                sportsAmm,
-                address(this)
-            )
-        );
+        (totalQuote, totalBuyAmount, skewImpact, finalQuotes, risksIncurred) = parlayVerifier
+            .calculateInitialQuotesForParlay(
+                ParlayVerifier.InitialQuoteParameters(
+                    _sportMarkets,
+                    _positions,
+                    sportManager.reverseTransformCollateral(sUSDAfterFees),
+                    parlaySize,
+                    sportManager.reverseTransformCollateral(1),
+                    finalQuotes,
+                    sportsAmm,
+                    address(this)
+                )
+            );
     }
 
     function _handleReferrerAndSB(uint _sUSDPaid, uint sUSDAfterFees) internal returns (uint safeBoxAmount) {

@@ -115,7 +115,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "baseOdds",
+        "name": "sportId",
         "type": "uint256"
       },
       {

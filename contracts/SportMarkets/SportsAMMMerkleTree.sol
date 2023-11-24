@@ -36,18 +36,26 @@ contract SportsAMMMerkleTree is Initializable, ProxyOwned, PausableUpgradeable, 
     /// @param market The address of the SportPositional market of a game
     /// @param position The position (home/away/draw) quoted to buy from AMM
     /// @param amount The position amount quoted to buy from AMM
+    /// @param sportId tag id for sport
+    /// @param allBaseOdds all base odds for given market
+    /// @param merkleProof merkle proof for check
     /// @return _quote The sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
     function buyFromAmmQuote(
         address market,
         ISportsAMM.Position position,
         uint amount,
-        uint baseOdds,
+        uint sportId,
         uint[] memory allBaseOdds,
         bytes32[] memory merkleProof
     ) public view returns (uint _quote) {
+        require(riskManager.isMerkleTreeSport(sportId), "Not Merkle Tree sport");
+
         if (sportsAmm.isMarketInAMMTrading(market)) {
+            uint baseOdds = position == ISportsAMM.Position.Home ? allBaseOdds[0] : position == ISportsAMM.Position.Away
+                ? allBaseOdds[1]
+                : allBaseOdds[2];
             if (baseOdds > 0) {
-                // Compute the merkle leaf from market and all odds
+                // Compute the merkle leaf from market, tag and all odds
                 bytes32 leaf = keccak256(abi.encodePacked(market, allBaseOdds));
                 // verify the proof is valid
                 require(MerkleProof.verify(merkleProof, root, leaf), "Proof is not valid");

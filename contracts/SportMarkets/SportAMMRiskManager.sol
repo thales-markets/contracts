@@ -368,7 +368,11 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         emit SetPlayerPropsOnePositional(_playerPropsOptionTag, _flag);
     }
 
+    /// @notice setting support for Merkle Tree per sport
+    /// @param _sportID tag id for sport
+    /// @param _isMerkleTree is Merkle Tree sport
     function setIsMerkleTreeSport(uint _sportID, bool _isMerkleTree) external onlyOwner {
+        require(_sportID > MIN_TAG_NUMBER, "Invalid tag for sport");
         isMerkleTreeSport[_sportID] = _isMerkleTree;
         emit SetIsMerkleTreeSport(_sportID, _isMerkleTree);
     }

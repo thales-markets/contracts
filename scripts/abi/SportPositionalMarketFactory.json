@@ -180,11 +180,6 @@
             "type": "address"
           },
           {
-            "internalType": "contract IERC20",
-            "name": "_sUSD",
-            "type": "address"
-          },
-          {
             "internalType": "bytes32",
             "name": "gameId",
             "type": "bytes32"
@@ -201,18 +196,8 @@
           },
           {
             "internalType": "uint256",
-            "name": "initialMint",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
             "name": "positionCount",
             "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "theRundownConsumer",
-            "type": "address"
           },
           {
             "internalType": "uint256[]",

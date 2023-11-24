@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../interfaces/ISportAMMRiskManager.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 interface ISportsAMM {
     /* ========== VIEWS / VARIABLES ========== */
@@ -54,6 +55,8 @@ interface ISportsAMM {
     function manager() external view returns (address);
 
     function getLiquidityPool() external view returns (address);
+
+    function sUSD() external view returns (IERC20Upgradeable);
 
     function buyFromAMM(
         address market,

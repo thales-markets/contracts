@@ -536,13 +536,13 @@ contract ParlayVerifier {
             uint totalBuyAmount,
             uint skewImpact,
             uint[] memory finalQuotes,
-            uint[] memory risksIncurred
+            uint[] memory amountsToBuy
         )
     {
         uint numOfMarkets = params.sportMarkets.length;
         uint inverseSum;
         bool eligible;
-        risksIncurred = new uint[](numOfMarkets);
+        amountsToBuy = new uint[](numOfMarkets);
         (eligible, finalQuotes, params.sgpFees) = _verifyMarkets(
             VerifyMarket(params.sportMarkets, params.positions, params.sportsAMM, params.parlayAMM, params.defaultONE)
         );
@@ -572,7 +572,7 @@ contract ParlayVerifier {
 
             for (uint i = 0; i < numOfMarkets; i++) {
                 //consider if this works well for Arbitrum at 6 decimals
-                risksIncurred[i] = (ONE * params.totalSUSDToPay) / finalQuotes[i];
+                amountsToBuy[i] = (ONE * params.totalSUSDToPay) / finalQuotes[i];
             }
         }
     }

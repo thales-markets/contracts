@@ -951,7 +951,6 @@ contract('Parlay Vault', (accounts) => {
 
 				for (let i = 0; i < result.finalQuotes.length; i++) {
 					console.log('finalQuote', i, fromUnit(result.finalQuotes[i]));
-					console.log('amountToBuy', i, fromUnit(result.amountsToBuy[i]));
 				}
 			}
 		});

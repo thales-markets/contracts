@@ -1,0 +1,12 @@
+[
+	{
+		"marketAddress": "0x525f517f0c8fbc65238795ee6f5875e134defd85",
+		"sportId": 9006,
+		"odds": [0.36, 0.64]
+	},
+	{
+		"marketAddress": "0xa6f1394344ff61f1325ab0a43d4d42471e41fee0",
+		"sportId": 9004,
+		"odds": [0.54, 0.2, 0.26]
+	}
+]

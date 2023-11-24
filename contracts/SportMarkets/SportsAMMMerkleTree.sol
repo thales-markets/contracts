@@ -55,8 +55,12 @@ contract SportsAMMMerkleTree is Initializable, ProxyOwned, PausableUpgradeable, 
                 ? allBaseOdds[1]
                 : allBaseOdds[2];
             if (baseOdds > 0) {
-                // Compute the merkle leaf from market, tag and all odds
-                bytes32 leaf = keccak256(abi.encodePacked(market, allBaseOdds));
+                // Compute the merkle leaf from market, sportId and all odds
+                bytes32 leaf = keccak256(
+                    allBaseOdds.length > 2
+                        ? abi.encodePacked(market, sportId, allBaseOdds[0], allBaseOdds[1], allBaseOdds[2])
+                        : abi.encodePacked(market, sportId, allBaseOdds[0], allBaseOdds[1])
+                );
                 // verify the proof is valid
                 require(MerkleProof.verify(merkleProof, root, leaf), "Proof is not valid");
 

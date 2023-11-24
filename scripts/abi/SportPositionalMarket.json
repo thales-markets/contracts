@@ -206,32 +206,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "SetTherundownConsumer",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "SetsUSD",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "homeOdds",
         "type": "uint256"
@@ -430,12 +404,12 @@
   },
   {
     "inputs": [],
-    "name": "finalResult",
+    "name": "factory",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "address",
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -443,17 +417,12 @@
   },
   {
     "inputs": [],
-    "name": "gameDetails",
+    "name": "finalResult",
     "outputs": [
       {
-        "internalType": "bytes32",
-        "name": "gameId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "string",
-        "name": "gameLabel",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -617,30 +586,12 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "initialMint",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "components": [
           {
             "internalType": "address",
             "name": "owner",
-            "type": "address"
-          },
-          {
-            "internalType": "contract IERC20",
-            "name": "sUSD",
             "type": "address"
           },
           {
@@ -662,21 +613,6 @@
             "internalType": "uint256[2]",
             "name": "times",
             "type": "uint256[2]"
-          },
-          {
-            "internalType": "uint256",
-            "name": "deposit",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "theRundownConsumer",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "sportsAMM",
-            "type": "address"
           },
           {
             "internalType": "uint256",
@@ -710,7 +646,7 @@
           },
           {
             "internalType": "address",
-            "name": "positionMastercopy",
+            "name": "factory",
             "type": "address"
           }
         ],
@@ -892,6 +828,24 @@
   },
   {
     "inputs": [],
+    "name": "parentTimes",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "maturity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expiry",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -911,19 +865,6 @@
         "internalType": "enum ISportPositionalMarket.Phase",
         "name": "",
         "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "positionMastercopy",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -999,19 +940,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "sUSD",
-    "outputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "bool",
@@ -1022,45 +950,6 @@
     "name": "setPaused",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_theRundownConsumer",
-        "type": "address"
-      }
-    ],
-    "name": "setTherundownConsumer",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "setsUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "sportsAMM",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1084,19 +973,6 @@
   },
   {
     "inputs": [],
-    "name": "theRundownConsumer",
-    "outputs": [
-      {
-        "internalType": "contract ITherundownConsumer",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "times",
     "outputs": [
       {
@@ -1106,7 +982,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "expiry",
+        "name": "destruction",
         "type": "uint256"
       }
     ],

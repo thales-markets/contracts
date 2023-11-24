@@ -572,7 +572,9 @@ contract ParlayVerifier {
 
             for (uint i = 0; i < numOfMarkets; i++) {
                 //consider if this works well for Arbitrum at 6 decimals
-                amountsToBuy[i] = (ONE * params.totalSUSDToPay) / finalQuotes[i];
+                if (finalQuotes[i] > 0) {
+                    amountsToBuy[i] = (ONE * params.totalSUSDToPay) / finalQuotes[i];
+                }
             }
         }
     }

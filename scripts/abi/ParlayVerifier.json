@@ -121,7 +121,7 @@
       },
       {
         "internalType": "uint256[]",
-        "name": "risksIncurred",
+        "name": "amountsToBuy",
         "type": "uint256[]"
       }
     ],

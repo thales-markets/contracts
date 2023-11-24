@@ -39,6 +39,11 @@
       "address": "0x5707f76FD45a3F16c404c0D320aD111caA490CB2",
       "txHash": "0x4bfe9529bf33d3036fe90579ea3bb3b775b06ce12b12c83988301d7cf4fb9abf",
       "kind": "transparent"
+    },
+    {
+      "address": "0x3a48CC26aF23E109d14478Ba33B4E0eb62625a2C",
+      "txHash": "0xf508c0f2e90eafc9e1313ddb36329113c3b511c20482625a7cdf74c5d988ea4c",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -2092,6 +2097,280 @@
           },
           "t_bytes_storage": {
             "label": "bytes"
+          }
+        }
+      }
+    },
+    "8ee481a8b2ed60be1d9a96a3890adea34e74f228c6f209e941c8dd3463cf66f6": {
+      "address": "0x1a41CE7DbF0aE2A2749717CB6EE2Fa80fbd90d48",
+      "txHash": "0x99b1dee8541d335a01b6198721f4ab90287ad825b686668192f80c37411c1ea1",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "CCIPReceiverProxy",
+            "label": "i_router",
+            "type": "t_address",
+            "src": "contracts/EscrowAndStaking/CCIPReceiverProxy.sol:12"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "s_router",
+            "type": "t_contract(IRouterClient)64",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:26"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "stakingThales",
+            "type": "t_address",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:27"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "masterCollector",
+            "type": "t_address",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:29"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "masterCollectorChain",
+            "type": "t_uint64",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:30"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "chainSelector",
+            "type": "t_mapping(t_uint256,t_uint64)",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:32"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "chainSelectorIndex",
+            "type": "t_mapping(t_uint64,t_uint256)",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:33"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "collectorAddress",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:34"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "lastPeriodForChain",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:36"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "chainStakedAmountInPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:37"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "chainEscrowedAmountInPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:38"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "chainBaseRewardsInPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:39"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "chainExtraRewardsInPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:40"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "chainBonusPointsInPeriod",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:41"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "calculatedStakedAmountForPeriod",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:43"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "calculatedEscrowedAmountForPeriod",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:44"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "calculatedBonusPointsForPeriod",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:45"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "messagesReceivedFromChainSelector",
+            "type": "t_mapping(t_uint256,t_uint64)",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:47"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "messagesReceived",
+            "type": "t_mapping(t_uint256,t_bytes_storage)",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:48"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "numOfMessagesReceived",
+            "type": "t_uint256",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:49"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "numOfActiveCollectors",
+            "type": "t_uint256",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:51"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "period",
+            "type": "t_uint256",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:52"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "baseRewardsPerPeriod",
+            "type": "t_uint256",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:53"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "extraRewardsPerPeriod",
+            "type": "t_uint256",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:54"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "collectedResultsPerPeriod",
+            "type": "t_uint256",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:55"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "lastPeriodBeforeTesting",
+            "type": "t_uint256",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:56"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "readyToBroadcast",
+            "type": "t_bool",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:58"
+          },
+          {
+            "contract": "CrossChainCollector",
+            "label": "testingPhase",
+            "type": "t_bool",
+            "src": "contracts/EscrowAndStaking/CrossChainCollector.sol:59"
+          }
+        ],
+        "types": {
+          "t_contract(IRouterClient)64": {
+            "label": "contract IRouterClient"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_mapping(t_uint256,t_uint64)": {
+            "label": "mapping(uint256 => uint64)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint64,t_uint256)": {
+            "label": "mapping(uint64 => uint256)"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(uint256 => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_bytes_storage)": {
+            "label": "mapping(uint256 => bytes)"
+          },
+          "t_bytes_storage": {
+            "label": "bytes"
+          },
+          "t_bool": {
+            "label": "bool"
           }
         }
       }

@@ -227,6 +227,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "_gasLimitUsed",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetGasLimit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "_baseRewardsPerPeriod",
         "type": "uint256"
       },
@@ -594,6 +607,19 @@
   },
   {
     "inputs": [],
+    "name": "gasLimitUsed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getRouter",
     "outputs": [
       {
@@ -929,6 +955,19 @@
       }
     ],
     "name": "setCollectorForChain",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gasLimitUsed",
+        "type": "uint256"
+      }
+    ],
+    "name": "setGasLimit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

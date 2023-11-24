@@ -38,27 +38,26 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     mapping(uint => mapping(uint => uint)) public chainEscrowedAmountInPeriod;
     mapping(uint => mapping(uint => uint)) public chainBaseRewardsInPeriod;
     mapping(uint => mapping(uint => uint)) public chainExtraRewardsInPeriod;
+    mapping(uint => mapping(uint => uint)) public chainBonusPointsInPeriod;
 
     mapping(uint => uint) public calculatedStakedAmountForPeriod;
     mapping(uint => uint) public calculatedEscrowedAmountForPeriod;
+    mapping(uint => uint) public calculatedBonusPointsForPeriod;
+
+    mapping(uint => uint64) public messagesReceivedFromChainSelector;
+    mapping(uint => bytes) public messagesReceived;
+    uint public numOfMessagesReceived;
 
     uint public numOfActiveCollectors;
     uint public period;
     uint public baseRewardsPerPeriod;
     uint public extraRewardsPerPeriod;
     uint public collectedResultsPerPeriod;
-
-    bool public testingPhase;
     uint public lastPeriodBeforeTesting;
 
-    uint public numOfMessagesReceived;
-    mapping(uint => uint64) public messagesReceivedFromChainSelector;
-    mapping(uint => bytes) public messagesReceived;
     bool public readyToBroadcast;
-
-    mapping(uint => mapping(uint => uint)) public chainBonusPointsInPeriod;
-    mapping(uint => uint) public calculatedBonusPointsForPeriod;
-
+    bool public testingPhase;
+    uint public gasLimitUsed;
 
     /* ========== INITIALIZERS ========== */
     function initialize(
@@ -70,6 +69,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         initNonReentrant();
         _setRouter(_router);
         s_router = IRouterClient(_router);
+        gasLimitUsed = 1000000;
         if (_masterCollector) {
             masterCollector = address(this);
             masterCollectorChain = _masterCollectorSelector;
@@ -233,7 +233,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array indicating no tokens are being sent
             extraArgs: Client._argsToBytes(
                 // Additional arguments, setting gas limit and non-strict sequencing mode
-                Client.EVMExtraArgsV1({gasLimit: 2000000, strict: false})
+                Client.EVMExtraArgsV1({gasLimit: gasLimitUsed, strict: false})
             ),
             // Set the feeToken  address, indicating LINK will be used for fees
             feeToken: address(0)
@@ -288,6 +288,11 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         baseRewardsPerPeriod = _baseRewardsPerPeriod;
         extraRewardsPerPeriod = _extraRewardsPerPeriod;
         emit SetPeriodRewards(_baseRewardsPerPeriod, _extraRewardsPerPeriod);
+    }
+    
+    function setGasLimit(uint _gasLimitUsed) external onlyOwner {
+        gasLimitUsed = _gasLimitUsed;
+        emit SetGasLimit(_gasLimitUsed);
     }
 
     function setMasterCollector(address _masterCollector, uint64 _materCollectorChainId) external onlyOwner {
@@ -365,5 +370,5 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     event SetCCIPRouter(address _router);
     event SetStakingThales(address _stakingThales);
     event SentOnClosePeriod(uint _totalStakedLastPeriodEnd, uint _totalEscrowedLastPeriodEnd, uint _bonusPoints);
-
+    event SetGasLimit(uint _gasLimitUsed);
 }

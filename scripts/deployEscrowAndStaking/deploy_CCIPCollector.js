@@ -18,6 +18,7 @@ async function main() {
 	let SafeBox;
 	let CCIP_Router;
 	let masterCollector;
+	let masterChainSelector;
 	const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 	if (network == 'homestead') {
@@ -61,6 +62,7 @@ async function main() {
 		SafeBox = owner.address;
 		CCIP_Router = getTargetAddress('CCIPRouter', network);
 		masterCollector = true;
+		masterChainSelector = '2664363617261496610';
 	}
 
 	if (networkObj.chainId == 42161) {
@@ -86,6 +88,7 @@ async function main() {
 		network = 'baseGoerli';
 		CCIP_Router = getTargetAddress('CCIPRouter', network);
 		masterCollector = false;
+		masterChainSelector = '0';
 	}
 
 	if (networkObj.chainId == 421613) {
@@ -93,12 +96,14 @@ async function main() {
 		network = 'arbitrumGoerli';
 		CCIP_Router = getTargetAddress('CCIPRouter', network);
 		masterCollector = false;
+		masterChainSelector = '0';
 	}
 
 	const CrossChainCollector = await ethers.getContractFactory('CrossChainCollector');
 	const CrossChainCollectorDeployed = await upgrades.deployProxy(CrossChainCollector, [
 		CCIP_Router,
 		masterCollector,
+		masterChainSelector,
 	]);
 	await delay(2000);
 	await CrossChainCollectorDeployed.deployed();

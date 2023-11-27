@@ -322,7 +322,6 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
             _player.gameId,
             _append(_player), // gameLabel
             consumer.getGameCreatedById(_player.gameId).startTime, //maturity
-            0, //initialMint
             2, // always two positions for player props
             tags, //tags
             true, // is child

@@ -487,7 +487,6 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             _gameId,
             _append(_gameId, _isSpread, _spreadHome, _totalOver), // gameLabel
             consumer.getGameCreatedById(_gameId).startTime, //maturity
-            0, //initialMint
             2, // always two positions for spread/total
             tags, //tags
             true, // is child

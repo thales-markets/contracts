@@ -279,14 +279,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bool useAvailable,
         bool useDefaultMinSpread
     ) internal view returns (uint returnQuote) {
-        int skewImpact = 0;
         if (!useAvailable) {
             available = availableToBuyFromAMMWithBaseOdds(market, position, baseOdds, 0, false);
         }
-        if (amount <= available) {
-            uint _availableOtherSide = _getAvailableOtherSide(market, position);
-            skewImpact = _buyPriceImpact(market, position, amount, available, _availableOtherSide);
-        }
+        require(amount <= available, "not enough available");
+        uint _availableOtherSide = _getAvailableOtherSide(market, position);
+        int skewImpact = _buyPriceImpact(market, position, amount, available, _availableOtherSide);
         baseOdds = (baseOdds * (ONE + _getMinSpreadToUse(useDefaultMinSpread, market))) / ONE;
 
         int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);

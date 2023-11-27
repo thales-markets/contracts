@@ -58,6 +58,45 @@
         "internalType": "uint256",
         "name": "max_spread",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minSupportedOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCapMaxSpreadAndMinOddsForMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "cap",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxSpread",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minOddsForMarket",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max_spread",
+        "type": "uint256"
       }
     ],
     "name": "getMaxSpreadForMarket",

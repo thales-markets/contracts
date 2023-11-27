@@ -389,11 +389,32 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         maxSpread = _maxSpreadPerSport > 0 ? _maxSpreadPerSport : max_spread;
     }
 
-    function getCapAndMaxSpreadForMarket(address _market, uint max_spread) external view returns (uint cap, uint maxSpread) {
+    function getCapAndMaxSpreadForMarket(address _market, uint max_spread) public view returns (uint cap, uint maxSpread) {
         (uint tag1, uint tag2) = ISportPositionalMarket(_market).getTags();
         uint _maxSpreadPerSport = maxSpreadPerSport[tag1];
         maxSpread = _maxSpreadPerSport > 0 ? _maxSpreadPerSport : max_spread;
         cap = _calculateCapToBeUsed(_market, tag1, tag2);
+    }
+
+    function getCapMaxSpreadAndMinOddsForMarket(
+        address _market,
+        uint max_spread,
+        uint minSupportedOdds
+    )
+        external
+        view
+        returns (
+            uint cap,
+            uint maxSpread,
+            uint minOddsForMarket
+        )
+    {
+        (uint tag1, uint tag2) = ISportPositionalMarket(_market).getTags();
+        uint _maxSpreadPerSport = maxSpreadPerSport[tag1];
+        maxSpread = _maxSpreadPerSport > 0 ? _maxSpreadPerSport : max_spread;
+        cap = _calculateCapToBeUsed(_market, tag1, tag2);
+        uint _minSupportedOddsPerSport = minSupportedOddsPerSport[tag1];
+        minOddsForMarket = _minSupportedOddsPerSport > 0 ? _minSupportedOddsPerSport : minSupportedOdds;
     }
 
     function getMinOddsForMarket(address _market, uint minSupportedOdds) external view returns (uint minOdds) {

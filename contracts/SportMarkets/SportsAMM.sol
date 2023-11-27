@@ -144,7 +144,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address parentMarket;
     }
 
-    /// @return the adddress of the AMMLP contract
+    /// @return the address of the AMMLP contract
     SportAMMLiquidityPool public liquidityPool;
 
     mapping(uint => mapping(uint => uint)) private minSpreadPerSport; //deprecated see SportAMMRiskManager.sol
@@ -354,7 +354,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position positionSecond,
         bool inverse
     ) internal view returns (uint) {
-        (uint cap, uint maxSpreadForMarket) = riskManager.getCapAndMaxSpreadForMarket(market, max_spread);
+        (uint cap, uint maxSpreadForMarket, uint minOddsForMarket) = riskManager.getCapMaxSpreadAndMinOddsForMarket(
+            market,
+            max_spread,
+            minSupportedOdds
+        );
         return
             sportAmmUtils.getAvailableHigherForPositions(
                 SportsAMMUtils.AvailableHigher(
@@ -363,7 +367,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     positionSecond,
                     inverse,
                     liquidityPool.getMarketPool(market),
-                    _minOddsForMarket(market),
+                    minOddsForMarket,
                     cap,
                     maxSpreadForMarket,
                     spentOnGame[market]

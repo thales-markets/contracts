@@ -404,6 +404,19 @@
   },
   {
     "inputs": [],
+    "name": "factory",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "finalResult",
     "outputs": [
       {
@@ -602,11 +615,6 @@
             "type": "uint256[2]"
           },
           {
-            "internalType": "address",
-            "name": "sportsAMM",
-            "type": "address"
-          },
-          {
             "internalType": "uint256",
             "name": "positionCount",
             "type": "uint256"
@@ -638,7 +646,7 @@
           },
           {
             "internalType": "address",
-            "name": "positionMastercopy",
+            "name": "factory",
             "type": "address"
           }
         ],
@@ -820,7 +828,7 @@
   },
   {
     "inputs": [],
-    "name": "parentTime",
+    "name": "parentTimes",
     "outputs": [
       {
         "internalType": "uint256",
@@ -857,19 +865,6 @@
         "internalType": "enum ISportPositionalMarket.Phase",
         "name": "",
         "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "positionMastercopy",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -955,19 +950,6 @@
     "name": "setPaused",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "sportsAMM",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

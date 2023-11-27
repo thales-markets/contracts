@@ -6,6 +6,7 @@ import "../../OwnedWithInit.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/ISportsAMM.sol";
+import "../../interfaces/ISportPositionalMarketFactory.sol";
 
 // Libraries
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
@@ -44,24 +45,22 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         bytes32 gameId;
         string gameLabel;
         uint[2] times; // [maturity, expiry]
-        address sportsAMM;
         uint positionCount;
         address[] positions;
         uint[] tags;
         bool isChild;
         address parentMarket;
         bool isDoubleChance;
-        address positionMastercopy;
+        address factory;
     }
 
     /* ========== STATE VARIABLES ========== */
 
     Options public options;
     uint public override optionsCount;
-    Times public parentTime;
+    Times public parentTimes;
     GameDetails private gameDetails;
     string private childGameLabel;
-    address public sportsAMM;
     uint[] public override tags;
     uint public finalResult;
 
@@ -84,7 +83,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     bool public override isDoubleChance;
     bool public override optionsInitialized;
-    address public positionMastercopy;
+    address public factory;
 
     /* ========== CONSTRUCTOR ========== */
     function initialize(SportPositionalMarketParameters calldata _parameters) external {
@@ -102,13 +101,12 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             parentMarket = ISportPositionalMarket(_parameters.parentMarket);
             childGameLabel = _parameters.gameLabel;
         } else {
-            parentTime = Times(_parameters.times[0], _parameters.times[1]);
+            parentTimes = Times(_parameters.times[0], _parameters.times[1]);
             gameDetails = GameDetails(_parameters.gameId, _parameters.gameLabel);
         }
 
         tags = _parameters.tags;
-        sportsAMM = _parameters.sportsAMM;
-        positionMastercopy = _parameters.positionMastercopy;
+        factory = _parameters.factory;
     }
 
     /* ---------- External Contracts ---------- */
@@ -124,7 +122,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             (uint maturity, uint expiry) = parentMarket.times();
             return Times(maturity, expiry);
         }
-        return parentTime;
+        return parentTimes;
     }
 
     function _matured() internal view returns (bool) {
@@ -173,15 +171,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         emit PauseUpdated(_paused);
     }
 
-    function updateDates(uint256 _maturity, uint256 _expiry)
-        external
-        override
-        onlyOwner
-        managerNotPaused
-        noDoubleChanceNoChild
-    {
+    function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused noDoubleChance {
         require(_maturity > block.timestamp, "Maturity must be in a future");
-        parentTime = Times(_maturity, _expiry);
+        if (!isChild) {
+            parentTimes = Times(_maturity, _expiry);
+        }
         emit DatesUpdated(_maturity, _expiry);
     }
 
@@ -401,7 +395,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     function mint(uint value) external override {
         require(!_matured() && !_isPaused(), "Minting inactive");
-        require(msg.sender == sportsAMM, "Invalid minter");
+        require(msg.sender == ISportPositionalMarketFactory(factory).sportsAMM(), "Invalid minter");
         if (value == 0) {
             return;
         }
@@ -436,7 +430,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     function _initializeOptions() internal {
         address[] memory positions = new address[](optionsCount);
         for (uint i = 0; i < optionsCount; i++) {
-            positions[i] = address(SportPosition(Clones.clone(positionMastercopy)));
+            positions[i] = address(SportPosition(Clones.clone(ISportPositionalMarketFactory(factory).positionMastercopy())));
         }
 
         // Instantiate the options themselves
@@ -445,20 +439,24 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         if (isChild) {
             require(tags.length > 1, "Child markets must have more then one tag");
             if (tags[1] == 10001) {
-                options.home.initialize(_getDetails().gameLabel, "HOME", sportsAMM);
-                options.away.initialize(_getDetails().gameLabel, "AWAY", sportsAMM);
+                options.home.initialize(_getDetails().gameLabel, "HOME", ISportPositionalMarketFactory(factory).sportsAMM());
+                options.away.initialize(_getDetails().gameLabel, "AWAY", ISportPositionalMarketFactory(factory).sportsAMM());
             } else if (tags[1] == 10002 || tags[1] == 10010) {
-                options.home.initialize(_getDetails().gameLabel, "OVER", sportsAMM);
-                options.away.initialize(_getDetails().gameLabel, "UNDER", sportsAMM);
+                options.home.initialize(_getDetails().gameLabel, "OVER", ISportPositionalMarketFactory(factory).sportsAMM());
+                options.away.initialize(
+                    _getDetails().gameLabel,
+                    "UNDER",
+                    ISportPositionalMarketFactory(factory).sportsAMM()
+                );
             }
         } else {
-            options.home.initialize(_getDetails().gameLabel, "HOME", sportsAMM);
-            options.away.initialize(_getDetails().gameLabel, "AWAY", sportsAMM);
+            options.home.initialize(_getDetails().gameLabel, "HOME", ISportPositionalMarketFactory(factory).sportsAMM());
+            options.away.initialize(_getDetails().gameLabel, "AWAY", ISportPositionalMarketFactory(factory).sportsAMM());
         }
 
         if (optionsCount > 2) {
             options.draw = SportPosition(positions[2]);
-            options.draw.initialize(_getDetails().gameLabel, "DRAW", sportsAMM);
+            options.draw.initialize(_getDetails().gameLabel, "DRAW", ISportPositionalMarketFactory(factory).sportsAMM());
         }
         optionsInitialized = true;
         emit PositionsInitialized(
@@ -541,7 +539,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
                 _decrementDeposited(payout);
             }
             payout = _manager().transformCollateral(payout);
-            ISportsAMM(sportsAMM).sUSD().transfer(msg.sender, payout);
+            ISportsAMM(ISportPositionalMarketFactory(factory).sportsAMM()).sUSD().transfer(msg.sender, payout);
         }
     }
 
@@ -620,9 +618,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
         // Transfer the balance rather than the deposit value in case there are any synths left over
         // from direct transfers.
-        uint balance = ISportsAMM(sportsAMM).sUSD().balanceOf(address(this));
+        uint balance = ISportsAMM(ISportPositionalMarketFactory(factory).sportsAMM()).sUSD().balanceOf(address(this));
         if (balance != 0) {
-            ISportsAMM(sportsAMM).sUSD().transfer(beneficiary, balance);
+            ISportsAMM(ISportPositionalMarketFactory(factory).sportsAMM()).sUSD().transfer(beneficiary, balance);
         }
 
         // Destroy the option tokens before destroying the market itself.
@@ -644,8 +642,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         _;
     }
 
-    modifier noDoubleChanceNoChild() {
-        require(!isDoubleChance && !isChild, "Not supported for double chance markets");
+    modifier noDoubleChance() {
+        require(!isDoubleChance, "Not supported for double chance markets");
         _;
     }
 

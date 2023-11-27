@@ -282,13 +282,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (!useAvailable) {
             available = availableToBuyFromAMMWithBaseOdds(market, position, baseOdds, 0, false);
         }
-        require(amount <= available, "not enough available");
-        uint _availableOtherSide = _getAvailableOtherSide(market, position);
-        int skewImpact = _buyPriceImpact(market, position, amount, available, _availableOtherSide);
-        baseOdds = (baseOdds * (ONE + _getMinSpreadToUse(useDefaultMinSpread, market))) / ONE;
+        if (amount <= available) {
+            uint _availableOtherSide = _getAvailableOtherSide(market, position);
+            int skewImpact = _buyPriceImpact(market, position, amount, available, _availableOtherSide);
+            baseOdds = (baseOdds * (ONE + _getMinSpreadToUse(useDefaultMinSpread, market))) / ONE;
 
-        int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
-        returnQuote = ISportPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
+            int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
+            returnQuote = ISportPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
+        }
     }
 
     function _buyFromAMMQuoteDoubleChance(

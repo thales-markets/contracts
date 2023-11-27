@@ -430,24 +430,6 @@
   },
   {
     "inputs": [],
-    "name": "gameDetails",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "string",
-        "name": "gameLabel",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "getGameDetails",
     "outputs": [
       {

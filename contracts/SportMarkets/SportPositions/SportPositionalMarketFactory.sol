@@ -27,7 +27,6 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
         string gameLabel;
         uint[2] times; // [maturity, expiry]
         uint positionCount;
-        address theRundownConsumer;
         uint[] tags;
         bool isChild;
         address parentMarket;

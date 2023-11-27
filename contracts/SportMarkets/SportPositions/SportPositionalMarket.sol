@@ -59,7 +59,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     Options public options;
     uint public override optionsCount;
     Times public parentTime;
-    GameDetails public gameDetails;
+    GameDetails private gameDetails;
+    string private childGameLabel;
     IERC20 public sUSD;
     address public sportsAMM;
     uint[] public override tags;
@@ -101,13 +102,13 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             isChild = _parameters.isChild;
             isDoubleChance = _parameters.isDoubleChance;
             parentMarket = ISportPositionalMarket(_parameters.parentMarket);
+            childGameLabel = _parameters.gameLabel;
         } else {
             parentTime = Times(_parameters.times[0], _parameters.times[1]);
+            gameDetails = GameDetails(_parameters.gameId, _parameters.gameLabel);
         }
 
-        gameDetails = GameDetails(_parameters.gameId, _parameters.gameLabel);
         tags = _parameters.tags;
-
         sportsAMM = _parameters.sportsAMM;
         positionMastercopy = _parameters.positionMastercopy;
     }
@@ -120,18 +121,16 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     /* ---------- Phases ---------- */
 
-    function _times() internal view returns (Times memory _parentTime) {
+    function _times() internal view returns (Times memory) {
         if (isChild || isDoubleChance) {
             (uint maturity, uint expiry) = parentMarket.times();
-            _parentTime = Times(maturity, expiry);
-            return _parentTime;
+            return Times(maturity, expiry);
         }
         return parentTime;
     }
 
     function _matured() internal view returns (bool) {
-        uint timeMaturity = isChild ? _times().maturity : _times().maturity;
-        return timeMaturity < block.timestamp;
+        return _times().maturity < block.timestamp;
     }
 
     function _expired() internal view returns (bool) {
@@ -176,7 +175,13 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         emit PauseUpdated(_paused);
     }
 
-    function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused noChildMarket {
+    function updateDates(uint256 _maturity, uint256 _expiry)
+        external
+        override
+        onlyOwner
+        managerNotPaused
+        noDoubleChanceNoChild
+    {
         require(_maturity > block.timestamp, "Maturity must be in a future");
         parentTime = Times(_maturity, _expiry);
         emit DatesUpdated(_maturity, _expiry);
@@ -189,17 +194,19 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function getGameDetails() external view override returns (bytes32 gameId, string memory gameLabel) {
-        return (gameDetails.gameId, gameDetails.gameLabel);
+        return (_getDetails().gameId, _getDetails().gameLabel);
     }
 
     function getParentMarketPositionsUint() public view override returns (uint position1, uint position2) {
         if (isDoubleChance) {
             (IPosition home, , ) = parentMarket.getOptions();
             if (_hasNotBeenInitialized(home)) {
-                if (keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("HomeTeamNotToLose"))) {
+                if (
+                    keccak256(abi.encodePacked(_getDetails().gameLabel)) == keccak256(abi.encodePacked("HomeTeamNotToLose"))
+                ) {
                     (position1, position2) = (0, 2);
                 } else if (
-                    keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("AwayTeamNotToLose"))
+                    keccak256(abi.encodePacked(_getDetails().gameLabel)) == keccak256(abi.encodePacked("AwayTeamNotToLose"))
                 ) {
                     (position1, position2) = (1, 2);
                 } else {
@@ -212,10 +219,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     function getParentMarketPositions() public view override returns (IPosition position1, IPosition position2) {
         if (isDoubleChance) {
             (IPosition home, IPosition away, IPosition draw) = parentMarket.getOptions();
-            if (keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("HomeTeamNotToLose"))) {
+            if (keccak256(abi.encodePacked(_getDetails().gameLabel)) == keccak256(abi.encodePacked("HomeTeamNotToLose"))) {
                 (position1, position2) = (home, draw);
             } else if (
-                keccak256(abi.encodePacked(gameDetails.gameLabel)) == keccak256(abi.encodePacked("AwayTeamNotToLose"))
+                keccak256(abi.encodePacked(_getDetails().gameLabel)) == keccak256(abi.encodePacked("AwayTeamNotToLose"))
             ) {
                 (position1, position2) = (away, draw);
             } else {
@@ -240,7 +247,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     /* ---------- Option Balances and Mints ---------- */
     function getGameId() external view override returns (bytes32) {
-        return gameDetails.gameId;
+        return _getDetails().gameId;
     }
 
     function getStampedOdds()
@@ -360,6 +367,14 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         return min;
     }
 
+    function _getDetails() internal view returns (GameDetails memory) {
+        if (isChild || isDoubleChance) {
+            (bytes32 gameId, ) = parentMarket.getGameDetails();
+            return GameDetails(gameId, childGameLabel);
+        }
+        return gameDetails;
+    }
+
     /* ---------- Utilities ---------- */
 
     function _incrementDeposited(uint value) internal returns (uint _deposited) {
@@ -432,20 +447,20 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         if (isChild) {
             require(tags.length > 1, "Child markets must have more then one tag");
             if (tags[1] == 10001) {
-                options.home.initialize(gameDetails.gameLabel, "HOME", sportsAMM);
-                options.away.initialize(gameDetails.gameLabel, "AWAY", sportsAMM);
+                options.home.initialize(_getDetails().gameLabel, "HOME", sportsAMM);
+                options.away.initialize(_getDetails().gameLabel, "AWAY", sportsAMM);
             } else if (tags[1] == 10002 || tags[1] == 10010) {
-                options.home.initialize(gameDetails.gameLabel, "OVER", sportsAMM);
-                options.away.initialize(gameDetails.gameLabel, "UNDER", sportsAMM);
+                options.home.initialize(_getDetails().gameLabel, "OVER", sportsAMM);
+                options.away.initialize(_getDetails().gameLabel, "UNDER", sportsAMM);
             }
         } else {
-            options.home.initialize(gameDetails.gameLabel, "HOME", sportsAMM);
-            options.away.initialize(gameDetails.gameLabel, "AWAY", sportsAMM);
+            options.home.initialize(_getDetails().gameLabel, "HOME", sportsAMM);
+            options.away.initialize(_getDetails().gameLabel, "AWAY", sportsAMM);
         }
 
         if (optionsCount > 2) {
             options.draw = SportPosition(positions[2]);
-            options.draw.initialize(gameDetails.gameLabel, "DRAW", sportsAMM);
+            options.draw.initialize(_getDetails().gameLabel, "DRAW", sportsAMM);
         }
         optionsInitialized = true;
         emit PositionsInitialized(
@@ -638,8 +653,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         _;
     }
 
-    modifier noChildMarket() {
-        require(!isChild, "Not supported for childs");
+    modifier noDoubleChanceNoChild() {
+        require(!isDoubleChance && !isChild, "Not supported for double chance markets");
         _;
     }
 

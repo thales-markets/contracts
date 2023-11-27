@@ -354,7 +354,21 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position positionSecond,
         bool inverse
     ) internal view returns (uint) {
-        return sportAmmUtils.getAvailableHigherForPositions(market, positionFirst, positionSecond, inverse, liquidityPool);
+        (uint cap, uint maxSpreadForMarket) = riskManager.getCapAndMaxSpreadForMarket(market, max_spread);
+        return
+            sportAmmUtils.getAvailableHigherForPositions(
+                SportsAMMUtils.AvailableHigher(
+                    market,
+                    positionFirst,
+                    positionSecond,
+                    inverse,
+                    liquidityPool.getMarketPool(market),
+                    _minOddsForMarket(market),
+                    cap,
+                    maxSpreadForMarket,
+                    spentOnGame[market]
+                )
+            );
     }
 
     /// @notice Calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game
@@ -921,12 +935,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 ? balance
                 : sportAmmUtils.balanceOfPositionOnMarket(market, position, liquidityPool.getMarketPool(market));
 
+            (uint cap, uint maxSpreadForMarket) = riskManager.getCapAndMaxSpreadForMarket(market, max_spread);
             availableAmount = sportAmmUtils.calculateAvailableToBuy(
-                riskManager.calculateCapToBeUsed(market),
+                cap,
                 spentOnGame[market],
                 baseOdds,
                 balance,
-                _maxSpreadForMarket(market)
+                maxSpreadForMarket
             );
         }
     }

@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "../../OwnedWithInit.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ITherundownConsumer.sol";
+import "../../interfaces/ISportsAMM.sol";
 
 // Libraries
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
@@ -39,7 +40,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     struct SportPositionalMarketParameters {
         address owner;
-        IERC20 sUSD;
         address creator;
         bytes32 gameId;
         string gameLabel;
@@ -61,7 +61,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     Times public parentTime;
     GameDetails private gameDetails;
     string private childGameLabel;
-    IERC20 public sUSD;
     address public sportsAMM;
     uint[] public override tags;
     uint public finalResult;
@@ -96,7 +95,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         optionsCount = _parameters.positionCount;
         require(optionsCount == _parameters.positions.length, "Position count mismatch");
 
-        sUSD = _parameters.sUSD;
         creator = _parameters.creator;
         if (_parameters.isChild || _parameters.isDoubleChance) {
             isChild = _parameters.isChild;
@@ -475,13 +473,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         return address(home) == address(0);
     }
 
-    /* ---------- Custom oracle configuration ---------- */
-
-    function setsUSD(address _address) external onlyOwner {
-        sUSD = IERC20(_address);
-        emit SetsUSD(_address);
-    }
-
     /* ---------- Market Resolution ---------- */
 
     function resolve(uint _outcome) external onlyOwner managerNotPaused {
@@ -550,7 +541,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
                 _decrementDeposited(payout);
             }
             payout = _manager().transformCollateral(payout);
-            sUSD.transfer(msg.sender, payout);
+            ISportsAMM(sportsAMM).sUSD().transfer(msg.sender, payout);
         }
     }
 
@@ -629,9 +620,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
         // Transfer the balance rather than the deposit value in case there are any synths left over
         // from direct transfers.
-        uint balance = sUSD.balanceOf(address(this));
+        uint balance = ISportsAMM(sportsAMM).sUSD().balanceOf(address(this));
         if (balance != 0) {
-            sUSD.transfer(beneficiary, balance);
+            ISportsAMM(sportsAMM).sUSD().transfer(beneficiary, balance);
         }
 
         // Destroy the option tokens before destroying the market itself.
@@ -665,7 +656,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     event OptionsExercised(address indexed account, uint value);
     event OptionsBurned(address indexed account, uint value);
-    event SetsUSD(address _address);
     event Expired(address beneficiary);
     event StoredOddsOnCancellation(uint homeOdds, uint awayOdds, uint drawOdds);
     event PauseUpdated(bool _paused);

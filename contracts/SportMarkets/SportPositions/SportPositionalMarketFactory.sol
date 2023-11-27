@@ -22,7 +22,6 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
 
     struct SportPositionCreationMarketParameters {
         address creator;
-        IERC20 _sUSD;
         bytes32 gameId;
         string gameLabel;
         uint[2] times; // [maturity, expiry]
@@ -53,7 +52,6 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
         pom.initialize(
             SportPositionalMarket.SportPositionalMarketParameters(
                 positionalMarketManager,
-                _parameters._sUSD,
                 _parameters.creator,
                 _parameters.gameId,
                 _parameters.gameLabel,

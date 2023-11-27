@@ -332,7 +332,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         ISportPositionalMarket market = _createMarket(
             SportPositionalMarketFactory.SportPositionCreationMarketParameters(
                 msg.sender,
-                sUSD,
                 gameId,
                 gameLabel,
                 [maturity, expiry],
@@ -409,7 +408,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             ISportPositionalMarket doubleChanceMarket = _createMarket(
                 SportPositionalMarketFactory.SportPositionCreationMarketParameters(
                     creator,
-                    sUSD,
                     gameId,
                     labels[i],
                     [maturity, expiry],

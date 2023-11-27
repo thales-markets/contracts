@@ -206,19 +206,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "SetsUSD",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "homeOdds",
         "type": "uint256"
@@ -595,11 +582,6 @@
             "type": "address"
           },
           {
-            "internalType": "contract IERC20",
-            "name": "sUSD",
-            "type": "address"
-          },
-          {
             "internalType": "address",
             "name": "creator",
             "type": "address"
@@ -963,19 +945,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "sUSD",
-    "outputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "bool",
@@ -984,19 +953,6 @@
       }
     ],
     "name": "setPaused",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "setsUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

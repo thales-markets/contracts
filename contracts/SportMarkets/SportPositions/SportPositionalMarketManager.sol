@@ -351,13 +351,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         ISportPositionalMarket market = _createMarket(
             SportPositionalMarketFactory.SportPositionCreationMarketParameters(
                 msg.sender,
-                sUSD,
                 gameId,
                 gameLabel,
                 [maturity, expiry],
-                initialMint,
                 positionCount,
-                msg.sender,
                 tags,
                 isChild,
                 parentMarket,
@@ -365,13 +362,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             )
         );
 
-        // The debt can't be incremented in the new market's constructor because until construction is complete,
-        // the manager doesn't know its address in order to grant it permission.
-        totalDeposited = totalDeposited.add(initialMint);
-        sUSD.transferFrom(msg.sender, address(market), _transformCollateral(initialMint));
-
         if (positionCount > 2 && isDoubleChanceSupported) {
-            _createDoubleChanceMarkets(msg.sender, gameId, maturity, expiry, initialMint, address(market), tags[0]);
+            _createDoubleChanceMarkets(msg.sender, gameId, maturity, expiry, address(market), tags[0]);
         }
 
         return market;
@@ -390,7 +382,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             marketContract.getGameId(),
             maturity,
             expiry,
-            marketContract.initialMint(),
             market,
             marketContract.tags(0)
         );
@@ -425,7 +416,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         bytes32 gameId,
         uint maturity,
         uint expiry,
-        uint initialMint,
         address market,
         uint tag
     ) internal onlySupportedGameId(gameId) {
@@ -437,13 +427,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             ISportPositionalMarket doubleChanceMarket = _createMarket(
                 SportPositionalMarketFactory.SportPositionCreationMarketParameters(
                     creator,
-                    sUSD,
                     gameId,
                     labels[i],
                     [maturity, expiry],
-                    initialMint,
                     2,
-                    creator,
                     tagsDoubleChance,
                     false,
                     address(market),

@@ -125,7 +125,8 @@ contract ParlayMarket is OwnedWithInit {
         }
     }
 
-    function isParlayExercisable() public view returns (bool isExercisable) {
+    //exercisedOrExercisableMarkets left for legacy support
+    function isParlayExercisable() public view returns (bool isExercisable, bool[] memory exercisedOrExercisableMarkets) {
         isExercisable = !resolved && (areAllPositionsResolved() || isParlayLost());
     }
 
@@ -141,7 +142,8 @@ contract ParlayMarket is OwnedWithInit {
 
     function exerciseWiningSportMarkets() external onlyAMM {
         require(!paused, "Market paused");
-        require(isParlayExercisable(), "Parlay not exercisable yet");
+        (bool isExercisable, ) = isParlayExercisable();
+        require(isExercisable, "Parlay not exercisable yet");
         require(areAllPositionsResolved() || isParlayLost(), "Parlay already exercised");
         uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
         if (isParlayLost()) {

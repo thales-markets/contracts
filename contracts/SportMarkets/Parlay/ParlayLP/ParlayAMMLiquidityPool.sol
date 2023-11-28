@@ -403,7 +403,8 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (market.isParlayExercisable() && !market.isUserTheWinner()) {
+                (bool isExercisable, ) = market.isParlayExercisable();
+                if (isExercisable && !market.isUserTheWinner()) {
                     parlayAMM.exerciseParlay(marketAddress);
                 }
                 if (market.isUserTheWinner() || market.resolved()) {
@@ -431,7 +432,8 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             address marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (market.isParlayExercisable() && !market.isUserTheWinner()) {
+                (bool isExercisable, ) = market.isParlayExercisable();
+                if (isExercisable && !market.isUserTheWinner()) {
                     parlayAMM.exerciseParlay(marketAddress);
                 }
                 if (market.isUserTheWinner() || market.resolved()) {
@@ -504,7 +506,8 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             address marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (!market.isParlayExercisable()) {
+                (bool isExercisable, ) = market.isParlayExercisable();
+                if (!isExercisable) {
                     return false;
                 }
             }
@@ -520,7 +523,8 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (market.isParlayExercisable() && !market.isUserTheWinner()) {
+                (bool isExercisable, ) = market.isParlayExercisable();
+                if (isExercisable && !market.isUserTheWinner()) {
                     return true;
                 }
             }

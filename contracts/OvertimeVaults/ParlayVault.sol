@@ -309,7 +309,8 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         ParlayMarket parlayMarket;
         for (uint i = marketsProcessedInRound; i < endCursor; i++) {
             parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
-            if (parlayMarket.isParlayExercisable()) {
+            (bool isExercisable, ) = parlayMarket.isParlayExercisable();
+            if (isExercisable) {
                 parlayAMM.exerciseParlay(address(parlayMarket));
             }
 
@@ -422,7 +423,8 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         ParlayMarket parlayMarket;
         for (uint i = marketsProcessedInRound; i < tradingParlayMarketsPerRound[round].length; i++) {
             parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
-            if (parlayMarket.isParlayExercisable()) {
+            (bool isExercisable, ) = parlayMarket.isParlayExercisable();
+            if (isExercisable) {
                 parlayAMM.exerciseParlay(address(parlayMarket));
             }
 
@@ -599,7 +601,8 @@ contract ParlayVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         }
         for (uint i = 0; i < tradingParlayMarketsPerRound[round].length; i++) {
             ParlayMarket parlayMarket = ParlayMarket(tradingParlayMarketsPerRound[round][i]);
-            if (parlayMarket.resolved() || parlayMarket.isParlayExercisable()) continue;
+            (bool isExercisable, ) = parlayMarket.isParlayExercisable();
+            if (parlayMarket.resolved() || isExercisable) continue;
             else return false;
         }
         return true;

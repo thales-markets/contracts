@@ -1120,7 +1120,7 @@ contract('ParlayAMM', (accounts) => {
 			parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 
 			let newResult5 = await parlaySingleMarket.isParlayExercisable();
-			assert.equal(newResult5, false);
+			assert.equal(newResult5[0], false);
 		});
 
 		it('Risk amount per combination exceeded', async () => {
@@ -1158,7 +1158,7 @@ contract('ParlayAMM', (accounts) => {
 			parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 
 			let newResult5 = await parlaySingleMarket.isParlayExercisable();
-			assert.equal(newResult5, false);
+			assert.equal(newResult5[0], false);
 		});
 
 		it('Create/Buy Parlay with different slippage', async () => {
@@ -1574,7 +1574,7 @@ contract('ParlayAMM', (accounts) => {
 				});
 				it('Read from ParlayMarket isExercisable', async () => {
 					let result = await parlaySingleMarket.isParlayExercisable();
-					assert.equal(result, true);
+					assert.equal(result[0], true);
 				});
 				it('IsUserTheWinner', async () => {
 					let result = await parlaySingleMarket.isUserTheWinner();

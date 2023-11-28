@@ -1211,7 +1211,7 @@ contract('ParlayAMM', (accounts) => {
 			parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 
 			let newResult5 = await parlaySingleMarket.isParlayExercisable();
-			assert.equal(newResult5, false);
+			assert.equal(newResult5[0], false);
 		});
 
 		it('Buy Parlay with referral', async () => {

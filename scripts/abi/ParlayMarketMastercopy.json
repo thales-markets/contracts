@@ -215,6 +215,11 @@
         "internalType": "bool",
         "name": "isExercisable",
         "type": "bool"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "exercisedOrExercisableMarkets",
+        "type": "bool[]"
       }
     ],
     "stateMutability": "view",

@@ -112,6 +112,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         sUSD = _sUSD;
     }
 
+    /// @notice creates new market for given strike time, in case it is zero delta time is used
     function createNewMarket(
         bytes32 asset,
         uint64 strikeTime,
@@ -136,6 +137,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         );
     }
 
+    /// @notice creates new market with different collateral (not sUSD) for given strike time, in case it is zero delta time is used
     function createNewMarketWithDifferentCollateral(
         bytes32 asset,
         uint64 strikeTime,
@@ -260,8 +262,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             );
         }
 
-        currentRiskPerAsset[asset] += (buyinAmount * (ONE - safeBoxImpact - lpFeeWithSkew)) / ONE;
-        //TODO:  currentRiskPerAsset[asset] += (buyinAmount * 2 - (buyinAmount * lpFeeWithSkew)) / ONE);
+        currentRiskPerAsset[asset] += buyinAmount * 2 - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE;
         require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
 
         // LP fee by delta time + skew impact based on risk per direction and asset - discount as half of opposite skew
@@ -466,6 +467,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 _resolveMarketManually(markets[i], finalPrices[i]);
             }
         }
+    }
+
+    /// @notice owner can resolve market for a given market address with finalPrice
+    function resolveMarketAsOwner(address _market, int64 _finalPrice) external onlyOwner {
+        require(canResolveMarket(_market), "Can not resolve");
+        _resolveMarketWithPrice(_market, _finalPrice);
     }
 
     function _resolveMarketManually(address _market, int64 _finalPrice) internal {

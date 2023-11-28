@@ -140,11 +140,14 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         require(amountDiff >= buyinAmount, "not enough received via onramp");
     }
 
-    //TODO: numOfDirections can be uint8
-    function _getPayout(uint buyinAmount, uint numOfDirections) internal pure returns (uint payout) {
-        payout = buyinAmount;
-        for (uint i = 0; i < numOfDirections; i++) {
-            payout = (payout * payoutMultiplier) / ONE;
+    function _getPayout(
+        uint _buyinAmount,
+        uint8 _numOfDirections,
+        uint _payoutMultiplier
+    ) internal pure returns (uint payout) {
+        payout = _buyinAmount;
+        for (uint8 i = 0; i < _numOfDirections; i++) {
+            payout = (payout * _payoutMultiplier) / ONE;
         }
     }
 
@@ -197,11 +200,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             "Wrong number of directions"
         );
 
-        tempData.payout = _getPayout(buyinAmount, directions.length);
+        tempData.payout = _getPayout(buyinAmount, uint8(directions.length), payoutMultiplier);
         require(tempData.payout <= maxProfitPerIndividualMarket, "Profit too high");
 
-        //TODO: SBfee not needed here => currentRisk += (tempData.payout - buyinAmount);
-        currentRisk += tempData.payout - (buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;
+        currentRisk += (tempData.payout - buyinAmount);
         require(currentRisk <= maxRisk, "Out of liquidity");
 
         IPyth(contractsAddresses.pyth).updatePriceFeeds{value: IPyth(contractsAddresses.pyth).getUpdateFee(priceUpdateData)}(
@@ -368,6 +370,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         _resolveMarketWithPrices(_market, _finalPrices, true);
     }
 
+    /// @notice owner can resolve market for a given market address with finalPrices
+    function resolveMarketAsOwner(address _market, int64[] calldata _finalPrices) external onlyOwner {
+        require(canResolveMarket(_market), "Can not resolve");
+        _resolveMarketWithPrices(_market, _finalPrices, false);
+    }
+
     function _resolveMarketWithPrices(
         address market,
         int64[] memory _finalPrices,
@@ -385,7 +393,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             _maturedMarketsPerUser[user].add(market);
 
             uint buyinAmount = ChainedSpeedMarket(market).buyinAmount();
-            uint payout = _getPayout(buyinAmount, ChainedSpeedMarket(market).numOfDirections());
+            uint payout = _getPayout(buyinAmount, ChainedSpeedMarket(market).numOfDirections(), payoutMultiplier);
 
             if (!ChainedSpeedMarket(market).isUserWinner()) {
                 if (currentRisk > payout) {

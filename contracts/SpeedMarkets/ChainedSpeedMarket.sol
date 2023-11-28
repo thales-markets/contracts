@@ -109,9 +109,9 @@ contract ChainedSpeedMarket {
     }
 
     /// @notice numOfDirections returns number of directions (speed markets in chain)
-    /// @return uint
-    function numOfDirections() external view returns (uint) {
-        return directions.length;
+    /// @return uint8
+    function numOfDirections() external view returns (uint8) {
+        return uint8(directions.length);
     }
 
     /// @notice numOfPrices returns number of strike/finales

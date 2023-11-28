@@ -345,8 +345,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			let expectedCurrentRisk = 0;
 			for (let marketData of marketDataArray) {
 				expectedCurrentRisk +=
-					buyinAmount * PAYOUT_MULTIPLIER ** marketData.directions.length -
-					buyinAmount * (1 + Number(marketData.safeBoxImpact / 1e18));
+					buyinAmount * PAYOUT_MULTIPLIER ** marketData.directions.length - buyinAmount;
 			}
 			assert.equal((chainedAmmData.risk.current / 1e18).toFixed(5), expectedCurrentRisk.toFixed(5));
 
@@ -394,6 +393,18 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			);
 
 			await swapRouterMock.setDefaults(mockWeth.address, exoticUSD.address);
+
+			await chainedSpeedMarketsAMM.createNewMarketWithDifferentCollateral(
+				toBytes32('ETH'),
+				timeFrame,
+				[0, 1], // 2 directions
+				[priceFeedUpdateData],
+				ZERO_ADDRESS,
+				toUnit(buyinAmount),
+				true,
+				ZERO_ADDRESS,
+				{ value: toUnit(buyinAmount + fee / 1e18), from: user }
+			);
 
 			await chainedSpeedMarketsAMM.createNewMarketWithDifferentCollateral(
 				toBytes32('ETH'),
@@ -608,6 +619,33 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			console.log('Check number of matured markets after all resolved');
 			maturedMarkets = await chainedSpeedMarketsAMM.maturedMarketsPerUser(0, 10, user);
 			assert.equal(maturedMarkets.length, numOfMaturedMarkets + resolvedMarkets);
+		});
+
+		it('Should resolve chained speed market as owner', async () => {
+			let activeMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
+			let market = activeMarkets[0];
+			let numOfActiveMarkets = activeMarkets.length;
+			console.log('Number of active markets', numOfActiveMarkets);
+
+			let resolvedMarkets = 0;
+
+			let marketData = await speedMarketsAMMData.getChainedMarketsData([market]);
+			let finalPrices = [Number(marketData[0].initialStrikePrice) - 600000000]; // DOWN
+
+			await expect(
+				chainedSpeedMarketsAMM.resolveMarketAsOwner(market, finalPrices, {
+					from: user,
+				})
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await chainedSpeedMarketsAMM.resolveMarketAsOwner(market, finalPrices, {
+				from: owner,
+			});
+			resolvedMarkets++;
+
+			console.log('Check number of active markets after resolve');
+			let curActiveMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
+			assert.equal(curActiveMarkets.length, numOfActiveMarkets - resolvedMarkets);
 		});
 	});
 });

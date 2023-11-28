@@ -144,7 +144,6 @@ contract ParlayMarket is OwnedWithInit {
         require(!paused, "Market paused");
         (bool isExercisable, ) = isParlayExercisable();
         require(isExercisable, "Parlay not exercisable yet");
-        require(areAllPositionsResolved() || isParlayLost(), "Parlay already exercised");
         uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
         if (isParlayLost()) {
             if (totalSUSDamount > 0) {

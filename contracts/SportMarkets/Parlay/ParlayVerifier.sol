@@ -579,25 +579,6 @@ contract ParlayVerifier {
         }
     }
 
-    function _applySkewImpact(
-        uint _value,
-        uint _skewImpact,
-        bool _addition
-    ) internal pure returns (uint newValue) {
-        newValue = _addition ? (((ONE + _skewImpact) * _value) / ONE) : (((ONE - _skewImpact) * _value) / ONE);
-    }
-
-    function _applySkewImpactBatch(
-        uint[] memory _values,
-        uint _skewImpact,
-        bool _addition
-    ) internal pure returns (uint[] memory newValues) {
-        newValues = new uint[](_values.length);
-        for (uint i = 0; i < _values.length; i++) {
-            newValues[i] = _applySkewImpact(_values[i], _skewImpact, _addition);
-        }
-    }
-
     function obtainSportsAMMPosition(uint _position) public pure returns (ISportsAMM.Position) {
         if (_position == 0) {
             return ISportsAMM.Position.Home;
@@ -665,14 +646,6 @@ contract ParlayVerifier {
     function sort(address[] memory data) external pure returns (address[] memory) {
         _quickSort(data, int(0), int(data.length - 1));
         return data;
-    }
-
-    function applySkewImpact(
-        uint _value,
-        uint _skewImpact,
-        bool _addition
-    ) external pure returns (uint newValue) {
-        newValue = _applySkewImpact(_value, _skewImpact, _addition);
     }
 
     function calculateCombinationKey(address[] memory _sportMarkets) external pure returns (bytes32) {

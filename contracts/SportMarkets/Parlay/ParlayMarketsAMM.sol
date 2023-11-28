@@ -583,24 +583,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         sUSD.safeTransfer(safeBox, safeBoxAmount - referrerShare);
     }
 
-    function _sendPositionsToMarket(
-        address _sportMarket,
-        uint _position,
-        address _parlayMarket,
-        uint _amount
-    ) internal {
-        if (_position == 0) {
-            (IPosition homePosition, , ) = ISportPositionalMarket(_sportMarket).getOptions();
-            IERC20Upgradeable(address(homePosition)).safeTransfer(address(_parlayMarket), _amount);
-        } else if (_position == 1) {
-            (, IPosition awayPosition, ) = ISportPositionalMarket(_sportMarket).getOptions();
-            IERC20Upgradeable(address(awayPosition)).safeTransfer(address(_parlayMarket), _amount);
-        } else {
-            (, , IPosition drawPosition) = ISportPositionalMarket(_sportMarket).getOptions();
-            IERC20Upgradeable(address(drawPosition)).safeTransfer(address(_parlayMarket), _amount);
-        }
-    }
-
     function _storeRisk(address[] memory _sportMarkets, uint _sUSDPaid) internal {
         if (_sportMarkets.length > 1 && _sportMarkets.length <= parlaySize) {
             riskPerPackedGamesCombination[parlayVerifier.calculateCombinationKey(_sportMarkets)] += _sUSDPaid;

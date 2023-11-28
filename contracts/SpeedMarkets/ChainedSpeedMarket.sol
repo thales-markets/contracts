@@ -94,18 +94,18 @@ contract ChainedSpeedMarket {
             }
         }
 
-        if (resolved) {
-            if (isUserWinner) {
-                chainedMarketsAMM.sUSD().safeTransfer(user, chainedMarketsAMM.sUSD().balanceOf(address(this)));
-            } else {
-                chainedMarketsAMM.sUSD().safeTransfer(
-                    address(chainedMarketsAMM),
-                    chainedMarketsAMM.sUSD().balanceOf(address(this))
-                );
-            }
+        require(resolved, "Not ready to resolve");
 
-            emit Resolved(finalPrices, isUserWinner);
+        if (isUserWinner) {
+            chainedMarketsAMM.sUSD().safeTransfer(user, chainedMarketsAMM.sUSD().balanceOf(address(this)));
+        } else {
+            chainedMarketsAMM.sUSD().safeTransfer(
+                address(chainedMarketsAMM),
+                chainedMarketsAMM.sUSD().balanceOf(address(this))
+            );
         }
+
+        emit Resolved(finalPrices, isUserWinner);
     }
 
     /// @notice numOfDirections returns number of directions (speed markets in chain)

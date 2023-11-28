@@ -206,7 +206,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint collateralAmount,
         bool isEth,
         address referrer,
-        uint skewImapct
+        uint skewImpact
     ) internal {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
         uint buyinAmount = _getBuyinWithConversion(collateral, collateralAmount, isEth, strikeTime, contractsAddresses);
@@ -218,7 +218,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             priceUpdateData,
             false,
             referrer,
-            skewImapct,
+            skewImpact,
             contractsAddresses
         );
     }
@@ -234,10 +234,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         SpeedMarket.Direction direction,
         uint buyinAmount,
         uint64 strikeTime,
-        uint skewImapct
+        uint skewImpact
     ) internal returns (uint lpFeeWithSkew) {
         uint skew = _getSkewByAssetAndDirection(asset, direction);
-        require(skew <= skewImapct + SKEW_SLIPPAGE, "Skew slippage exceeded");
+        require(skew <= skewImpact + SKEW_SLIPPAGE, "Skew slippage exceeded");
 
         SpeedMarket.Direction oppositeDirection = direction == SpeedMarket.Direction.Up
             ? SpeedMarket.Direction.Down
@@ -261,6 +261,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         }
 
         currentRiskPerAsset[asset] += (buyinAmount * (ONE - safeBoxImpact - lpFeeWithSkew)) / ONE;
+        //TODO:  currentRiskPerAsset[asset] += (buyinAmount * 2 - (buyinAmount * lpFeeWithSkew)) / ONE);
         require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
 
         // LP fee by delta time + skew impact based on risk per direction and asset - discount as half of opposite skew

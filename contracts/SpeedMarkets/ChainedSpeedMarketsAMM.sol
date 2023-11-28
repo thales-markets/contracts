@@ -140,7 +140,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         require(amountDiff >= buyinAmount, "not enough received via onramp");
     }
 
-    function _getPayout(uint buyinAmount, uint numOfDirections) internal returns (uint payout) {
+    //TODO: numOfDirections can be uint8
+    function _getPayout(uint buyinAmount, uint numOfDirections) internal pure returns (uint payout) {
         payout = buyinAmount;
         for (uint i = 0; i < numOfDirections; i++) {
             payout = (payout * payoutMultiplier) / ONE;
@@ -199,6 +200,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         tempData.payout = _getPayout(buyinAmount, directions.length);
         require(tempData.payout <= maxProfitPerIndividualMarket, "Profit too high");
 
+        //TODO: SBfee not needed here => currentRisk += (tempData.payout - buyinAmount);
         currentRisk += tempData.payout - (buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;
         require(currentRisk <= maxRisk, "Out of liquidity");
 

@@ -62,7 +62,7 @@ async function main() {
 	const referralsAddress = getTargetAddress('Referrals', network);
 	console.log('referralsAddress found at: ', referralsAddress);
 
-	const stakingThalesAddress = getTargetAddress('StakingThales', network);
+	const stakingThalesAddress = getTargetAddress('StakingThales', network) ?? ZERO_ADDRESS;
 	console.log('stakingThalesAddress found at: ', stakingThalesAddress);
 
 	const multiCollateralOnOffRampAddress =

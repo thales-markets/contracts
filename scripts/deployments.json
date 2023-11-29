@@ -152,7 +152,7 @@
 		"ParlayDefaultLiquidityProviderImplementation": "0xA20Ed099894dcfC46AF290705Ff5aE4d318B0235",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"MultiCollateralOnOffRampImplementation": "0x6D40a8998CD288d396D783757cd2fAe613CbDcBB",
-		"SpeedMarketsAMMImplementation": "0x9727Fbc64B05c94286eEf3493F4CAe161B9ba3a8",
+		"SpeedMarketsAMMImplementation": "0x998819db408c7c19BBB6A9561e7BD347914ED303",
 		"SpeedMarketMastercopy": "0x4c98C6fAc5d26fDBcB1108EAcfEb2D1aF65aaE39",
 		"SportAMMRiskManager": "0x4d0192E2fE94687838Eaa3BcbC3B891964B38a9D",
 		"SportAMMRiskManagerImplementation": "0xB103F660272d70cd9167927f39E0980f3a91090E",
@@ -160,11 +160,13 @@
 		"GamesPlayerPropsImplementation": "0xe02e12C409c8b71C22E9e7eFD49D95e5811155E0",
 		"GamesPlayerPropsReceiver": "0xA6cd4eB2426bACa4772b48847Ec6b83b36dB71F6",
 		"GamesPlayerPropsReceiverImplementation": "0x22f9192E4135e31E237A28bFDa725D68f63F1F5e",
-		"SpeedMarketsAMMUtils": "0xFbbdA571addA0AF70dCFc8CF96e962c84BDF51f0",
+		"SpeedMarketsAMMUtils": "0x7374dFf55ACb83F5E9bcd3416ED510620C648680",
 		"SpeedMarketsAMMData": "0x467e14ac025499d60c417D7F00A7D9E83293F43c",
-		"SpeedMarketsAMMDataImplementation": "0x07e37c2c0eAc678650a2D8B613DB81dD2c25c452",
+		"SpeedMarketsAMMDataImplementation": "0x7be52B9648fAc06E81CD10b296203D90437f50A7",
 		"ParlayPolicy": "0x6880b6fc24Ac20a9081FfA39B1A504A44BAEB2dE",
-		"ParlayPolicyImplementation": "0x899B77fc0E210BE9ADe1531EddE6898a836eC9D1"
+		"ParlayPolicyImplementation": "0x899B77fc0E210BE9ADe1531EddE6898a836eC9D1",
+		"AddressManager": "0x9b4c63Bb86139188bbbA9C93C498a60dCB0d94bf",
+		"AddressManagerImplementation": "0x935b3779743CFAD643fCfc609473E0164348a88C"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -280,7 +282,7 @@
 		"ParlayAMMLiquidityPoolDataImplementation": "0x0281B682Fb5Ee287B5DB7519BE9425b34Fb11503",
 		"ParlayDefaultLiquidityProviderImplementation": "0xa475e7314f41D77FB800245DAC18Ee8a760a491F",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
-		"SpeedMarketsAMMImplementation": "0x92915e00907C4F39880c318B6c1228feA7655151",
+		"SpeedMarketsAMMImplementation": "0x4291BFf469052A3111ee735a6eB62FaAb0978395",
 		"MultiCollateralOnOffRampImplementation": "0xd6C3Ca569280C66090bf8827a6F7e3C25306AfB9",
 		"SpeedMarketMastercopy": "0x112aCaDdb89ef257bBef07C4F03A32F6C96dB172",
 		"SafeBoxBuyback": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203",
@@ -291,12 +293,14 @@
 		"GamesPlayerPropsImplementation": "0x089B4c50Fe83aD172D3E6A920702fF7f61aFB8A5",
 		"GamesPlayerPropsReceiver": "0x5311EF5370EAf6eb428DD4eA556AA3461269Aee0",
 		"GamesPlayerPropsReceiverImplementation": "0xfeEB24491Af1b35969CA74a5f05dC1EE00e7f519",
-		"SpeedMarketsAMMUtils": "0x8149Ee832c134EF1C639510642842B2AcFdAfd50",
+		"SpeedMarketsAMMUtils": "0x5D7c74d64ae47b3b4Bf60cB15a14dCd6048E5B14",
 		"SpeedMarketsAMMData": "0xbbE161Bf57799104eFd6524133e305BBcB7C07EA",
-		"SpeedMarketsAMMDataImplementation": "0x7A5f45DD459A9451ae9Ea1D3602c46a0018e935E",
+		"SpeedMarketsAMMDataImplementation": "0xd0bb7b0DAD8dEd52B69e66BCD48eeFc19Ba158c4",
 		"ParlayPolicy": "0x6880b6fc24Ac20a9081FfA39B1A504A44BAEB2dE",
 		"ParlayPolicyImplementation": "0x899B77fc0E210BE9ADe1531EddE6898a836eC9D1",
-		"SportPositionalMarketFactoryImplementation": "0x1D5477DB1f8B582678f3C1A1D270f7fb7Bd7d8d8"
+		"SportPositionalMarketFactoryImplementation": "0x1D5477DB1f8B582678f3C1A1D270f7fb7Bd7d8d8",
+		"AddressManager": "0x6DD969E6d2da27Ed8472c9B9A6673BC67dEc1D53",
+		"AddressManagerImplementation": "0x823D03A9f13c08915833cB4249F9d4C2800BCdc3"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
@@ -313,7 +317,7 @@
 		"sUSD": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"ProxyUSDC": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"Pyth": "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a",
-		"SpeedMarketsAMMImplementation": "0xf4D9a551b3a96bFFb764385707fC6d8d5895CF9A",
+		"SpeedMarketsAMMImplementation": "0x3c442B518F2A7CF8b81F3aeD020aA8EF046c35c5",
 		"SpeedMarketMastercopy": "0xF0dEF46e87E02B364CbC4bE315db4fA5dD63d3B6",
 		"PositionMastercopy": "0xD2b907a94E33BFe0371B8dcbFAcf1a319b13d609",
 		"PositionalMarketMastercopy": "0x503e7F2C19384Ff68B445E21850fDC61f34434e6",
@@ -400,11 +404,16 @@
 		"SwapRouter": "0xeA05705e26C8aabeA407994ea5e9D84db217e78C",
 		"MultiCollateralOnOffRamp": "0x0946BfE3c543e0B770B7F7e508c8A566947C4278",
 		"MultiCollateralOnOffRampImplementation": "0x38a50ebB6b299361D4492D488F95e13bE0A6b693",
-		"SpeedMarketsAMMUtils": "0xEF693B28b6A4A972a111A7cc35f6Fc48675aaF31",
+		"SpeedMarketsAMMUtils": "0xe99890296E1254D667Bc21ceEe22a8b95c0a82a4",
 		"SpeedMarketsAMMData": "0xD6155E7C948458D6Ab58f9D63E1566493b9304C1",
-		"SpeedMarketsAMMDataImplementation": "0x9c2c2EbE06E687cEE847B40F23b9F229F11F792c",
+		"SpeedMarketsAMMDataImplementation": "0x30e7dc66a57E1eEe4f101762E498631aa6e539A3",
 		"ParlayPolicy": "0x6880b6fc24Ac20a9081FfA39B1A504A44BAEB2dE",
-		"ParlayPolicyImplementation": "0x899B77fc0E210BE9ADe1531EddE6898a836eC9D1"
+		"ParlayPolicyImplementation": "0x899B77fc0E210BE9ADe1531EddE6898a836eC9D1",
+		"ChainedSpeedMarketMastercopy": "0x22649aF8E164EC7f07a0d89515c93a5967847192",
+		"ChainedSpeedMarketsAMM": "0x6848F001ddDb4442d352C495c7B4a231e3889b70",
+		"ChainedSpeedMarketsAMMImplementation": "0xb6cda560CE4a494d66b2Ea1cCa87BCD7EF8bb02E",
+		"AddressManager": "0xE2A98958E33E0110344DDeeF08eF42BA9D553050",
+		"AddressManagerImplementation": "0xde4D28bdf33b527c8eEFe01064E6D629F833ce72"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -441,11 +450,13 @@
 		"PositionalMarketDataImplementation": "0xC0EeFDCF5A815ed7ac1ef1b8Ae8302AC502f3005",
 		"Pyth": "0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
 		"SpeedMarketsAMM": "0x4B1aED25f1877E1E9fBECBd77EeE95BB1679c361",
-		"SpeedMarketsAMMImplementation": "0xe10597bFbd867BdE8DeD483b5B993Aa32A5fcfda",
+		"SpeedMarketsAMMImplementation": "0x46453edb11fE655b846eA66A501BC8d1637bdcA2",
 		"SpeedMarketMastercopy": "0xD2B9ca7D67c5354D7ACa3277bA31745B423632ED",
-		"SpeedMarketsAMMUtils": "0x6061bf0F82cD730046A37CcB74AC356B1Cb49715",
+		"SpeedMarketsAMMUtils": "0x45BE47DbD54B77e16d9CcfDeF1BCb320425dDa1D",
 		"SpeedMarketsAMMData": "0xA30200A8eD9655d7096814D0cC1f76639aa42AED",
-		"SpeedMarketsAMMDataImplementation": "0xd54630204863F5A2A2Fd2a73946A0da3f53e8d7A"
+		"SpeedMarketsAMMDataImplementation": "0x537fE026BA24913bb65295FCE11d264E0Ed644cF",
+		"AddressManager": "0x6098f60368bf50555a5d72922E6a437600bb08D6",
+		"AddressManagerImplementation": "0x338154Cb2846D8422eB5a751411C858d2227bf6F"
 	},
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",

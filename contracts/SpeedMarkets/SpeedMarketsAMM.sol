@@ -137,7 +137,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         );
     }
 
-    /// @notice create new market with different collateral (not sUSD) for given strike time, in case it is zero delta time is used
+    /// @notice create new market with different collateral (not sUSD) for a given strike time, in case it is zero delta time is used
     function createNewMarketWithDifferentCollateral(
         bytes32 asset,
         uint64 strikeTime,

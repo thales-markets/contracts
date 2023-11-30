@@ -19,9 +19,9 @@ contract SpeedMarketsAMMUtils {
     ) external pure returns (uint fee) {
         fee = _defaultFee;
         uint _deltaTime = _deltaTimeSec / SECONDS_PER_MINUTE;
-        for (uint i = _timeThresholds.length - 1; i >= 0; i--) {
-            if (_deltaTime >= _timeThresholds[i]) {
-                fee = _fees[i];
+        for (uint i = _timeThresholds.length; i > 0; i--) {
+            if (_deltaTime >= _timeThresholds[i - 1]) {
+                fee = _fees[i - 1];
                 break;
             }
         }

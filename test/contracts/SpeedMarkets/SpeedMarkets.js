@@ -6,6 +6,7 @@ const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/init');
+const { getSkewImpact } = require('../../utils/speedMarkets');
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -33,9 +34,11 @@ contract('SpeedMarkets', (accounts) => {
 					toBytes32('BTC'),
 					now + 36000,
 					0,
+					0,
 					toUnit(10),
 					[priceFeedUpdateData],
 					ZERO_ADDRESS,
+					0,
 					{ value: fee }
 				)
 			).to.be.revertedWith('revert');
@@ -47,9 +50,11 @@ contract('SpeedMarkets', (accounts) => {
 					toBytes32('ETH'),
 					now + 36000,
 					0,
+					0,
 					toUnit(10),
 					[priceFeedUpdateData],
 					ZERO_ADDRESS,
+					0,
 					{ value: fee }
 				)
 			).to.be.revertedWith('Asset is not supported');
@@ -61,12 +66,14 @@ contract('SpeedMarkets', (accounts) => {
 					toBytes32('ETH'),
 					now + 36000,
 					0,
+					0,
 					toUnit(11),
 					[priceFeedUpdateData],
 					ZERO_ADDRESS,
+					0,
 					{ value: fee }
 				)
-			).to.be.revertedWith('OI cap breached');
+			).to.be.revertedWith('Risk per asset exceeded');
 
 			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(5));
 
@@ -75,9 +82,11 @@ contract('SpeedMarkets', (accounts) => {
 					toBytes32('ETH'),
 					now + 36000,
 					0,
+					0,
 					toUnit(6),
 					[priceFeedUpdateData],
 					ZERO_ADDRESS,
+					0,
 					{ value: fee }
 				)
 			).to.be.revertedWith('Risk per direction exceeded');
@@ -85,13 +94,21 @@ contract('SpeedMarkets', (accounts) => {
 			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
 			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(100));
 
+			const maxSkewImpact = (await speedMarketsAMM.maxSkewImpact()) / 1e18;
+			let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			let skewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
+
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				now + 36000,
 				0,
+				0,
 				toUnit(10),
 				[priceFeedUpdateData],
 				ZERO_ADDRESS,
+				skewImapct,
 				{ value: fee }
 			);
 
@@ -104,23 +121,31 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			console.log('currentRiskPerAssetAndDirection ' + currentRiskPerAssetAndDirection / 1e18);
 
+			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
+
 			console.log('buy UP for the same amount as previous DOWN');
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				now + 36000,
+				0,
 				1,
 				toUnit(10),
 				[priceFeedUpdateData],
 				ZERO_ADDRESS,
+				skewImapct,
 				{ value: fee }
 			);
 
-			let currentRiskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'));
-			console.log('currentRiskPerAssetData', currentRiskPerAssetData);
+			let riskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'));
+			console.log('riskPerAssetData', riskPerAssetData);
 
-			let currentRiskPerAssetAndDirectionData =
-				await speedMarketsAMMData.getDirectionalRiskPerAsset(toBytes32('ETH'));
-			console.log('currentRiskPerAssetAndDirectionData', currentRiskPerAssetAndDirectionData);
+			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			console.log('riskPerAssetAndDirectionData', riskPerAssetAndDirectionData);
 
 			let price = await mockPyth.getPrice(pythId);
 			console.log('price of pyth Id is ' + price);
@@ -132,13 +157,20 @@ contract('SpeedMarkets', (accounts) => {
 			console.log('numActiveMarkets ' + ammData.numActiveMarkets);
 			console.log('numActiveMarketsPerUser ' + ammData.numActiveMarketsPerUser);
 
+			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+				toBytes32('ETH')
+			);
+			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
+
 			await speedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
 				now + 36000,
 				0,
+				0,
 				toUnit(10),
 				[priceFeedUpdateData],
 				ZERO_ADDRESS,
+				skewImapct,
 				{ value: fee }
 			);
 
@@ -162,6 +194,11 @@ contract('SpeedMarkets', (accounts) => {
 
 			let marketData = await speedMarketsAMMData.getMarketsData([market]);
 			console.log('marketData ' + marketData);
+
+			const lpFeeByDeltaTime = 0.05; // set in init for above 2h market
+			const expectedLpFee =
+				lpFeeByDeltaTime + getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact) / 1e18;
+			assert.equal(marketData[0].lpFee / 1e18, expectedLpFee.toFixed(5));
 
 			now = await currentTime();
 			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
@@ -269,8 +306,13 @@ contract('SpeedMarkets', (accounts) => {
 			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
 			console.log('numActiveMarkets after batch resolve ' + ammData.numActiveMarkets);
 			console.log('numMaturedMarkets after batch resolve ' + ammData.numMaturedMarkets);
-
 			console.log('numMaturedMarketsPerUser ' + ammData.numMaturedMarketsPerUser);
+
+			let ammBalance = await exoticUSD.balanceOf(speedMarketsAMM.address);
+			console.log('Balance of AMM', ammBalance / 1e18);
+			await speedMarketsAMM.transferAmount(owner, toUnit(1));
+			ammBalance = await exoticUSD.balanceOf(speedMarketsAMM.address);
+			console.log('Balance of AMM after transfer', ammBalance / 1e18);
 		});
 	});
 });

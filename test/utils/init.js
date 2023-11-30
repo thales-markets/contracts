@@ -1,5 +1,6 @@
 const { toBytes32 } = require('../../index');
 const { toUnit, currentTime } = require('./')();
+const { getSkewImpact } = require('./speedMarkets');
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -13,7 +14,9 @@ module.exports = {
 		let SpeedMarketsAMMDataContract = artifacts.require('SpeedMarketsAMMData');
 		let speedMarketsAMMData = await SpeedMarketsAMMDataContract.new();
 		await speedMarketsAMMData.initialize(owner, speedMarketsAMM.address);
-		await speedMarketsAMMData.setSpeedMarketsAMM(speedMarketsAMM.address, { from: owner });
+		await speedMarketsAMMData.setSpeedMarketsAMM(speedMarketsAMM.address, ZERO_ADDRESS, {
+			from: owner,
+		});
 
 		let ExoticUSD = artifacts.require('ExoticUSD');
 		let exoticUSD = await ExoticUSD.new();
@@ -38,27 +41,15 @@ module.exports = {
 		let MockPriceFeedDeployed = await MockPriceFeed.new(owner);
 		await MockPriceFeedDeployed.setPricetoReturn(10000);
 
-		let MockPyth = artifacts.require('MockPythCustom');
-		let mockPyth = await MockPyth.new(60, 1e6);
-
-		await speedMarketsAMM.initialize(owner, exoticUSD.address, mockPyth.address);
-
-		let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
-		let speedMarketMastercopy = await SpeedMarketMastercopy.new();
-
-		await speedMarketsAMM.setMastercopy(speedMarketMastercopy.address);
-
+		await speedMarketsAMM.initialize(owner, exoticUSD.address);
 		await speedMarketsAMM.setAmounts(toUnit(5), toUnit(1000));
-
 		await speedMarketsAMM.setTimes(3600, 86400);
-
 		await speedMarketsAMM.setMaximumPriceDelays(60, 30);
-
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
 		await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(100));
 		await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('BTC'), toUnit(100));
-		await speedMarketsAMM.setSafeBoxParams(safeBox, toUnit(0.02));
+		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05));
 		await speedMarketsAMM.setLPFeeParams(
 			[15, 30, 60, 120],
 			[toUnit(0.18), toUnit(0.13), toUnit(0.08), toUnit(0.05)],
@@ -74,6 +65,9 @@ module.exports = {
 		console.log('Pyth Id is ' + pythId);
 
 		let now = await currentTime();
+
+		let MockPyth = artifacts.require('MockPythCustom');
+		let mockPyth = await MockPyth.new(60, 1e6);
 
 		let priceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
 			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
@@ -105,19 +99,44 @@ module.exports = {
 		await referrals.setWhitelistedAddress(speedMarketsAMM.address, true);
 		await referrals.setReferrerFees(toUnit(0.005), toUnit(0.0075), toUnit(0.01));
 
-		await speedMarketsAMM.setAddresses(mockPyth.address, referrals.address, ZERO_ADDRESS, {
-			from: owner,
-		});
+		let AddressManagerContract = artifacts.require('AddressManager');
+		let addressManager = await AddressManagerContract.new();
+
+		await addressManager.initialize(
+			owner,
+			safeBox,
+			referrals.address,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS,
+			mockPyth.address,
+			speedMarketsAMM.address
+		);
+
+		let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
+		let speedMarketMastercopy = await SpeedMarketMastercopy.new();
 
 		let SpeedMarketsAMMUtilsContract = artifacts.require('SpeedMarketsAMMUtils');
 		let speedMarketsAMMUtils = await SpeedMarketsAMMUtilsContract.new();
-		await speedMarketsAMM.setAMMUtils(speedMarketsAMMUtils.address, {
-			from: owner,
-		});
+
+		await speedMarketsAMM.setAMMAddresses(
+			speedMarketMastercopy.address,
+			speedMarketsAMMUtils.address,
+			addressManager.address,
+			{
+				from: owner,
+			}
+		);
+
+		const maxSkewImpact = (await speedMarketsAMM.maxSkewImpact()) / 1e18;
+		let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
+			toBytes32('ETH')
+		);
+		let initialSkewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
 
 		return {
 			speedMarketsAMM,
 			speedMarketsAMMData,
+			addressManager,
 			balanceOfSpeedMarketAMMBefore,
 			priceFeedUpdateData,
 			fee,
@@ -126,6 +145,7 @@ module.exports = {
 			pythId,
 			exoticUSD,
 			referrals,
+			initialSkewImapct,
 			now,
 		};
 	},

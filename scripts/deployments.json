@@ -166,7 +166,10 @@
 		"ParlayPolicy": "0x6880b6fc24Ac20a9081FfA39B1A504A44BAEB2dE",
 		"ParlayPolicyImplementation": "0x899B77fc0E210BE9ADe1531EddE6898a836eC9D1",
 		"AddressManager": "0x9b4c63Bb86139188bbbA9C93C498a60dCB0d94bf",
-		"AddressManagerImplementation": "0x935b3779743CFAD643fCfc609473E0164348a88C"
+		"AddressManagerImplementation": "0x935b3779743CFAD643fCfc609473E0164348a88C",
+		"ChainedSpeedMarketMastercopy": "0x94016d98e3898f42F04A714bD6561F97261A19BB",
+		"ChainedSpeedMarketsAMM": "0xFf8Cf5ABF583D0979C0B9c35d62dd1fD52cce7C7",
+		"ChainedSpeedMarketsAMMImplementation": "0x0048786e274e46316d814a8304F65F63f2a3D535"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -300,7 +303,10 @@
 		"ParlayPolicyImplementation": "0x899B77fc0E210BE9ADe1531EddE6898a836eC9D1",
 		"SportPositionalMarketFactoryImplementation": "0x1D5477DB1f8B582678f3C1A1D270f7fb7Bd7d8d8",
 		"AddressManager": "0x6DD969E6d2da27Ed8472c9B9A6673BC67dEc1D53",
-		"AddressManagerImplementation": "0x823D03A9f13c08915833cB4249F9d4C2800BCdc3"
+		"AddressManagerImplementation": "0x823D03A9f13c08915833cB4249F9d4C2800BCdc3",
+		"ChainedSpeedMarketMastercopy": "0xeCbee43c472A1ACd129B8C100Af750e0480c7540",
+		"ChainedSpeedMarketsAMM": "0xe92B4c614b04c239d30c31A7ea1290AdDCb8217D",
+		"ChainedSpeedMarketsAMMImplementation": "0x5db10E9382E15eF7C1EaCb316DDDEd170c3b51a6"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
@@ -456,7 +462,10 @@
 		"SpeedMarketsAMMData": "0xA30200A8eD9655d7096814D0cC1f76639aa42AED",
 		"SpeedMarketsAMMDataImplementation": "0x537fE026BA24913bb65295FCE11d264E0Ed644cF",
 		"AddressManager": "0x6098f60368bf50555a5d72922E6a437600bb08D6",
-		"AddressManagerImplementation": "0x338154Cb2846D8422eB5a751411C858d2227bf6F"
+		"AddressManagerImplementation": "0x338154Cb2846D8422eB5a751411C858d2227bf6F",
+		"ChainedSpeedMarketMastercopy": "0x89B9FA14dEf18487ccAb050Bd528FC3FB4A55b08",
+		"ChainedSpeedMarketsAMM": "0x14D2d7f64D6F10f8eF06372c2e5E36850661a537",
+		"ChainedSpeedMarketsAMMImplementation": "0x714Ec549A49Cbac6F946dE66Ce625FB26B5BFc13"
 	},
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",

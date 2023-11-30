@@ -36,6 +36,8 @@ async function main() {
 	if (networkObj.chainId == 420) {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
+		durationPeriod = 300;
+		unstakeDurationPeriod = 300;
 	}
 	if (network == 'homestead') {
 		console.log('Setting duration to WEEK');

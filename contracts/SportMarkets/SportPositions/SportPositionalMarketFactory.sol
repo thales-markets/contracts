@@ -22,13 +22,10 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
 
     struct SportPositionCreationMarketParameters {
         address creator;
-        IERC20 _sUSD;
         bytes32 gameId;
         string gameLabel;
         uint[2] times; // [maturity, expiry]
-        uint initialMint;
         uint positionCount;
-        address theRundownConsumer;
         uint[] tags;
         bool isChild;
         address parentMarket;
@@ -51,27 +48,21 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
 
         SportPositionalMarket pom = SportPositionalMarket(Clones.clone(positionalMarketMastercopy));
         address[] memory positions = new address[](_parameters.positionCount);
-        for (uint i = 0; i < _parameters.positionCount; i++) {
-            positions[i] = address(SportPosition(Clones.clone(positionMastercopy)));
-        }
 
         pom.initialize(
             SportPositionalMarket.SportPositionalMarketParameters(
                 positionalMarketManager,
-                _parameters._sUSD,
                 _parameters.creator,
                 _parameters.gameId,
                 _parameters.gameLabel,
                 _parameters.times,
-                _parameters.initialMint,
-                _parameters.theRundownConsumer,
-                sportsAMM,
                 _parameters.positionCount,
                 positions,
                 _parameters.tags,
                 _parameters.isChild,
                 _parameters.parentMarket,
-                _parameters.isDoubleChance
+                _parameters.isDoubleChance,
+                address(this)
             )
         );
         emit MarketCreated(
@@ -80,7 +71,7 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
             _parameters.gameLabel,
             _parameters.times[0],
             _parameters.times[1],
-            _parameters.initialMint,
+            0,
             _parameters.positionCount,
             _parameters.tags,
             _parameters.isChild,

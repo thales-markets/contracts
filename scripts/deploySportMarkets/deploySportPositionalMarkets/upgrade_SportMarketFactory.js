@@ -38,12 +38,22 @@ async function main() {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
 	}
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+		PaymentToken = getTargetAddress('ProxysUSD', network);
+	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		PaymentToken = getTargetAddress('ProxyUSDC', network);
+	}
 
 	const SportMarketFactory = await ethers.getContractFactory('SportPositionalMarketFactory');
 	const SportMarketFactoryAddress = getTargetAddress('SportPositionalMarketFactory', network);
 
 	let implementation;
-	if (networkObj.chainId == 10) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 8453) {
 		implementation = await upgrades.prepareUpgrade(SportMarketFactoryAddress, SportMarketFactory);
 	}
 

@@ -5,42 +5,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_mastercopy",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "contract SpeedMarketsAMMUtils",
-        "name": "_speedMarketsAMMUtils",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "_addressManager",
         "type": "address"
       }
     ],
-    "name": "AMMAddressesChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_whitelistAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "AddedIntoWhitelist",
+    "name": "AddressManagerChanged",
     "type": "event"
   },
   {
@@ -67,6 +36,30 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint64",
+        "name": "_minTimeFrame",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "_maxTimeFrame",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minChainedMarkets",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxChainedMarkets",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "_minBuyinAmount",
         "type": "uint256"
@@ -76,9 +69,27 @@
         "internalType": "uint256",
         "name": "_maxBuyinAmount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxProfitPerIndividualMarket",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxRisk",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_payoutMultiplier",
+        "type": "uint256"
       }
     ],
-    "name": "AmountsChanged",
+    "name": "LimitParamsChanged",
     "type": "event"
   },
   {
@@ -87,43 +98,61 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_market",
+        "name": "market",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_user",
+        "name": "user",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "bytes32",
-        "name": "_asset",
+        "name": "asset",
         "type": "bytes32"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "_strikeTime",
-        "type": "uint256"
+        "internalType": "uint64",
+        "name": "timeFrame",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "strikeTime",
+        "type": "uint64"
       },
       {
         "indexed": false,
         "internalType": "int64",
-        "name": "_strikePrice",
+        "name": "strikePrice",
         "type": "int64"
       },
       {
         "indexed": false,
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "_direction",
-        "type": "uint8"
+        "internalType": "enum SpeedMarket.Direction[]",
+        "name": "directions",
+        "type": "uint8[]"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_buyinAmount",
+        "name": "buyinAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "payoutMultiplier",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxImpact",
         "type": "uint256"
       }
     ],
@@ -136,59 +165,17 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_market",
+        "name": "market",
         "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "_asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_strikeTime",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "int64",
-        "name": "_strikePrice",
-        "type": "int64"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "_direction",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_buyinAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_safeBoxImpact",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_lpFee",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "userIsWinner",
+        "type": "bool"
       }
     ],
-    "name": "MarketCreatedWithFees",
+    "name": "MarketResolved",
     "type": "event"
   },
   {
@@ -197,23 +184,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_market",
+        "name": "mastercopy",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "_result",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "_userIsWinner",
-        "type": "bool"
       }
     ],
-    "name": "MarketResolved",
+    "name": "MastercopyChanged",
     "type": "event"
   },
   {
@@ -306,164 +281,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_safeBoxImpact",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maxSkewImpact",
-        "type": "uint256"
-      }
-    ],
-    "name": "SafeBoxAndMaxSkewImpactChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "pythId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "SetAssetToPythID",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256[]",
-        "name": "_timeThresholds",
-        "type": "uint256[]"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256[]",
-        "name": "_lpFees",
-        "type": "uint256[]"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_lpFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetLPFeeParams",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maxRiskPerAsset",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaxRiskPerAsset",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maxRiskPerAssetAndDirection",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaxRiskPerAssetAndDirection",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maximumPriceDelay",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maximumPriceDelayForResolving",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaximumPriceDelays",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "_supported",
-        "type": "bool"
-      }
-    ],
-    "name": "SetSupportedAsset",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_minimalTimeToMaturity",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maximalTimeToMaturity",
-        "type": "uint256"
-      }
-    ],
-    "name": "TimesChanged",
-    "type": "event"
-  },
-  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -524,24 +341,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_whitelistAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "addToWhitelist",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "addressManager",
     "outputs": [
@@ -549,25 +348,6 @@
         "internalType": "contract IAddressManager",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "assetToPythId",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -593,6 +373,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "chainedSpeedMarketMastercopy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -601,18 +394,13 @@
       },
       {
         "internalType": "uint64",
-        "name": "strikeTime",
+        "name": "timeFrame",
         "type": "uint64"
       },
       {
-        "internalType": "uint64",
-        "name": "delta",
-        "type": "uint64"
-      },
-      {
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "direction",
-        "type": "uint8"
+        "internalType": "enum SpeedMarket.Direction[]",
+        "name": "directions",
+        "type": "uint8[]"
       },
       {
         "internalType": "uint256",
@@ -628,11 +416,6 @@
         "internalType": "address",
         "name": "referrer",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "skewImpact",
-        "type": "uint256"
       }
     ],
     "name": "createNewMarket",
@@ -649,18 +432,13 @@
       },
       {
         "internalType": "uint64",
-        "name": "strikeTime",
+        "name": "timeFrame",
         "type": "uint64"
       },
       {
-        "internalType": "uint64",
-        "name": "delta",
-        "type": "uint64"
-      },
-      {
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "direction",
-        "type": "uint8"
+        "internalType": "enum SpeedMarket.Direction[]",
+        "name": "directions",
+        "type": "uint8[]"
       },
       {
         "internalType": "bytes[]",
@@ -686,11 +464,6 @@
         "internalType": "address",
         "name": "referrer",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "skewImpact",
-        "type": "uint256"
       }
     ],
     "name": "createNewMarketWithDifferentCollateral",
@@ -699,38 +472,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "currentRiskPerAsset",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "name": "currentRiskPerAssetAndDirection",
+    "inputs": [],
+    "name": "currentRisk",
     "outputs": [
       {
         "internalType": "uint256",
@@ -752,50 +495,9 @@
     "name": "getLengths",
     "outputs": [
       {
-        "internalType": "uint256[5]",
+        "internalType": "uint256[4]",
         "name": "",
-        "type": "uint256[5]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getParams",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bool",
-            "name": "supportedAsset",
-            "type": "bool"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "pythId",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "safeBoxImpact",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint64",
-            "name": "maximumPriceDelay",
-            "type": "uint64"
-          }
-        ],
-        "internalType": "struct ISpeedMarketsAMM.Params",
-        "name": "",
-        "type": "tuple"
+        "type": "uint256[4]"
       }
     ],
     "stateMutability": "view",
@@ -834,76 +536,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "lpFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "lpFees",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "marketHasCreatedAtAttribute",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "marketHasFeeAttribute",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -976,38 +608,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "maxRiskPerAsset",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "name": "maxRiskPerAssetAndDirection",
+    "inputs": [],
+    "name": "maxChainedMarkets",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1020,7 +622,7 @@
   },
   {
     "inputs": [],
-    "name": "maxSkewImpact",
+    "name": "maxProfitPerIndividualMarket",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1033,7 +635,7 @@
   },
   {
     "inputs": [],
-    "name": "maximalTimeToMaturity",
+    "name": "maxRisk",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1046,20 +648,7 @@
   },
   {
     "inputs": [],
-    "name": "maximumPriceDelay",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "maximumPriceDelayForResolving",
+    "name": "maxTimeFrame",
     "outputs": [
       {
         "internalType": "uint64",
@@ -1085,12 +674,25 @@
   },
   {
     "inputs": [],
-    "name": "minimalTimeToMaturity",
+    "name": "minChainedMarkets",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minTimeFrame",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",
@@ -1162,6 +764,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "payoutMultiplier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1169,9 +784,9 @@
         "type": "address"
       },
       {
-        "internalType": "bytes[]",
+        "internalType": "bytes[][]",
         "name": "priceUpdateData",
-        "type": "bytes[]"
+        "type": "bytes[][]"
       }
     ],
     "name": "resolveMarket",
@@ -1187,9 +802,9 @@
         "type": "address"
       },
       {
-        "internalType": "int64",
-        "name": "_finalPrice",
-        "type": "int64"
+        "internalType": "int64[]",
+        "name": "_finalPrices",
+        "type": "int64[]"
       }
     ],
     "name": "resolveMarketAsOwner",
@@ -1205,9 +820,9 @@
         "type": "address"
       },
       {
-        "internalType": "int64",
-        "name": "_finalPrice",
-        "type": "int64"
+        "internalType": "int64[]",
+        "name": "_finalPrices",
+        "type": "int64[]"
       }
     ],
     "name": "resolveMarketManually",
@@ -1223,9 +838,9 @@
         "type": "address[]"
       },
       {
-        "internalType": "int64[]",
+        "internalType": "int64[][]",
         "name": "finalPrices",
-        "type": "int64[]"
+        "type": "int64[][]"
       }
     ],
     "name": "resolveMarketManuallyBatch",
@@ -1241,9 +856,9 @@
         "type": "address"
       },
       {
-        "internalType": "bytes[]",
+        "internalType": "bytes[][]",
         "name": "priceUpdateData",
-        "type": "bytes[]"
+        "type": "bytes[][]"
       },
       {
         "internalType": "address",
@@ -1269,9 +884,9 @@
         "type": "address[]"
       },
       {
-        "internalType": "bytes[]",
+        "internalType": "bytes[][][]",
         "name": "priceUpdateData",
-        "type": "bytes[]"
+        "type": "bytes[][][]"
       }
     ],
     "name": "resolveMarketsBatch",
@@ -1293,43 +908,40 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "safeBoxImpact",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "_mastercopy",
-        "type": "address"
-      },
-      {
-        "internalType": "contract SpeedMarketsAMMUtils",
-        "name": "_speedMarketsAMMUtils",
-        "type": "address"
-      },
       {
         "internalType": "address",
         "name": "_addressManager",
         "type": "address"
       }
     ],
-    "name": "setAMMAddresses",
+    "name": "setAddressManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "_minTimeFrame",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_maxTimeFrame",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minChainedMarkets",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxChainedMarkets",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "_minBuyinAmount",
@@ -1339,86 +951,24 @@
         "internalType": "uint256",
         "name": "_maxBuyinAmount",
         "type": "uint256"
-      }
-    ],
-    "name": "setAmounts",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "pythId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "setAssetToPythID",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "_timeThresholds",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_lpFees",
-        "type": "uint256[]"
       },
       {
         "internalType": "uint256",
-        "name": "_lpFee",
+        "name": "_maxProfitPerIndividualMarket",
         "type": "uint256"
-      }
-    ],
-    "name": "setLPFeeParams",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
       },
       {
         "internalType": "uint256",
-        "name": "_maxRiskPerAsset",
+        "name": "_maxRisk",
         "type": "uint256"
-      }
-    ],
-    "name": "setMaxRiskPerAsset",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
       },
       {
         "internalType": "uint256",
-        "name": "_maxRiskPerAssetAndDirection",
+        "name": "_payoutMultiplier",
         "type": "uint256"
       }
     ],
-    "name": "setMaxRiskPerAssetAndDirection",
+    "name": "setLimitParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1426,17 +976,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint64",
-        "name": "_maximumPriceDelay",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_maximumPriceDelayForResolving",
-        "type": "uint64"
+        "internalType": "address",
+        "name": "_mastercopy",
+        "type": "address"
       }
     ],
-    "name": "setMaximumPriceDelays",
+    "name": "setMastercopy",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1483,111 +1028,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_safeBoxImpact",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxSkewImpact",
-        "type": "uint256"
-      }
-    ],
-    "name": "setSafeBoxAndMaxSkewImpact",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bool",
-        "name": "_supported",
-        "type": "bool"
-      }
-    ],
-    "name": "setSupportedAsset",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_minimalTimeToMaturity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maximalTimeToMaturity",
-        "type": "uint256"
-      }
-    ],
-    "name": "setTimes",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "speedMarketMastercopy",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "supportedAsset",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "timeThresholdsForFees",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_destination",
         "type": "address"
@@ -1614,25 +1054,6 @@
     "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "whitelistedAddresses",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

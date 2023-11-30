@@ -75,7 +75,7 @@ contract SpeedMarket {
         } else if (finalPrice > strikePrice) {
             result = Direction.Up;
         } else {
-            result = direction == SpeedMarket.Direction.Up ? SpeedMarket.Direction.Down : SpeedMarket.Direction.Up;
+            result = direction == Direction.Up ? Direction.Down : Direction.Up;
         }
 
         if (direction == result) {

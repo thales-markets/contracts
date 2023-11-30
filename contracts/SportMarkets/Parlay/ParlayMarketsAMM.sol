@@ -87,15 +87,17 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     mapping(bytes32 => uint) public riskPerPackedGamesCombination;
 
+    mapping(uint => uint) public SGPfeePerSport;
+
     mapping(uint => mapping(uint => mapping(uint => uint))) public SGPFeePerCombination;
 
     address public parlayLP;
 
+    address public parlayPolicy;
+
     /// @return The sUSD amount bought from AMM by users for the parent
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
     bool public multicollateralEnabled;
-
-    address public parlayPolicy;
 
     mapping(address => mapping(uint => uint)) public riskPerMarketAndPosition;
 

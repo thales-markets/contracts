@@ -90,16 +90,17 @@ async function main() {
 	const ParlayMarketDataContract = getTargetAddress('ParlayMarketData', network);
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
+	const ParlayPolicy = getTargetAddress('ParlayPolicy', network);
+	console.log('ParlayAMMAddress: ' + ParlayAMMAddress);
+	console.log('ParlayPolicy: ' + ParlayPolicy);
+	console.log('ParlayAMMAddress: ' + ParlayAMMAddress);
 	const ParlayAMMDeployed = ParlayAMM.attach(ParlayAMMAddress);
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || etworkObj.chainId == 8453) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 8453) {
 	} else {
-		await ParlayAMMDeployed.setAddresses(
-			SportsAMMContract,
-			SafeBox,
-			ReferralsContract,
-			ParlayMarketDataContract,
+		await ParlayAMMDeployed.setVerifierAndPolicyAddresses(
 			ParlayVerifierDeployed.address,
+			ParlayPolicy,
 			{ from: owner.address }
 		);
 		console.log('Addresses set in ParlayAMM');

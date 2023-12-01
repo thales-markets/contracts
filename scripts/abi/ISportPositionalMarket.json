@@ -233,6 +233,13 @@
   },
   {
     "inputs": [],
+    "name": "initializeOptions",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "isChild",
     "outputs": [
       {

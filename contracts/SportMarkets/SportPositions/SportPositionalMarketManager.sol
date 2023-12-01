@@ -275,14 +275,14 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     {
         ISportPositionalMarket marketContract = ISportPositionalMarket(_parent);
         (uint maturity, ) = marketContract.times();
-        _hasAnyMints = marketContract.deposited() > 0 || _hasAnyMintsForChildren(_parent);
+        _hasAnyMints = marketContract.optionsInitialized() || _hasAnyMintsForChildren(_parent);
         _maturity = maturity;
     }
 
     function _hasAnyMintsAndMaturityDatesForPP(address _market) internal view returns (bool _hasAnyMints, uint _maturity) {
         ISportPositionalMarket marketContract = ISportPositionalMarket(_market);
         (uint maturity, ) = marketContract.times();
-        _hasAnyMints = marketContract.deposited() > 0;
+        _hasAnyMints = marketContract.optionsInitialized();
         _maturity = maturity;
     }
 

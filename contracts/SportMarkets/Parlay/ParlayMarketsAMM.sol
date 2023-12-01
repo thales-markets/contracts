@@ -87,8 +87,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     mapping(bytes32 => uint) public riskPerPackedGamesCombination;
 
-    mapping(uint => uint) public SGPfeePerSport;
-
     mapping(uint => mapping(uint => mapping(uint => uint))) public SGPFeePerCombination;
 
     address public parlayLP;
@@ -100,6 +98,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     bool public multicollateralEnabled;
 
     mapping(address => mapping(uint => uint)) public riskPerMarketAndPosition;
+
+    mapping(address => bool) public parlaysWithNewFormat;
 
     receive() external payable {}
 
@@ -451,8 +451,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function triggerResolvedEvent(address _account, bool _userWon) external notPaused onlyKnownMarkets(msg.sender) {
-        resolvedParlay[msg.sender] = true;
-        _knownMarkets.remove(msg.sender);
+        if (parlaysWithNewFormat[msg.sender]) {
+            resolvedParlay[msg.sender] = true;
+            _knownMarkets.remove(msg.sender);
+        }
         emit ParlayResolved(msg.sender, _account, _userWon);
     }
 
@@ -490,6 +492,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     sportsAmm.riskManager().calculateCapToBeUsed(_sportMarkets[i]),
                 "Risk per individual market and position exceeded"
             );
+            if (!ISportPositionalMarket(_sportMarkets[i]).optionsInitialized()) {
+                ISportPositionalMarket(_sportMarkets[i]).initializeOptions();
+            }
         }
 
         if (_sendSUSD) {
@@ -514,6 +519,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
 
         _knownMarkets.add(address(parlayMarket));
+        parlaysWithNewFormat[address(parlayMarket)] = true;
         sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
 
         IParlayAMMLiquidityPool(parlayLP).commitTrade(

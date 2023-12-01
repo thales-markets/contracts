@@ -221,7 +221,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         isTradingMarketInARound[marketRound][market] = true;
     }
 
-    function transferToPool(address _market, uint _amount) external nonReentrant whenNotPaused roundClosingNotPrepared {
+    function transferToPool(address _market, uint _amount) external whenNotPaused roundClosingNotPrepared onlyAMM {
         uint marketRound = getMarketRound(_market);
         address liquidityPoolRound = marketRound <= 1 ? defaultLiquidityProvider : _getOrCreateRoundPool(marketRound);
         sUSD.safeTransferFrom(address(parlayAMM), liquidityPoolRound, _amount);
@@ -506,8 +506,7 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             address marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                (bool isExercisable, ) = market.isParlayExercisable();
-                if (!isExercisable) {
+                if (!market.areAllPositionsResolved()) {
                     return false;
                 }
             }

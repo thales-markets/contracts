@@ -144,7 +144,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address parentMarket;
     }
 
-    /// @return the address of the AMMLP contract
+    /// @return the adddress of the AMMLP contract
     SportAMMLiquidityPool public liquidityPool;
 
     mapping(uint => mapping(uint => uint)) private minSpreadPerSport; //deprecated see SportAMMRiskManager.sol
@@ -157,7 +157,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     ISportAMMRiskManager public riskManager;
 
-    mapping(address => uint) public spentOnParent;
+    mapping(address => uint) private spentOnParent;
 
     /// @return The sUSD amount bought from AMM by users for the parent
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;

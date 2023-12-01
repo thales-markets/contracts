@@ -476,7 +476,8 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             bool[] memory _isPausedByCanceledStatus,
             bool[] memory _isMarketPaused,
             uint[] memory _startTime,
-            uint40[] memory _lastUpdated
+            uint40[] memory _lastUpdated,
+            uint[] memory _playersReportTimestamp
         )
     {
         uint256 arrayLength = _gameIds.length;
@@ -488,6 +489,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         _isMarketPaused = new bool[](arrayLength);
         _startTime = new uint[](arrayLength);
         _lastUpdated = new uint40[](arrayLength);
+        _playersReportTimestamp = new uint[](arrayLength);
 
         for (uint256 i = 0; i < arrayLength; i++) {
             address marketAddress = consumer.marketPerGameId(_gameIds[i]);
@@ -499,6 +501,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             _isMarketPaused[i] = marketAddress != address(0) ? sportsManager.isMarketPaused(marketAddress) : false;
             _startTime[i] = consumer.getGameStartTime(_gameIds[i]);
             _lastUpdated[i] = consumer.getLastUpdatedFromGameResolve(_gameIds[i]);
+            _playersReportTimestamp[i] = obtainer.playersReportTimestamp(marketAddress);
         }
 
         return (
@@ -509,7 +512,8 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             _isPausedByCanceledStatus,
             _isMarketPaused,
             _startTime,
-            _lastUpdated
+            _lastUpdated,
+            _playersReportTimestamp
         );
     }
 

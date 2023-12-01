@@ -32,9 +32,15 @@ interface IGamesOddsObtainer {
             address[] memory totalMarkets
         );
 
-    function areOddsValid(bytes32 _gameId, bool _useBackup) external view returns (bool);
+    function areOddsValid(
+        bytes32 _gameId,
+        bool _useBackup,
+        bool _isTwoPositional
+    ) external view returns (bool);
 
     function invalidOdds(address _market) external view returns (bool);
+
+    function playersReportTimestamp(address _market) external view returns (uint);
 
     function getNormalizedOdds(bytes32 _gameId) external view returns (uint[] memory);
 
@@ -90,7 +96,10 @@ interface IGamesOddsObtainer {
     function obtainOdds(
         bytes32 requestId,
         GameOdds memory _game,
-        uint _sportId
+        uint _sportId,
+        address _main,
+        bool _isTwoPositional,
+        bool _isPlayersReport
     ) external;
 
     function setFirstOdds(

@@ -203,6 +203,12 @@
         "internalType": "uint256",
         "name": "_bonusPoints",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_revShare",
+        "type": "uint256"
       }
     ],
     "name": "SentOnClosePeriod",
@@ -321,6 +327,25 @@
       }
     ],
     "name": "calculatedEscrowedAmountForPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculatedRevenueForPeriod",
     "outputs": [
       {
         "internalType": "uint256",
@@ -488,6 +513,54 @@
       }
     ],
     "name": "chainExtraRewardsInPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chainRevenueInPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chainRevenueShareInPeriod",
     "outputs": [
       {
         "internalType": "uint256",
@@ -915,6 +988,11 @@
       {
         "internalType": "uint256",
         "name": "_bonusPoints",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_revShare",
         "type": "uint256"
       }
     ],

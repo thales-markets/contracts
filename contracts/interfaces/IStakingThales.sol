@@ -9,7 +9,8 @@ interface IStakingThales {
         uint _currentPeriodRewards,
         uint _extraRewards,
         uint _crossChainStakedAmount,
-        uint _crossChainEscrowedAmount
+        uint _crossChainEscrowedAmount,
+        uint _revShare
     ) external;
 
     /* ========== VIEWS / VARIABLES ==========  */

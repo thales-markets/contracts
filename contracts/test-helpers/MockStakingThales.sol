@@ -11,6 +11,7 @@ contract MockStakingThales {
     uint public bonusPoints;
     uint public totalStaked;
     uint public totalEscrowed;
+    uint public revenueShare;
 
     constructor() public {}
 
@@ -27,15 +28,17 @@ contract MockStakingThales {
     }
 
     function sendOnClosePeriod(
+        address ccipCollector,
         uint totalStakedLastPeriodEnd,
         uint totalEscrowedLastPeriodEnd,
         uint totalBonusPoints,
-        address ccipCollector
+        uint revShare
     ) external {
         ICCIPCollector(ccipCollector).sendOnClosePeriod(
             totalStakedLastPeriodEnd,
             totalEscrowedLastPeriodEnd,
-            totalBonusPoints
+            totalBonusPoints,
+            revShare
         );
     }
 
@@ -43,14 +46,22 @@ contract MockStakingThales {
         uint _baseRewards,
         uint _extraRewards,
         uint _stakedAmount,
-        uint _escrowedAmount
+        uint _escrowedAmount,
+        uint _revShare
     ) external {
         baseRewards = _baseRewards;
         extraRewards = _extraRewards;
         totalStaked = _stakedAmount;
         totalEscrowed = _escrowedAmount;
-        emit UpdatedStakingRewards(_baseRewards, _extraRewards, _stakedAmount, _escrowedAmount);
+        revenueShare = _revShare;
+        emit UpdatedStakingRewards(_baseRewards, _extraRewards, _stakedAmount, _escrowedAmount, _revShare);
     }
 
-    event UpdatedStakingRewards(uint baseRewards, uint extraRewards, uint stakedAmount, uint escrowedAmount);
+    event UpdatedStakingRewards(
+        uint baseRewards,
+        uint extraRewards,
+        uint stakedAmount,
+        uint escrowedAmount,
+        uint revenueShare
+    );
 }

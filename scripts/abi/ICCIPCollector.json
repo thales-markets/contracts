@@ -3,6 +3,19 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "pullExtraFunds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_totalStakedLastPeriodEnd",
         "type": "uint256"
       },
@@ -14,6 +27,11 @@
       {
         "internalType": "uint256",
         "name": "_totalBonusPointsInRound",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_revShare",
         "type": "uint256"
       }
     ],

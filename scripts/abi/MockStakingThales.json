@@ -31,6 +31,12 @@
         "internalType": "uint256",
         "name": "escrowedAmount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "revenueShare",
+        "type": "uint256"
       }
     ],
     "name": "UpdatedStakingRewards",
@@ -82,8 +88,28 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "revenueShare",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
+      {
+        "internalType": "address",
+        "name": "ccipCollector",
+        "type": "address"
+      },
       {
         "internalType": "uint256",
         "name": "totalStakedLastPeriodEnd",
@@ -100,9 +126,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "ccipCollector",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "revShare",
+        "type": "uint256"
       }
     ],
     "name": "sendOnClosePeriod",
@@ -198,6 +224,11 @@
       {
         "internalType": "uint256",
         "name": "_escrowedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_revShare",
         "type": "uint256"
       }
     ],

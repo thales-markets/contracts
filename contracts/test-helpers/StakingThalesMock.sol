@@ -12,6 +12,7 @@ contract StakingThalesMock {
     uint public extraRewards;
     uint public stakedAmount;
     uint public escrowedAmount;
+    uint public revenueShare;
 
     bool public paused;
 
@@ -64,28 +65,42 @@ contract StakingThalesMock {
         ICCIPCollector(ccipCollector).sendOnClosePeriod(
             stakedAmount,
             escrowedAmount,
-            stakingThalesBonusRewardsManager.totalRoundBonusPoints(round - 1)
+            stakingThalesBonusRewardsManager.totalRoundBonusPoints(round - 1),
+            revenueShare
         );
-        emit RoundClosed(stakedAmount, escrowedAmount, stakingThalesBonusRewardsManager.totalRoundBonusPoints(round - 1));
+        emit RoundClosed(
+            stakedAmount,
+            escrowedAmount,
+            stakingThalesBonusRewardsManager.totalRoundBonusPoints(round - 1),
+            revenueShare
+        );
     }
 
     function updateStakingRewards(
         uint _baseRewards,
         uint _extraRewards,
         uint _stakedAmount,
-        uint _escrowedAmount
+        uint _escrowedAmount,
+        uint _revenueShare
     ) external {
         fixedRewards = _baseRewards;
         extraRewards = _extraRewards;
         stakedAmount = _stakedAmount;
         escrowedAmount = _escrowedAmount;
-        emit RewardsUpdated(_baseRewards, _extraRewards, _stakedAmount, _escrowedAmount);
+        revenueShare = _revenueShare;
+        emit RewardsUpdated(_baseRewards, _extraRewards, _stakedAmount, _escrowedAmount, _revenueShare);
     }
 
     function setCCIPCollector(address _ccipCollector) external {
         ccipCollector = _ccipCollector;
     }
 
-    event RewardsUpdated(uint _baseRewards, uint _extraRewards, uint _stakedAmount, uint _escrowedAmount);
-    event RoundClosed(uint stakedAmount, uint escrowedAmount, uint stakingPoints);
+    event RewardsUpdated(
+        uint _baseRewards,
+        uint _extraRewards,
+        uint _stakedAmount,
+        uint _escrowedAmount,
+        uint _revenueShare
+    );
+    event RoundClosed(uint stakedAmount, uint escrowedAmount, uint stakingPoints, uint revenueShare);
 }

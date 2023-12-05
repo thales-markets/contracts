@@ -30,6 +30,12 @@
         "internalType": "uint256",
         "name": "_escrowedAmount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_revenueShare",
+        "type": "uint256"
       }
     ],
     "name": "RewardsUpdated",
@@ -54,6 +60,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "stakingPoints",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "revenueShare",
         "type": "uint256"
       }
     ],
@@ -161,6 +173,19 @@
   {
     "inputs": [],
     "name": "periodExtraReward",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "revenueShare",
     "outputs": [
       {
         "internalType": "uint256",
@@ -288,6 +313,11 @@
       {
         "internalType": "uint256",
         "name": "_escrowedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_revenueShare",
         "type": "uint256"
       }
     ],

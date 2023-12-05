@@ -17,7 +17,6 @@ import "../interfaces/IStakingThales.sol";
 
 import "./CCIPReceiverProxy.sol";
 
-
 /// @title - Cross Chain Collector contract for Thales staking rewards
 contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard, CCIPReceiverProxy {
     // Custom errors to provide more descriptive revert messages.
@@ -28,7 +27,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     address public masterCollector;
     uint64 public masterCollectorChain;
-    
+
     mapping(uint => uint64) public chainSelector;
     mapping(uint64 => uint) public chainSelectorIndex;
     mapping(uint => address) public collectorAddress;
@@ -39,10 +38,13 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     mapping(uint => mapping(uint => uint)) public chainBaseRewardsInPeriod;
     mapping(uint => mapping(uint => uint)) public chainExtraRewardsInPeriod;
     mapping(uint => mapping(uint => uint)) public chainBonusPointsInPeriod;
+    mapping(uint => mapping(uint => uint)) public chainRevenueInPeriod;
+    mapping(uint => mapping(uint => uint)) public chainRevenueShareInPeriod;
 
     mapping(uint => uint) public calculatedStakedAmountForPeriod;
     mapping(uint => uint) public calculatedEscrowedAmountForPeriod;
     mapping(uint => uint) public calculatedBonusPointsForPeriod;
+    mapping(uint => uint) public calculatedRevenueForPeriod;
 
     mapping(uint => uint64) public messagesReceivedFromChainSelector;
     mapping(uint => bytes) public messagesReceived;
@@ -88,7 +90,6 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     function isMasterCollector() external view returns (bool isMaster) {
         isMaster = masterCollector == address(this);
     }
-    
 
     function lastMessageFromChainSelector() external view returns (uint64 chainSelector_) {
         if (numOfMessagesReceived > 0) {
@@ -101,24 +102,32 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     function sendOnClosePeriod(
         uint _totalStakedLastPeriodEnd,
         uint _totalEscrowedLastPeriodEnd,
-        uint _bonusPoints
+        uint _bonusPoints,
+        uint _revShare
     ) external {
         require(msg.sender == stakingThales, "InvSender");
         if (masterCollector == address(this)) {
-            _storeRewards(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, masterCollectorChain);
+            _storeRewards(
+                masterCollectorChain,
+                _totalStakedLastPeriodEnd,
+                _totalEscrowedLastPeriodEnd,
+                _bonusPoints,
+                _revShare
+            );
             ++collectedResultsPerPeriod;
             if (collectedResultsPerPeriod == numOfActiveCollectors) {
                 readyToBroadcast = true;
             }
         } else {
-            bytes memory message = abi.encode(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints);
+            bytes memory message = abi.encode(
+                _totalStakedLastPeriodEnd,
+                _totalEscrowedLastPeriodEnd,
+                _bonusPoints,
+                _revShare
+            );
             _sendMessageToChain(masterCollectorChain, message);
         }
-        emit SentOnClosePeriod(
-            _totalStakedLastPeriodEnd,
-            _totalEscrowedLastPeriodEnd,
-            _bonusPoints
-        );
+        emit SentOnClosePeriod(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, _revShare);
     }
 
     function broadcastMessageToAll() external onlyOwner {
@@ -169,30 +178,36 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         );
     }
 
-
     function _calculateRewards(bytes memory data, uint _chainSelector) internal {
-        (uint stakedAmount, uint escrowedAmount, uint bonusPoints) = abi.decode(data, (uint, uint, uint));
-        _storeRewards(stakedAmount, escrowedAmount, bonusPoints, _chainSelector);
+        (uint stakedAmount, uint escrowedAmount, uint bonusPoints, uint revShare) = abi.decode(
+            data,
+            (uint, uint, uint, uint)
+        );
+        _storeRewards(_chainSelector, stakedAmount, escrowedAmount, bonusPoints, revShare);
     }
 
     function _storeRewards(
+        uint _chainSelector,
         uint _stakedAmount,
         uint _escrowedAmount,
         uint _bonusPoints,
-        uint _chainSelector
+        uint _revShare
     ) internal {
         chainStakedAmountInPeriod[period][_chainSelector] = _stakedAmount;
         chainEscrowedAmountInPeriod[period][_chainSelector] = _escrowedAmount;
         chainBonusPointsInPeriod[period][_chainSelector] = _bonusPoints;
+        chainRevenueInPeriod[period][_chainSelector] = _revShare;
 
         calculatedStakedAmountForPeriod[period] += _stakedAmount;
         calculatedEscrowedAmountForPeriod[period] += _escrowedAmount;
         calculatedBonusPointsForPeriod[period] += _bonusPoints;
+        calculatedRevenueForPeriod[period] += _revShare;
     }
 
     function _broadcastMessageToAll() internal {
         uint chainBaseRewards;
         uint chainExtraRewards;
+        uint revShare;
         bytes memory message;
 
         for (uint i = 0; i < numOfActiveCollectors; i++) {
@@ -204,21 +219,28 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 (chainBonusPointsInPeriod[period][chainSelector[i]] * extraRewardsPerPeriod) /
                 (calculatedBonusPointsForPeriod[period]);
 
+            revShare =
+                (chainStakedAmountInPeriod[period][chainSelector[i]] * calculatedRevenueForPeriod[period]) /
+                (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
+
             chainBaseRewardsInPeriod[period][chainSelector[i]] = chainBaseRewards;
             chainExtraRewardsInPeriod[period][chainSelector[i]] = chainExtraRewards;
+            chainRevenueShareInPeriod[period][chainSelector[i]] = revShare;
 
             message = abi.encode(
                 chainBaseRewards,
                 chainExtraRewards,
                 calculatedStakedAmountForPeriod[period],
-                calculatedEscrowedAmountForPeriod[period]
+                calculatedEscrowedAmountForPeriod[period],
+                revShare
             );
             if (i == 0) {
                 _updateRewards(
                     chainBaseRewards,
                     chainExtraRewards,
                     calculatedStakedAmountForPeriod[period],
-                    calculatedEscrowedAmountForPeriod[period]
+                    calculatedEscrowedAmountForPeriod[period],
+                    revShare
                 );
             } else {
                 _sendMessageToChain(chainSelector[i], message);
@@ -255,20 +277,27 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     }
 
     function _updateRewardsOnStakingContract(bytes memory data) internal {
-        (uint baseRewards, uint extraRewards, uint stakedAmount, uint escrowedAmount) = abi.decode(
+        (uint baseRewards, uint extraRewards, uint stakedAmount, uint escrowedAmount, uint revShare) = abi.decode(
             data,
-            (uint, uint, uint, uint)
+            (uint, uint, uint, uint, uint)
         );
-        _updateRewards(baseRewards, extraRewards, stakedAmount, escrowedAmount);
+        _updateRewards(baseRewards, extraRewards, stakedAmount, escrowedAmount, revShare);
     }
 
     function _updateRewards(
         uint _baseRewards,
         uint _extraRewards,
         uint _stakedAmount,
-        uint _escrowedAmount
+        uint _escrowedAmount,
+        uint _revShare
     ) internal {
-        IStakingThales(stakingThales).updateStakingRewards(_baseRewards, _extraRewards, _stakedAmount, _escrowedAmount);
+        IStakingThales(stakingThales).updateStakingRewards(
+            _baseRewards,
+            _extraRewards,
+            _stakedAmount,
+            _escrowedAmount,
+            _revShare
+        );
     }
 
     /* ========== CONTRACT SETTERS FUNCTIONS ========== */
@@ -289,7 +318,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         extraRewardsPerPeriod = _extraRewardsPerPeriod;
         emit SetPeriodRewards(_baseRewardsPerPeriod, _extraRewardsPerPeriod);
     }
-    
+
     function setGasLimit(uint _gasLimitUsed) external onlyOwner {
         gasLimitUsed = _gasLimitUsed;
         emit SetGasLimit(_gasLimitUsed);
@@ -369,6 +398,11 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     event SetPeriodRewards(uint _baseRewardsPerPeriod, uint _extraRewardsPerPeriod);
     event SetCCIPRouter(address _router);
     event SetStakingThales(address _stakingThales);
-    event SentOnClosePeriod(uint _totalStakedLastPeriodEnd, uint _totalEscrowedLastPeriodEnd, uint _bonusPoints);
+    event SentOnClosePeriod(
+        uint _totalStakedLastPeriodEnd,
+        uint _totalEscrowedLastPeriodEnd,
+        uint _bonusPoints,
+        uint _revShare
+    );
     event SetGasLimit(uint _gasLimitUsed);
 }

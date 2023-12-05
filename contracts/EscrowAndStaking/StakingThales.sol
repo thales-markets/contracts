@@ -581,6 +581,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         );
         if (ccipCollector != address(0)) {
             currentPeriodRewards = 0;
+            currentPeriodFees = feeToken.balanceOf(address(this));
             totalStakedLastPeriodEnd = _totalStakedAmount;
             totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
             paused = true;

@@ -54,7 +54,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     uint public period;
     uint public baseRewardsPerPeriod;
     uint public extraRewardsPerPeriod;
-    uint public collectedResultsPerPeriod;
+    uint public collectedResultsForPeriod;
     uint public lastPeriodBeforeTesting;
 
     bool public readyToBroadcast;
@@ -114,8 +114,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 _bonusPoints,
                 _revShare
             );
-            ++collectedResultsPerPeriod;
-            if (collectedResultsPerPeriod == numOfActiveCollectors) {
+            ++collectedResultsForPeriod;
+            if (collectedResultsForPeriod == numOfActiveCollectors) {
                 readyToBroadcast = true;
             }
         } else {
@@ -133,7 +133,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     function broadcastMessageToAll() external onlyOwner {
         if (readyToBroadcast) {
             _broadcastMessageToAll();
-            collectedResultsPerPeriod = 0;
+            collectedResultsForPeriod = 0;
             readyToBroadcast = false;
             ++period;
         }
@@ -155,15 +155,15 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 if (collectorAddress[sourceChainSelector] == sender) {
                     _calculateRewards(any2EvmMessage.data, sourceChainSelector);
                 }
-                ++collectedResultsPerPeriod;
-                if (collectedResultsPerPeriod == numOfActiveCollectors) {
+                ++collectedResultsForPeriod;
+                if (collectedResultsForPeriod == numOfActiveCollectors) {
                     readyToBroadcast = true;
                 }
             } else if (collectorAddress[sourceChainSelector] == sender && lastPeriodForChain[sourceChainSelector] < period) {
                 lastPeriodForChain[sourceChainSelector] = period;
                 _calculateRewards(any2EvmMessage.data, sourceChainSelector);
-                ++collectedResultsPerPeriod;
-                if (collectedResultsPerPeriod == numOfActiveCollectors) {
+                ++collectedResultsForPeriod;
+                if (collectedResultsForPeriod == numOfActiveCollectors) {
                     readyToBroadcast = true;
                 }
             }

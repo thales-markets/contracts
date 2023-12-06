@@ -621,7 +621,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         currentPeriodRewards = _currentPeriodRewards;
         currentPeriodFees = _transformCollateral(_revShare);
         if (!doNotUnpause && currentPeriodFees > currentBalance) {
-            if(feeToken.balanceOf(safeBoxBuffer) < currentPeriodFees) {
+            if (feeToken.balanceOf(safeBoxBuffer) < (currentPeriodFees - currentBalance)) {
                 doNotUnpause = true;
             } else {
                 ICCIPCollector(safeBoxBuffer).pullExtraFunds(currentPeriodFees - currentBalance);

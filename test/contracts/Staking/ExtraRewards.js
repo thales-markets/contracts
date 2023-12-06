@@ -293,10 +293,10 @@ contract('StakingThales', (accounts) => {
 
 			answer = await StakingThalesDeployed.connect(firstSigner).getBaseReward(firstSigner.address);
 			// console.log("Base reward:", fromWei(answer.toString(), "ether").toString());
-			answer = await StakingThalesDeployed.getSNXBonusPercentage(firstSigner.address);
+			// answer = await StakingThalesDeployed.getSNXBonusPercentage(firstSigner.address);
 			//console.log("SNX percentage:", answer.toString());
 
-			answer = await StakingThalesDeployed.getSNXBonus(firstSigner.address);
+			// answer = await StakingThalesDeployed.getSNXBonus(firstSigner.address);
 			//console.log("SNX bonus rewards:", fromWei(answer.toString(), "ether").toString());
 
 			// answer = await StakingThalesDeployed.getSNXTargetRatio();

@@ -46,6 +46,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     mapping(uint => uint) public calculatedBonusPointsForPeriod;
     mapping(uint => uint) public calculatedRevenueForPeriod;
 
+    mapping(bytes32 => bool) public messageIdAlreadyReceived;
     mapping(uint => uint64) public messagesReceivedFromChainSelector;
     mapping(uint => bytes) public messagesReceived;
     uint public numOfMessagesReceived;
@@ -58,7 +59,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     uint public lastPeriodBeforeTesting;
 
     bool public readyToBroadcast;
-    bool public testingPhase;
+    bool public readOnlyMode;
     uint public gasLimitUsed;
 
     /* ========== INITIALIZERS ========== */
@@ -144,31 +145,36 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     /// handle a received message
     function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
         // decoding the message
-        address sender = abi.decode(any2EvmMessage.sender, (address));
-        messagesReceivedFromChainSelector[numOfMessagesReceived] = any2EvmMessage.sourceChainSelector;
-        messagesReceived[numOfMessagesReceived] = any2EvmMessage.data;
-        ++numOfMessagesReceived;
+        if (!messageIdAlreadyReceived[any2EvmMessage.messageId]) {
+            address sender = abi.decode(any2EvmMessage.sender, (address));
+            messagesReceivedFromChainSelector[numOfMessagesReceived] = any2EvmMessage.sourceChainSelector;
+            messagesReceived[numOfMessagesReceived] = any2EvmMessage.data;
+            messageIdAlreadyReceived[any2EvmMessage.messageId] = true;
+            ++numOfMessagesReceived;
 
-        if (masterCollector == address(this)) {
-            uint sourceChainSelector = any2EvmMessage.sourceChainSelector;
-            if (testingPhase) {
-                if (collectorAddress[sourceChainSelector] == sender) {
+            if (masterCollector == address(this)) {
+                uint sourceChainSelector = any2EvmMessage.sourceChainSelector;
+                if (readOnlyMode) {
+                    if (collectorAddress[sourceChainSelector] == sender) {
+                        _calculateRewards(any2EvmMessage.data, sourceChainSelector);
+                    }
+                    ++collectedResultsForPeriod;
+                    if (collectedResultsForPeriod == numOfActiveCollectors) {
+                        readyToBroadcast = true;
+                    }
+                } else if (
+                    collectorAddress[sourceChainSelector] == sender && lastPeriodForChain[sourceChainSelector] < period
+                ) {
+                    lastPeriodForChain[sourceChainSelector] = period;
                     _calculateRewards(any2EvmMessage.data, sourceChainSelector);
+                    ++collectedResultsForPeriod;
+                    if (collectedResultsForPeriod == numOfActiveCollectors) {
+                        readyToBroadcast = true;
+                    }
                 }
-                ++collectedResultsForPeriod;
-                if (collectedResultsForPeriod == numOfActiveCollectors) {
-                    readyToBroadcast = true;
-                }
-            } else if (collectorAddress[sourceChainSelector] == sender && lastPeriodForChain[sourceChainSelector] < period) {
-                lastPeriodForChain[sourceChainSelector] = period;
-                _calculateRewards(any2EvmMessage.data, sourceChainSelector);
-                ++collectedResultsForPeriod;
-                if (collectedResultsForPeriod == numOfActiveCollectors) {
-                    readyToBroadcast = true;
-                }
+            } else if (masterCollector == sender) {
+                _updateRewardsOnStakingContract(any2EvmMessage.data);
             }
-        } else if (masterCollector == sender) {
-            _updateRewardsOnStakingContract(any2EvmMessage.data);
         }
         emit MessageReceived(
             any2EvmMessage.messageId,
@@ -362,13 +368,13 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit CollectorForChainSet(_chainId, _collectorAddress);
     }
 
-    function setTestingPhase(bool _enableTesting) external onlyOwner {
-        if (_enableTesting) {
+    function setReadOnlyMode(bool _enableReadOnly) external onlyOwner {
+        if (_enableReadOnly) {
             lastPeriodBeforeTesting = period;
-            testingPhase = true;
+            readOnlyMode = true;
             period = 0;
         } else {
-            testingPhase = false;
+            readOnlyMode = false;
             period = lastPeriodBeforeTesting;
         }
     }

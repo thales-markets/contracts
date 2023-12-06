@@ -635,7 +635,7 @@
   },
   {
     "inputs": [],
-    "name": "collectedResultsPerPeriod",
+    "name": "collectedResultsForPeriod",
     "outputs": [
       {
         "internalType": "uint256",
@@ -834,6 +834,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "messageIdAlreadyReceived",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -955,6 +974,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "readOnlyMode",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1115,12 +1147,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
+        "internalType": "bool",
+        "name": "_enableReadOnly",
+        "type": "bool"
       }
     ],
-    "name": "setStakingThales",
+    "name": "setReadOnlyMode",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1128,12 +1160,12 @@
   {
     "inputs": [
       {
-        "internalType": "bool",
-        "name": "_enableTesting",
-        "type": "bool"
+        "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
       }
     ],
-    "name": "setTestingPhase",
+    "name": "setStakingThales",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1168,19 +1200,6 @@
       }
     ],
     "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "testingPhase",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

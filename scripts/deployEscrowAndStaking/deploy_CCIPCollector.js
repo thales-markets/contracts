@@ -45,6 +45,9 @@ async function main() {
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
 		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
 		SafeBox = getTargetAddress('SafeBox', network);
+		masterCollector = false;
+		masterChainSelector = '0';
+		CCIP_Router = getTargetAddress('CCIPRouter', network);
 	}
 	if (networkObj.chainId == 5) {
 		networkObj.name = 'goerli';
@@ -72,6 +75,9 @@ async function main() {
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
 		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
 		SafeBox = getTargetAddress('SafeBox', network);
+		masterCollector = false;
+		masterChainSelector = '0';
+		CCIP_Router = getTargetAddress('CCIPRouter', network);
 	}
 
 	if (networkObj.chainId == 8453) {
@@ -81,6 +87,9 @@ async function main() {
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
 		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
 		SafeBox = getTargetAddress('SafeBox', network);
+		masterCollector = false;
+		masterChainSelector = '0';
+		CCIP_Router = getTargetAddress('CCIPRouter', network);
 	}
 
 	if (networkObj.chainId == 84531) {

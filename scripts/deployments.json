@@ -169,7 +169,10 @@
 		"AddressManagerImplementation": "0x935b3779743CFAD643fCfc609473E0164348a88C",
 		"ChainedSpeedMarketMastercopy": "0x94016d98e3898f42F04A714bD6561F97261A19BB",
 		"ChainedSpeedMarketsAMM": "0xFf8Cf5ABF583D0979C0B9c35d62dd1fD52cce7C7",
-		"ChainedSpeedMarketsAMMImplementation": "0x0048786e274e46316d814a8304F65F63f2a3D535"
+		"ChainedSpeedMarketsAMMImplementation": "0x0048786e274e46316d814a8304F65F63f2a3D535",
+		"CCIPRouter": "0x261c05167db67b2b619f9d312e0753f3721ad6e8",
+		"CrossChainCollector": "0x674d702069a7c12389B65a39b5a33829280f0E23",
+		"CrossChainCollectorImplementation": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -306,7 +309,10 @@
 		"AddressManagerImplementation": "0x823D03A9f13c08915833cB4249F9d4C2800BCdc3",
 		"ChainedSpeedMarketMastercopy": "0xeCbee43c472A1ACd129B8C100Af750e0480c7540",
 		"ChainedSpeedMarketsAMM": "0xe92B4c614b04c239d30c31A7ea1290AdDCb8217D",
-		"ChainedSpeedMarketsAMMImplementation": "0x5db10E9382E15eF7C1EaCb316DDDEd170c3b51a6"
+		"ChainedSpeedMarketsAMMImplementation": "0x5db10E9382E15eF7C1EaCb316DDDEd170c3b51a6",
+		"CCIPRouter": "0xe92634289a1841a979c11c2f618b33d376e4ba85",
+		"CrossChainCollector": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c",
+		"CrossChainCollectorImplementation": "0x794668C4e3a5EDd6B6C4e9842DF7f109f7141F2B"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
@@ -419,7 +425,10 @@
 		"ChainedSpeedMarketsAMM": "0x6848F001ddDb4442d352C495c7B4a231e3889b70",
 		"ChainedSpeedMarketsAMMImplementation": "0xb6cda560CE4a494d66b2Ea1cCa87BCD7EF8bb02E",
 		"AddressManager": "0xE2A98958E33E0110344DDeeF08eF42BA9D553050",
-		"AddressManagerImplementation": "0xde4D28bdf33b527c8eEFe01064E6D629F833ce72"
+		"AddressManagerImplementation": "0xde4D28bdf33b527c8eEFe01064E6D629F833ce72",
+		"CCIPRouter": "0x673aa85efd75080031d44fca061575d1da427a28",
+		"CrossChainCollector": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c",
+		"CrossChainCollectorImplementation": "0x794668C4e3a5EDd6B6C4e9842DF7f109f7141F2B"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

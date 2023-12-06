@@ -181,6 +181,12 @@
         "internalType": "address",
         "name": "_ccipCollector",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "safeBoxBuffer",
+        "type": "address"
       }
     ],
     "name": "CrossChainCollectorSet",
@@ -1660,6 +1666,11 @@
       {
         "internalType": "address",
         "name": "_ccipCollector",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_safeBoxBuffer",
         "type": "address"
       }
     ],

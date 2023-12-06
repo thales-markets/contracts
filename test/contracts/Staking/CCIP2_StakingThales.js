@@ -29,6 +29,7 @@ contract('StakingThales', (accounts) => {
 		ProxyStakingDeployed,
 		ThalesStakingRewardsPoolDeployed;
 	let ThalesStakingRewardsPool;
+	let SafeBoxBuffer;
 
 	let CCIPCollector;
 	let CCIPRouter;
@@ -267,6 +268,11 @@ contract('StakingThales', (accounts) => {
 		await StakingThalesBonusRewardsManager.initialize(owner, StakingThalesDeployed.address);
 		await CCIPCollector.initialize(CCIPRouter.address, true, 5, { from: owner });
 		await CCIPCollector.setStakingThales(StakingThalesDeployed.address, { from: owner });
+		let SafeBoxContract = artifacts.require('SafeBoxBuffer');
+		SafeBoxBuffer = await SafeBoxContract.new();
+		await SafeBoxBuffer.initialize(StakingThalesDeployed.address, ThalesFeeDeployed.address, {
+			from: owner,
+		});
 
 		await StakingThalesBonusRewardsManager.setStakingBaseDivider(100000, { from: owner });
 		await StakingThalesBonusRewardsManager.setMaxStakingMultiplier(toUnit(4), { from: owner });
@@ -510,7 +516,12 @@ contract('StakingThales', (accounts) => {
 			await StakingThalesDeployed.closePeriod({ from: second });
 			let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);
 			assert.bnEqual(answer, answer2);
-			await StakingThalesDeployed.setCrossChainCollector(CCIPCollector.address, { from: owner });
+
+			await StakingThalesDeployed.setCrossChainCollector(
+				CCIPCollector.address,
+				SafeBoxBuffer.address,
+				{ from: owner }
+			);
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			assert.equal(await StakingThalesDeployed.paused(), true);
@@ -556,14 +567,20 @@ contract('StakingThales', (accounts) => {
 			await StakingThalesDeployed.closePeriod({ from: second });
 			let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);
 			assert.bnEqual(answer, answer2);
-			await StakingThalesDeployed.setCrossChainCollector(CCIPCollector.address, { from: owner });
+			await StakingThalesDeployed.setCrossChainCollector(
+				CCIPCollector.address,
+				SafeBoxBuffer.address,
+				{ from: owner }
+			);
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			assert.equal(await StakingThalesDeployed.paused(), true);
 			await expect(StakingThalesDeployed.claimReward({ from: first })).to.be.revertedWith(
 				'This action cannot be performed while the contract is paused'
 			);
-			await StakingThalesDeployed.setCrossChainCollector(second, { from: owner });
+			await StakingThalesDeployed.setCrossChainCollector(second, SafeBoxBuffer.address, {
+				from: owner,
+			});
 			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
 			await expect(
@@ -572,14 +589,20 @@ contract('StakingThales', (accounts) => {
 					100000,
 					totalStaked.toString(),
 					totalEscrowed.toString(),
+					1000,
 					{ from: owner }
 				)
 			).to.be.revertedWith('InvCCIP');
+			await sUSDSynth.transfer(StakingThalesDeployed.address, 1001, { from: initialCreator });
+			// await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1001, {
+			// 	from: owner,
+			// });
 			await StakingThalesDeployed.updateStakingRewards(
 				deposit,
 				100000,
 				totalStaked.toString(),
 				totalEscrowed.toString(),
+				1000,
 				{ from: second }
 			);
 			assert.equal(await StakingThalesDeployed.paused(), false);

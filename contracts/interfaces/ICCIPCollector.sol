@@ -11,4 +11,6 @@ interface ICCIPCollector {
     ) external;
 
     function pullExtraFunds(uint _amount) external;
+
+    function decimals() external view returns (uint);
 }

@@ -46,9 +46,16 @@ contract SafeBoxBuffer is Initializable, ProxyOwned, ProxyPausable, ProxyReentra
         emit SetStakingThales(_stakingThales);
     }
 
+    function setSUSD(address _sUSD) external onlyOwner {
+        require(_sUSD != address(0), "Addr0");
+        sUSD = IERC20Upgradeable(_sUSD);
+        emit SetSUSD(_sUSD);
+    }
+
     /* ========== EVENTS ========== */
 
     event FundsPulled(address destination, uint amount);
     event SetStakingThales(address _stakingThales);
+    event SetSUSD(address _sUSD);
     event SentOnClosePeriod(uint _totalStakedLastPeriodEnd, uint _totalEscrowedLastPeriodEnd, uint _bonusPoints);
 }

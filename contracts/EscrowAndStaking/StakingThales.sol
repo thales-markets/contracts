@@ -329,9 +329,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         );
     }
 
-    function setCrossChainCollector(address _ccipCollector) external onlyOwner {
+    function setCrossChainCollector(address _ccipCollector, address _safeBoxBuffer) external onlyOwner {
         ccipCollector = _ccipCollector;
-        emit CrossChainCollectorSet(_ccipCollector);
+        safeBoxBuffer = _safeBoxBuffer;
+        emit CrossChainCollectorSet(_ccipCollector, _safeBoxBuffer);
     }
 
     /// @notice Set address of Escrow Thales contract
@@ -998,11 +999,21 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function _transformCollateral(uint _amount) internal view returns (uint) {
-        return IPositionalMarketManager(IThalesAMM(sportsAMM).manager()).transformCollateral(_amount);
+        if (ICCIPCollector(address(feeToken)).decimals() == 6) {
+            return _amount * 1e12;
+        } else {
+            return _amount;
+        }
+        // return IPositionalMarketManager(IThalesAMM(sportsAMM).manager()).transformCollateral(_amount);
     }
 
     function _reverseTransformCollateral(uint _amount) internal view returns (uint) {
-        return IPositionalMarketManager(IThalesAMM(sportsAMM).manager()).reverseTransformCollateral(_amount);
+        if (ICCIPCollector(address(feeToken)).decimals() == 6) {
+            return _amount / 1e12;
+        } else {
+            return _amount;
+        }
+        // return IPositionalMarketManager(IThalesAMM(sportsAMM).manager()).reverseTransformCollateral(_amount);
     }
 
     /* ========== EVENTS ========== */
@@ -1054,5 +1065,5 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event CanClaimOnBehalfChanged(address sender, address account, bool canClaimOnBehalf);
     event SupportedAMMVaultSet(address vault, bool value);
     event SupportedSportVaultSet(address vault, bool value);
-    event CrossChainCollectorSet(address _ccipCollector);
+    event CrossChainCollectorSet(address _ccipCollector, address safeBoxBuffer);
 }

@@ -672,7 +672,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
         for (uint i = 0; i < numberOfChildMarkets; i++) {
             address child = IGameChildMarket(childMarketContract).mainMarketChildMarketIndex(_market, i);
-            if (ISportPositionalMarket(child).deposited() > 0) {
+            if (ISportPositionalMarket(child).optionsInitialized()) {
                 return true;
             }
         }

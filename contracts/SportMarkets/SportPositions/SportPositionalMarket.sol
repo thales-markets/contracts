@@ -427,7 +427,12 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         }
     }
 
+    function initializeOptions() external override {
+        _initializeOptions();
+    }
+
     function _initializeOptions() internal {
+        require(!optionsInitialized, "already initialized");
         address[] memory positions = new address[](optionsCount);
         for (uint i = 0; i < optionsCount; i++) {
             positions[i] = address(SportPosition(Clones.clone(ISportPositionalMarketFactory(factory).positionMastercopy())));

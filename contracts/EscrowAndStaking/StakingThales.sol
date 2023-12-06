@@ -616,21 +616,23 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     ) external nonReentrant {
         require(msg.sender == ccipCollector, "InvCCIP");
         require(paused, "NotPaused");
+        bool doNotUnpause = safeBoxBuffer == address(0);
         uint currentBalance = feeToken.balanceOf(address(this));
         currentPeriodRewards = _currentPeriodRewards;
-        // fees to transfer to right decimal
-        // receive in 18 decimals
         currentPeriodFees = _transformCollateral(_revShare);
-        if (currentPeriodFees > currentBalance) {
-            // pull funds, re-use interface
-            ICCIPCollector(safeBoxBuffer).pullExtraFunds(currentPeriodFees - currentBalance);
-        } else if (currentPeriodFees > 0 && currentPeriodFees < currentBalance) {
+        if (!doNotUnpause && currentPeriodFees > currentBalance) {
+            if(feeToken.balanceOf(safeBoxBuffer) < currentPeriodFees) {
+                doNotUnpause = true;
+            } else {
+                ICCIPCollector(safeBoxBuffer).pullExtraFunds(currentPeriodFees - currentBalance);
+            }
+        } else if (!doNotUnpause && currentPeriodFees > 0 && currentPeriodFees < currentBalance) {
             feeToken.transfer(safeBoxBuffer, currentBalance - currentPeriodFees);
         }
         _totalUnclaimedRewards = _totalUnclaimedRewards.add(_currentPeriodRewards.add(_extraRewards));
         totalStakedLastPeriodEnd = _crossChainStakedAmount;
         totalEscrowedLastPeriodEnd = _crossChainEscrowedAmount;
-        paused = false;
+        paused = doNotUnpause;
     }
 
     /// @notice Stake the amount of staking token to get weekly rewards

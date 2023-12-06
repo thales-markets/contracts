@@ -299,20 +299,20 @@ contract('StakingThales', (accounts) => {
 			answer = await StakingThalesDeployed.getSNXBonus(firstSigner.address);
 			//console.log("SNX bonus rewards:", fromWei(answer.toString(), "ether").toString());
 
-			answer = await StakingThalesDeployed.getSNXTargetRatio();
+			// answer = await StakingThalesDeployed.getSNXTargetRatio();
 			// console.log("Target ratio:", answer.toString());
 			// console.log("Calculted Target ratio:", targetRatio.toString());
-			answer = await StakingThalesDeployed.getSNXRateForCurrency();
+			// answer = await StakingThalesDeployed.getSNXRateForCurrency();
 			// console.log("SNX rate:", answer.toString());
 			// console.log("Calculated SNX rate:", SNXrate);
-			answer = await StakingThalesDeployed.getCRatio(firstSigner.address);
+			// answer = await StakingThalesDeployed.getCRatio(firstSigner.address);
 			// console.log("CRatio :", answer.toString());
 			// console.log("calcuclated CRatio :", finalCratio.toString());
-			answer = await StakingThalesDeployed.getSNXDebt(firstSigner.address);
+			// answer = await StakingThalesDeployed.getSNXDebt(firstSigner.address);
 			// console.log("SNX debt:", answer.toString());
 			// console.log("calculated SNX debt:", debt);
 
-			answer = await StakingThalesDeployed.getSNXStaked(firstSigner.address);
+			// answer = await StakingThalesDeployed.getSNXStaked(firstSigner.address);
 			//console.log("\nSNX staked:", fromWei(answer.toString(), "ether").toString());
 
 			result = (finalCratio * finalCratio * debt) / (targetRatio * SNXrate * 10000);

@@ -739,6 +739,9 @@ contract('PlayerProps', (accounts) => {
 		await SportPositionalMarketManager.setPlayerProps(GamesPlayerPropsDeployed.address, {
 			from: manager,
 		});
+		await GamesOddsObtainerDeployed.setWaitTime(300, {
+			from: owner,
+		});
 	});
 
 	describe('Init', () => {
@@ -1512,6 +1515,18 @@ contract('PlayerProps', (accounts) => {
 					37
 				)
 			);
+			let getAllMainMarketsBasedOnPlayer =
+				await GamesPlayerPropsDeployed.getAllMainMarketsBasedOnPlayer(
+					['0x3431373836333400000000000000000000000000000000000000000000000000'],
+					['Atlanta Hawks']
+				);
+			assert.bnEqual(marketAdd, getAllMainMarketsBasedOnPlayer[0]);
+			getAllMainMarketsBasedOnPlayer =
+				await GamesPlayerPropsDeployed.getAllMainMarketsBasedOnPlayer(
+					['0x6536306366613738303834366166363839373862343935373965356366333936'],
+					['Atlanta Hawks']
+				);
+			assert.bnEqual(marketAdd, getAllMainMarketsBasedOnPlayer[0]);
 		});
 
 		it('Create game and create player props for game, change line, create new market', async () => {
@@ -1576,24 +1591,6 @@ contract('PlayerProps', (accounts) => {
 
 			assert.equal(false, await deployedMarket.canResolve());
 			assert.equal(9004, await deployedMarket.tags(0));
-
-			// invalid odds zero as draw
-			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
-				['0x6536306366613738303834366166363839373862343935373965356366333936'],
-				[10300, -11300, 0],
-				[0, 0],
-				[0, 0],
-				[0, 0],
-				[0, 0],
-				{
-					from: third,
-				}
-			);
-
-			let result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
-			assert.bnEqual(10300, result_final[0]);
-			assert.bnEqual(-11300, result_final[1]);
-			assert.bnEqual(0, result_final[2]);
 
 			// adding player props
 
@@ -1711,6 +1708,74 @@ contract('PlayerProps', (accounts) => {
 					37
 				)
 			);
+
+			let childMarket = await SportPositionalMarketContract.at(mainMarketPlayerPropsChild);
+			let childMarket2 = await SportPositionalMarketContract.at(mainMarketPlayerPropsChild2);
+
+			assert.equal(false, await deployedMarket.paused());
+			assert.equal(true, await childMarket.paused());
+			assert.equal(false, await childMarket2.paused());
+
+			const tx_pause = await GamesOddsReceiverDeployed.pauseMarketsBasedOnPlayersReport(
+				[marketAdd],
+				{
+					from: third,
+				}
+			);
+
+			assert.equal(true, await deployedMarket.paused());
+			assert.equal(true, await childMarket.paused());
+			assert.equal(true, await childMarket2.paused());
+			assert.notEqual(0, await GamesOddsObtainerDeployed.playersReportTimestamp(marketAdd));
+
+			assert.bnEqual(-20700, result[0]);
+			assert.bnEqual(17700, result[1]);
+
+			await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[-21000, 18000, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				{
+					from: third,
+				}
+			);
+
+			let result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-21000, result_final[0]);
+			assert.bnEqual(18000, result_final[1]);
+			assert.bnEqual(0, result_final[2]);
+
+			assert.equal(true, await deployedMarket.paused());
+			assert.equal(true, await childMarket.paused());
+			assert.equal(true, await childMarket2.paused());
+			assert.notEqual(0, await GamesOddsObtainerDeployed.playersReportTimestamp(marketAdd));
+
+			await fastForward(3000);
+
+			await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[-21000, 18000, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				{
+					from: third,
+				}
+			);
+
+			result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-21000, result_final[0]);
+			assert.bnEqual(18000, result_final[1]);
+			assert.bnEqual(0, result_final[2]);
+
+			assert.equal(false, await deployedMarket.paused());
+			assert.equal(true, await childMarket.paused());
+			assert.equal(true, await childMarket2.paused());
+			assert.equal(0, await GamesOddsObtainerDeployed.playersReportTimestamp(marketAdd));
 		});
 
 		it('Create game and create player props for game, change line, create new market, cancel via manager parent', async () => {

@@ -119,4 +119,6 @@ interface ITherundownConsumer {
     function isSportOnADate(uint _date, uint _sportId) external view returns (bool);
 
     function isSportTwoPositionsSport(uint _sportsId) external view returns (bool);
+
+    function marketForTeamName(string memory _teamName) external view returns (address);
 }

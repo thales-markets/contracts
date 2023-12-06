@@ -15,6 +15,7 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/ITherundownConsumerVerifier.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/IGamesPlayerProps.sol";
+import "../../interfaces/ISportPositionalMarket.sol";
 
 /// @title Contract, which works on player props
 /// @author gruja
@@ -70,6 +71,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => mapping(bytes32 => mapping(uint8 => IGamesPlayerProps.PlayerPropsResolver)))
         public resolvedPlayerProps;
     mapping(address => bool) public childMarketResolved;
+    mapping(bytes32 => address) public currentMainMarketForPlayer;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -369,6 +371,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         consumer.setGameIdPerChildMarket(_gameId, _child);
         gameIdPerChildMarket[_child] = _gameId;
         playerIdPerChildMarket[_child] = _playerId;
+        currentMainMarketForPlayer[_playerId] = _main;
         optionIdPerChildMarket[_child] = _option;
         childMarketCreated[_child] = true;
         childMarketMainMarket[_child] = _main;
@@ -580,6 +583,22 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                 address child = mainMarketChildMarketIndex[_parents[i]][j];
                 _children[index] = child;
                 index++;
+            }
+        }
+    }
+
+    function getAllMainMarketsBasedOnPlayer(bytes32[] memory _playerIds, string[] memory _teamNames)
+        external
+        view
+        returns (address[] memory _mainMarkets)
+    {
+        _mainMarkets = new address[](_playerIds.length);
+        for (uint i = 0; i < _playerIds.length; i++) {
+            address mainMarket = currentMainMarketForPlayer[_playerIds[i]];
+            if (mainMarket != address(0) && !ISportPositionalMarket(mainMarket).resolved()) {
+                _mainMarkets[i] = mainMarket;
+            } else {
+                _mainMarkets[i] = consumer.marketForTeamName(_teamNames[i]);
             }
         }
     }

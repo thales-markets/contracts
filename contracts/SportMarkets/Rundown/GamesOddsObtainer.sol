@@ -56,6 +56,8 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public normalizedOddsForMarketFulfilled;
     mapping(address => uint[]) public normalizedOddsForMarket;
     address public oddsReceiver;
+    mapping(address => uint) public playersReportTimestamp;
+    uint public waitTimePlayersReport;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -84,48 +86,53 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     function obtainOdds(
         bytes32 requestId,
         IGamesOddsObtainer.GameOdds memory _game,
-        uint _sportId
+        uint _sportId,
+        address _main,
+        bool _isTwoPositional,
+        bool _playersReport
     ) external canUpdateOdds {
-        if (_areOddsValid(_game)) {
+        bool _isMainMarketPaused = sportsManager.isMarketPaused(_main);
+        if (_areOddsValid(_game, _isTwoPositional)) {
             uint[] memory currentNormalizedOdd = _getNormalizedOdds(_game.gameId);
             IGamesOddsObtainer.GameOdds memory currentOddsBeforeSave = gameOdds[_game.gameId];
             gameOdds[_game.gameId] = _game;
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
-            address _main = consumer.marketPerGameId(_game.gameId);
             _setNormalizedOdds(_main, _game.gameId, true);
             if (doesSportSupportSpreadAndTotal[_sportId] || numberOfChildMarkets[_main] > 0) {
                 _obtainTotalAndSpreadOdds(_game, _main);
             }
-
+            bool _inThreshold = verifier.areOddsArrayInThreshold(
+                _sportId,
+                currentNormalizedOdd,
+                normalizedOddsForMarket[_main],
+                _isTwoPositional
+            );
             // if was paused and paused by invalid odds unpause
-            if (sportsManager.isMarketPaused(_main)) {
+            if (_isMainMarketPaused) {
                 if (invalidOdds[_main] || consumer.isPausedByCanceledStatus(_main)) {
-                    invalidOdds[_main] = false;
                     consumer.setPausedByCanceledStatus(_main, false);
-                    if (
-                        !verifier.areOddsArrayInThreshold(
-                            _sportId,
-                            currentNormalizedOdd,
-                            normalizedOddsForMarket[_main],
-                            consumer.isSportTwoPositionsSport(_sportId)
-                        )
-                    ) {
+                    if (!_inThreshold) {
+                        invalidOdds[_main] = false;
                         backupOdds[_game.gameId] = currentOddsBeforeSave;
+                        _pauseOrUnpauseMarkets(_game, _main, true, true);
                         emit OddsCircuitBreaker(_main, _game.gameId);
                     } else {
-                        _pauseOrUnpauseMarkets(_game, _main, false, true);
+                        if (
+                            playersReportTimestamp[_main] > 0 &&
+                            block.timestamp - playersReportTimestamp[_main] < waitTimePlayersReport
+                        ) {
+                            _pauseOrUnpauseMarkets(_game, _main, true, true);
+                        } else {
+                            invalidOdds[_main] = false;
+                            _pauseOrUnpauseMarkets(_game, _main, false, true);
+                            playersReportTimestamp[_main] = 0;
+                        }
                     }
                 }
             } else if (
                 //if market is not paused but odd are not in threshold, pause parket
-                !sportsManager.isMarketPaused(_main) &&
-                !verifier.areOddsArrayInThreshold(
-                    _sportId,
-                    currentNormalizedOdd,
-                    normalizedOddsForMarket[_main],
-                    consumer.isSportTwoPositionsSport(_sportId)
-                )
+                !_isMainMarketPaused && !_inThreshold
             ) {
                 _pauseOrUnpauseMarkets(_game, _main, true, true);
                 _pauseOrUnpausePlayerProps(_main, true, false, true);
@@ -134,9 +141,11 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             }
             emit GameOddsAdded(requestId, _game.gameId, _game, normalizedOddsForMarket[_main]);
         } else {
-            address _main = consumer.marketPerGameId(_game.gameId);
-            if (!sportsManager.isMarketPaused(_main)) {
+            if (!_isMainMarketPaused) {
                 invalidOdds[_main] = true;
+                if (_playersReport) {
+                    playersReportTimestamp[_main] = block.timestamp;
+                }
                 _pauseOrUnpauseMarkets(_game, _main, true, true);
                 _pauseOrUnpausePlayerProps(_main, true, true, false);
             }
@@ -171,7 +180,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _gameId game id which is using backup odds
     function setBackupOddsAsMainOddsForGame(bytes32 _gameId) external onlyConsumer {
         gameOdds[_gameId] = backupOdds[_gameId];
-        address _main = consumer.marketPerGameId(_gameId);
+        address _main = _getMarketPerGameId(_gameId);
         _setNormalizedOdds(_main, _gameId, true);
         emit GameOddsAdded(
             _gameId, // // no req. from CL (manual cancel) so just put gameID
@@ -187,7 +196,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     function pauseUnpauseChildMarkets(address _main, bool _flag) external onlyConsumer {
         // number of childs more then 0
         for (uint i = 0; i < numberOfChildMarkets[_main]; i++) {
-            consumer.pauseOrUnpauseMarket(mainMarketChildMarketIndex[_main][i], _flag);
+            _pauseOrUnpauseSingleMarket(mainMarketChildMarketIndex[_main][i], _flag);
         }
     }
 
@@ -274,8 +283,15 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _gameId game id for which game is looking
     /// @param _useBackup see if looking at backupOdds
     /// @return bool true/false (valid or not)
-    function areOddsValid(bytes32 _gameId, bool _useBackup) external view returns (bool) {
-        return _useBackup ? _areOddsValid(backupOdds[_gameId]) : _areOddsValid(gameOdds[_gameId]);
+    function areOddsValid(
+        bytes32 _gameId,
+        bool _useBackup,
+        bool _isTwoPositional
+    ) external view returns (bool) {
+        return
+            _useBackup
+                ? _areOddsValid(backupOdds[_gameId], _isTwoPositional)
+                : _areOddsValid(gameOdds[_gameId], _isTwoPositional);
     }
 
     /// @notice view function which returns odds
@@ -338,7 +354,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== INTERNALS ========== */
 
     function _getNormalizedOdds(bytes32 _gameId) internal view returns (uint[] memory) {
-        address _market = consumer.marketPerGameId(_gameId);
+        address _market = _getMarketPerGameId(_gameId);
         return
             normalizedOddsForMarketFulfilled[_market]
                 ? normalizedOddsForMarket[_market]
@@ -368,14 +384,8 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         return verifier.calculateAndNormalizeOdds(odds);
     }
 
-    function _areOddsValid(IGamesOddsObtainer.GameOdds memory _game) internal view returns (bool) {
-        return
-            verifier.areOddsValid(
-                consumer.isSportTwoPositionsSport(consumer.sportsIdPerGame(_game.gameId)),
-                _game.homeOdds,
-                _game.awayOdds,
-                _game.drawOdds
-            );
+    function _areOddsValid(IGamesOddsObtainer.GameOdds memory _game, bool _isTwoPositional) internal view returns (bool) {
+        return verifier.areOddsValid(_isTwoPositional, _game.homeOdds, _game.awayOdds, _game.drawOdds);
     }
 
     function _obtainTotalAndSpreadOdds(IGamesOddsObtainer.GameOdds memory _game, address _main) internal {
@@ -440,18 +450,22 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             _setCurrentChildMarkets(_main, newMarket, _isSpread);
 
             if (currentActiveChildMarket != address(0)) {
-                consumer.pauseOrUnpauseMarket(currentActiveChildMarket, true);
+                _pauseOrUnpauseSingleMarket(currentActiveChildMarket, true);
             }
             _setNormalizedOdds(newMarket, _game.gameId, false);
         } else if (currentMarket != currentActiveChildMarket) {
-            consumer.pauseOrUnpauseMarket(currentMarket, false);
-            consumer.pauseOrUnpauseMarket(currentActiveChildMarket, true);
+            _pauseOrUnpauseSingleMarket(currentMarket, false);
+            _pauseOrUnpauseSingleMarket(currentActiveChildMarket, true);
             _setCurrentChildMarkets(_main, currentMarket, _isSpread);
             _setNormalizedOdds(currentMarket, _game.gameId, false);
         } else {
-            consumer.pauseOrUnpauseMarket(currentActiveChildMarket, false);
+            _pauseOrUnpauseSingleMarket(currentActiveChildMarket, false);
             _setNormalizedOdds(currentActiveChildMarket, _game.gameId, false);
         }
+    }
+
+    function _pauseOrUnpauseSingleMarket(address _market, bool _pause) internal {
+        consumer.pauseOrUnpauseMarket(_market, _pause);
     }
 
     function _pauseOrUnpausePlayerProps(
@@ -541,13 +555,13 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         bool _unpauseMain
     ) internal {
         if (_unpauseMain) {
-            consumer.pauseOrUnpauseMarket(_main, _flag);
+            _pauseOrUnpauseSingleMarket(_main, _flag);
         }
 
         if (numberOfChildMarkets[_main] > 0) {
             if (_flag) {
                 for (uint i = 0; i < numberOfChildMarkets[_main]; i++) {
-                    consumer.pauseOrUnpauseMarket(mainMarketChildMarketIndex[_main][i], _flag);
+                    _pauseOrUnpauseSingleMarket(mainMarketChildMarketIndex[_main][i], _flag);
                 }
             } else {
                 if (_areTotalOddsValid(_game)) {
@@ -562,7 +576,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                         );
                         _setCurrentChildMarkets(_main, newMarket, false);
                     } else {
-                        consumer.pauseOrUnpauseMarket(totalChildMarket, _flag);
+                        _pauseOrUnpauseSingleMarket(totalChildMarket, _flag);
                         _setCurrentChildMarkets(_main, totalChildMarket, false);
                     }
                 }
@@ -578,7 +592,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                         );
                         _setCurrentChildMarkets(_main, newMarket, true);
                     } else {
-                        consumer.pauseOrUnpauseMarket(spreadChildMarket, _flag);
+                        _pauseOrUnpauseSingleMarket(spreadChildMarket, _flag);
                         _setCurrentChildMarkets(_main, spreadChildMarket, true);
                     }
                 }
@@ -587,16 +601,20 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _pauseTotalSpreadMarkets(IGamesOddsObtainer.GameOdds memory _game, bool _isSpread) internal {
-        address _main = consumer.marketPerGameId(_game.gameId);
+        address _main = _getMarketPerGameId(_game.gameId);
         // in number of childs more then 0
         if (numberOfChildMarkets[_main] > 0) {
             for (uint i = 0; i < numberOfChildMarkets[_main]; i++) {
                 address _child = mainMarketChildMarketIndex[_main][i];
                 if (isSpreadChildMarket[_child] == _isSpread) {
-                    consumer.pauseOrUnpauseMarket(_child, true);
+                    _pauseOrUnpauseSingleMarket(_child, true);
                 }
             }
         }
+    }
+
+    function _getMarketPerGameId(bytes32 _gameId) internal view returns (address) {
+        return consumer.marketPerGameId(_gameId);
     }
 
     function _setCurrentChildMarkets(
@@ -699,6 +717,13 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         emit SupportedSportForTotalAndSpreadAdded(_sportId, _isSupported);
     }
 
+    /// @notice sets wait time for unpausing markets
+    /// @param _waitTime time in seconds
+    function setWaitTime(uint _waitTime) external onlyOwner {
+        waitTimePlayersReport = _waitTime;
+        emit NewWaitTime(_waitTime);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier canUpdateOdds() {
@@ -747,4 +772,5 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     );
     event SupportedSportForTotalAndSpreadAdded(uint _sportId, bool _isSupported);
     event ResolveChildMarket(address _child, uint _outcome, address _main, uint24 _homeScore, uint24 _awayScore);
+    event NewWaitTime(uint _waitTime);
 }

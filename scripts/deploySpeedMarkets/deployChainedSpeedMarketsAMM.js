@@ -64,30 +64,34 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	const SpeedMarketsAMM = await ethers.getContractFactory('SpeedMarketsAMM');
-	let SpeedMarketsAMMDeployed = await upgrades.deployProxy(SpeedMarketsAMM, [
+	const ChainedSpeedMarketsAMM = await ethers.getContractFactory('ChainedSpeedMarketsAMM');
+	let ChainedSpeedMarketsAMMDeployed = await upgrades.deployProxy(ChainedSpeedMarketsAMM, [
 		owner.address,
 		proxySUSD,
 	]);
-	await SpeedMarketsAMMDeployed.deployed();
+	await ChainedSpeedMarketsAMMDeployed.deployed();
 
-	console.log('SpeedMarketsAMM proxy:', SpeedMarketsAMMDeployed.address);
+	console.log('ChainedSpeedMarketsAMM proxy:', ChainedSpeedMarketsAMMDeployed.address);
 
-	const SpeedMarketsAMMImplementation = await getImplementationAddress(
+	const ChainedSpeedMarketsAMMImplementation = await getImplementationAddress(
 		ethers.provider,
-		SpeedMarketsAMMDeployed.address
+		ChainedSpeedMarketsAMMDeployed.address
 	);
 
-	console.log('Implementation SpeedMarketsAMM: ', SpeedMarketsAMMImplementation);
+	console.log('Implementation ChainedSpeedMarketsAMM: ', ChainedSpeedMarketsAMMImplementation);
 
-	setTargetAddress('SpeedMarketsAMM', network, SpeedMarketsAMMDeployed.address);
-	setTargetAddress('SpeedMarketsAMMImplementation', network, SpeedMarketsAMMImplementation);
+	setTargetAddress('ChainedSpeedMarketsAMM', network, ChainedSpeedMarketsAMMDeployed.address);
+	setTargetAddress(
+		'ChainedSpeedMarketsAMMImplementation',
+		network,
+		ChainedSpeedMarketsAMMImplementation
+	);
 
 	delay(5000);
 
 	try {
 		await hre.run('verify:verify', {
-			address: SpeedMarketsAMMImplementation,
+			address: ChainedSpeedMarketsAMMImplementation,
 		});
 	} catch (e) {
 		console.log(e);

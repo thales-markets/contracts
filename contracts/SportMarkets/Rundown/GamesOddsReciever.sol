@@ -75,7 +75,7 @@ contract GamesOddsReceiver is Initializable, ProxyOwned, ProxyPausable {
         for (uint i = 0; i < _mainMarkets.length; i++) {
             bytes32 _id = consumer.gameIdPerMarket(_mainMarkets[i]);
             IGamesOddsObtainer.GameOdds memory game = _castToGameOdds(
-                i,
+                0,
                 _id,
                 new int24[](3),
                 new int16[](2),
@@ -86,14 +86,7 @@ contract GamesOddsReceiver is Initializable, ProxyOwned, ProxyPausable {
             // game needs to be fulfilled and market needed to be created
             if (consumer.gameFulfilledCreated(_id) && _mainMarkets[i] != address(0)) {
                 uint sportId = consumer.sportsIdPerGame(_id);
-                obtainer.obtainOdds(
-                    _id,
-                    game,
-                    consumer.sportsIdPerGame(_id),
-                    _mainMarkets[i],
-                    consumer.isSportTwoPositionsSport(sportId),
-                    true
-                );
+                obtainer.obtainOdds(_id, game, sportId, _mainMarkets[i], consumer.isSportTwoPositionsSport(sportId), true);
             }
         }
     }

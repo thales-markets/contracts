@@ -129,6 +129,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     IStakingThalesBonusRewardsManager public stakingThalesBonusRewardsManager;
     IParlayAMMLiquidityPool public parlayAMMLiquidityPool;
 
+    bool public readOnlyMode;
+    bool public closingPeriodInProgress;
+    uint public closingPeriodPauseTime;
     address public ccipCollector;
     address public safeBoxBuffer;
 
@@ -584,25 +587,35 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         _totalEscrowedAmount = iEscrowThales.totalEscrowedRewards().sub(
             iEscrowThales.totalEscrowBalanceNotIncludedInStaking()
         );
+
+        currentPeriodRewards = fixedPeriodReward;
+        _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
+        currentPeriodFees = feeToken.balanceOf(address(this));
+        totalStakedLastPeriodEnd = _totalStakedAmount;
+        totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
+
         if (ccipCollector != address(0)) {
-            currentPeriodRewards = 0;
-            totalStakedLastPeriodEnd = _totalStakedAmount;
-            totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
-            paused = true;
+            if (!readOnlyMode) {
+                paused = true;
+                lastPauseTime = block.timestamp;
+            }
+            closingPeriodInProgress = true;
+            closingPeriodPauseTime = block.timestamp;
             ICCIPCollector(ccipCollector).sendOnClosePeriod(
                 totalStakedLastPeriodEnd,
                 totalEscrowedLastPeriodEnd,
                 stakingThalesBonusRewardsManager.totalRoundBonusPoints(periodsOfStaking - 1),
                 _reverseTransformCollateral(feeToken.balanceOf(address(this)))
             );
-        } else {
-            //Actions taken on every closed period
-            currentPeriodRewards = fixedPeriodReward;
-            _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
-            currentPeriodFees = feeToken.balanceOf(address(this));
-            totalStakedLastPeriodEnd = _totalStakedAmount;
-            totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
         }
+        // else {
+        //     //Actions taken on every closed period
+        //     currentPeriodRewards = fixedPeriodReward;
+        //     _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
+        //     currentPeriodFees = feeToken.balanceOf(address(this));
+        //     totalStakedLastPeriodEnd = _totalStakedAmount;
+        //     totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
+        // }
 
         emit ClosedPeriod(periodsOfStaking, lastPeriodTimeStamp);
     }
@@ -614,25 +627,37 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint _crossChainEscrowedAmount,
         uint _revShare
     ) external nonReentrant {
-        require(msg.sender == ccipCollector, "InvCCIP");
-        require(paused, "NotPaused");
-        bool doNotUnpause = safeBoxBuffer == address(0);
-        uint currentBalance = feeToken.balanceOf(address(this));
-        currentPeriodRewards = _currentPeriodRewards;
-        currentPeriodFees = _transformCollateral(_revShare);
-        if (!doNotUnpause && currentPeriodFees > currentBalance) {
-            if (feeToken.balanceOf(safeBoxBuffer) < (currentPeriodFees - currentBalance)) {
-                doNotUnpause = true;
-            } else {
-                ICCIPCollector(safeBoxBuffer).pullExtraFunds(currentPeriodFees - currentBalance);
+        if (!readOnlyMode) {
+            require(msg.sender == ccipCollector, "InvCCIP");
+            require(closingPeriodInProgress, "NotInClosePeriod");
+            bool doNotUnpause = safeBoxBuffer == address(0);
+            uint currentBalance = feeToken.balanceOf(address(this));
+            currentPeriodRewards = _currentPeriodRewards;
+            currentPeriodFees = _transformCollateral(_revShare);
+            if (!doNotUnpause && currentPeriodFees > currentBalance) {
+                if (feeToken.balanceOf(safeBoxBuffer) < (currentPeriodFees - currentBalance)) {
+                    doNotUnpause = true;
+                } else {
+                    ICCIPCollector(safeBoxBuffer).pullExtraFunds(currentPeriodFees - currentBalance);
+                }
+            } else if (!doNotUnpause && currentPeriodFees > 0 && currentPeriodFees < currentBalance) {
+                feeToken.transfer(safeBoxBuffer, currentBalance - currentPeriodFees);
             }
-        } else if (!doNotUnpause && currentPeriodFees > 0 && currentPeriodFees < currentBalance) {
-            feeToken.transfer(safeBoxBuffer, currentBalance - currentPeriodFees);
+            _totalUnclaimedRewards = _totalUnclaimedRewards.add(_currentPeriodRewards.add(_extraRewards));
+            totalStakedLastPeriodEnd = _crossChainStakedAmount;
+            totalEscrowedLastPeriodEnd = _crossChainEscrowedAmount;
+            closingPeriodInProgress = false;
+            if (closingPeriodPauseTime == lastPauseTime) {
+                paused = doNotUnpause;
+            }
         }
-        _totalUnclaimedRewards = _totalUnclaimedRewards.add(_currentPeriodRewards.add(_extraRewards));
-        totalStakedLastPeriodEnd = _crossChainStakedAmount;
-        totalEscrowedLastPeriodEnd = _crossChainEscrowedAmount;
-        paused = doNotUnpause;
+        emit ReceivedStakingRewardsUpdate(
+            _currentPeriodRewards,
+            _extraRewards,
+            _crossChainStakedAmount,
+            _crossChainEscrowedAmount,
+            _revShare
+        );
     }
 
     /// @notice Stake the amount of staking token to get weekly rewards
@@ -1058,6 +1083,13 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address thalesAMMLiquidityPool,
         address parlayAMMLiquidityPool,
         address stakingThalesBonusRewardsManager
+    );
+    event ReceivedStakingRewardsUpdate(
+        uint _currentPeriodRewards,
+        uint _extraRewards,
+        uint _crossChainStakedAmount,
+        uint _crossChainEscrowedAmount,
+        uint _revShare
     );
     event EscrowChanged(address newEscrow);
     event StakingPeriodStarted();

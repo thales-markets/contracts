@@ -653,6 +653,8 @@ contract('StakingThales', (accounts) => {
 			);
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
+
+			let closingPeriodInProgress = await StakingThalesDeployed.closingPeriodInProgress();
 			assert.equal(await StakingThalesDeployed.paused(), true);
 			await expect(StakingThalesDeployed.claimReward({ from: first })).to.be.revertedWith(
 				'This action cannot be performed while the contract is paused'
@@ -695,15 +697,18 @@ contract('StakingThales', (accounts) => {
 			await StakingThalesDeployed.setCrossChainCollector(second, SafeBoxBuffer.address, {
 				from: owner,
 			});
-			await StakingThalesDeployed.updateStakingRewards(
-				deposit,
-				100000,
-				totalStaked.toString(),
-				totalEscrowed.toString(),
-				1000,
-				{ from: second }
-			);
-			assert.equal(await StakingThalesDeployed.paused(), false);
+			await expect(
+				StakingThalesDeployed.updateStakingRewards(
+					deposit,
+					100000,
+					totalStaked.toString(),
+					totalEscrowed.toString(),
+					1000,
+					{ from: second }
+				)
+			).to.be.revertedWith('NotInClosePeriod');
+			assert.equal(await StakingThalesDeployed.paused(), true);
+			await StakingThalesDeployed.setPaused(false, { from: owner });
 			await StakingThalesDeployed.claimReward({ from: first });
 		});
 

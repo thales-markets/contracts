@@ -218,7 +218,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
         for (uint i = 0; i < numOfActiveCollectors; i++) {
             chainBaseRewards =
-                (chainStakedAmountInPeriod[period][chainSelector[i]] * baseRewardsPerPeriod) /
+                ((chainStakedAmountInPeriod[period][chainSelector[i]] +
+                    chainEscrowedAmountInPeriod[period][chainSelector[i]]) * baseRewardsPerPeriod) /
                 (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
 
             chainExtraRewards =
@@ -226,7 +227,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 (calculatedBonusPointsForPeriod[period]);
 
             revShare =
-                (chainStakedAmountInPeriod[period][chainSelector[i]] * calculatedRevenueForPeriod[period]) /
+                ((chainStakedAmountInPeriod[period][chainSelector[i]] +
+                    chainEscrowedAmountInPeriod[period][chainSelector[i]]) * calculatedRevenueForPeriod[period]) /
                 (calculatedStakedAmountForPeriod[period] + calculatedEscrowedAmountForPeriod[period]);
 
             chainBaseRewardsInPeriod[period][chainSelector[i]] = chainBaseRewards;

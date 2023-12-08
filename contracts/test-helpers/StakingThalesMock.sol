@@ -32,6 +32,7 @@ contract StakingThalesMock {
     function stake(uint amount) external {
         _stakedBalances[msg.sender] = amount;
         stakedAmount += amount;
+        revenueShare += 10 * amount;
         escrowedAmount += (amount * 10 * 1e16) / 1e18;
     }
 

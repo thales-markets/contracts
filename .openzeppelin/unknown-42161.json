@@ -56563,6 +56563,100 @@
           }
         }
       }
+    },
+    "11d7e2acfa86798ab59fcc077f4ea992486d56b3d55ada578a7cc1ea88bf554d": {
+      "address": "0xa70EfF9115a5FAEB360eA48AC696Fd8DE501819a",
+      "txHash": "0xba10b3116ee610ecbe727f7d938ba5c74eff07dd314534bf8464ef1b636d329d",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "GamesOddsReceiver",
+            "label": "consumer",
+            "type": "t_contract(ITherundownConsumer)1582",
+            "src": "contracts/SportMarkets/Rundown/GamesOddsReciever.sol:19"
+          },
+          {
+            "contract": "GamesOddsReceiver",
+            "label": "obtainer",
+            "type": "t_contract(IGamesOddsObtainer)1295",
+            "src": "contracts/SportMarkets/Rundown/GamesOddsReciever.sol:20"
+          },
+          {
+            "contract": "GamesOddsReceiver",
+            "label": "whitelistedAddresses",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/GamesOddsReciever.sol:22"
+          }
+        ],
+        "types": {
+          "t_contract(ITherundownConsumer)1582": {
+            "label": "contract ITherundownConsumer"
+          },
+          "t_contract(IGamesOddsObtainer)1295": {
+            "label": "contract IGamesOddsObtainer"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          }
+        }
+      }
     }
   }
 }

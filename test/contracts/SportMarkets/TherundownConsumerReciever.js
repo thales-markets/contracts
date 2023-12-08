@@ -3495,6 +3495,7 @@ contract('TheRundownConsumer', (accounts) => {
 			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
 
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			let marketAdd2 = await TherundownConsumerDeployed.marketPerGameId(gameid2);
 
 			// check if event is emited
 			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
@@ -3543,7 +3544,7 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(false, await childMarket.paused());
 
 			const tx_pause = await GamesOddsReceiverDeployed.pauseMarketsBasedOnPlayersReport(
-				[marketAdd],
+				[marketAdd, marketAdd],
 				{
 					from: third,
 				}

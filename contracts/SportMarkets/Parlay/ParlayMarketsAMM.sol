@@ -574,6 +574,18 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 address(this)
             )
         );
+
+        // check if any market breaches cap
+        for (uint i = 0; i < _sportMarkets.length; i++) {
+            if (
+                riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] + amountsToBuy[i] >
+                sportsAmm.riskManager().calculateCapToBeUsed(_sportMarkets[i])
+            ) {
+                finalQuotes[i] = 0;
+                totalQuote = 0;
+                skewImpact = 0;
+            }
+        }
     }
 
     function _handleReferrerAndSB(uint _sUSDPaid, uint sUSDAfterFees) internal returns (uint safeBoxAmount) {

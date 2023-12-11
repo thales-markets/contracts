@@ -461,6 +461,25 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "_teamName",
+        "type": "string"
+      }
+    ],
+    "name": "marketForTeamName",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"

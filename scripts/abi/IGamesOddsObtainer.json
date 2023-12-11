@@ -10,6 +10,11 @@
         "internalType": "bool",
         "name": "_useBackup",
         "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isTwoPositional",
+        "type": "bool"
       }
     ],
     "name": "areOddsValid",
@@ -523,6 +528,21 @@
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isTwoPositional",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isPlayersReport",
+        "type": "bool"
       }
     ],
     "name": "obtainOdds",
@@ -569,6 +589,25 @@
     "name": "pauseUnpauseCurrentActiveChildMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "playersReportTimestamp",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

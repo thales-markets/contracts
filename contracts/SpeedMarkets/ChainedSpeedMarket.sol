@@ -78,11 +78,13 @@ contract ChainedSpeedMarket {
 
         for (uint i = 0; i < _finalPrices.length; i++) {
             strikePrices.push(i == 0 ? initialStrikePrice : _finalPrices[i - 1]); // previous final price is current strike price
-            bool userWonDirection = (_finalPrices[i] < strikePrices[i] && directions[i] == SpeedMarket.Direction.Down) ||
-                (_finalPrices[i] > strikePrices[i] && directions[i] == SpeedMarket.Direction.Up);
+            bool userLostDirection = _finalPrices[i] > 0 &&
+                strikePrices[i] > 0 &&
+                ((_finalPrices[i] >= strikePrices[i] && directions[i] == SpeedMarket.Direction.Down) ||
+                    (_finalPrices[i] <= strikePrices[i] && directions[i] == SpeedMarket.Direction.Up));
 
             // user lost stop checking rest of directions
-            if (!userWonDirection) {
+            if (userLostDirection) {
                 resolved = true;
                 break;
             }
@@ -117,7 +119,7 @@ contract ChainedSpeedMarket {
     /// @notice numOfPrices returns number of strike/finales
     /// @return uint
     function numOfPrices() external view returns (uint) {
-        return finalPrices.length;
+        return strikePrices.length;
     }
 
     modifier onlyAMM() {

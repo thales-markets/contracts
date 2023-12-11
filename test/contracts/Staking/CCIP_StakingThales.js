@@ -271,6 +271,8 @@ contract('CCIP Staking', (accounts) => {
 			let baseRewardsPerPeriod = await CCIPCollectorA.baseRewardsPerPeriod();
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
+			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
+			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
 			console.log('extraRewardsPerPeriod: ', fromUnit(extraRewardsPerPeriod));
 			let collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());

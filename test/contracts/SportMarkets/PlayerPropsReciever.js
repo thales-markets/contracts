@@ -1527,6 +1527,13 @@ contract('PlayerProps', (accounts) => {
 					['Atlanta Hawks']
 				);
 			assert.bnEqual(marketAdd, getAllMainMarketsBasedOnPlayer[0]);
+
+			getAllMainMarketsBasedOnPlayer =
+				await GamesPlayerPropsDeployed.getAllMainMarketsBasedOnPlayer(
+					['0x6536306366613738303834366166363839373862343935373965356366333936'],
+					['Atlanta Hawks2']
+				);
+			assert.bnEqual(ZERO_ADDRESS, getAllMainMarketsBasedOnPlayer[0]);
 		});
 
 		it('Create game and create player props for game, change line, create new market', async () => {

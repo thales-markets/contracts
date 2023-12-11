@@ -455,6 +455,15 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    function _getValidMainMarket(address mainMarket) internal view returns (address toReturn) {
+        if (mainMarket != address(0)) {
+            (uint maturity, ) = ISportPositionalMarket(mainMarket).times();
+            if (maturity >= block.timestamp && !ISportPositionalMarket(mainMarket).resolved()) {
+                toReturn = mainMarket;
+            }
+        }
+    }
+
     /* ========== VIEW FUNCTIONS ========== */
 
     /// @notice view function which returns props data for given child market
@@ -593,12 +602,14 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         returns (address[] memory _mainMarkets)
     {
         _mainMarkets = new address[](_playerIds.length);
+
         for (uint i = 0; i < _playerIds.length; i++) {
             address mainMarket = currentMainMarketForPlayer[_playerIds[i]];
-            if (mainMarket != address(0) && !ISportPositionalMarket(mainMarket).resolved()) {
-                _mainMarkets[i] = mainMarket;
-            } else {
-                _mainMarkets[i] = consumer.marketForTeamName(_teamNames[i]);
+            _mainMarkets[i] = _getValidMainMarket(mainMarket);
+
+            if (_mainMarkets[i] == address(0)) {
+                mainMarket = consumer.marketForTeamName(_teamNames[i]);
+                _mainMarkets[i] = _getValidMainMarket(mainMarket);
             }
         }
     }

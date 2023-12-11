@@ -267,7 +267,7 @@ contract('CCIP Staking', (accounts) => {
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
-			await CCIPCollectorA.setPeriodRewards(toUnit(5000000), toUnit(500000), { from: owner });
+			await CCIPCollectorA.setPeriodRewards(toUnit(5000000), toUnit(500000), 0, { from: owner });
 			let baseRewardsPerPeriod = await CCIPCollectorA.baseRewardsPerPeriod();
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
@@ -469,7 +469,7 @@ contract('CCIP Staking', (accounts) => {
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
-			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), { from: owner });
+			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), 0, { from: owner });
 			let baseRewardsPerPeriod = await CCIPCollectorA.baseRewardsPerPeriod();
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
@@ -663,7 +663,7 @@ contract('CCIP Staking', (accounts) => {
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
-			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), { from: owner });
+			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), 0, { from: owner });
 			await CCIPCollectorA.setReadOnlyMode(true, { from: owner });
 			await CCIPCollectorB.setReadOnlyMode(true, { from: owner });
 			let baseRewardsPerPeriod = await CCIPCollectorA.baseRewardsPerPeriod();
@@ -871,7 +871,7 @@ contract('CCIP Staking', (accounts) => {
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
-			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), { from: owner });
+			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), 0, { from: owner });
 			await CCIPCollectorA.setReadOnlyMode(true, { from: owner });
 			await CCIPCollectorB.setReadOnlyMode(true, { from: owner });
 			let baseRewardsPerPeriod = await CCIPCollectorA.baseRewardsPerPeriod();

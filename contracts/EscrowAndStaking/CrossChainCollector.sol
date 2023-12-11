@@ -61,6 +61,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     bool public readyToBroadcast;
     bool public readOnlyMode;
     uint public gasLimitUsed;
+    uint public weeklyRewardsDecreaseFactor;
 
     /* ========== INITIALIZERS ========== */
     function initialize(
@@ -137,6 +138,9 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             collectedResultsForPeriod = 0;
             readyToBroadcast = false;
             ++period;
+            if (weeklyRewardsDecreaseFactor > 0) {
+                _setRewardsForNextPeriod();
+            }
         }
     }
 
@@ -308,6 +312,11 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         );
     }
 
+    function _setRewardsForNextPeriod() internal {
+        baseRewardsPerPeriod = (baseRewardsPerPeriod * weeklyRewardsDecreaseFactor) / 1e18;
+        extraRewardsPerPeriod = (extraRewardsPerPeriod * weeklyRewardsDecreaseFactor) / 1e18;
+    }
+
     /* ========== CONTRACT SETTERS FUNCTIONS ========== */
 
     function setStakingThales(address _stakingThales) external onlyOwner {
@@ -321,10 +330,15 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit SetCCIPRouter(_router);
     }
 
-    function setPeriodRewards(uint _baseRewardsPerPeriod, uint _extraRewardsPerPeriod) external onlyOwner {
+    function setPeriodRewards(
+        uint _baseRewardsPerPeriod,
+        uint _extraRewardsPerPeriod,
+        uint _weeklyDecreaseFactor
+    ) external onlyOwner {
         baseRewardsPerPeriod = _baseRewardsPerPeriod;
         extraRewardsPerPeriod = _extraRewardsPerPeriod;
-        emit SetPeriodRewards(_baseRewardsPerPeriod, _extraRewardsPerPeriod);
+        weeklyRewardsDecreaseFactor = _weeklyDecreaseFactor;
+        emit SetPeriodRewards(_baseRewardsPerPeriod, _extraRewardsPerPeriod, _weeklyDecreaseFactor);
     }
 
     function setGasLimit(uint _gasLimitUsed) external onlyOwner {
@@ -403,7 +417,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     event CollectorForChainSet(uint64 chainId, address collectorAddress);
     event MasterCollectorSet(address masterCollector, uint64 materCollectorChainId);
-    event SetPeriodRewards(uint _baseRewardsPerPeriod, uint _extraRewardsPerPeriod);
+    event SetPeriodRewards(uint _baseRewardsPerPeriod, uint _extraRewardsPerPeriod, uint _weeklyDecreaseFactor);
     event SetCCIPRouter(address _router);
     event SetStakingThales(address _stakingThales);
     event SentOnClosePeriod(

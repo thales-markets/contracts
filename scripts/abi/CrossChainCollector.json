@@ -254,6 +254,12 @@
         "internalType": "uint256",
         "name": "_extraRewardsPerPeriod",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_weeklyDecreaseFactor",
+        "type": "uint256"
       }
     ],
     "name": "SetPeriodRewards",
@@ -1137,6 +1143,11 @@
         "internalType": "uint256",
         "name": "_extraRewardsPerPeriod",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_weeklyDecreaseFactor",
+        "type": "uint256"
       }
     ],
     "name": "setPeriodRewards",
@@ -1213,6 +1224,19 @@
     "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "weeklyRewardsDecreaseFactor",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

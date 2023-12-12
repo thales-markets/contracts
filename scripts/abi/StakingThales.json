@@ -445,6 +445,12 @@
         "internalType": "bool",
         "name": "mergeAccountEnabled",
         "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "readOnlyMode",
+        "type": "bool"
       }
     ],
     "name": "StakingParametersChanged",
@@ -1833,6 +1839,11 @@
       {
         "internalType": "bool",
         "name": "_mergeAccountEnabled",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_readOnlyMode",
         "type": "bool"
       }
     ],

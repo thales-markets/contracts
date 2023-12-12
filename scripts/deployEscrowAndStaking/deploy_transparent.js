@@ -204,7 +204,7 @@ async function main() {
 	});
 	delay(1000);
 
-	tx = await ProxyStaking_deployed.setStakingParameters(true, false, WEEK, WEEK, false, {
+	tx = await ProxyStaking_deployed.setStakingParameters(true, false, WEEK, WEEK, false, false, {
 		from: owner.address,
 	});
 	await tx.wait().then((e) => {

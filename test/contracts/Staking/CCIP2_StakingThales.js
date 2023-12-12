@@ -230,7 +230,9 @@ contract('StakingThales', (accounts) => {
 			{ from: owner }
 		);
 		await SNXRewardsDeployed.setIssuanceRatio('1666666666666666666'.toString());
-		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, { from: owner });
+		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, false, {
+			from: owner,
+		});
 		await StakingThalesDeployed.setStakingRewardsParameters(
 			100000,
 			100000,
@@ -466,6 +468,53 @@ contract('StakingThales', (accounts) => {
 			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
 				from: owner,
 			});
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
+			await StakingThalesDeployed.stake(stake, { from: first });
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			await StakingThalesDeployed.claimReward({ from: first });
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);
+			assert.bnEqual(answer, answer2);
+		});
+
+		it('Stake with first account and claim reward - readOnlyMode', async () => {
+			let deposit = toUnit(100000);
+			let stake = toUnit(1500);
+			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, {
+				from: owner,
+			});
+			await ThalesDeployed.transfer(first, stake, { from: owner });
+			await StakingThalesDeployed.setStakingRewardsParameters(
+				deposit,
+				100000,
+				false,
+				'15',
+				'12',
+				'3',
+				'1',
+				'10',
+				{ from: owner }
+			);
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			let answer = await StakingThalesDeployed.getContractFeeFunds();
+			assert.bnEqual(answer, 0);
+			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
+				'Staking period has not started'
+			);
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
+			await StakingThalesDeployed.setCrossChainCollector(
+				CCIPCollector.address,
+				SafeBoxBuffer.address,
+				{ from: owner }
+			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });

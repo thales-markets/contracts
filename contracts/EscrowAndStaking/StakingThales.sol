@@ -225,20 +225,22 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         bool _distributeFeesEnabled,
         uint _durationPeriod,
         uint _unstakeDurationPeriod,
-        bool _mergeAccountEnabled
+        bool _mergeAccountEnabled,
+        bool _readOnlyMode
     ) external onlyOwner {
         claimEnabled = _claimEnabled;
         distributeFeesEnabled = _distributeFeesEnabled;
         durationPeriod = _durationPeriod;
         unstakeDurationPeriod = _unstakeDurationPeriod;
         mergeAccountEnabled = _mergeAccountEnabled;
-
+        readOnlyMode = _readOnlyMode;
         emit StakingParametersChanged(
             _claimEnabled,
             _distributeFeesEnabled,
             _durationPeriod,
             _unstakeDurationPeriod,
-            _mergeAccountEnabled
+            _mergeAccountEnabled,
+            _readOnlyMode
         );
     }
 
@@ -1059,7 +1061,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         bool distributeFeesEnabled,
         uint durationPeriod,
         uint unstakeDurationPeriod,
-        bool mergeAccountEnabled
+        bool mergeAccountEnabled,
+        bool readOnlyMode
     );
     event StakingRewardsParametersChanged(
         uint fixedPeriodReward,

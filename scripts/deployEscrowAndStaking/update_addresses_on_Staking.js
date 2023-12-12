@@ -90,7 +90,7 @@ async function main() {
 	});
 	delay(1000);
 
-	tx = await StakingThales.setStakingParameters(true, false, MINUTE, MINUTE, false, {
+	tx = await StakingThales.setStakingParameters(true, false, MINUTE, MINUTE, false, true, {
 		from: owner.address,
 	});
 	await tx.wait().then((e) => {

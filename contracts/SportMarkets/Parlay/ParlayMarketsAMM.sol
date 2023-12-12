@@ -503,7 +503,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         uint safeBoxAmount = _handleReferrerAndSB(_sUSDPaid, sUSDAfterFees);
 
-        // mint the stateful token  (ERC-20)
         // clone a parlay market
         ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
         parlayMarket.initialize(
@@ -527,7 +526,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)
         );
         // buy the positions
-        sUSD.safeTransfer(address(parlayMarket), totalAmount);
+        sUSD.safeTransfer(address(parlayMarket), sportManager.reverseTransformCollateral(totalAmount));
         _storeRisk(_sportMarkets, (totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)));
 
         emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);

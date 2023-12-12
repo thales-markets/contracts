@@ -29,6 +29,10 @@ contract('StakingThales', (accounts) => {
 		ProxyStakingDeployed,
 		ThalesStakingRewardsPoolDeployed;
 	let ThalesStakingRewardsPool;
+	let SafeBoxBuffer;
+	let CCIPCollector;
+	let CCIPRouter;
+	let StakingThalesBonusRewardsManager;
 
 	let initializeStalkingData, initializeEscrowData;
 
@@ -228,6 +232,22 @@ contract('StakingThales', (accounts) => {
 		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, {
 			from: owner,
 		});
+		let StakingThalesBonusRewardsManagerContract = artifacts.require(
+			'StakingThalesBonusRewardsManager'
+		);
+		StakingThalesBonusRewardsManager = await StakingThalesBonusRewardsManagerContract.new();
+		await StakingThalesBonusRewardsManager.initialize(owner, StakingThalesDeployed.address);
+		let CCIPRouterContract = artifacts.require('MockCCIPRouter');
+		CCIPRouter = await CCIPRouterContract.new();
+		let CCIPCollectorContract = artifacts.require('CrossChainCollector');
+		CCIPCollector = await CCIPCollectorContract.new();
+		await CCIPCollector.initialize(CCIPRouter.address, true, 5, { from: owner });
+		await CCIPCollector.setStakingThales(StakingThalesDeployed.address, { from: owner });
+		let SafeBoxContract = artifacts.require('SafeBoxBuffer');
+		SafeBoxBuffer = await SafeBoxContract.new();
+		await SafeBoxBuffer.initialize(StakingThalesDeployed.address, ThalesFeeDeployed.address, {
+			from: owner,
+		});
 		await StakingThalesDeployed.setStakingRewardsParameters(
 			100000,
 			100000,
@@ -239,6 +259,11 @@ contract('StakingThales', (accounts) => {
 			'10',
 			{ from: owner }
 		);
+		await StakingThalesBonusRewardsManager.setStakingBaseDivider(100000, { from: owner });
+		await StakingThalesBonusRewardsManager.setMaxStakingMultiplier(toUnit(4), { from: owner });
+		await StakingThalesBonusRewardsManager.setMultipliers(toUnit(0.25), toUnit(0.5), toUnit(1), {
+			from: owner,
+		});
 		await StakingThalesDeployed.setAddresses(
 			SNXRewardsDeployed.address,
 			dummy,
@@ -250,8 +275,15 @@ contract('StakingThales', (accounts) => {
 			ZERO_ADDRESS,
 			ZERO_ADDRESS,
 			ZERO_ADDRESS,
-			ZERO_ADDRESS,
+			StakingThalesBonusRewardsManager.address,
 			{ from: owner }
+		);
+		await StakingThalesDeployed.setCrossChainCollector(
+			CCIPCollector.address,
+			SafeBoxBuffer.address,
+			{
+				from: owner,
+			}
 		);
 	});
 

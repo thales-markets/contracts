@@ -526,7 +526,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)
         );
         // buy the positions
-        sUSD.safeTransfer(address(parlayMarket), sportManager.reverseTransformCollateral(totalAmount));
+        sUSD.safeTransfer(address(parlayMarket), sportManager.transformCollateral(totalAmount));
         _storeRisk(_sportMarkets, (totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)));
 
         emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);

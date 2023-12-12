@@ -385,7 +385,7 @@
 		"SportAMMLiquidityPoolData": "0x25E9513a00d53e8a0CB2005A48fB0031F6141325",
 		"SportAMMLiquidityPoolDataImplementation": "0xa234095bC421B97c1FE104331edc5299A60485C9",
 		"DefaultLiquidityProviderImplementation": "0x10F996DC21b69747a6D85e2847f39CDBFdbAe3eA",
-		"ParlayAMMImplementation": "0x5bcbE95244D542E8232e45E6dC5E66483Bc16998",
+		"ParlayAMMImplementation": "0x1D623F4C4Db359F85bac1E211b791267721e0c4a",
 		"ParlayMarketMastercopy": "0x819FE7F9952E2a604234B3Ec8610ACDf6480f75D",
 		"ParlayVerifier": "0xeFB62E3a6b708f076babcf9FdddF4Da72f00D676",
 		"ParlayMarketData": "0x6286E16e22B14c840e71852c81f50E5e3001753a",

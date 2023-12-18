@@ -109,7 +109,11 @@ interface IGamesOddsObtainer {
         int24 _drawOdds
     ) external;
 
-    function setFirstNormalizedOdds(bytes32 _gameId, address _market) external;
+    function setFirstNormalizedOdds(
+        bytes32 _gameId,
+        address _market,
+        bool _isTwoPositional
+    ) external;
 
     function setBackupOddsAsMainOddsForGame(bytes32 _gameId) external;
 

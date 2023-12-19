@@ -614,7 +614,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function updateStakingRewards(
-        uint _currentPeriodRewards,
+        uint _currentPeriodRewards, 
         uint _extraRewards,
         uint _revShare
     ) external nonReentrant {
@@ -639,7 +639,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                     feeToken.transfer(safeBoxBuffer, currentBalance - currentPeriodFees);
                 }
             }
-
             currentPeriodRewards = _currentPeriodRewards;
             _totalUnclaimedRewards = _totalUnclaimedRewards.add(_currentPeriodRewards.add(_extraRewards));
             closingPeriodInProgress = false;

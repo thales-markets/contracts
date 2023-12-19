@@ -551,6 +551,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "currentMainMarketForPlayer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -599,6 +618,30 @@
       {
         "internalType": "address[]",
         "name": "_children",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "_playerIds",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_teamNames",
+        "type": "string[]"
+      }
+    ],
+    "name": "getAllMainMarketsBasedOnPlayer",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "_mainMarkets",
         "type": "address[]"
       }
     ],

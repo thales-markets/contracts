@@ -106,6 +106,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     IGamesPlayerProps public playerProps;
     mapping(uint => bool) public ignoreChildCancellationPerSportIfDraw;
     uint public maxNumberOfMarketsToCreate;
+    mapping(string => address) public marketForTeamName;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -255,7 +256,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             IGamesOddsObtainer.GameOdds memory game = abi.decode(_games[i], (IGamesOddsObtainer.GameOdds));
             // game needs to be fulfilled and market needed to be created
             if (gameFulfilledCreated[game.gameId] && marketPerGameId[game.gameId] != address(0)) {
-                oddsObtainer.obtainOdds(_requestId, game, sportsIdPerGame[game.gameId]);
+                oddsObtainer.obtainOdds(
+                    _requestId,
+                    game,
+                    sportsIdPerGame[game.gameId],
+                    marketPerGameId[game.gameId],
+                    twoPositionSport[sportsIdPerGame[game.gameId]],
+                    false
+                );
             }
         }
     }
@@ -516,6 +524,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             marketCreated[address(market)] = true;
 
             oddsObtainer.setFirstNormalizedOdds(game.gameId, address(market));
+            marketForTeamName[game.homeTeam] = address(market);
+            marketForTeamName[game.awayTeam] = address(market);
 
             if (_removeFromQueue) {
                 queues.dequeueGamesCreated();
@@ -590,7 +600,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) internal {
         if (_useBackupOdds) {
             require(_outcome == CANCELLED, "ID17");
-            require(oddsObtainer.areOddsValid(gameIdPerMarket[_market], _useBackupOdds));
+            require(
+                oddsObtainer.areOddsValid(
+                    gameIdPerMarket[_market],
+                    _useBackupOdds,
+                    twoPositionSport[sportsIdPerGame[gameIdPerMarket[_market]]]
+                )
+            );
             oddsObtainer.setBackupOddsAsMainOddsForGame(gameIdPerMarket[_market]);
         }
 

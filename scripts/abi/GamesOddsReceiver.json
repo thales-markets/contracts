@@ -259,6 +259,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_mainMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "pauseMarketsBasedOnPlayersReport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "paused",
     "outputs": [

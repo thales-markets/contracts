@@ -15,6 +15,7 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/ITherundownConsumerVerifier.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/IGamesPlayerProps.sol";
+import "../../interfaces/ISportPositionalMarket.sol";
 
 /// @title Contract, which works on player props
 /// @author gruja
@@ -70,6 +71,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => mapping(bytes32 => mapping(uint8 => IGamesPlayerProps.PlayerPropsResolver)))
         public resolvedPlayerProps;
     mapping(address => bool) public childMarketResolved;
+    mapping(bytes32 => address) public currentMainMarketForPlayer;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -369,6 +371,7 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         consumer.setGameIdPerChildMarket(_gameId, _child);
         gameIdPerChildMarket[_child] = _gameId;
         playerIdPerChildMarket[_child] = _playerId;
+        currentMainMarketForPlayer[_playerId] = _main;
         optionIdPerChildMarket[_child] = _option;
         childMarketCreated[_child] = true;
         childMarketMainMarket[_child] = _main;
@@ -449,6 +452,15 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         for (uint j = 0; j < num; j++) {
             address child = mainMarketChildMarketPerPlayerAndOptionIndex[_parent][_player][_option][j];
             _children[j] = child;
+        }
+    }
+
+    function _getValidMainMarket(address mainMarket) internal view returns (address toReturn) {
+        if (mainMarket != address(0)) {
+            (uint maturity, ) = ISportPositionalMarket(mainMarket).times();
+            if (maturity >= block.timestamp && !ISportPositionalMarket(mainMarket).resolved()) {
+                toReturn = mainMarket;
+            }
         }
     }
 
@@ -580,6 +592,24 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
                 address child = mainMarketChildMarketIndex[_parents[i]][j];
                 _children[index] = child;
                 index++;
+            }
+        }
+    }
+
+    function getAllMainMarketsBasedOnPlayer(bytes32[] memory _playerIds, string[] memory _teamNames)
+        external
+        view
+        returns (address[] memory _mainMarkets)
+    {
+        _mainMarkets = new address[](_playerIds.length);
+
+        for (uint i = 0; i < _playerIds.length; i++) {
+            address mainMarket = currentMainMarketForPlayer[_playerIds[i]];
+            _mainMarkets[i] = _getValidMainMarket(mainMarket);
+
+            if (_mainMarkets[i] == address(0)) {
+                mainMarket = consumer.marketForTeamName(_teamNames[i]);
+                _mainMarkets[i] = _getValidMainMarket(mainMarket);
             }
         }
     }

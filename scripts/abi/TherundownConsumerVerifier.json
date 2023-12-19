@@ -728,6 +728,11 @@
         "internalType": "uint40[]",
         "name": "_lastUpdated",
         "type": "uint40[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_playersReportTimestamp",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",

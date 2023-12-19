@@ -58,7 +58,35 @@ contract GamesOddsReceiver is Initializable, ProxyOwned, ProxyPausable {
             );
             // game needs to be fulfilled and market needed to be created
             if (consumer.gameFulfilledCreated(_gameIds[i]) && consumer.marketPerGameId(_gameIds[i]) != address(0)) {
-                obtainer.obtainOdds(_gameIds[i], game, consumer.sportsIdPerGame(_gameIds[i]));
+                uint sportId = consumer.sportsIdPerGame(_gameIds[i]);
+                obtainer.obtainOdds(
+                    _gameIds[i],
+                    game,
+                    sportId,
+                    consumer.marketPerGameId(_gameIds[i]),
+                    consumer.isSportTwoPositionsSport(sportId),
+                    false
+                );
+            }
+        }
+    }
+
+    function pauseMarketsBasedOnPlayersReport(address[] memory _mainMarkets) external isAddressWhitelisted {
+        for (uint i = 0; i < _mainMarkets.length; i++) {
+            bytes32 _id = consumer.gameIdPerMarket(_mainMarkets[i]);
+            IGamesOddsObtainer.GameOdds memory game = _castToGameOdds(
+                0,
+                _id,
+                new int24[](3),
+                new int16[](2),
+                new int24[](2),
+                new uint24[](2),
+                new int24[](2)
+            );
+            // game needs to be fulfilled and market needed to be created
+            if (consumer.gameFulfilledCreated(_id) && _mainMarkets[i] != address(0)) {
+                uint sportId = consumer.sportsIdPerGame(_id);
+                obtainer.obtainOdds(_id, game, sportId, _mainMarkets[i], consumer.isSportTwoPositionsSport(sportId), true);
             }
         }
     }

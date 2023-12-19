@@ -94,11 +94,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_sUSD",
+        "name": "_stakingThales",
         "type": "address"
       }
     ],
-    "name": "SetSUSD",
+    "name": "SetAddressManager",
     "type": "event"
   },
   {
@@ -107,11 +107,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_stakingThales",
+        "name": "_sUSD",
         "type": "address"
       }
     ],
-    "name": "SetStakingThales",
+    "name": "SetSUSD",
     "type": "event"
   },
   {
@@ -119,6 +119,19 @@
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "addressManager",
+    "outputs": [
+      {
+        "internalType": "contract IAddressManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -132,7 +145,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_stakingThales",
+        "name": "_addressManager",
         "type": "address"
       },
       {
@@ -241,6 +254,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_addressManager",
+        "type": "address"
+      }
+    ],
+    "name": "setAddressManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_owner",
         "type": "address"
       }
@@ -274,32 +300,6 @@
     "name": "setSUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
-      }
-    ],
-    "name": "setStakingThales",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "stakingThales",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

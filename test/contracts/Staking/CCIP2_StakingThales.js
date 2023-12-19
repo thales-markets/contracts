@@ -633,27 +633,13 @@ contract('StakingThales', (accounts) => {
 			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
 			await expect(
-				StakingThalesDeployed.updateStakingRewards(
-					deposit,
-					100000,
-					totalStaked.toString(),
-					totalEscrowed.toString(),
-					1000,
-					{ from: owner }
-				)
+				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: owner })
 			).to.be.revertedWith('InvCCIP');
 			await sUSDSynth.transfer(StakingThalesDeployed.address, 1001, { from: initialCreator });
 			// await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1001, {
 			// 	from: owner,
 			// });
-			await StakingThalesDeployed.updateStakingRewards(
-				deposit,
-				100000,
-				totalStaked.toString(),
-				totalEscrowed.toString(),
-				1000,
-				{ from: second }
-			);
+			await StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: second });
 			assert.equal(await StakingThalesDeployed.paused(), false);
 			await StakingThalesDeployed.claimReward({ from: first });
 		});
@@ -714,28 +700,14 @@ contract('StakingThales', (accounts) => {
 			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
 			await expect(
-				StakingThalesDeployed.updateStakingRewards(
-					deposit,
-					100000,
-					totalStaked.toString(),
-					totalEscrowed.toString(),
-					1000,
-					{ from: owner }
-				)
+				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: owner })
 			).to.be.revertedWith('InvCCIP');
 			await StakingThalesDeployed.setCrossChainCollector(second, ZERO_ADDRESS, {
 				from: owner,
 			});
 			totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
-			await StakingThalesDeployed.updateStakingRewards(
-				deposit,
-				100000,
-				totalStaked.toString(),
-				totalEscrowed.toString(),
-				1000,
-				{ from: second }
-			);
+			await StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: second });
 			let paused = await StakingThalesDeployed.paused();
 			assert.equal(paused, true);
 			await sUSDSynth.transfer(StakingThalesDeployed.address, 1001, { from: initialCreator });
@@ -747,14 +719,7 @@ contract('StakingThales', (accounts) => {
 				from: owner,
 			});
 			await expect(
-				StakingThalesDeployed.updateStakingRewards(
-					deposit,
-					100000,
-					totalStaked.toString(),
-					totalEscrowed.toString(),
-					1000,
-					{ from: second }
-				)
+				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: second })
 			).to.be.revertedWith('NotInClosePeriod');
 			assert.equal(await StakingThalesDeployed.paused(), true);
 			await StakingThalesDeployed.setPaused(false, { from: owner });
@@ -817,14 +782,7 @@ contract('StakingThales', (accounts) => {
 			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
 			await expect(
-				StakingThalesDeployed.updateStakingRewards(
-					deposit,
-					100000,
-					totalStaked.toString(),
-					totalEscrowed.toString(),
-					1000,
-					{ from: owner }
-				)
+				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: owner })
 			).to.be.revertedWith('InvCCIP');
 			await StakingThalesDeployed.setCrossChainCollector(second, ZERO_ADDRESS, {
 				from: owner,
@@ -835,14 +793,7 @@ contract('StakingThales', (accounts) => {
 			assert.equal(paused, false);
 			totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
-			await StakingThalesDeployed.updateStakingRewards(
-				deposit,
-				100000,
-				totalStaked.toString(),
-				totalEscrowed.toString(),
-				1000,
-				{ from: second }
-			);
+			await StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: second });
 			paused = await StakingThalesDeployed.paused();
 			assert.equal(paused, true);
 			await sUSDSynth.transfer(StakingThalesDeployed.address, 1001, { from: initialCreator });
@@ -854,14 +805,7 @@ contract('StakingThales', (accounts) => {
 				from: owner,
 			});
 			await expect(
-				StakingThalesDeployed.updateStakingRewards(
-					deposit,
-					100000,
-					totalStaked.toString(),
-					totalEscrowed.toString(),
-					1000,
-					{ from: second }
-				)
+				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: second })
 			).to.be.revertedWith('NotInClosePeriod');
 		});
 
@@ -922,14 +866,7 @@ contract('StakingThales', (accounts) => {
 			assert.equal(paused, true);
 			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
-			await StakingThalesDeployed.updateStakingRewards(
-				deposit,
-				100000,
-				totalStaked.toString(),
-				totalEscrowed.toString(),
-				1000,
-				{ from: second }
-			);
+			await StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: second });
 			await StakingThalesDeployed.claimReward({ from: first });
 		});
 

@@ -428,13 +428,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         }
     }
 
-    /// @notice Get the percentage of SNX rewards for the account
-    /// @param account to get the percentage of SNX rewards for
-    /// @return the percentage of SNX rewards for the account
-    function getSNXBonusPercentage(address account) public view returns (uint) {
-        return 0;
-    }
-
     /// @notice Get the SNX staking bonus rewards for the account
     /// @param account to get the SNX staking bonus rewards for
     /// @return the SNX staking bonus rewards for the account
@@ -468,8 +461,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function getTotalBonusPercentage(address account) public view returns (uint) {
-        // uint snxPercentage = getSNXBonusPercentage(account);
-        // uint ammPercentage = getAMMBonusPercentage(account);
         return getAMMBonusPercentage(account);
     }
 
@@ -556,7 +547,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function updateStakingRewards(
-        uint _currentPeriodRewards, 
+        uint _currentPeriodRewards,
         uint _extraRewards,
         uint _revShare
     ) external nonReentrant {
@@ -863,13 +854,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             _totalRewardsClaimed = _totalRewardsClaimed.add(availableRewardsToClaim);
             _totalUnclaimedRewards = _totalUnclaimedRewards.sub(availableRewardsToClaim);
 
-            emit RewardsClaimed(
-                account,
-                availableRewardsToClaim,
-                getBaseReward(account),
-                getSNXBonus(account),
-                getAMMBonus(account)
-            );
+            emit RewardsClaimed(account, availableRewardsToClaim, getBaseReward(account), 0, getAMMBonus(account));
         }
         // Update last claiming period
         _lastRewardsClaimedPeriod[account] = periodsOfStaking;

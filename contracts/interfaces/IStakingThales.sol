@@ -8,8 +8,6 @@ interface IStakingThales {
     function updateStakingRewards(
         uint _currentPeriodRewards,
         uint _extraRewards,
-        uint _crossChainStakedAmount,
-        uint _crossChainEscrowedAmount,
         uint _revShare
     ) external;
 

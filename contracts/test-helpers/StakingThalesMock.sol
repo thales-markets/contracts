@@ -80,28 +80,18 @@ contract StakingThalesMock {
     function updateStakingRewards(
         uint _baseRewards,
         uint _extraRewards,
-        uint _stakedAmount,
-        uint _escrowedAmount,
         uint _revenueShare
     ) external {
         fixedRewards = _baseRewards;
         extraRewards = _extraRewards;
-        stakedAmount = _stakedAmount;
-        escrowedAmount = _escrowedAmount;
         revenueShare = _revenueShare;
-        emit RewardsUpdated(_baseRewards, _extraRewards, _stakedAmount, _escrowedAmount, _revenueShare);
+        emit RewardsUpdated(_baseRewards, _extraRewards, _revenueShare);
     }
 
     function setCCIPCollector(address _ccipCollector) external {
         ccipCollector = _ccipCollector;
     }
 
-    event RewardsUpdated(
-        uint _baseRewards,
-        uint _extraRewards,
-        uint _stakedAmount,
-        uint _escrowedAmount,
-        uint _revenueShare
-    );
+    event RewardsUpdated(uint _baseRewards, uint _extraRewards, uint _revenueShare);
     event RoundClosed(uint stakedAmount, uint escrowedAmount, uint stakingPoints, uint revenueShare);
 }

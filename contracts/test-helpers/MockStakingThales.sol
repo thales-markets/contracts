@@ -45,23 +45,13 @@ contract MockStakingThales {
     function updateStakingRewards(
         uint _baseRewards,
         uint _extraRewards,
-        uint _stakedAmount,
-        uint _escrowedAmount,
         uint _revShare
     ) external {
         baseRewards = _baseRewards;
         extraRewards = _extraRewards;
-        totalStaked = _stakedAmount;
-        totalEscrowed = _escrowedAmount;
         revenueShare = _revShare;
-        emit UpdatedStakingRewards(_baseRewards, _extraRewards, _stakedAmount, _escrowedAmount, _revShare);
+        emit UpdatedStakingRewards(_baseRewards, _extraRewards, _revShare);
     }
 
-    event UpdatedStakingRewards(
-        uint baseRewards,
-        uint extraRewards,
-        uint stakedAmount,
-        uint escrowedAmount,
-        uint revenueShare
-    );
+    event UpdatedStakingRewards(uint baseRewards, uint extraRewards, uint revenueShare);
 }

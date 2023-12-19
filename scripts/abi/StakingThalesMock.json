@@ -22,18 +22,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_stakedAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_escrowedAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "_revenueShare",
         "type": "uint256"
       }
@@ -303,16 +291,6 @@
       {
         "internalType": "uint256",
         "name": "_extraRewards",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_stakedAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_escrowedAmount",
         "type": "uint256"
       },
       {

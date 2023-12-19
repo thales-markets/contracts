@@ -192,16 +192,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_crossChainStakedAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_crossChainEscrowedAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_revShare",
         "type": "uint256"
       }

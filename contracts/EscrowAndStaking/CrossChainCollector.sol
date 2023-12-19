@@ -239,21 +239,9 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             chainExtraRewardsInPeriod[period][chainSelector[i]] = chainExtraRewards;
             chainRevenueShareInPeriod[period][chainSelector[i]] = revShare;
 
-            message = abi.encode(
-                chainBaseRewards,
-                chainExtraRewards,
-                calculatedStakedAmountForPeriod[period],
-                calculatedEscrowedAmountForPeriod[period],
-                revShare
-            );
+            message = abi.encode(chainBaseRewards, chainExtraRewards, revShare);
             if (i == 0) {
-                _updateRewards(
-                    chainBaseRewards,
-                    chainExtraRewards,
-                    calculatedStakedAmountForPeriod[period],
-                    calculatedEscrowedAmountForPeriod[period],
-                    revShare
-                );
+                _updateRewards(chainBaseRewards, chainExtraRewards, revShare);
             } else {
                 _sendMessageToChain(chainSelector[i], message);
             }
@@ -289,27 +277,16 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     }
 
     function _updateRewardsOnStakingContract(bytes memory data) internal {
-        (uint baseRewards, uint extraRewards, uint stakedAmount, uint escrowedAmount, uint revShare) = abi.decode(
-            data,
-            (uint, uint, uint, uint, uint)
-        );
-        _updateRewards(baseRewards, extraRewards, stakedAmount, escrowedAmount, revShare);
+        (uint baseRewards, uint extraRewards, uint revShare) = abi.decode(data, (uint, uint, uint));
+        _updateRewards(baseRewards, extraRewards, revShare);
     }
 
     function _updateRewards(
         uint _baseRewards,
         uint _extraRewards,
-        uint _stakedAmount,
-        uint _escrowedAmount,
         uint _revShare
     ) internal {
-        IStakingThales(stakingThales).updateStakingRewards(
-            _baseRewards,
-            _extraRewards,
-            _stakedAmount,
-            _escrowedAmount,
-            _revShare
-        );
+        IStakingThales(stakingThales).updateStakingRewards(_baseRewards, _extraRewards, _revShare);
     }
 
     function _setRewardsForNextPeriod() internal {

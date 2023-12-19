@@ -367,22 +367,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit SupportedAMMVaultSet(_ammVault, value);
     }
 
-    /// @notice Get the address of the SNX rewards contract
-    /// @return the address of the SNX rewards contract
-    // function getSNXRewardsAddress() public view returns (address) {
-    //     if (address(addressResolver) == address(0)) {
-    //         return address(0);
-    //     } else {
-    //         return addressResolver.getAddress("Issuer");
-    //     }
-    // }
-
     /// @notice Get the amount of SNX staked for the account
     /// @param account to get the amount of SNX staked for
     /// @return the amount of SNX staked for the account
     function getSNXStaked(address account) external view returns (uint) {
         return 0;
-        // return _getSNXStakedForAccount(account);
     }
 
     /// @notice Get the base reward amount available for the claim for the account
@@ -444,16 +433,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @return the percentage of SNX rewards for the account
     function getSNXBonusPercentage(address account) public view returns (uint) {
         return 0;
-        // uint baseReward = getBaseReward(account);
-        // if (baseReward == 0) {
-        //     return 0;
-        // }
-        // uint stakedSNX = _getSNXStakedForAccount(account);
-        // // SNX staked more than base reward
-        // return
-        //     stakedSNX >= baseReward.mul(SNXVolumeRewardsMultiplier)
-        //         ? maxSNXRewardsPercentage.mul(ONE_PERCENT)
-        //         : stakedSNX.mul(maxSNXRewardsPercentage).mul(ONE_PERCENT).div(baseReward.mul(SNXVolumeRewardsMultiplier));
     }
 
     /// @notice Get the SNX staking bonus rewards for the account
@@ -461,10 +440,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @return the SNX staking bonus rewards for the account
     function getSNXBonus(address account) public view returns (uint) {
         return 0;
-        // uint baseReward = getBaseReward(account);
-        // uint SNXBonusPercentage = getSNXBonusPercentage(account);
-
-        // return baseReward.mul(SNXBonusPercentage).div(ONE);
     }
 
     /// @notice Get the percentage of protocol volume rewards for the account
@@ -523,39 +498,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function canClosePeriod() external view returns (bool) {
         return (startTimeStamp > 0 && (block.timestamp >= lastPeriodTimeStamp.add(durationPeriod)));
     }
-
-    /// @notice Get the current SNX target ratio
-    /// @return the current SNX target ratio
-    // function getSNXTargetRatio() public view returns (uint) {
-    //     uint hund = 100 * 100 * 1e18;
-    //     return hund.div(ISNXRewards(getSNXRewardsAddress()).issuanceRatio());
-    // }
-
-    /// @notice Get the current SNX C-Ratio for the account
-    /// @param account to get the current SNX C-Ratio for
-    /// @return the current SNX C-Ratio for the account
-    // function getCRatio(address account) public view returns (uint) {
-    //     uint debt = ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
-    //     if (debt == 0) {
-    //         return 0;
-    //     }
-    //     uint hund = 100 * 100 * 1e18;
-    //     (uint cRatio, ) = ISNXRewards(getSNXRewardsAddress()).collateralisationRatioAndAnyRatesInvalid(account);
-    //     return hund.div(cRatio);
-    // }
-
-    /// @notice Get the current SNX rate
-    /// @return the current SNX rate
-    // function getSNXRateForCurrency() public view returns (uint) {
-    //     return priceFeed.rateForCurrency("SNX");
-    // }
-
-    /// @notice Get the current SNX debt for the account
-    /// @param account to get the current SNX debt for
-    /// @return the current SNX debt for the account
-    // function getSNXDebt(address account) public view returns (uint) {
-    //     return ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
-    // }
 
     /* ========== PUBLIC ========== */
 
@@ -991,20 +933,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 .div(totalStakedLastPeriodEnd.add(totalEscrowedLastPeriodEnd));
     }
 
-    // function _getSNXStakedForAccount(address account) internal view returns (uint snxStaked) {
-    //     if (address(addressResolver) != address(0)) {
-    //         uint cRatio = getCRatio(account);
-    //         uint targetRatio = getSNXTargetRatio();
-    //         uint snxPrice = priceFeed.rateForCurrency("SNX");
-    //         uint debt = ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
-    //         if (cRatio < targetRatio) {
-    //             snxStaked = (cRatio.mul(cRatio).mul(debt).mul(1e14)).div(targetRatio.mul(snxPrice));
-    //         } else {
-    //             snxStaked = (targetRatio.mul(debt).mul(1e14)).div(snxPrice);
-    //         }
-    //     }
-    // }
-
     function _getTotalAMMVolume(address account) internal view returns (uint totalAMMforAccount) {
         if (!(periodsOfStaking >= lastAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
             for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
@@ -1020,7 +948,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         } else {
             return _amount;
         }
-        // return IPositionalMarketManager(IThalesAMM(sportsAMM).manager()).transformCollateral(_amount);
     }
 
     function _reverseTransformCollateral(uint _amount) internal view returns (uint) {
@@ -1029,7 +956,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         } else {
             return _amount;
         }
-        // return IPositionalMarketManager(IThalesAMM(sportsAMM).manager()).reverseTransformCollateral(_amount);
     }
 
     /* ========== EVENTS ========== */

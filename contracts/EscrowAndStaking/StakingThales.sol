@@ -498,7 +498,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         startTimeStamp = block.timestamp;
         periodsOfStaking = 0;
         lastPeriodTimeStamp = startTimeStamp;
-        _totalUnclaimedRewards = 0;
         _totalRewardsClaimed = 0;
         _totalRewardFeesClaimed = 0;
         _totalStakedAmount = 0;
@@ -524,7 +523,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         );
 
         currentPeriodRewards = fixedPeriodReward;
-        _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
         currentPeriodFees = feeToken.balanceOf(address(this));
         totalStakedLastPeriodEnd = _totalStakedAmount;
         totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
@@ -573,7 +571,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 }
             }
             currentPeriodRewards = _currentPeriodRewards;
-            _totalUnclaimedRewards = _totalUnclaimedRewards.add(_currentPeriodRewards.add(_extraRewards));
             closingPeriodInProgress = false;
             if (closingPeriodPauseTime == lastPauseTime) {
                 paused = invalidSBBuffer || insufficientFundsInBuffer;
@@ -852,7 +849,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             // Record the total claimed rewards
             stakerLifetimeRewardsClaimed[account] = stakerLifetimeRewardsClaimed[account].add(availableRewardsToClaim);
             _totalRewardsClaimed = _totalRewardsClaimed.add(availableRewardsToClaim);
-            _totalUnclaimedRewards = _totalUnclaimedRewards.sub(availableRewardsToClaim);
 
             emit RewardsClaimed(account, availableRewardsToClaim, getBaseReward(account), 0, getAMMBonus(account));
         }

@@ -324,12 +324,12 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     /// @notice buy positions of the defined type of a given market from the AMM with USDC, USDT or DAI
-    /// @param market a Positional Market known to Market Manager
-    /// @param position UP or DOWN
-    /// @param amount how many positions
-    /// @param expectedPayout how much does the buyer expect to pay (retrieved via quote)
-    /// @param collateral USDC, USDT or DAI
-    /// @param additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the buyer expect to pay (retrieved via quote)
+    /// @param _collateral USDC, USDT or DAI
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
     /// @param _referrer who referred the buyer to Thales
     function buyFromAMMWithDifferentCollateralAndReferrer(
         address _market,
@@ -353,12 +353,12 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     /// @notice buy positions of the defined type of a given market from the AMM with USDC, USDT or DAI
-    /// @param market a Positional Market known to Market Manager
-    /// @param position UP or DOWN
-    /// @param amount how many positions
-    /// @param expectedPayout how much does the buyer expect to pay (retrieved via quote)
-    /// @param collateral USDC, USDT or DAI
-    /// @param additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the buyer expect to pay (retrieved via quote)
+    /// @param _collateral USDC, USDT or DAI
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
     /// @param _referrer who referred the buyer to Thales
     function buyFromAMMWithEth(
         address _market,
@@ -382,14 +382,14 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     /// @notice buy positions of the defined type of a given market from the AMM with USDC, USDT or DAI
-    /// @param market a Positional Market known to Market Manager
-    /// @param position UP or DOWN
-    /// @param amount how many positions
-    /// @param expectedPayout how much does the buyer expect to pay (retrieved via quote)
-    /// @param collateral USDC, USDT or DAI
-    /// @param additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the buyer expect to pay (retrieved via quote)
+    /// @param _collateral USDC, USDT or DAI
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
     /// @param _referrer who referred the buyer to Thales
-    /// @param isEth who referred the buyer to Thales
+    /// @param _isEth who referred the buyer to Thales
     function _buyFromAMMWithDifferentCollateralAndReferrer(
         address _market,
         IThalesAMM.Position _position,
@@ -406,22 +406,22 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         }
 
         (uint collateralQuote, uint susdQuote) = buyFromAmmQuoteWithDifferentCollateral(
-            market,
-            position,
-            amount,
-            collateral
+            _market,
+            _position,
+            _amount,
+            _collateral
         );
 
         uint exactReceived;
 
-        if (isEth) {
-            require(collateral == multiCollateralOnOffRamp.WETH9(), "Wrong collateral sent");
+        if (_isEth) {
+            require(_collateral == multiCollateralOnOffRamp.WETH9(), "Wrong collateral sent");
             require(msg.value >= collateralQuote, "not enough ETH sent");
             exactReceived = multiCollateralOnOffRamp.onrampWithEth{value: msg.value}(msg.value);
         } else {
-            IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
-            IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralQuote);
-            exactReceived = multiCollateralOnOffRamp.onramp(collateral, collateralQuote);
+            IERC20Upgradeable(_collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
+            IERC20Upgradeable(_collateral).approve(address(multiCollateralOnOffRamp), collateralQuote);
+            exactReceived = multiCollateralOnOffRamp.onramp(_collateral, collateralQuote);
         }
 
         require(exactReceived >= susdQuote, "Not enough sUSD received");
@@ -431,7 +431,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             sUSD.safeTransfer(safeBox, exactReceived - susdQuote);
         }
 
-        return _buyFromAMM(market, position, amount, susdQuote, additionalSlippage, false, susdQuote);
+        return _buyFromAMM(_market, _position, _amount, susdQuote, _additionalSlippage, false, susdQuote);
     }
 
     /// @notice buy positions of the defined type of a given market from the AMM
@@ -451,40 +451,85 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     /// @notice sell positions of the defined type of a given market to the AMM
-    /// @param market a Positional Market known to Market Manager
-    /// @param position UP or DOWN
-    /// @param amount how many positions
-    /// @param expectedPayout how much does the seller to receive(retrieved via quote)
-    /// @param additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the seller to receive(retrieved via quote)
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
     function sellToAMM(
-        address market,
-        IThalesAMM.Position position,
-        uint amount,
-        uint expectedPayout,
-        uint additionalSlippage
+        address _market,
+        IThalesAMM.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage
     ) public nonReentrant notPaused returns (uint) {
-        require(isMarketInAMMTrading(market), "Market is not in Trading phase");
+        return _sellToAMM(_market, _position, _amount, _expectedPayout, _additionalSlippage);
+    }
 
-        uint basePrice = price(market, position);
+    /// @notice sell positions of the defined type of a given market to the AMM
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the seller to receive(retrieved via quote)
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
+    function sellToAMMWithDifferentCollateral(
+        address _market,
+        IThalesAMM.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage,
+        address _collateral,
+        bool _isEth
+    ) public nonReentrant notPaused returns (uint) {
+        uint pricePaid = _sellToAMM(_market, _position, _amount, _expectedPayout, _additionalSlippage);
+        sUSD.safeTransferFrom(msg.sender, address(this), pricePaid);
+
+        if (toEth) {
+            uint offramped = multiCollateralOnOffRamp.offrampIntoEth(pricePaid);
+            address payable _to = payable(msg.sender);
+            bool sent = _to.send(offramped);
+            require(sent, "Failed to send Ether");
+        } else {
+            uint offramped = multiCollateralOnOffRamp.offramp(_collateral, pricePaid);
+            IERC20Upgradeable(_collateral).safeTransfer(msg.sender, offramped);
+        }
+    }
+
+    /// @notice sell positions of the defined type of a given market to the AMM
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the seller to receive(retrieved via quote)
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
+    function _sellToAMM(
+        address _market,
+        IThalesAMM.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage
+    ) internal returns (uint) {
+        require(isMarketInAMMTrading(_market), "Market is not in Trading phase");
+
+        uint basePrice = price(_market, _position);
         basePrice = basePrice > maxSupportedPrice ? maxSupportedPrice : basePrice;
-        uint availableToSellToAMMATM = _availableToSellToAMM(market, position, basePrice);
-        require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
+        uint availableToSellToAMMATM = _availableToSellToAMM(_market, _position, basePrice);
+        require(availableToSellToAMMATM > 0 && _amount <= availableToSellToAMMATM, "Not enough liquidity.");
 
-        uint pricePaid = _sellToAmmQuote(market, position, amount, basePrice, availableToSellToAMMATM);
-        require((expectedPayout * ONE) / (pricePaid) <= (ONE + (additionalSlippage)), "Slippage too high");
+        uint pricePaid = _sellToAmmQuote(_market, _position, _amount, basePrice, availableToSellToAMMATM);
+        require((_expectedPayout * ONE) / (pricePaid) <= (ONE + (_additionalSlippage)), "Slippage too high");
 
-        address target = _getTarget(market, position);
+        address target = _getTarget(_market, _position);
 
-        _transferPositions(market);
+        _transferPositions(_market);
 
         //transfer options first to have max burn available
-        IERC20Upgradeable(target).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20Upgradeable(target).safeTransferFrom(msg.sender, address(this), _amount);
 
         uint sUSDFromBurning = IPositionalMarketManager(manager).transformCollateral(
-            IPositionalMarket(market).getMaximumBurnable(address(this))
+            IPositionalMarket(_market).getMaximumBurnable(address(this))
         );
         if (sUSDFromBurning > 0) {
-            IPositionalMarket(market).burnOptionsMaximum();
+            IPositionalMarket(_market).burnOptionsMaximum();
         }
 
         uint safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - pricePaid;
@@ -494,20 +539,21 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         }
 
         liquidityPool.commitTrade(
-            market,
+            _market,
             IPositionalMarketManager(manager).reverseTransformCollateral(pricePaid + safeBoxShare + referrerShare)
         );
+
         sUSD.safeTransfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, pricePaid);
         }
 
-        _updateSpentOnMarketOnSell(market, pricePaid, sUSDFromBurning, msg.sender, safeBoxShare);
+        _updateSpentOnMarketOnSell(_market, pricePaid, sUSDFromBurning, msg.sender, safeBoxShare);
 
-        _sendMintedPositionsAndUSDToLiquidityPool(market);
+        _sendMintedPositionsAndUSDToLiquidityPool(_market);
 
-        emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), target);
+        emit SoldToAMM(msg.sender, _market, _position, _amount, pricePaid, address(sUSD), target);
         return pricePaid;
     }
 

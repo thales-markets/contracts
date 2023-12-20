@@ -484,7 +484,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         uint pricePaid = _sellToAMM(_market, _position, _amount, _expectedPayout, _additionalSlippage);
         sUSD.safeTransferFrom(msg.sender, address(this), pricePaid);
 
-        if (toEth) {
+        if (_isEth) {
             uint offramped = multiCollateralOnOffRamp.offrampIntoEth(pricePaid);
             address payable _to = payable(msg.sender);
             bool sent = _to.send(offramped);
@@ -555,6 +555,52 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
         emit SoldToAMM(msg.sender, _market, _position, _amount, pricePaid, address(sUSD), target);
         return pricePaid;
+    }
+
+    function exerciseWithOfframp(
+        address market,
+        address collateral,
+        bool toEth
+    ) external nonReentrant notPaused {
+        require(IPositionalMarketManager(manager).isKnownMarket(market), "unknown market");
+
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        require(address(up) != address(0), "0A");
+        require(address(down) != address(0), "0A");
+        (uint upBalance, uint downBalance) = IPositionalMarket(market).balancesOf(msg.sender);
+
+        _sendFromIfNotZero(msg.sender, address(up), address(this), upBalance);
+        _sendFromIfNotZero(msg.sender, address(down), address(this), downBalance);
+
+        uint amountBefore = sUSD.balanceOf(address(this));
+
+        IPositionalMarketManager(market).exerciseOptions();
+
+        uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
+        uint offramped;
+
+        if (amountDiff > 0) {
+            if (toEth) {
+                offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
+                bool sent = payable(msg.sender).send(offramped);
+                require(sent, "Failed to send Ether");
+            } else {
+                offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
+                IERC20Upgradeable(collateral).safeTransfer(msg.sender, offramped);
+            }
+        }
+        emit ExercisedWithOfframp(msg.sender, market, collateral, toEth, amountDiff, offramped);
+    }
+
+    function _sendFromIfNotZero(
+        address from,
+        address source,
+        address target,
+        uint balance
+    ) internal {
+        if (balance > 0) {
+            IERC20Upgradeable(source).safeTransferFrom(from, target, balance);
+        }
     }
 
     function _transferPositions(address market) internal {
@@ -1189,4 +1235,13 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     event SetMinMaxSupportedPriceCapPerMarket(uint minPrice, uint maxPrice, uint capPerMarket);
     event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
+    // check if needed.
+    event ExercisedWithOfframp(
+        address user,
+        address market,
+        address collateral,
+        bool toEth,
+        uint payout,
+        uint payoutInCollateral
+    );
 }

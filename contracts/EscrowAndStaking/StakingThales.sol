@@ -334,6 +334,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         );
     }
 
+    /// @notice Setter for CCIP Collector contract and SafeBoxBuffer contract
+    /// @param _ccipCollector address of the CCIP contract on the local chain
+    /// @param _safeBoxBuffer address of the SafeBoxBuffer contract on the local chain
     function setCrossChainCollector(address _ccipCollector, address _safeBoxBuffer) external onlyOwner {
         ccipCollector = _ccipCollector;
         safeBoxBuffer = _safeBoxBuffer;
@@ -543,12 +546,17 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit ClosedPeriod(periodsOfStaking, lastPeriodTimeStamp);
     }
 
+    /// @notice Updating the staking rewards parameters after closed period with the calculated values via CCIP
+    /// @param _currentPeriodRewards the calculated base rewards to be distributed for the current period on the particular chain
+    /// @param _extraRewards the calculated extra rewards to be distributed for the current period on the particular chain
+    /// @param _revShare the calculated revenue share to be distributed for the current period on the particular chain
     function updateStakingRewards(
         uint _currentPeriodRewards,
         uint _extraRewards,
         uint _revShare
     ) external nonReentrant {
         if (!readOnlyMode) {
+            // if it is readOnlyMode==true  discard all following the updates
             require(msg.sender == ccipCollector, "InvCCIP");
             require(closingPeriodInProgress, "NotInClosePeriod");
 

@@ -518,14 +518,13 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         lastPeriodTimeStamp = block.timestamp;
         periodsOfStaking = iEscrowThales.currentVestingPeriod();
 
-        _totalEscrowedAmount = iEscrowThales.totalEscrowedRewards().sub(
+        totalEscrowedLastPeriodEnd = iEscrowThales.totalEscrowedRewards().sub(
             iEscrowThales.totalEscrowBalanceNotIncludedInStaking()
         );
 
         currentPeriodRewards = fixedPeriodReward;
         currentPeriodFees = feeToken.balanceOf(address(this));
         totalStakedLastPeriodEnd = _totalStakedAmount;
-        totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
 
         if (ccipCollector != address(0)) {
             if (!readOnlyMode) {

@@ -21,7 +21,7 @@ import "./CCIPReceiverProxy.sol";
 contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard, CCIPReceiverProxy {
     // Custom errors to provide more descriptive revert messages.
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
-
+    uint private constant MAX_GAS = 10 * 1e6;
     IRouterClient private s_router;
     address public stakingThales;
 
@@ -319,6 +319,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     }
 
     function setGasLimit(uint _gasLimitUsed) external onlyOwner {
+        require(_gasLimitUsed <= MAX_GAS, "Exceeds MAX_GAS");
         gasLimitUsed = _gasLimitUsed;
         emit SetGasLimit(_gasLimitUsed);
     }

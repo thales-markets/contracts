@@ -282,7 +282,7 @@ contract('CCIP Staking', (accounts) => {
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
 			console.log('extraRewardsPerPeriod: ', fromUnit(extraRewardsPerPeriod));
-			let collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			let collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			let totalStakedA = await StakingMockA.stakedAmount();
@@ -347,11 +347,11 @@ contract('CCIP Staking', (accounts) => {
 			console.log('Closing round \n ----------------');
 
 			await StakingMockA.closePeriod();
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 			await StakingMockB.closePeriod();
 			console.log('CCIP B: ', CCIPCollectorB.address);
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			totalStakedA = await StakingMockA.stakedAmount();
@@ -484,7 +484,7 @@ contract('CCIP Staking', (accounts) => {
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
 			console.log('extraRewardsPerPeriod: ', fromUnit(extraRewardsPerPeriod));
-			let collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			let collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			let totalStakedA = await StakingMockA.stakedAmount();
@@ -545,11 +545,11 @@ contract('CCIP Staking', (accounts) => {
 			console.log('Closing round \n ----------------');
 
 			await StakingMockA.closePeriod();
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 			await StakingMockB.closePeriod();
 			console.log('CCIP B: ', CCIPCollectorB.address);
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			totalStakedA = await StakingMockA.stakedAmount();
@@ -680,7 +680,7 @@ contract('CCIP Staking', (accounts) => {
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
 			console.log('extraRewardsPerPeriod: ', fromUnit(extraRewardsPerPeriod));
-			let collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			let collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			let totalStakedA = await StakingMockA.stakedAmount();
@@ -745,11 +745,11 @@ contract('CCIP Staking', (accounts) => {
 			console.log('Closing round \n ----------------');
 
 			await StakingMockA.closePeriod();
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 			await StakingMockB.closePeriod();
 			console.log('CCIP B: ', CCIPCollectorB.address);
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			let lastMessageFromChainSelector = CCIPCollectorA.lastMessageFromChainSelector();
@@ -888,7 +888,7 @@ contract('CCIP Staking', (accounts) => {
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
 			console.log('extraRewardsPerPeriod: ', fromUnit(extraRewardsPerPeriod));
-			let collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			let collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			let totalStakedA = await StakingMockA.stakedAmount();
@@ -953,11 +953,11 @@ contract('CCIP Staking', (accounts) => {
 			console.log('Closing round \n ----------------');
 
 			await StakingMockA.closePeriod();
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 			await StakingMockB.closePeriod();
 			console.log('CCIP B: ', CCIPCollectorB.address);
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			let lastMessageFromChainSelector = CCIPCollectorA.lastMessageFromChainSelector();
@@ -1105,7 +1105,7 @@ contract('CCIP Staking', (accounts) => {
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
 			console.log('extraRewardsPerPeriod: ', fromUnit(extraRewardsPerPeriod));
-			let collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			let collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			let totalStakedA = await StakingMockA.stakedAmount();
@@ -1170,11 +1170,11 @@ contract('CCIP Staking', (accounts) => {
 			console.log('Closing round \n ----------------');
 
 			await StakingMockA.closePeriod();
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 			await StakingMockB.closePeriod();
 			console.log('CCIP B: ', CCIPCollectorB.address);
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			let lastMessageFromChainSelector = CCIPCollectorA.lastMessageFromChainSelector();
@@ -1321,7 +1321,7 @@ contract('CCIP Staking', (accounts) => {
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
 			console.log('extraRewardsPerPeriod: ', fromUnit(extraRewardsPerPeriod));
-			let collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			let collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			let totalStakedA = await StakingMockA.stakedAmount();
@@ -1386,11 +1386,11 @@ contract('CCIP Staking', (accounts) => {
 			console.log('Closing round \n ----------------');
 
 			await StakingMockA.closePeriod();
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 			await StakingMockB.closePeriod();
 			console.log('CCIP B: ', CCIPCollectorB.address);
-			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
+			collectedResults = await CCIPCollectorA.numOfCollectedResultsForThisPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
 			let lastMessageFromChainSelector = CCIPCollectorA.lastMessageFromChainSelector();

@@ -640,19 +640,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "collectedResultsForPeriod",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -923,6 +910,19 @@
   {
     "inputs": [],
     "name": "numOfActiveCollectors",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "numOfCollectedResultsForThisPeriod",
     "outputs": [
       {
         "internalType": "uint256",

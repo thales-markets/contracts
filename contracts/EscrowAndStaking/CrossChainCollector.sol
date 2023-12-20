@@ -55,7 +55,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     uint public period;
     uint public baseRewardsPerPeriod;
     uint public extraRewardsPerPeriod;
-    uint public collectedResultsForPeriod;
+    uint public numOfCollectedResultsForThisPeriod;
     uint public lastPeriodBeforeTesting;
 
     bool public readyToBroadcast;
@@ -116,8 +116,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 _bonusPoints,
                 _revShare
             );
-            ++collectedResultsForPeriod;
-            if (collectedResultsForPeriod == numOfActiveCollectors) {
+            ++numOfCollectedResultsForThisPeriod;
+            if (numOfCollectedResultsForThisPeriod == numOfActiveCollectors) {
                 readyToBroadcast = true;
             }
         } else {
@@ -135,7 +135,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     function broadcastMessageToAll() external onlyOwner {
         if (readyToBroadcast) {
             _broadcastMessageToAll();
-            collectedResultsForPeriod = 0;
+            numOfCollectedResultsForThisPeriod = 0;
             readyToBroadcast = false;
             ++period;
             if (weeklyRewardsDecreaseFactor > 0) {
@@ -162,8 +162,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                     if (collectorAddress[sourceChainSelector] == sender) {
                         _calculateRewards(any2EvmMessage.data, sourceChainSelector);
                     }
-                    ++collectedResultsForPeriod;
-                    if (collectedResultsForPeriod == numOfActiveCollectors) {
+                    ++numOfCollectedResultsForThisPeriod;
+                    if (numOfCollectedResultsForThisPeriod == numOfActiveCollectors) {
                         readyToBroadcast = true;
                     }
                 } else if (
@@ -171,8 +171,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 ) {
                     lastPeriodForChain[sourceChainSelector] = period;
                     _calculateRewards(any2EvmMessage.data, sourceChainSelector);
-                    ++collectedResultsForPeriod;
-                    if (collectedResultsForPeriod == numOfActiveCollectors) {
+                    ++numOfCollectedResultsForThisPeriod;
+                    if (numOfCollectedResultsForThisPeriod == numOfActiveCollectors) {
                         readyToBroadcast = true;
                     }
                 }

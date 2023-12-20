@@ -26,24 +26,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_round",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_points",
-        "type": "uint256"
-      }
-    ],
-    "name": "setTotalBonusPointsPerRound",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "user",
         "type": "address"

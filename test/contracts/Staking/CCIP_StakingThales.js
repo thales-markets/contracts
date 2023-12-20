@@ -82,6 +82,14 @@ contract('CCIP Staking', (accounts) => {
 				{ from: owner }
 			);
 			await StakingThalesBonusRewardsManagerA.setManager(staker, { from: owner });
+			await CCIPCollectorA.set;
+		});
+		it('SetGasLimit higher', async () => {
+			// set to 9 million
+			await CCIPCollectorA.setGasLimit(9000000, { from: owner });
+			await expect(CCIPCollectorA.setGasLimit(10000001, { from: owner })).to.be.revertedWith(
+				'Exceeds MAX_GAS'
+			);
 		});
 		it('deploy and test', async () => {
 			await StakingMockA.stake(toUnit(100000), {

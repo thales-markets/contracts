@@ -868,6 +868,7 @@ contract('StakingThales', (accounts) => {
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
 			await StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: second });
 			let availableRewards = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(fromUnit(availableRewards), 100000);
 			await StakingThalesDeployed.claimReward({ from: first });
 		});
 
@@ -932,6 +933,7 @@ contract('StakingThales', (accounts) => {
 				from: second,
 			});
 			let availableRewards = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(fromUnit(availableRewards), 1000000);
 			await expect(StakingThalesDeployed.claimReward({ from: first })).to.be.revertedWith(
 				'revert SafeERC20: low-level call failed'
 			);

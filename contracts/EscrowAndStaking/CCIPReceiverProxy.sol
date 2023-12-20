@@ -32,10 +32,6 @@ abstract contract CCIPReceiverProxy is IAny2EVMMessageReceiver, IERC165 {
     /// @param message Any2EVMMessage
     function _ccipReceive(Client.Any2EVMMessage memory message) internal virtual;
 
-    /////////////////////////////////////////////////////////////////////
-    // Plumbing
-    /////////////////////////////////////////////////////////////////////
-
     /// @notice Return the current router
     /// @return i_router address
     function getRouter() public view returns (address) {

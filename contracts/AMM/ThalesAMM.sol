@@ -475,6 +475,8 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     /// @param _amount how many positions
     /// @param _expectedPayout how much does the seller to receive(retrieved via quote)
     /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
+    /// @param _collateral address of collateral to offramp into and send to user
+    /// @param _isEth flag that indicated should the offramp be performed in ETH
     function sellToAMMWithDifferentCollateral(
         address _market,
         IThalesAMM.Position _position,
@@ -577,8 +579,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
         uint amountBefore = sUSD.balanceOf(address(this));
 
-        IPositionalMarketManager(market).exerciseOptions();
-
+        IPositionalMarket(market).exerciseOptions();
         uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
         uint offramped;
 

@@ -500,28 +500,75 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         quoteWithFees = _sellToAmmQuoteDetailedWithLeftAndRightQuotes(position, amount, leftQuote, rightQuote);
     }
 
+    /// @notice sell positions of the defined type of a given market to the RANGED AMM
+    /// @param _rangedMarket a Ranged Market known to Market Manager
+    /// @param _position IN or OUT
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the seller to receive(retrieved via quote)
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
     function sellToAMM(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
-        uint amount,
-        uint expectedPayout,
-        uint additionalSlippage
-    ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused {
+        RangedMarket _rangedMarket,
+        RangedMarket.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage
+    ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused returns (uint) {
+        return _sellToAMM(_rangedMarket, _position, _amount, _expectedPayout, _additionalSlippage);
+    }
+
+    /// @notice sell positions of the defined type of a given market to the RANGED AMM
+    /// @param _rangedMarket a Ranged Market known to Market Manager
+    /// @param _position IN or OUT
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the seller to receive(retrieved via quote)
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
+    /// @param _collateral address of collateral to offramp into and send to user
+    /// @param _isEth flag that indicated should the offramp be performed in ETH
+    function sellToAMMWithDifferentCollateral(
+        RangedMarket _rangedMarket,
+        RangedMarket.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage,
+        address _collateral,
+        bool _isEth
+    ) public knownRangedMarket(address(_rangedMarket)) nonReentrant notPaused returns (uint) {
+        uint pricePaid = _sellToAMM(_rangedMarket, _position, _amount, _expectedPayout, _additionalSlippage);
+        sUSD.safeTransferFrom(msg.sender, address(this), pricePaid);
+
+        if (_isEth) {
+            uint offramped = multiCollateralOnOffRamp.offrampIntoEth(pricePaid);
+            address payable _to = payable(msg.sender);
+            bool sent = _to.send(offramped);
+            require(sent, "Failed to send Ether");
+        } else {
+            uint offramped = multiCollateralOnOffRamp.offramp(_collateral, pricePaid);
+            IERC20Upgradeable(_collateral).safeTransfer(msg.sender, offramped);
+        }
+    }
+
+    function _sellToAMM(
+        RangedMarket _rangedMarket,
+        RangedMarket.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage
+    ) internal knownRangedMarket(address(rangedMarket)) nonReentrant notPaused returns (uint) {
         uint pricePaid;
 
-        _handleApprovals(rangedMarket);
+        _handleApprovals(_rangedMarket);
 
         if (position == RangedMarket.Position.Out) {
-            rangedMarket.burnOut(amount, msg.sender);
+            _rangedMarket.burnOut(_amount, msg.sender);
         } else {
-            rangedMarket.burnIn(amount, msg.sender);
+            _rangedMarket.burnIn(_amount, msg.sender);
         }
 
-        pricePaid = _handleSellToAmm(rangedMarket, position, amount);
-        require(pricePaid > 0 && (expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "ID2");
+        pricePaid = _handleSellToAmm(_rangedMarket, position, _amount);
+        require(pricePaid > 0 && (_expectedPayout * ONE) / pricePaid <= (ONE + _additionalSlippage), "ID2");
 
-        if (position == RangedMarket.Position.In) {
-            _handleSafeBoxFeeOnSell(amount, rangedMarket, pricePaid);
+        if (_position == RangedMarket.Position.In) {
+            _handleSafeBoxFeeOnSell(_amount, _rangedMarket, pricePaid);
         }
 
         sUSD.safeTransfer(msg.sender, pricePaid);
@@ -532,9 +579,10 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             stakingThales.updateVolume(msg.sender, pricePaid);
         }
 
-        (RangedPosition inp, RangedPosition outp) = rangedMarket.positions();
-        address target = position == RangedMarket.Position.Out ? address(outp) : address(inp);
-        emit SoldToAMM(msg.sender, address(rangedMarket), position, amount, pricePaid, address(sUSD), target);
+        (RangedPosition inp, RangedPosition outp) = _rangedMarket.positions();
+        address target = _position == RangedMarket.Position.Out ? address(outp) : address(inp);
+        emit SoldToAMM(msg.sender, address(_rangedMarket), _position, _amount, pricePaid, address(sUSD), target);
+        return pricePaid;
     }
 
     /// @notice resolveRangedMarketsBatch resolve all markets in the batch

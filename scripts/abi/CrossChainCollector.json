@@ -186,7 +186,7 @@
   {
     "anonymous": false,
     "inputs": [],
-    "name": "RemovedAllCollectors",
+    "name": "RemovedAllData",
     "type": "event"
   },
   {
@@ -1019,7 +1019,7 @@
   },
   {
     "inputs": [],
-    "name": "removeAllCollectors",
+    "name": "resetAllData",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1164,19 +1164,6 @@
       }
     ],
     "name": "setPeriodRewards",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "_enableReadOnly",
-        "type": "bool"
-      }
-    ],
-    "name": "setReadOnlyMode",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -25,4 +25,6 @@ interface IAddressManager {
     function speedMarketsAMM() external view returns (address);
 
     function getAddresses() external view returns (Addresses memory);
+
+    function getContractFromAddressBook(bytes32 _contractName) external view returns (address contract_);
 }

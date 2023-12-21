@@ -45,6 +45,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_contractName",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getContractFromAddressBook",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "contract_",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "multiCollateralOnOffRamp",
     "outputs": [

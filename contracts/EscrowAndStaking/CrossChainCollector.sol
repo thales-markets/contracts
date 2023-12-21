@@ -179,18 +179,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             if (masterCollector == address(this)) {
                 // if the contract is master collector, use master collector mode of processing
                 uint sourceChainSelector = any2EvmMessage.sourceChainSelector; // cache the source collector
-                if (readOnlyMode) {
-                    // if in readOnlyMode, every message is processed by default (no filtering)
-                    if (collectorAddress[sourceChainSelector] == sender) {
-                        // check if the sender is registered as a CCIP collector
-                        _calculateRewards(any2EvmMessage.data, sourceChainSelector); // perform calculation and storage of the staking rewards for this period
-                    }
-                    ++collectedResultsForPeriod; // increase the received results counter (in readOnlyMode)
-                    if (collectedResultsForPeriod == numOfActiveCollectors) {
-                        // if the received results exceeds the active collectors
-                        readyToBroadcast = true; // calculated rewards are ready for broadcasting
-                    }
-                } else if (
+                if (
                     collectorAddress[sourceChainSelector] == sender && lastPeriodForChain[sourceChainSelector] < period // check if the sender is registered and it is first incoming message in this period
                 ) {
                     lastPeriodForChain[sourceChainSelector] = period; // set last message received in this period
@@ -391,28 +380,19 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit CollectorForChainSet(_chainId, _collectorAddress);
     }
 
-    function removeAllCollectors() external onlyOwner {
+    function resetAllData() external onlyOwner {
         require(numOfActiveCollectors > 0, "AlreadyResetAllSlots");
         for (uint i = 0; i < numOfActiveCollectors; i++) {
             delete chainSelectorIndex[chainSelector[i]];
             delete collectorAddress[chainSelector[i]];
             delete chainSelector[i];
+            lastPeriodForChain[chainSelector[i]] = 0;
         }
         numOfActiveCollectors = 0;
         masterCollector = address(0);
         masterCollectorChain = 0;
-        emit RemovedAllCollectors();
-    }
-
-    function setReadOnlyMode(bool _enableReadOnly) external onlyOwner {
-        if (_enableReadOnly) {
-            lastPeriodBeforeTesting = period;
-            readOnlyMode = true;
-            period = 0;
-        } else {
-            readOnlyMode = false;
-            period = lastPeriodBeforeTesting;
-        }
+        period = 0;
+        emit RemovedAllData();
     }
 
     /* ========== EVENTS ========== */
@@ -447,5 +427,5 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         uint _revShare
     );
     event SetGasLimit(uint _gasLimitUsed);
-    event RemovedAllCollectors();
+    event RemovedAllData();
 }

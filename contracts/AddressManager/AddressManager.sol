@@ -24,6 +24,8 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
 
     address public speedMarketsAMM;
 
+    mapping(bytes32 => address) public addressBook;
+
     function initialize(
         address _owner,
         address _safeBox,
@@ -58,6 +60,11 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         return allAddresses;
     }
 
+    function getContractFromAddressBook(bytes32 _contractName) external view returns (address contract_) {
+        require(addressBook[_contractName] != address(0), "InvalidAddressForContractName");
+        contract_ = addressBook[_contractName];
+    }
+
     //////////////////setters/////////////////
 
     /// @notice set corresponding addresses
@@ -78,8 +85,18 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         emit SetAddresses(_safeBox, _referrals, _stakingThales, _multiCollateralOnOffRamp, _pyth, _speedMarketsAMM);
     }
 
+    /// @notice Set contract name and address in the address book
+    /// @param _contractName name of the contract
+    /// @param _address the address of the contract
+    function setAddressInAddressBook(bytes32 _contractName, address _address) external onlyOwner {
+        require(_address != address(0), "InvalidAddress");
+        addressBook[_contractName] = _address;
+        emit NewContractInAddressBook(_contractName, _address);
+    }
+
     //////////////////events/////////////////
 
+    event NewContractInAddressBook(bytes32 _contractName, address _address);
     event SetAddresses(
         address _safeBox,
         address _referrals,

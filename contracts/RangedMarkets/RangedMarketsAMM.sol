@@ -28,6 +28,7 @@ import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ICurveSUSD.sol";
+import "../interfaces/IMultiCollateralOnOffRamp.sol";
 
 contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -35,6 +36,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
+    uint private constant MAX_APPROVAL = type(uint256).max;
 
     IThalesAMM public thalesAmm;
 
@@ -68,14 +70,16 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     address public referrals;
     uint public referrerFee;
 
-    ICurveSUSD public curveSUSD;
+    ICurveSUSD public curveSUSD; // deprecated see MultiCollateralOnOffRamp.sol
 
-    address public usdc;
-    address public usdt;
-    address public dai;
+    address private usdc; // deprecated see MultiCollateralOnOffRamp.sol
+    address private usdt; // deprecated see MultiCollateralOnOffRamp.sol
+    address private dai; // deprecated see MultiCollateralOnOffRamp.sol
+    bool private curveOnrampEnabled; // deprecated see MultiCollateralOnOffRamp.sol
+    uint private maxAllowedPegSlippagePercentage; // deprecated see MultiCollateralOnOffRamp.sol
 
-    bool public curveOnrampEnabled;
-    uint public maxAllowedPegSlippagePercentage;
+    IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
+    bool public multicollateralEnabled;
 
     function initialize(
         address _owner,
@@ -200,13 +204,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint amount,
         address collateral
     ) public view returns (uint collateralQuote, uint sUSDToPay) {
-        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        if (curveIndex > 0 && curveOnrampEnabled) {
-            sUSDToPay = buyFromAmmQuote(rangedMarket, position, amount);
-            //cant get a quote on how much collateral is needed from curve for sUSD,
-            //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-            collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay) * (ONE + (ONE_PERCENT / 5))) / ONE;
-        }
+        sUSDToPay = buyFromAmmQuote(rangedMarket, position, amount);
+        collateralQuote = multiCollateralOnOffRamp.getMinimumNeeded(collateral, sUSDToPay);
     }
 
     function buyFromAMMWithReferrer(
@@ -224,43 +223,91 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function buyFromAMMWithDifferentCollateralAndReferrer(
-        RangedMarket rangedMarket,
-        RangedMarket.Position position,
-        uint amount,
-        uint expectedPayout,
-        uint additionalSlippage,
-        address collateral,
+        RangedMarket _rangedMarket,
+        RangedMarket.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage,
+        address _collateral,
         address _referrer
-    ) public nonReentrant notPaused {
+    ) external nonReentrant notPaused {
+        _buyFromAMMWithDifferentCollateralAndReferrer(
+            _rangedMarket,
+            _position,
+            _amount,
+            _expectedPayout,
+            _additionalSlippage,
+            _collateral,
+            _referrer,
+            false
+        );
+    }
+
+    function buyFromAMMWithEth(
+        RangedMarket _rangedMarket,
+        RangedMarket.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage,
+        address _collateral,
+        address _referrer
+    ) external payable nonReentrant notPaused {
+        _buyFromAMMWithDifferentCollateralAndReferrer(
+            _rangedMarket,
+            _position,
+            _amount,
+            _expectedPayout,
+            _additionalSlippage,
+            _collateral,
+            _referrer,
+            true
+        );
+    }
+
+    function _buyFromAMMWithDifferentCollateralAndReferrer(
+        RangedMarket _rangedMarket,
+        RangedMarket.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage,
+        address _collateral,
+        address _referrer,
+        bool _isEth
+    ) internal {
+        require(multicollateralEnabled, "Multicollateral onramp not enabled");
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
 
-        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        require(curveIndex > 0 && curveOnrampEnabled, "ID1");
-
         (uint collateralQuote, uint susdQuote) = buyFromAmmQuoteWithDifferentCollateral(
-            rangedMarket,
-            position,
-            amount,
-            collateral
+            _rangedMarket,
+            _position,
+            _amount,
+            _collateral
         );
 
-        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
-            ? collateralQuote * 1e12
-            : collateralQuote;
-        require(
-            maxAllowedPegSlippagePercentage > 0 &&
-                transformedCollateralForPegCheck >= (susdQuote * (ONE - maxAllowedPegSlippagePercentage)) / ONE,
-            "ID3"
-        );
+        require((collateralQuote * ONE) / _expectedPayout <= (ONE + _additionalSlippage), "Slippage too high!");
 
-        require((collateralQuote * ONE) / expectedPayout <= (ONE + additionalSlippage), "ID2");
+        uint exactReceived;
 
-        IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
-        curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, susdQuote);
+        if (_isEth) {
+            require(_collateral == multiCollateralOnOffRamp.WETH9(), "Wrong collateral sent");
+            require(msg.value >= collateralQuote, "not enough ETH sent");
+            exactReceived = multiCollateralOnOffRamp.onrampWithEth{value: msg.value}(msg.value);
+        } else {
+            IERC20Upgradeable(_collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
+            IERC20Upgradeable(_collateral).approve(address(multiCollateralOnOffRamp), collateralQuote);
+            exactReceived = multiCollateralOnOffRamp.onramp(_collateral, collateralQuote);
+        }
 
-        _buyFromAMM(rangedMarket, position, amount, susdQuote, additionalSlippage, false);
+        require(exactReceived >= susdQuote, "Not enough sUSD received");
+
+        //send the surplus to SB
+        if (exactReceived > susdQuote) {
+            sUSD.safeTransfer(safeBox, exactReceived - susdQuote);
+        }
+
+        _buyFromAMM(_rangedMarket, _position, _amount, susdQuote, _additionalSlippage, false);
     }
 
     function buyFromAMM(
@@ -589,19 +636,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
-        if (collateral == dai) {
-            return 1;
-        }
-        if (collateral == usdc) {
-            return 2;
-        }
-        if (collateral == usdt) {
-            return 3;
-        }
-        return 0;
-    }
-
     function _handleSafeBoxFeeOnBuy(
         address rangedMarket,
         uint amount,
@@ -708,12 +742,14 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         referrerFee = _referrerFee;
     }
 
-    /// @notice Updates contract parametars
-    /// @param _curveOnrampEnabled whether AMM supports curve onramp
-    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
-    function setCurveSUSD(bool _curveOnrampEnabled, uint _maxAllowedPegSlippagePercentage) external onlyOwner {
-        curveOnrampEnabled = _curveOnrampEnabled;
-        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
+    /// @notice set multicollateral onramp contract
+    function setMultiCollateralOnOffRamp(address _onramper, bool enabled) external onlyOwner {
+        if (address(multiCollateralOnOffRamp) != address(0)) {
+            sUSD.approve(address(multiCollateralOnOffRamp), 0);
+        }
+        multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(_onramper);
+        multicollateralEnabled = enabled;
+        sUSD.approve(_onramper, MAX_APPROVAL);
     }
 
     modifier knownRangedMarket(address market) {

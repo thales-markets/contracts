@@ -39,6 +39,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     mapping(uint => address) public collectorAddress;
 
     mapping(uint => uint) public lastPeriodForChain;
+
+    // first uint is the CCIP period, second uint is the chain selector per CCIP convention
     mapping(uint => mapping(uint => uint)) public chainStakedAmountInPeriod;
     mapping(uint => mapping(uint => uint)) public chainEscrowedAmountInPeriod;
     mapping(uint => mapping(uint => uint)) public chainBaseRewardsInPeriod;

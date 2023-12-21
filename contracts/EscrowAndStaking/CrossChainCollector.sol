@@ -28,7 +28,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     address public masterCollector;
     // chainID of the master chain as assigned by CCIP
     uint64 public masterCollectorChain;
-    
+
     //index to chainId as assigned by CCIP
     mapping(uint => uint64) public chainSelector;
     // chainID to index above
@@ -37,7 +37,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     mapping(uint => address) public collectorAddress;
 
     mapping(uint => uint) public lastPeriodForChain;
-    
+
     // first uint is the CCIP period, second uint is the chain selector per CCIP convention
     mapping(uint => mapping(uint => uint)) public chainStakedAmountInPeriod;
     mapping(uint => mapping(uint => uint)) public chainEscrowedAmountInPeriod;
@@ -269,7 +269,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
             message = abi.encode(chainBaseRewards, chainExtraRewards, revShare);
             // 0 index is master
-            if (i == 0) {
+            if (masterCollectorChain == chainId) {
                 _updateRewards(chainBaseRewards, chainExtraRewards, revShare);
             } else {
                 _sendMessageToChain(chainId, message);
@@ -448,7 +448,4 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     );
     event SetGasLimit(uint _gasLimitUsed);
     event RemovedAllCollectors();
-
-    // Custom errors to provide more descriptive revert messages.
-    error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
 }

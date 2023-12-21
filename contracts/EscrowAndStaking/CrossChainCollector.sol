@@ -91,7 +91,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     /* ========== VIEW FUNCTIONS ========== */
 
-    /// @notice Check if this CCIP contract is a master collector CCIP contract 
+    /// @notice Check if this CCIP contract is a master collector CCIP contract
     function isMasterCollector() external view returns (bool isMaster) {
         isMaster = masterCollector == address(this);
     }
@@ -143,12 +143,14 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     /// @notice (If it is master collector) when all messages are received from each chain, the final calculated amounts are broadcasted to all Staking contracts via CCIP
     function broadcastMessageToAll() external onlyOwner {
-        if (readyToBroadcast) { // the flag is true only if numOfCollectedResultsForThisPeriod == numOfActiveCollectors
+        if (readyToBroadcast) {
+            // the flag is true only if numOfCollectedResultsForThisPeriod == numOfActiveCollectors
             _broadcastMessageToAll(); // messages are broadcasted
             numOfCollectedResultsForThisPeriod = 0; // message counter is reset
             readyToBroadcast = false; // the broadcast flag is reset
             ++period; // the period is increased
-            if (weeklyRewardsDecreaseFactor > 0) { // in case of dynamic decrease of rewards
+            if (weeklyRewardsDecreaseFactor > 0) {
+                // in case of dynamic decrease of rewards
                 _setRewardsForNextPeriod(); // the rewards for the next period are decreased
             }
         }
@@ -159,22 +161,27 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     /// @notice processing/handling received messages
     function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
         // decoding the message
-        if (!messageIdAlreadyReceived[any2EvmMessage.messageId]) { // check if the particular message has been already received
+        if (!messageIdAlreadyReceived[any2EvmMessage.messageId]) {
+            // check if the particular message has been already received
             address sender = abi.decode(any2EvmMessage.sender, (address)); // get the message sender (used for further checks)
             messagesReceivedFromChainSelector[numOfMessagesReceived] = any2EvmMessage.sourceChainSelector; // store the chain selector of the message
             messagesReceived[numOfMessagesReceived] = any2EvmMessage.data; // store the message content
             messageIdAlreadyReceived[any2EvmMessage.messageId] = true; // flag the message as received
             ++numOfMessagesReceived; // increase the message counter
 
-            if (masterCollector == address(this)) { // if the contract is master collector, use master collector mode of processing
+            if (masterCollector == address(this)) {
+                // if the contract is master collector, use master collector mode of processing
                 uint sourceChainSelector = any2EvmMessage.sourceChainSelector; // cache the source collector
-                if (readOnlyMode) { // if in readOnlyMode, every message is processed by default (no filtering)
-                    if (collectorAddress[sourceChainSelector] == sender) { // check if the sender is registered as a CCIP collector
+                if (readOnlyMode) {
+                    // if in readOnlyMode, every message is processed by default (no filtering)
+                    if (collectorAddress[sourceChainSelector] == sender) {
+                        // check if the sender is registered as a CCIP collector
                         _calculateRewards(any2EvmMessage.data, sourceChainSelector); // perform calculation and storage of the staking rewards for this period
                     }
                     ++numOfCollectedResultsForThisPeriod; // increase the received results counter (in readOnlyMode)
-                    if (numOfCollectedResultsForThisPeriod == numOfActiveCollectors) { // if the received results exceeds the active collectors
-                        readyToBroadcast = true; // calculated rewards are ready for broadcasting 
+                    if (numOfCollectedResultsForThisPeriod == numOfActiveCollectors) {
+                        // if the received results exceeds the active collectors
+                        readyToBroadcast = true; // calculated rewards are ready for broadcasting
                     }
                 } else if (
                     collectorAddress[sourceChainSelector] == sender && lastPeriodForChain[sourceChainSelector] < period // check if the sender is registered and it is first incoming message in this period
@@ -182,11 +189,13 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                     lastPeriodForChain[sourceChainSelector] = period; // set last message received in this period
                     _calculateRewards(any2EvmMessage.data, sourceChainSelector); // calculate and store the received rewards information
                     ++numOfCollectedResultsForThisPeriod; // increase the number of collected results
-                    if (numOfCollectedResultsForThisPeriod == numOfActiveCollectors) { // if messages are received from all collectors
+                    if (numOfCollectedResultsForThisPeriod == numOfActiveCollectors) {
+                        // if messages are received from all collectors
                         readyToBroadcast = true; // calculated results are ready for broadcasting
                     }
                 }
-            } else if (masterCollector == sender) { // if this contract is not a master collector
+            } else if (masterCollector == sender) {
+                // if this contract is not a master collector
                 _updateRewardsOnStakingContract(any2EvmMessage.data); // process and send incoming message to local Staking contract
             }
         }
@@ -374,7 +383,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     function removeAllCollectors() external onlyOwner {
         require(numOfActiveCollectors > 0, "AlreadyResetAllSlots");
-        for(uint i=0; i<numOfActiveCollectors; i++) {
+        for (uint i = 0; i < numOfActiveCollectors; i++) {
             delete chainSelectorIndex[chainSelector[i]];
             delete collectorAddress[chainSelector[i]];
             delete chainSelector[i];

@@ -614,6 +614,14 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    function getAllChildMarketsForParentPlayerOption(
+        address _parent,
+        bytes32 _player,
+        uint8 _option
+    ) external view returns (address[] memory _children) {
+        return _getAllChildMarketsForParentPlayerOption(_parent, _player, _option);
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     /// @notice sets consumer, verifier, manager address

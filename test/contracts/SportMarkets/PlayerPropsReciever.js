@@ -1276,6 +1276,15 @@ contract('PlayerProps', (accounts) => {
 				)
 			);
 
+			let getAllChildMarketsForParentPlayerOption =
+				await GamesPlayerPropsDeployed.getAllChildMarketsForParentPlayerOption(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				);
+
+			assert.bnEqual(mainMarketPlayerPropsChild, getAllChildMarketsForParentPlayerOption[0]);
+
 			await GamesPlayerPropsReceiverDeployed.fulfillPlayerProps(
 				['0x6536306366613738303834366166363839373862343935373965356366333936'],
 				['0x3431373836333400000000000000000000000000000000000000000000000000'],

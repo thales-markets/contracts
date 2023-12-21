@@ -185,6 +185,12 @@
   },
   {
     "anonymous": false,
+    "inputs": [],
+    "name": "RemovedAllCollectors",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
     "inputs": [
       {
         "indexed": false,
@@ -1009,6 +1015,13 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "removeAllCollectors",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

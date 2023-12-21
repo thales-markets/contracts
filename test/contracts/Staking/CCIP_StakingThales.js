@@ -674,8 +674,6 @@ contract('CCIP Staking', (accounts) => {
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
 			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), 0, { from: owner });
-			await CCIPCollectorA.setReadOnlyMode(true, { from: owner });
-			await CCIPCollectorB.setReadOnlyMode(true, { from: owner });
 			let baseRewardsPerPeriod = await CCIPCollectorA.baseRewardsPerPeriod();
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
@@ -752,8 +750,8 @@ contract('CCIP Staking', (accounts) => {
 			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
-			let lastMessageFromChainSelector = CCIPCollectorA.lastMessageFromChainSelector();
-			console.log('Message from chainSelector: ', lastMessageFromChainSelector.toString());
+			let getChainSelectorForLastMessage = CCIPCollectorA.getChainSelectorForLastMessage();
+			console.log('Message from chainSelector: ', getChainSelectorForLastMessage.toString());
 
 			totalStakedA = await StakingMockA.stakedAmount();
 			totalEscrowedA = await StakingMockA.escrowedAmount();
@@ -882,8 +880,6 @@ contract('CCIP Staking', (accounts) => {
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
 			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), 0, { from: owner });
-			await CCIPCollectorA.setReadOnlyMode(true, { from: owner });
-			await CCIPCollectorB.setReadOnlyMode(true, { from: owner });
 			let baseRewardsPerPeriod = await CCIPCollectorA.baseRewardsPerPeriod();
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
@@ -960,8 +956,8 @@ contract('CCIP Staking', (accounts) => {
 			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
-			let lastMessageFromChainSelector = CCIPCollectorA.lastMessageFromChainSelector();
-			console.log('Message from chainSelector: ', lastMessageFromChainSelector.toString());
+			let getChainSelectorForLastMessage = CCIPCollectorA.getChainSelectorForLastMessage();
+			console.log('Message from chainSelector: ', getChainSelectorForLastMessage.toString());
 
 			totalStakedA = await StakingMockA.stakedAmount();
 			totalEscrowedA = await StakingMockA.escrowedAmount();
@@ -1099,8 +1095,6 @@ contract('CCIP Staking', (accounts) => {
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
 			await CCIPCollectorA.setPeriodRewards(toUnit(40000), 0, 0, { from: owner });
-			await CCIPCollectorA.setReadOnlyMode(true, { from: owner });
-			await CCIPCollectorB.setReadOnlyMode(true, { from: owner });
 			let baseRewardsPerPeriod = await CCIPCollectorA.baseRewardsPerPeriod();
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
@@ -1177,8 +1171,8 @@ contract('CCIP Staking', (accounts) => {
 			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
-			let lastMessageFromChainSelector = CCIPCollectorA.lastMessageFromChainSelector();
-			console.log('Message from chainSelector: ', lastMessageFromChainSelector.toString());
+			let getChainSelectorForLastMessage = CCIPCollectorA.getChainSelectorForLastMessage();
+			console.log('Message from chainSelector: ', getChainSelectorForLastMessage.toString());
 
 			totalStakedA = await StakingMockA.stakedAmount();
 			totalEscrowedA = await StakingMockA.escrowedAmount();
@@ -1315,8 +1309,6 @@ contract('CCIP Staking', (accounts) => {
 			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), toUnit(0.9), {
 				from: owner,
 			});
-			await CCIPCollectorA.setReadOnlyMode(true, { from: owner });
-			await CCIPCollectorB.setReadOnlyMode(true, { from: owner });
 			let baseRewardsPerPeriod = await CCIPCollectorA.baseRewardsPerPeriod();
 			let extraRewardsPerPeriod = await CCIPCollectorA.extraRewardsPerPeriod();
 			console.log('baseRewardsPerPeriod: ', fromUnit(baseRewardsPerPeriod));
@@ -1393,8 +1385,8 @@ contract('CCIP Staking', (accounts) => {
 			collectedResults = await CCIPCollectorA.collectedResultsForPeriod();
 			console.log('collectedResults in period: ', collectedResults.toString());
 
-			let lastMessageFromChainSelector = CCIPCollectorA.lastMessageFromChainSelector();
-			console.log('Message from chainSelector: ', lastMessageFromChainSelector.toString());
+			let getChainSelectorForLastMessage = CCIPCollectorA.getChainSelectorForLastMessage();
+			console.log('Message from chainSelector: ', getChainSelectorForLastMessage.toString());
 
 			totalStakedA = await StakingMockA.stakedAmount();
 			totalEscrowedA = await StakingMockA.escrowedAmount();

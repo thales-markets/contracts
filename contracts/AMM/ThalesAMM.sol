@@ -43,6 +43,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
+    uint private constant MAX_APPROVAL = type(uint256).max;
 
     IPriceFeed public priceFeed;
     IERC20Upgradeable public sUSD;
@@ -411,6 +412,8 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             _amount,
             _collateral
         );
+
+        require((collateralQuote * ONE) / _expectedPayout <= (ONE + _additionalSlippage), "Slippage too high!");
 
         uint exactReceived;
 

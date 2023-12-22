@@ -133,6 +133,44 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_contractName",
+        "type": "bytes32"
+      }
+    ],
+    "name": "checkIfContractExists",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "contractExists",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_contractName",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "contract_",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getAddresses",
     "outputs": [
@@ -172,25 +210,6 @@
         "internalType": "struct IAddressManager.Addresses",
         "name": "",
         "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_contractName",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getContractFromAddressBook",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "contract_",
-        "type": "address"
       }
     ],
     "stateMutability": "view",

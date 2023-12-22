@@ -26,5 +26,7 @@ interface IAddressManager {
 
     function getAddresses() external view returns (Addresses memory);
 
-    function getContractFromAddressBook(bytes32 _contractName) external view returns (address contract_);
+    function getAddress(bytes32 _contractName) external view returns (address contract_);
+
+    function checkIfContractExists(bytes32 _contractName) external view returns (bool contractExists);
 }

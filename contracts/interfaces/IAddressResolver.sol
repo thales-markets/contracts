@@ -4,5 +4,7 @@ pragma solidity ^0.5.16;
 
 interface IAddressResolver {
     /* ========== VIEWS / VARIABLES ========== */
-    function getAddress(bytes32 name) external view returns (address);
+    function getAddress(bytes32 _contractName) external view returns (address contract_);
+
+    function checkIfContractExists(bytes32 _contractName) external view returns (bool contractExists);
 }

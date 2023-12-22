@@ -132,8 +132,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     bool public readOnlyMode;
     bool public closingPeriodInProgress;
     uint public closingPeriodPauseTime;
-    address public ccipCollector;
-    address public safeBoxBuffer;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -334,15 +332,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         );
     }
 
-    /// @notice Setter for CCIP Collector contract and SafeBoxBuffer contract
-    /// @param _ccipCollector address of the CCIP contract on the local chain
-    /// @param _safeBoxBuffer address of the SafeBoxBuffer contract on the local chain
-    function setCrossChainCollector(address _ccipCollector, address _safeBoxBuffer) external onlyOwner {
-        ccipCollector = _ccipCollector;
-        safeBoxBuffer = _safeBoxBuffer;
-        emit CrossChainCollectorSet(_ccipCollector, _safeBoxBuffer);
-    }
-
     /// @notice Set address of Escrow Thales contract
     /// @param _escrowThalesContract address of Escrow Thales contract
     function setEscrow(address _escrowThalesContract) external onlyOwner {
@@ -529,14 +518,14 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         currentPeriodFees = feeToken.balanceOf(address(this));
         totalStakedLastPeriodEnd = _totalStakedAmount;
 
-        if (ccipCollector != address(0)) {
+        if (addressResolver.checkIfContractExists("CrossChainCollector")) {
             if (!readOnlyMode) {
                 paused = true;
                 lastPauseTime = block.timestamp;
             }
             closingPeriodInProgress = true;
             closingPeriodPauseTime = block.timestamp;
-            ICCIPCollector(ccipCollector).sendOnClosePeriod(
+            ICCIPCollector(addressResolver.getAddress("CrossChainCollector")).sendOnClosePeriod(
                 totalStakedLastPeriodEnd,
                 totalEscrowedLastPeriodEnd,
                 stakingThalesBonusRewardsManager.totalRoundBonusPoints(periodsOfStaking - 1),
@@ -557,16 +546,17 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     ) external nonReentrant {
         if (!readOnlyMode) {
             // if it is readOnlyMode==true  discard all following the updates
-            require(msg.sender == ccipCollector, "InvCCIP");
+            require(msg.sender == addressResolver.getAddress("CrossChainCollector"), "InvCCIP");
             require(closingPeriodInProgress, "NotInClosePeriod");
 
-            bool invalidSBBuffer = safeBoxBuffer == address(0);
+            bool invalidSBBuffer = addressResolver.checkIfContractExists("SafeBoxBuffer");
             bool insufficientFundsInBuffer;
 
             uint currentBalance = feeToken.balanceOf(address(this));
             currentPeriodFees = _transformCollateral(_revShare);
 
             if (!invalidSBBuffer) {
+                address safeBoxBuffer = addressResolver.getAddress("SafeBoxBuffer");
                 if (currentPeriodFees > currentBalance) {
                     if (feeToken.balanceOf(safeBoxBuffer) < (currentPeriodFees - currentBalance)) {
                         insufficientFundsInBuffer = true;
@@ -931,11 +921,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function _transformCollateral(uint _amount) internal view returns (uint) {
-        return ( ICCIPCollector(address(feeToken)).decimals() == 6 ) ? _amount * 1e12 : _amount;
+        return (ICCIPCollector(address(feeToken)).decimals() == 6) ? _amount * 1e12 : _amount;
     }
 
     function _reverseTransformCollateral(uint _amount) internal view returns (uint) {
-        return ( ICCIPCollector(address(feeToken)).decimals() == 6 ) ? _amount / 1e12 : _amount;
+        return (ICCIPCollector(address(feeToken)).decimals() == 6) ? _amount / 1e12 : _amount;
     }
 
     /* ========== EVENTS ========== */
@@ -989,5 +979,4 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event CanClaimOnBehalfChanged(address sender, address account, bool canClaimOnBehalf);
     event SupportedAMMVaultSet(address vault, bool value);
     event SupportedSportVaultSet(address vault, bool value);
-    event CrossChainCollectorSet(address _ccipCollector, address safeBoxBuffer);
 }

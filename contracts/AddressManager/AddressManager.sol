@@ -60,9 +60,13 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         return allAddresses;
     }
 
-    function getContractFromAddressBook(bytes32 _contractName) external view returns (address contract_) {
+    function getAddress(bytes32 _contractName) external view returns (address contract_) {
         require(addressBook[_contractName] != address(0), "InvalidAddressForContractName");
         contract_ = addressBook[_contractName];
+    }
+
+    function checkIfContractExists(bytes32 _contractName) external view returns (bool contractExists) {
+        contractExists = addressBook[_contractName] != address(0);
     }
 
     //////////////////setters/////////////////

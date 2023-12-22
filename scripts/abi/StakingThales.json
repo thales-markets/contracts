@@ -179,25 +179,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_ccipCollector",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "safeBoxBuffer",
-        "type": "address"
-      }
-    ],
-    "name": "CrossChainCollectorSet",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "destAccount",
         "type": "address"
       }
@@ -704,21 +685,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "ccipCollector",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1616,21 +1582,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "safeBoxBuffer",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
@@ -1710,26 +1661,6 @@
       }
     ],
     "name": "setCanClaimOnBehalf",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_ccipCollector",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_safeBoxBuffer",
-        "type": "address"
-      }
-    ],
-    "name": "setCrossChainCollector",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

@@ -60,8 +60,16 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         return allAddresses;
     }
 
+    function getAddresses(bytes32[] calldata _contractNames) external view returns (address[] memory contracts) {
+        contracts = new address[](_contractNames.length);
+        for (uint i = 0; i < _contractNames.length; i++) {
+            if (addressBook[_contractNames[i]] == address(0)) revert InvalidAddressForContractName(_contractNames[i]);
+            contracts[i] = addressBook[_contractNames[i]];
+        }
+    }
+
     function getAddress(bytes32 _contractName) external view returns (address contract_) {
-        require(addressBook[_contractName] != address(0), "InvalidAddressForContractName");
+        if (addressBook[_contractName] == address(0)) revert InvalidAddressForContractName(_contractName);
         contract_ = addressBook[_contractName];
     }
 
@@ -109,4 +117,6 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         address _pyth,
         address _speedMarketsAMM
     );
+
+    error InvalidAddressForContractName(bytes32 _contractName);
 }

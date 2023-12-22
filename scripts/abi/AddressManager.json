@@ -1,5 +1,16 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_contractName",
+        "type": "bytes32"
+      }
+    ],
+    "name": "InvalidAddressForContractName",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -165,6 +176,25 @@
         "internalType": "address",
         "name": "contract_",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "_contractNames",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "getAddresses",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "contracts",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",

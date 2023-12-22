@@ -677,10 +677,20 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         if (delegatedVolume[account] != address(0)) {
             account = delegatedVolume[account];
         }
-
+        // Code not working:
+        // bytes32[] memory contractNames;
+        // contractNames = [bytes32("ThalesAMM"), bytes32("ThalesRangedAMM"), bytes32("SportsAMM")];
+        // address[] memory cacheAddresses = addressResolver.getAddresses(contractNames);
+        // require(
+        //     msg.sender == cacheAddresses[0] ||
+        //         msg.sender == cacheAddresses[1] ||
+        //         msg.sender == cacheAddresses[2] ||
+        //         supportedSportVault[msg.sender] ||
+        //         supportedAMMVault[msg.sender],
+        //     "Invalid address"
+        // );
         require(
             msg.sender == thalesAMM ||
-                msg.sender == exoticBonds ||
                 msg.sender == thalesRangedAMM ||
                 msg.sender == sportsAMM ||
                 supportedSportVault[msg.sender] ||

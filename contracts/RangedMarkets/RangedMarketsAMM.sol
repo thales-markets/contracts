@@ -512,7 +512,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _amount,
         uint _expectedPayout,
         uint _additionalSlippage
-    ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused returns (uint) {
+    ) public knownRangedMarket(address(_rangedMarket)) nonReentrant notPaused returns (uint) {
         return _sellToAMM(_rangedMarket, _position, _amount, _expectedPayout, _additionalSlippage);
     }
 
@@ -553,18 +553,18 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _amount,
         uint _expectedPayout,
         uint _additionalSlippage
-    ) internal knownRangedMarket(address(rangedMarket)) nonReentrant notPaused returns (uint) {
+    ) internal knownRangedMarket(address(_rangedMarket)) nonReentrant notPaused returns (uint) {
         uint pricePaid;
 
         _handleApprovals(_rangedMarket);
 
-        if (position == RangedMarket.Position.Out) {
+        if (_position == RangedMarket.Position.Out) {
             _rangedMarket.burnOut(_amount, msg.sender);
         } else {
             _rangedMarket.burnIn(_amount, msg.sender);
         }
 
-        pricePaid = _handleSellToAmm(_rangedMarket, position, _amount);
+        pricePaid = _handleSellToAmm(_rangedMarket, _position, _amount);
         require(pricePaid > 0 && (_expectedPayout * ONE) / pricePaid <= (ONE + _additionalSlippage), "ID2");
 
         if (_position == RangedMarket.Position.In) {
@@ -583,6 +583,48 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address target = _position == RangedMarket.Position.Out ? address(outp) : address(inp);
         emit SoldToAMM(msg.sender, address(_rangedMarket), _position, _amount, pricePaid, address(sUSD), target);
         return pricePaid;
+    }
+
+    function exerciseWithOfframp(
+        RangedMarket _rangedMarket,
+        address _collateral,
+        bool _toEth
+    ) external knownRangedMarket(address(_rangedMarket)) nonReentrant notPaused {
+        (RangedPosition inp, RangedPosition outp) = _rangedMarket.positions();
+        require(address(inp) != address(0), "0A");
+        require(address(outp) != address(0), "0A");
+        uint inBalance = inp.getBalanceOf(msg.sender);
+        uint outBalance = outp.getBalanceOf(msg.sender);
+
+        _sendFromIfNotZero(msg.sender, address(inp), address(this), inBalance);
+        _sendFromIfNotZero(msg.sender, address(outp), address(this), outBalance);
+
+        uint amountBefore = sUSD.balanceOf(address(this));
+        RangedMarket(_rangedMarket).exercisePositions();
+        uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
+        uint offramped;
+
+        if (amountDiff > 0) {
+            if (_toEth) {
+                offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
+                bool sent = payable(msg.sender).send(offramped);
+                require(sent, "Failed to send Ether");
+            } else {
+                offramped = multiCollateralOnOffRamp.offramp(_collateral, amountDiff);
+                IERC20Upgradeable(_collateral).safeTransfer(msg.sender, offramped);
+            }
+        }
+    }
+
+    function _sendFromIfNotZero(
+        address from,
+        address source,
+        address target,
+        uint balance
+    ) internal {
+        if (balance > 0) {
+            IERC20Upgradeable(source).safeTransferFrom(from, target, balance);
+        }
     }
 
     /// @notice resolveRangedMarketsBatch resolve all markets in the batch

@@ -563,37 +563,36 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     function exerciseWithOfframp(
-        address market,
-        address collateral,
-        bool toEth
+        address _market,
+        address _collateral,
+        bool _toEth
     ) external nonReentrant notPaused {
-        require(IPositionalMarketManager(manager).isKnownMarket(market), "unknown market");
+        require(IPositionalMarketManager(manager).isKnownMarket(_market), "unknown market");
 
-        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        (IPosition up, IPosition down) = IPositionalMarket(_market).getOptions();
         require(address(up) != address(0), "0A");
         require(address(down) != address(0), "0A");
-        (uint upBalance, uint downBalance) = IPositionalMarket(market).balancesOf(msg.sender);
+        (uint upBalance, uint downBalance) = IPositionalMarket(_market).balancesOf(msg.sender);
 
         _sendFromIfNotZero(msg.sender, address(up), address(this), upBalance);
         _sendFromIfNotZero(msg.sender, address(down), address(this), downBalance);
 
         uint amountBefore = sUSD.balanceOf(address(this));
-
-        IPositionalMarket(market).exerciseOptions();
+        IPositionalMarket(_market).exerciseOptions();
         uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
         uint offramped;
 
         if (amountDiff > 0) {
-            if (toEth) {
+            if (_toEth) {
                 offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
                 bool sent = payable(msg.sender).send(offramped);
                 require(sent, "Failed to send Ether");
             } else {
-                offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
-                IERC20Upgradeable(collateral).safeTransfer(msg.sender, offramped);
+                offramped = multiCollateralOnOffRamp.offramp(_collateral, amountDiff);
+                IERC20Upgradeable(_collateral).safeTransfer(msg.sender, offramped);
             }
         }
-        emit ExercisedWithOfframp(msg.sender, market, collateral, toEth, amountDiff, offramped);
+        emit ExercisedWithOfframp(msg.sender, _market, _collateral, _toEth, amountDiff, offramped);
     }
 
     function _sendFromIfNotZero(

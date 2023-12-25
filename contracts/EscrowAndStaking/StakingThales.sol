@@ -21,7 +21,7 @@ import "../interfaces/ISportsAMMLiquidityPool.sol";
 import "../interfaces/IThalesAMMLiquidityPool.sol";
 import "../interfaces/IParlayAMMLiquidityPool.sol";
 import "../interfaces/IThalesAMM.sol";
-// import "../interfaces/IPositionalMarketManager.sol";
+import "../interfaces/IPositionalMarketManager.sol";
 import "../interfaces/IStakingThalesBonusRewardsManager.sol";
 import "../interfaces/ICCIPCollector.sol";
 
@@ -70,7 +70,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     mapping(address => uint) public unstakingAmount;
     mapping(address => uint) private _stakedBalances;
     mapping(address => uint) private _lastRewardsClaimedPeriod;
-    address private thalesAMM;
+    address public thalesAMM;
 
     uint constant HUNDRED = 1e18;
     uint constant AMM_EXTRA_REWARD_PERIODS = 4;
@@ -103,8 +103,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     IAddressResolver private addressResolver;
 
-    address private thalesRangedAMM;
-    address private sportsAMM;
+    address public thalesRangedAMM;
+    address public sportsAMM;
 
     mapping(address => uint) private lastThalesAMMUpdatePeriod;
     mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private thalesAMMVolume;
@@ -678,34 +678,14 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             account = delegatedVolume[account];
         }
 
-        // address _thalesAMM_ = addressResolver.getAddress("ThalesAMM");
-        // Code not working:
-        // string[] storage contractNames;
-        // contractNames = [bytes32("ThalesAMM"), bytes32("ThalesRangedAMM"), bytes32("SportsAMM")];
-        // contractNames.push("ThalesAMM");
-        // contractNames.push("ThalesRangedAMM");
-        // contractNames.push("SportsAMM");
-        // address[] memory cacheAddresses = addressResolver.getAddresses(contractNames);
-        address _thalesAMM_ = addressResolver.getAddress("ThalesAMM");
-        address _thalesRangedAMM_ = addressResolver.getAddress("ThalesRangedAMM");
-        address _sportsAMM_ = addressResolver.getAddress("SportsAMM");
         require(
-            msg.sender == _thalesAMM_ ||
-                msg.sender == _thalesRangedAMM_ ||
-                msg.sender == _sportsAMM_ ||
+            msg.sender == thalesAMM ||
+                msg.sender == thalesRangedAMM ||
+                msg.sender == sportsAMM ||
                 supportedSportVault[msg.sender] ||
                 supportedAMMVault[msg.sender],
             "Invalid address"
         );
-        // require(
-        //     msg.sender == thalesAMM ||
-        //         msg.sender == thalesRangedAMM ||
-        //         msg.sender == sportsAMM ||
-        //         supportedSportVault[msg.sender] ||
-        //         supportedAMMVault[msg.sender],
-        //     "Invalid address"
-        // );
-        // amount = IPositionalMarketManager(IThalesAMM(sportsAMM).manager()).reverseTransformCollateral(amount);
         amount = _reverseTransformCollateral(amount);
         if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
@@ -716,7 +696,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
         ].amount.add(amount);
 
-        if (msg.sender == _thalesAMM_ || supportedAMMVault[msg.sender]) {
+        if (msg.sender == thalesAMM || supportedAMMVault[msg.sender]) {
             if (lastThalesAMMUpdatePeriod[account] < periodsOfStaking) {
                 thalesAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
                 thalesAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
@@ -727,7 +707,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             ].amount.add(amount);
         }
 
-        if (msg.sender == _thalesRangedAMM_) {
+        if (msg.sender == thalesRangedAMM) {
             if (lastThalesRangedAMMUpdatePeriod[account] < periodsOfStaking) {
                 thalesRangedAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
                 thalesRangedAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
@@ -738,7 +718,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
         }
 
-        if (msg.sender == _sportsAMM_ || supportedSportVault[msg.sender]) {
+        if (msg.sender == sportsAMM || supportedSportVault[msg.sender]) {
             if (lastSportsAMMUpdatePeriod[account] < periodsOfStaking) {
                 sportsAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
                 sportsAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;

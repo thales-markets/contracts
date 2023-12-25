@@ -62,10 +62,10 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     uint public baseRewardsPerPeriod;
     uint public extraRewardsPerPeriod;
     uint public collectedResultsForPeriod;
-    uint public lastPeriodBeforeTesting;
+    uint private lastPeriodBeforeTesting;
 
     bool public readyToBroadcast;
-    bool public readOnlyMode;
+    bool private readOnlyMode;
     uint public gasLimitUsed;
     uint public weeklyRewardsDecreaseFactor;
 

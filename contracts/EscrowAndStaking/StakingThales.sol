@@ -549,13 +549,13 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             require(msg.sender == addressResolver.getAddress("CrossChainCollector"), "InvCCIP");
             require(closingPeriodInProgress, "NotInClosePeriod");
 
-            bool invalidSBBuffer = !addressResolver.checkIfContractExists("SafeBoxBuffer");
+            bool safeBoxBufferSet = addressResolver.checkIfContractExists("SafeBoxBuffer");
             bool insufficientFundsInBuffer;
 
             uint currentBalance = feeToken.balanceOf(address(this));
             currentPeriodFees = _transformCollateral(_revShare);
 
-            if (!invalidSBBuffer) {
+            if (safeBoxBufferSet) {
                 address safeBoxBuffer = addressResolver.getAddress("SafeBoxBuffer");
                 if (currentPeriodFees > currentBalance) {
                     if (feeToken.balanceOf(safeBoxBuffer) < (currentPeriodFees - currentBalance)) {
@@ -570,7 +570,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             currentPeriodRewards = _currentPeriodRewards;
             closingPeriodInProgress = false;
             if (closingPeriodPauseTime == lastPauseTime) {
-                paused = invalidSBBuffer || insufficientFundsInBuffer;
+                paused = !safeBoxBufferSet || insufficientFundsInBuffer;
             }
         }
         emit ReceivedStakingRewardsUpdate(_currentPeriodRewards, _extraRewards, _revShare);

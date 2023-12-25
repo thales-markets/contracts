@@ -31,6 +31,18 @@ contract ThalesAMMUtils {
         uint max_spread;
     }
 
+    struct BuyUtilsPriceImpactParams {
+        address market;
+        IThalesAMM.Position position;
+        uint amount;
+        uint _availableToBuyFromAMM;
+        uint _availableToBuyFromAMMOtherSide;
+        address roundPool;
+        uint basePrice;
+        uint max_spread;
+        uint impliedVolPerAsset;
+    }
+
     // IThalesAMM public thalesAMM;
 
     // constructor(address _thalesAMM) {
@@ -195,5 +207,189 @@ contract ThalesAMMUtils {
         (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
         upBalance = up.getBalanceOf(addressToCheck);
         downBalance = down.getBalanceOf(addressToCheck);
+    }
+
+    function sellPriceImpact(
+        address market,
+        IThalesAMM.Position position,
+        uint amount,
+        uint available,
+        address liquidityPoolAddress,
+        uint max_spread
+    ) public view returns (uint _sellImpact) {
+        (uint _balancePosition, uint balanceOtherSide) = balanceOfPositionsOnMarket(market, position, liquidityPoolAddress);
+        uint balancePositionAfter = _balancePosition > 0 ? _balancePosition + (amount) : balanceOtherSide > amount
+            ? 0
+            : amount - (balanceOtherSide);
+        uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide - (amount) : 0;
+        if (!(balancePositionAfter < balanceOtherSideAfter)) {
+            _sellImpact = sellPriceImpactImbalancedSkew(
+                amount,
+                balanceOtherSide,
+                _balancePosition,
+                balanceOtherSideAfter,
+                balancePositionAfter,
+                available,
+                max_spread
+            );
+        }
+    }
+
+    function price(
+        address market,
+        IThalesAMM.Position position,
+        uint impliedVolPerAsset
+    ) public view returns (uint priceToReturn) {
+        // add price calculation
+        IPositionalMarket marketContract = IPositionalMarket(market);
+        (uint maturity, ) = marketContract.times();
+
+        uint timeLeftToMaturity = maturity - block.timestamp;
+        uint timeLeftToMaturityInDays = (timeLeftToMaturity * ONE) / 86400;
+        uint oraclePrice = marketContract.oraclePrice();
+
+        (bytes32 key, uint strikePrice, ) = marketContract.getOracleDetails();
+
+        priceToReturn = calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolPerAsset) / 1e2;
+
+        if (position == IThalesAMM.Position.Down) {
+            priceToReturn = ONE - priceToReturn;
+        }
+    }
+
+    function availableToSellToAMM(
+        address market,
+        IThalesAMM.Position position,
+        uint basePrice,
+        address liquidityPoolAddress,
+        uint capOnMarket,
+        uint spentOnMarket,
+        uint sellMaxPrice
+    ) public view returns (uint _available) {
+        if (sellMaxPrice > 0) {
+            (, uint balanceOfTheOtherSide) = balanceOfPositionsOnMarket(market, position, liquidityPoolAddress);
+
+            // any balanceOfTheOtherSide will be burned to get sUSD back (1 to 1) at the `willPay` cost
+            uint willPay = (balanceOfTheOtherSide * (sellMaxPrice)) / ONE;
+            uint capWithBalance = capOnMarket + (balanceOfTheOtherSide);
+            if (capWithBalance >= (spentOnMarket + willPay)) {
+                uint usdAvailable = capWithBalance - spentOnMarket - (willPay);
+                _available = (usdAvailable / (sellMaxPrice)) * ONE + (balanceOfTheOtherSide);
+            }
+        }
+    }
+
+    function availableToBuyFromAMMWithBasePrice(
+        address market,
+        IThalesAMM.Position position,
+        uint basePrice,
+        bool skipCheck,
+        address liquidityPoolAddress,
+        uint capOnMarket,
+        uint spentOnMarket,
+        uint max_spread,
+        uint min_spread
+    ) public view returns (uint availableAmount) {
+        basePrice = basePrice + min_spread;
+        if (basePrice < ONE) {
+            uint discountedPrice = (basePrice * (ONE - max_spread / 2)) / ONE;
+            uint balance = balanceOfPositionOnMarket(market, position, liquidityPoolAddress);
+            uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
+
+            if ((capOnMarket + additionalBufferFromSelling) > spentOnMarket) {
+                uint availableUntilCapSUSD = capOnMarket + additionalBufferFromSelling - spentOnMarket;
+                if (availableUntilCapSUSD > capOnMarket) {
+                    availableUntilCapSUSD = capOnMarket;
+                }
+
+                uint midImpactPriceIncrease = ((ONE - basePrice) * (max_spread / 2)) / ONE;
+                if ((basePrice + midImpactPriceIncrease) < ONE) {
+                    uint divider_price = ONE - (basePrice + midImpactPriceIncrease);
+
+                    availableAmount = balance + ((availableUntilCapSUSD * ONE) / divider_price);
+                }
+            }
+        }
+    }
+
+    function buyPriceImpact(BuyUtilsPriceImpactParams memory params) public view returns (int priceImpact) {
+        (uint balancePosition, uint balanceOtherSide) = balanceOfPositionsOnMarket(
+            params.market,
+            params.position,
+            params.roundPool
+        );
+
+        uint balancePositionAfter = balancePosition > params.amount ? balancePosition - params.amount : 0;
+        uint balanceOtherSideAfter = balanceOtherSide +
+            (balancePosition > params.amount ? 0 : (params.amount - balancePosition));
+        if (balancePositionAfter >= balanceOtherSideAfter) {
+            priceImpact = calculateDiscount(
+                DiscountParams(
+                    balancePosition,
+                    balanceOtherSide,
+                    params.amount,
+                    params._availableToBuyFromAMMOtherSide,
+                    params.max_spread
+                )
+            );
+        } else {
+            if (params.amount > balancePosition && balancePosition > 0) {
+                uint amountToBeMinted = params.amount - balancePosition;
+                uint positiveSkew = buyPriceImpactImbalancedSkew(
+                    PriceImpactParams(
+                        amountToBeMinted,
+                        balanceOtherSide + balancePosition,
+                        0,
+                        balanceOtherSide + amountToBeMinted,
+                        0,
+                        params._availableToBuyFromAMM - balancePosition,
+                        params.max_spread
+                    )
+                );
+
+                uint pricePosition = price(params.market, params.position, params.impliedVolPerAsset);
+                uint priceOtherPosition = price(
+                    params.market,
+                    params.position == IThalesAMM.Position.Up ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
+                    params.impliedVolPerAsset
+                );
+                uint skew = (priceOtherPosition * positiveSkew) / pricePosition;
+
+                int discount = calculateDiscount(
+                    DiscountParams(
+                        balancePosition,
+                        balanceOtherSide,
+                        balancePosition,
+                        params._availableToBuyFromAMMOtherSide,
+                        params.max_spread
+                    )
+                );
+
+                int discountBalance = int(balancePosition) * discount;
+                int discountMinted = int(amountToBeMinted * skew);
+                int amountInt = int(balancePosition + amountToBeMinted);
+
+                priceImpact = (discountBalance + discountMinted) / amountInt;
+
+                if (priceImpact > 0) {
+                    int numerator = int(pricePosition) * priceImpact;
+                    priceImpact = numerator / int(priceOtherPosition);
+                }
+            } else {
+                priceImpact = int(
+                    buyPriceImpactImbalancedSkew(
+                        PriceImpactParams(
+                            params.amount,
+                            balanceOtherSide,
+                            balancePosition,
+                            balanceOtherSideAfter,
+                            balancePositionAfter,
+                            params._availableToBuyFromAMM,
+                            params.max_spread
+                        )
+                    )
+                );
+            }
+        }
     }
 }

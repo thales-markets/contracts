@@ -22,6 +22,18 @@ interface IThalesAMMUtils {
         uint max_spread;
     }
 
+    struct BuyUtilsPriceImpactParams {
+        address market;
+        IThalesAMM.Position position;
+        uint amount;
+        uint _availableToBuyFromAMM;
+        uint _availableToBuyFromAMMOtherSide;
+        address roundPool;
+        uint basePrice;
+        uint max_spread;
+        uint impliedVolPerAsset;
+    }
+
     function calculateOdds(
         uint _price,
         uint strike,
@@ -59,4 +71,42 @@ interface IThalesAMMUtils {
         external
         view
         returns (uint upBalance, uint downBalance);
+
+    function sellPriceImpact(
+        address market,
+        IThalesAMM.Position position,
+        uint amount,
+        uint available,
+        address liquidityPoolAddress,
+        uint max_spread
+    ) external view returns (uint _sellImpact);
+
+    function price(
+        address market,
+        IThalesAMM.Position position,
+        uint impliedVolPerAsset
+    ) external view returns (uint priceToReturn);
+
+    function availableToSellToAMM(
+        address market,
+        IThalesAMM.Position position,
+        uint basePrice,
+        address liquidityPoolAddress,
+        uint capOnMarket,
+        uint spentOnMarket,
+        uint sellMaxPrice
+    ) external view returns (uint _available);
+
+    function availableToBuyFromAMMWithBasePrice(
+        address market,
+        IThalesAMM.Position position,
+        uint basePrice,
+        address liquidityPoolAddress,
+        uint capOnMarket,
+        uint spentOnMarket,
+        uint max_spread,
+        uint min_spread
+    ) external view returns (uint availableAmount);
+
+    function buyPriceImpact(BuyUtilsPriceImpactParams memory params) external view returns (int priceImpact);
 }

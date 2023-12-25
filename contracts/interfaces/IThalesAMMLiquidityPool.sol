@@ -5,4 +5,6 @@ interface IThalesAMMLiquidityPool {
     /* ========== VIEWS / VARIABLES ========== */
 
     function isUserLPing(address user) external view returns (bool isUserInLP);
+
+    function getMarketPool(address market) external view returns (address roundPool);
 }

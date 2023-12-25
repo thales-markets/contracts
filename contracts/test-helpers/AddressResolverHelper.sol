@@ -14,6 +14,10 @@ contract AddressResolverHelper {
         return snxAddress;
     }
 
+    function checkIfContractExists(string calldata _contractName) external view returns (bool contractExists) {
+        contractExists = false;
+    }
+
     function setSNXRewardsAddress(address _snxAddress) external {
         snxAddress = _snxAddress;
     }

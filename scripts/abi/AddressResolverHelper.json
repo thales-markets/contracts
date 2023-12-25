@@ -9,6 +9,27 @@
     "constant": true,
     "inputs": [
       {
+        "internalType": "string",
+        "name": "_contractName",
+        "type": "string"
+      }
+    ],
+    "name": "checkIfContractExists",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "contractExists",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "name",
         "type": "bytes32"

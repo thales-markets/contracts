@@ -33,6 +33,7 @@ contract('StakingThales', (accounts) => {
 	let CCIPCollector;
 	let CCIPRouter;
 	let StakingThalesBonusRewardsManager;
+	let AddressManager;
 
 	let initializeStalkingData, initializeEscrowData;
 
@@ -278,13 +279,30 @@ contract('StakingThales', (accounts) => {
 			StakingThalesBonusRewardsManager.address,
 			{ from: owner }
 		);
-		await StakingThalesDeployed.setCrossChainCollector(
-			CCIPCollector.address,
-			SafeBoxBuffer.address,
-			{
-				from: owner,
-			}
+		let AddressManagerContract = artifacts.require('AddressManager');
+		AddressManager = await AddressManagerContract.new();
+		await AddressManager.initialize(
+			owner,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS
 		);
+		await AddressManager.setAddressInAddressBook('CrossChainCollector', CCIPCollector.address, {
+			from: owner,
+		});
+		await AddressManager.setAddressInAddressBook('SafeBoxBuffer', SafeBoxBuffer.address, {
+			from: owner,
+		});
+		// await StakingThalesDeployed.setCrossChainCollector(
+		// 	CCIPCollector.address,
+		// 	SafeBoxBuffer.address,
+		// 	{
+		// 		from: owner,
+		// 	}
+		// );
 	});
 
 	describe('EscrowThales basic check', () => {

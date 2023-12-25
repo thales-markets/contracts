@@ -10,27 +10,6 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "_contractName",
-        "type": "bytes32"
-      }
-    ],
-    "name": "checkIfContractExists",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "contractExists",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "bytes32",
         "name": "name",
         "type": "bytes32"
       }
@@ -41,27 +20,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "bytes32[]",
-        "name": "_contractNames",
-        "type": "bytes32[]"
-      }
-    ],
-    "name": "getAddresses",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "contracts",
-        "type": "address[]"
       }
     ],
     "payable": false,

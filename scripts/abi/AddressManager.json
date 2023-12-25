@@ -2,9 +2,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_contractName",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "name": "InvalidAddressForContractName",
@@ -15,9 +15,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_contractName",
-        "type": "bytes32"
+        "type": "string"
       },
       {
         "indexed": false,
@@ -127,9 +127,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "name": "addressBook",
@@ -146,9 +146,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_contractName",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "name": "checkIfContractExists",
@@ -165,9 +165,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_contractName",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "name": "getAddress",
@@ -176,25 +176,6 @@
         "internalType": "address",
         "name": "contract_",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32[]",
-        "name": "_contractNames",
-        "type": "bytes32[]"
-      }
-    ],
-    "name": "getAddresses",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "contracts",
-        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -240,6 +221,25 @@
         "internalType": "struct IAddressManager.Addresses",
         "name": "",
         "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string[]",
+        "name": "_contractNames",
+        "type": "string[]"
+      }
+    ],
+    "name": "getAddresses",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "contracts",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -393,6 +393,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_contractName",
+        "type": "string"
+      }
+    ],
+    "name": "resetAddressForContract",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "safeBox",
     "outputs": [
@@ -408,9 +421,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_contractName",
-        "type": "bytes32"
+        "type": "string"
       },
       {
         "internalType": "address",

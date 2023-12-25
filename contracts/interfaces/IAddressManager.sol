@@ -26,9 +26,9 @@ interface IAddressManager {
 
     function getAddresses() external view returns (Addresses memory);
 
-    function getAddresses(bytes32[] calldata _contractNames) external view returns (address[] memory contracts);
+    function getAddresses(string[] calldata _contractNames) external view returns (address[] memory contracts);
 
-    function getAddress(bytes32 _contractName) external view returns (address contract_);
+    function getAddress(string memory _contractName) external view returns (address contract_);
 
-    function checkIfContractExists(bytes32 _contractName) external view returns (bool contractExists);
+    function checkIfContractExists(string memory _contractName) external view returns (bool contractExists);
 }

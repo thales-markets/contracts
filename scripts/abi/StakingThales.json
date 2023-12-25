@@ -1844,21 +1844,6 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "sportsAMM",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "sportsAMMLiquidityPool",
     "outputs": [
       {
@@ -2063,40 +2048,10 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "thalesAMM",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "thalesAMMLiquidityPool",
     "outputs": [
       {
         "internalType": "contract IThalesAMMLiquidityPool",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "thalesRangedAMM",
-    "outputs": [
-      {
-        "internalType": "address",
         "name": "",
         "type": "address"
       }

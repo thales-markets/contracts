@@ -2,9 +2,7 @@
 
 pragma solidity ^0.5.16;
 
-import "../interfaces/IAddressResolver.sol";
-
-contract AddressResolverHelper is IAddressResolver {
+contract AddressResolverHelper {
     address public snxAddress;
 
     constructor() public {}

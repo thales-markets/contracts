@@ -522,10 +522,10 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             IPositionalMarket(_market).burnOptionsMaximum();
         }
 
-        uint safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - pricePaid;
+        uint safeBoxShare;
         uint referrerShare = (pricePaid * ONE) / (ONE - (referrerFee)) - pricePaid;
-        if (safeBoxImpact == 0) {
-            safeBoxShare = 0;
+        if (safeBoxImpact > 0) {
+            safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - pricePaid;
         }
 
         liquidityPool.commitTrade(
@@ -555,8 +555,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         require(IPositionalMarketManager(manager).isKnownMarket(_market), "unknown market");
 
         (IPosition up, IPosition down) = IPositionalMarket(_market).getOptions();
-        require(address(up) != address(0), "0A");
-        require(address(down) != address(0), "0A");
+        require((address(up) != address(0)) && (address(down) != address(0)), "0A");
         (uint upBalance, uint downBalance) = IPositionalMarket(_market).balancesOf(msg.sender);
 
         _sendFromIfNotZero(msg.sender, address(up), address(this), upBalance);

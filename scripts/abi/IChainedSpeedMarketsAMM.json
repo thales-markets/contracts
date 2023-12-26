@@ -16,7 +16,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "user",
+        "name": "_user",
         "type": "address"
       }
     ],
@@ -136,8 +136,14 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "payoutMultiplier",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
+    ],
+    "name": "payoutMultipliers",
     "outputs": [
       {
         "internalType": "uint256",

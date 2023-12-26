@@ -264,9 +264,9 @@
             "type": "tuple"
           },
           {
-            "internalType": "uint256",
-            "name": "payoutMultiplier",
-            "type": "uint256"
+            "internalType": "uint256[]",
+            "name": "payoutMultipliers",
+            "type": "uint256[]"
           }
         ],
         "internalType": "struct SpeedMarketsAMMData.ChainedSpeedMarketsAMMParameters",

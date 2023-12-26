@@ -24,11 +24,11 @@ interface IChainedSpeedMarketsAMM {
 
     function maxProfitPerIndividualMarket() external view returns (uint);
 
-    function payoutMultiplier() external view returns (uint);
+    function payoutMultipliers(uint _index) external view returns (uint);
 
     function maxRisk() external view returns (uint);
 
     function currentRisk() external view returns (uint);
 
-    function getLengths(address user) external view returns (uint[4] memory);
+    function getLengths(address _user) external view returns (uint[4] memory);
 }

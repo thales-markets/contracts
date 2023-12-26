@@ -873,10 +873,10 @@
 		"SpeedMarketsAMMImplementation": "0x3EA4D755411bdB13883B544e96a94B5D8CFA731B",
 		"SpeedMarketsAMMUtils": "0x7334A6A342c15e23Cc550e3dCf892a0cd1E8cbb6",
 		"SpeedMarketsAMMData": "0x39d1a205F72eC54aca01013c682A1A5C1625f4f6",
-		"SpeedMarketsAMMDataImplementation": "0x25fe9a4E140F77D1AA72189CEa69ce600abDE5e2",
+		"SpeedMarketsAMMDataImplementation": "0xacdFcaB392023Ab451958ED2da19716671835844",
 		"ChainedSpeedMarketMastercopy": "0x8d5D5f3C89974c5b0aA3B09367c87e4e191905C3",
 		"ChainedSpeedMarketsAMM": "0xe9FdD4717f9dDAa7e74e9a63B559F54A38f98613",
-		"ChainedSpeedMarketsAMMImplementation": "0x175869a5dF9a61BD89471E56360631589b1C55BF",
+		"ChainedSpeedMarketsAMMImplementation": "0x8A87c3e749Dc2121Ef0fdA037dBBfAc52dbbc06F",
 		"AddressManager": "0x455fa4dCaA3981D1c9c51BedBA5321BCF9CDB802",
 		"AddressManagerImplementation": "0x7d37e319157Aa650F6B29CD302D1dDdcBb4dcE18"
 	},

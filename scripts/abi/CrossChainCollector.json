@@ -226,6 +226,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_addressManager",
+        "type": "address"
+      }
+    ],
+    "name": "SetAddressManager",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_router",
         "type": "address"
       }
@@ -269,19 +282,6 @@
       }
     ],
     "name": "SetPeriodRewards",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
-      }
-    ],
-    "name": "SetStakingThales",
     "type": "event"
   },
   {
@@ -1030,6 +1030,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_addressManager",
+        "type": "address"
+      }
+    ],
+    "name": "setAddressManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_router",
         "type": "address"
       }
@@ -1140,32 +1153,6 @@
     "name": "setPeriodRewards",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
-      }
-    ],
-    "name": "setStakingThales",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "stakingThales",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

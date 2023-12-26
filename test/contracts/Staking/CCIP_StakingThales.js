@@ -30,6 +30,9 @@ contract('CCIP Staking', (accounts) => {
 
 	let CCIPRouter;
 
+	let AddressManagerA;
+	let AddressManagerB;
+
 	describe('Test CCIP solution ', () => {
 		beforeEach(async () => {
 			let CCIPCollectorContract = artifacts.require('CrossChainCollector');
@@ -55,8 +58,36 @@ contract('CCIP Staking', (accounts) => {
 			await CCIPCollectorA.initialize(CCIPRouter.address, true, 5, { from: owner });
 			await CCIPCollectorB.initialize(CCIPRouter.address, false, 0, { from: owner });
 
-			await CCIPCollectorA.setStakingThales(StakingMockA.address, { from: owner });
-			await CCIPCollectorB.setStakingThales(StakingMockB.address, { from: owner });
+			let AddressManagerContract = artifacts.require('AddressManager');
+			AddressManagerA = await AddressManagerContract.new();
+			AddressManagerB = await AddressManagerContract.new();
+			await AddressManagerA.initialize(
+				owner,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS
+			);
+			await AddressManagerB.initialize(
+				owner,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS,
+				ZERO_ADDRESS
+			);
+
+			await AddressManagerA.setAddressInAddressBook('StakingThales', StakingMockA.address, {
+				from: owner,
+			});
+			await AddressManagerB.setAddressInAddressBook('StakingThales', StakingMockB.address, {
+				from: owner,
+			});
+			await CCIPCollectorA.setAddressManager(AddressManagerA.address, { from: owner });
+			await CCIPCollectorB.setAddressManager(AddressManagerB.address, { from: owner });
 
 			await StakingMockA.setCCIPCollector(CCIPCollectorA.address, { from: owner });
 			await StakingMockB.setCCIPCollector(CCIPCollectorB.address, { from: owner });

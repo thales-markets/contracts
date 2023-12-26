@@ -14,6 +14,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
 import "../interfaces/IStakingThales.sol";
+import "../interfaces/IAddressManager.sol";
 
 import "./CCIPReceiverProxy.sol";
 
@@ -23,7 +24,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance.
 
     IRouterClient private s_router;
-    address public stakingThales;
+    address private stakingThales;
     // the CrossChainCollector instance on master chain
     address public masterCollector;
     // chainID of the master chain as assigned by CCIP
@@ -68,6 +69,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     bool private readOnlyMode;
     uint public gasLimitUsed;
     uint public weeklyRewardsDecreaseFactor;
+
+    IAddressManager private addressManager;
 
     uint private constant ONE_MILLION_GAS = 1e6;
     uint private constant MAX_GAS = 10 * ONE_MILLION_GAS;
@@ -124,7 +127,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         uint _bonusPoints,
         uint _revShare
     ) external {
-        require(msg.sender == stakingThales, "InvSender");
+        address _stakingThales_ = addressManager.getAddress("StakingThales");
+        require(msg.sender == _stakingThales_, "InvSender");
         if (masterCollector == address(this)) {
             _storeRewards(
                 masterCollectorChain,
@@ -150,7 +154,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     }
 
     /// @notice (If it is master collector) when all messages are received from each chain, the final calculated amounts are broadcasted to all Staking contracts via CCIP
-    function broadcastMessageToAll() external {
+    function broadcastMessageToAll() external nonReentrant {
         require(readyToBroadcast, "NotReadyToBroadcast");
         // the flag is true only if collectedResultsForPeriod == numOfActiveCollectors
         _broadcastMessageToAll(); // messages are broadcasted
@@ -204,6 +208,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         );
     }
 
+    // @notice decode and store values received
     function _calculateRewards(bytes memory data, uint _chainSelector) internal {
         (uint stakedAmount, uint escrowedAmount, uint bonusPoints, uint revShare) = abi.decode(
             data,
@@ -212,6 +217,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         _storeRewards(_chainSelector, stakedAmount, escrowedAmount, bonusPoints, revShare);
     }
 
+    // @notice store the rewards
     function _storeRewards(
         uint _chainSelector,
         uint _stakedAmount,
@@ -230,6 +236,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         calculatedRevenueForPeriod[period] += _revShare;
     }
 
+    // @notice broadcast messages
     function _broadcastMessageToAll() internal {
         uint chainBaseRewards;
         uint chainExtraRewards;
@@ -304,7 +311,8 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         uint _extraRewards,
         uint _revShare
     ) internal {
-        IStakingThales(stakingThales).updateStakingRewards(_baseRewards, _extraRewards, _revShare);
+        IStakingThales _stakingThales_ = IStakingThales(addressManager.getAddress("StakingThales"));
+        _stakingThales_.updateStakingRewards(_baseRewards, _extraRewards, _revShare);
     }
 
     function _setRewardsForNextPeriod() internal {
@@ -314,9 +322,9 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     /* ========== CONTRACT SETTERS FUNCTIONS ========== */
 
-    function setStakingThales(address _stakingThales) external onlyOwner {
-        stakingThales = _stakingThales;
-        emit SetStakingThales(_stakingThales);
+    function setAddressManager(address _addressManager) external onlyOwner {
+        addressManager = IAddressManager(_addressManager);
+        emit SetAddressManager(_addressManager);
     }
 
     function setCCIPRouter(address _router) external onlyOwner {
@@ -419,7 +427,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     event MasterCollectorSet(address masterCollector, uint64 materCollectorChainId);
     event SetPeriodRewards(uint _baseRewardsPerPeriod, uint _extraRewardsPerPeriod, uint _weeklyDecreaseFactor);
     event SetCCIPRouter(address _router);
-    event SetStakingThales(address _stakingThales);
+    event SetAddressManager(address _addressManager);
     event SentOnClosePeriod(
         uint _totalStakedLastPeriodEnd,
         uint _totalEscrowedLastPeriodEnd,

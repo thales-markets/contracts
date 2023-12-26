@@ -270,7 +270,8 @@ contract('StakingThales', (accounts) => {
 		StakingThalesBonusRewardsManager = await StakingThalesBonusRewardsManagerContract.new();
 		await StakingThalesBonusRewardsManager.initialize(owner, StakingThalesDeployed.address);
 		await CCIPCollector.initialize(CCIPRouter.address, true, 5, { from: owner });
-		await CCIPCollector.setStakingThales(StakingThalesDeployed.address, { from: owner });
+
+		// await CCIPCollector.setStakingThales(StakingThalesDeployed.address, { from: owner });
 		let SafeBoxContract = artifacts.require('SafeBoxBuffer');
 		SafeBoxBuffer = await SafeBoxContract.new();
 		await SafeBoxBuffer.initialize(StakingThalesDeployed.address, ThalesFeeDeployed.address, {
@@ -293,7 +294,10 @@ contract('StakingThales', (accounts) => {
 			ZERO_ADDRESS,
 			ZERO_ADDRESS
 		);
-
+		await AddressManager.setAddressInAddressBook('StakingThales', StakingThalesDeployed.address, {
+			from: owner,
+		});
+		await CCIPCollector.setAddressManager(AddressManager.address, { from: owner });
 		// await AddressManager.setAddressInAddressBook("CrossChainCollector", CCIPCollector.address, {from: owner});
 		await StakingThalesDeployed.setAddresses(
 			SNXRewardsDeployed.address,

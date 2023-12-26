@@ -176,7 +176,7 @@
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -323,29 +323,56 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "positionFirst",
-        "type": "uint8"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "positionSecond",
-        "type": "uint8"
-      },
-      {
-        "internalType": "bool",
-        "name": "inverse",
-        "type": "bool"
-      },
-      {
-        "internalType": "contract SportAMMLiquidityPool",
-        "name": "liquidityPool",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "enum ISportsAMM.Position",
+            "name": "positionFirst",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum ISportsAMM.Position",
+            "name": "positionSecond",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bool",
+            "name": "inverse",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "marketPool",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "cap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxSpreadForMarket",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spentOnGame",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SportsAMMUtils.AvailableHigher",
+        "name": "params",
+        "type": "tuple"
       }
     ],
     "name": "getAvailableHigherForPositions",

@@ -64,6 +64,7 @@ async function main() {
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
 	const ParlayAMMDeployed = await ParlayAMM.attach(ParlayAMMAddress);
 	console.log('ParlayAMM found at: ', ParlayAMMAddress);
+	console.log('ParlayAMM found at: ', ParlayAMMAddress);
 
 	const ParlayMarketData = await ethers.getContractFactory('ParlayMarketData');
 

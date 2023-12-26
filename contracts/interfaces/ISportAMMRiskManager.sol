@@ -27,4 +27,19 @@ interface ISportAMMRiskManager {
     function getMaxSpreadForMarket(address _market, uint max_spread) external view returns (uint);
 
     function getMinOddsForMarket(address _market, uint minSupportedOdds) external view returns (uint minOdds);
+
+    function getCapAndMaxSpreadForMarket(address _market, uint max_spread) external view returns (uint, uint);
+
+    function getCapMaxSpreadAndMinOddsForMarket(
+        address _market,
+        uint max_spread,
+        uint minSupportedOdds
+    )
+        external
+        view
+        returns (
+            uint cap,
+            uint maxSpread,
+            uint minOddsForMarket
+        );
 }

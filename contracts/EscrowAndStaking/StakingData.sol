@@ -19,11 +19,6 @@ contract StakingData is Initializable, ProxyOwned, ProxyPausable {
         uint baseRewardsPool;
         uint bonusRewardsPool;
         uint totalStakedAmount;
-        uint maxSNXRewardsPercentage;
-        uint maxAMMVolumeRewardsPercentage;
-        uint maxThalesRoyaleRewardsPercentage;
-        uint SNXVolumeRewardsMultiplier;
-        uint AMMVolumeRewardsMultiplier;
         bool canClosePeriod;
         bool mergeAccountEnabled;
         uint totalEscrowBalanceNotIncludedInStaking;
@@ -39,13 +34,6 @@ contract StakingData is Initializable, ProxyOwned, ProxyPausable {
         uint rewards;
         uint baseRewards;
         uint totalBonus;
-        uint snxBonus;
-        uint ammBonus;
-        uint snxStaked;
-        uint ammVolume;
-        uint thalesAmmVolume;
-        uint rangedAmmVolume;
-        uint sportsAmmVolume;
         uint lastPeriodOfClaimedRewards;
         uint escrowedBalance;
         uint claimable;
@@ -82,11 +70,6 @@ contract StakingData is Initializable, ProxyOwned, ProxyPausable {
                 staking.fixedPeriodReward(),
                 staking.periodExtraReward(),
                 staking.totalStakedAmount(),
-                staking.maxSNXRewardsPercentage(),
-                staking.maxAMMVolumeRewardsPercentage(),
-                staking.maxThalesRoyaleRewardsPercentage(),
-                staking.SNXVolumeRewardsMultiplier(),
-                staking.AMMVolumeRewardsMultiplier(),
                 staking.canClosePeriod(),
                 staking.mergeAccountEnabled(),
                 escrow.totalEscrowBalanceNotIncludedInStaking(),
@@ -111,13 +94,6 @@ contract StakingData is Initializable, ProxyOwned, ProxyPausable {
                 staking.getRewardsAvailable(user),
                 staking.getBaseReward(user),
                 staking.getTotalBonus(user),
-                staking.getSNXBonus(user),
-                staking.getAMMBonus(user),
-                staking.getSNXStaked(user),
-                staking.getAMMVolume(user),
-                staking.getThalesAMMVolume(user),
-                staking.getThalesRangedAMMVolume(user),
-                staking.getSportsAMMVolume(user),
                 staking.getLastPeriodOfClaimedRewards(user),
                 escrow.totalAccountEscrowedAmount(user),
                 escrow.claimable(user)

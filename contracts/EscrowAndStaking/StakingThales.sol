@@ -513,7 +513,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             block.timestamp >= lastPeriodTimeStamp.add(durationPeriod),
             "A full period has not passed since the last closed period"
         );
-
+        require(!closingPeriodInProgress, "ClosingInProgress");
         iEscrowThales.updateCurrentPeriod();
         lastPeriodTimeStamp = block.timestamp;
         periodsOfStaking = iEscrowThales.currentVestingPeriod();
@@ -529,9 +529,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         if (addressResolver.checkIfContractExists("CrossChainCollector")) {
             if (!readOnlyMode) {
                 paused = true;
+                closingPeriodInProgress = true;
                 lastPauseTime = block.timestamp;
             }
-            closingPeriodInProgress = true;
             closingPeriodPauseTime = block.timestamp;
             ICCIPCollector(addressResolver.getAddress("CrossChainCollector")).sendOnClosePeriod(
                 totalStakedLastPeriodEnd,

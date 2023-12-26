@@ -42,6 +42,7 @@ contract('StakingThales', (accounts) => {
 
 	const sUSDQty = toUnit(5555);
 	const SECOND = 1000;
+	const HOUR = 1000 * 60 * 60;
 	const DAY = 86400;
 	const WEEK = 604800;
 	let manager, factory;
@@ -558,6 +559,52 @@ contract('StakingThales', (accounts) => {
 			await StakingThalesDeployed.closePeriod({ from: second });
 			let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);
 			assert.bnEqual(answer, answer2);
+		});
+
+		it('Change timestamp', async () => {
+			let deposit = toUnit(100000);
+			let stake = toUnit(1500);
+			await ThalesDeployed.transfer(first, stake, { from: owner });
+			await StakingThalesDeployed.setStakingRewardsParameters(
+				deposit,
+				100000,
+				false,
+				'15',
+				'12',
+				'3',
+				'1',
+				'10',
+				{ from: owner }
+			);
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			let answer = await StakingThalesDeployed.getContractFeeFunds();
+			assert.bnEqual(answer, 0);
+			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
+				'Staking period has not started'
+			);
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
+			await StakingThalesDeployed.stake(stake, { from: first });
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			await StakingThalesDeployed.claimReward({ from: first });
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);
+			assert.bnEqual(answer, answer2);
+			let lastTimeStamp = await StakingThalesDeployed.lastPeriodTimeStamp();
+			console.log('lastPeriodTimeStamp: ', lastTimeStamp.toString());
+			let newTimestamp = parseInt(lastTimeStamp.toString()) - 4 * 60 * 60;
+			console.log('newTimestamp: ', newTimestamp.toString());
+			await StakingThalesDeployed.setLastPeriodTimestamp(newTimestamp.toString(), { from: owner });
+			lastTimeStamp = await StakingThalesDeployed.lastPeriodTimeStamp();
+			console.log('lastPeriodTimeStamp: ', lastTimeStamp.toString());
 		});
 
 		it('Stake with first account and claim reward - readOnlyMode', async () => {

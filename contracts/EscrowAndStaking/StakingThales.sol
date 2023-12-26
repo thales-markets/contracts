@@ -359,6 +359,14 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit SupportedAMMVaultSet(_ammVault, value);
     }
 
+    /// @notice Set last period timestamp
+    /// @param _lastPeriodTimestamp last period timestamp to be set
+    function setLastPeriodTimestamp(uint _lastPeriodTimestamp) external onlyOwner {
+        require(_lastPeriodTimestamp > (lastPeriodTimeStamp - 5 hours), "Too far back");
+        lastPeriodTimeStamp = _lastPeriodTimestamp;
+        emit LastPeriodTimestampSet(_lastPeriodTimestamp);
+    }
+
     /// @notice Get the amount of SNX staked for the account
     /// @param account to get the amount of SNX staked for
     /// @return the amount of SNX staked for the account
@@ -573,7 +581,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 paused = !safeBoxBufferSet || insufficientFundsInBuffer;
             }
         }
-        emit ReceivedStakingRewardsUpdate(_currentPeriodRewards, _extraRewards, _revShare);
+        emit ReceivedStakingRewardsUpdate(_currentPeriodRewards, _extraRewards, _transformCollateral(_revShare));
     }
 
     /// @notice Stake the amount of staking token to get weekly rewards
@@ -978,4 +986,5 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event CanClaimOnBehalfChanged(address sender, address account, bool canClaimOnBehalf);
     event SupportedAMMVaultSet(address vault, bool value);
     event SupportedSportVaultSet(address vault, bool value);
+    event LastPeriodTimestampSet(uint lastPeriodTimestamp);
 }

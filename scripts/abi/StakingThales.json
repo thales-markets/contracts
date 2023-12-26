@@ -223,6 +223,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "lastPeriodTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "LastPeriodTimestampSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -1676,6 +1689,21 @@
       }
     ],
     "name": "setEscrow",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_lastPeriodTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "setLastPeriodTimestamp",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

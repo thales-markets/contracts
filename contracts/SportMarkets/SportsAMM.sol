@@ -157,7 +157,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     ISportAMMRiskManager public riskManager;
 
-    mapping(address => uint) public spentOnParent;
+    mapping(address => uint) private spentOnParent;
 
     /// @return The sUSD amount bought from AMM by users for the parent
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
@@ -354,7 +354,25 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position positionSecond,
         bool inverse
     ) internal view returns (uint) {
-        return sportAmmUtils.getAvailableHigherForPositions(market, positionFirst, positionSecond, inverse, liquidityPool);
+        (uint cap, uint maxSpreadForMarket, uint minOddsForMarket) = riskManager.getCapMaxSpreadAndMinOddsForMarket(
+            market,
+            max_spread,
+            minSupportedOdds
+        );
+        return
+            sportAmmUtils.getAvailableHigherForPositions(
+                SportsAMMUtils.AvailableHigher(
+                    market,
+                    positionFirst,
+                    positionSecond,
+                    inverse,
+                    liquidityPool.getMarketPool(market),
+                    minOddsForMarket,
+                    cap,
+                    maxSpreadForMarket,
+                    spentOnGame[market]
+                )
+            );
     }
 
     /// @notice Calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game
@@ -447,10 +465,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return odds Returns the default odds for the `_market` including the price impact.
     function getMarketDefaultOdds(address _market, bool isSell) public view returns (uint[] memory odds) {
         odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-        if (isMarketInAMMTrading(_market)) {
-            for (uint i = 0; i < odds.length; i++) {
-                odds[i] = buyFromAmmQuote(_market, ISportsAMM.Position(i), ONE);
-            }
+        for (uint i = 0; i < odds.length; i++) {
+            odds[i] = buyFromAmmQuote(_market, ISportsAMM.Position(i), ONE);
         }
     }
 
@@ -923,12 +939,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 ? balance
                 : sportAmmUtils.balanceOfPositionOnMarket(market, position, liquidityPool.getMarketPool(market));
 
+            (uint cap, uint maxSpreadForMarket) = riskManager.getCapAndMaxSpreadForMarket(market, max_spread);
             availableAmount = sportAmmUtils.calculateAvailableToBuy(
-                riskManager.calculateCapToBeUsed(market),
+                cap,
                 spentOnGame[market],
                 baseOdds,
                 balance,
-                _maxSpreadForMarket(market)
+                maxSpreadForMarket
             );
         }
     }

@@ -97,6 +97,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     address public parlayPolicy;
 
+    mapping(address => mapping(uint => uint)) public riskPerMarketAndPosition;
+
+    mapping(address => bool) public parlaysWithNewFormat;
+
     receive() external payable {}
 
     function initialize(
@@ -221,26 +225,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     ) external view returns (bool canBeCreated) {
         (, uint totalBuyAmount, uint totalQuote, , , , ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDToPay);
         canBeCreated = totalQuote >= maxSupportedOdds && totalBuyAmount <= maxSupportedAmount;
-    }
-
-    function exercisableSportPositionsInParlay(address _parlayMarket)
-        external
-        view
-        returns (bool isExercisable, address[] memory exercisableMarkets)
-    {
-        if (_knownMarkets.contains(_parlayMarket)) {
-            (isExercisable, exercisableMarkets) = ParlayMarket(_parlayMarket).isAnySportMarketExercisable();
-        }
-    }
-
-    function resolvableSportPositionsInParlay(address _parlayMarket)
-        external
-        view
-        returns (bool isAnyResolvable, address[] memory resolvableMarkets)
-    {
-        if (_knownMarkets.contains(_parlayMarket)) {
-            (isAnyResolvable, resolvableMarkets) = ParlayMarket(_parlayMarket).isAnySportMarketResolved();
-        }
     }
 
     function isParlayOwnerTheWinner(address _parlayMarket) external view returns (bool isUserTheWinner) {
@@ -444,8 +428,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
+    // TODO: to remove
     function resolveParlay() external notPaused onlyKnownMarkets(msg.sender) {
-        _resolveParlay(msg.sender);
+        if (!ParlayMarket(msg.sender).resolved()) {
+            resolvedParlay[msg.sender] = true;
+            _knownMarkets.remove(msg.sender);
+        }
     }
 
     function expireMarkets(address[] calldata _parlayMarkets) external onlyOwner {
@@ -462,8 +450,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function triggerResolvedEvent(address _account, bool _userWon) external {
-        require(_knownMarkets.contains(msg.sender), "Not valid Parlay");
+    function triggerResolvedEvent(address _account, bool _userWon) external notPaused onlyKnownMarkets(msg.sender) {
+        if (parlaysWithNewFormat[msg.sender]) {
+            resolvedParlay[msg.sender] = true;
+            _knownMarkets.remove(msg.sender);
+        }
         emit ParlayResolved(msg.sender, _account, _userWon);
     }
 
@@ -494,13 +485,24 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require((totalAmount - _sUSDPaid) <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
         require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
 
+        for (uint i = 0; i < _sportMarkets.length; i++) {
+            riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] += amountsToBuy[i];
+            require(
+                riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] <
+                    sportsAmm.riskManager().calculateCapToBeUsed(_sportMarkets[i]),
+                "Risk per individual market and position exceeded"
+            );
+            if (!ISportPositionalMarket(_sportMarkets[i]).optionsInitialized()) {
+                ISportPositionalMarket(_sportMarkets[i]).initializeOptions();
+            }
+        }
+
         if (_sendSUSD) {
             sUSD.safeTransferFrom(msg.sender, address(this), _sUSDPaid);
         }
 
         uint safeBoxAmount = _handleReferrerAndSB(_sUSDPaid, sUSDAfterFees);
 
-        // mint the stateful token  (ERC-20)
         // clone a parlay market
         ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
         parlayMarket.initialize(
@@ -516,6 +518,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
 
         _knownMarkets.add(address(parlayMarket));
+        parlaysWithNewFormat[address(parlayMarket)] = true;
         sportsAmm.updateParlayVolume(_differentRecipient, _sUSDPaid);
 
         IParlayAMMLiquidityPool(parlayLP).commitTrade(
@@ -523,14 +526,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)
         );
         // buy the positions
-        _buyPositionsFromSportAMM(
-            _sportMarkets,
-            _positions,
-            amountsToBuy,
-            _additionalSlippage,
-            address(parlayMarket),
-            _differentRecipient
-        );
+        sUSD.safeTransfer(address(parlayMarket), sportManager.transformCollateral(totalAmount));
         _storeRisk(_sportMarkets, (totalAmount - sportManager.reverseTransformCollateral(sUSDAfterFees)));
 
         emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
@@ -577,6 +573,18 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 address(this)
             )
         );
+
+        // check if any market breaches cap
+        for (uint i = 0; i < _sportMarkets.length; i++) {
+            if (
+                riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] + amountsToBuy[i] >
+                sportsAmm.riskManager().calculateCapToBeUsed(_sportMarkets[i])
+            ) {
+                finalQuotes[i] = 0;
+                totalQuote = 0;
+                skewImpact = 0;
+            }
+        }
     }
 
     function _handleReferrerAndSB(uint _sUSDPaid, uint sUSDAfterFees) internal returns (uint safeBoxAmount) {
@@ -594,67 +602,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         sUSD.safeTransfer(safeBox, safeBoxAmount - referrerShare);
     }
 
-    function _buyPositionsFromSportAMM(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint[] memory _proportionalAmounts,
-        uint _additionalSlippage,
-        address _parlayMarket,
-        address _parlayOwner
-    ) internal {
-        uint numOfMarkets = _sportMarkets.length;
-        ISportsAMM.Position sportPosition;
-        for (uint i = 0; i < numOfMarkets; i++) {
-            sportPosition = _obtainSportsAMMPosition(_positions[i]);
-            sportsAmm.buyFromAMM(
-                _sportMarkets[i],
-                sportPosition,
-                _proportionalAmounts[i],
-                MAX_APPROVAL,
-                _additionalSlippage
-            );
-            _sendPositionsToMarket(_sportMarkets[i], _positions[i], _parlayMarket, _proportionalAmounts[i]);
-            _updateMarketData(_sportMarkets[i], _positions[i], _parlayMarket, _parlayOwner);
-        }
-    }
-
-    function _updateMarketData(
-        address _market,
-        uint _position,
-        address _parlayMarket,
-        address _parlayOwner
-    ) internal {
-        IParlayMarketData(parlayMarketData).addParlayForGamePosition(_market, _position, _parlayMarket, _parlayOwner);
-    }
-
-    function _sendPositionsToMarket(
-        address _sportMarket,
-        uint _position,
-        address _parlayMarket,
-        uint _amount
-    ) internal {
-        if (_position == 0) {
-            (IPosition homePosition, , ) = ISportPositionalMarket(_sportMarket).getOptions();
-            IERC20Upgradeable(address(homePosition)).safeTransfer(address(_parlayMarket), _amount);
-        } else if (_position == 1) {
-            (, IPosition awayPosition, ) = ISportPositionalMarket(_sportMarket).getOptions();
-            IERC20Upgradeable(address(awayPosition)).safeTransfer(address(_parlayMarket), _amount);
-        } else {
-            (, , IPosition drawPosition) = ISportPositionalMarket(_sportMarket).getOptions();
-            IERC20Upgradeable(address(drawPosition)).safeTransfer(address(_parlayMarket), _amount);
-        }
-    }
-
     function _storeRisk(address[] memory _sportMarkets, uint _sUSDPaid) internal {
         if (_sportMarkets.length > 1 && _sportMarkets.length <= parlaySize) {
             riskPerPackedGamesCombination[parlayVerifier.calculateCombinationKey(_sportMarkets)] += _sUSDPaid;
-        }
-    }
-
-    function _resolveParlay(address _parlayMarket) internal {
-        if (ParlayMarket(_parlayMarket).numOfResolvedSportMarkets() == ParlayMarket(_parlayMarket).numOfSportMarkets()) {
-            resolvedParlay[_parlayMarket] = true;
-            _knownMarkets.remove(_parlayMarket);
         }
     }
 

@@ -25,4 +25,8 @@ contract SportMarketMock {
     function times() external view returns (uint maturity, uint destruction) {
         maturity = startTime;
     }
+
+    function getTags() external view returns (uint tag1, uint tag2) {
+        tag1 = tag;
+    }
 }

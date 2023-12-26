@@ -322,17 +322,25 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     /* ========== CONTRACT SETTERS FUNCTIONS ========== */
 
+    /// @notice Set address manager on contract
+    /// @param _addressManager address of Address Manager contract
     function setAddressManager(address _addressManager) external onlyOwner {
         addressManager = IAddressManager(_addressManager);
         emit SetAddressManager(_addressManager);
     }
 
+    /// @notice Set CCIP router per chain
+    /// @param _router address of CCIP Router contract
     function setCCIPRouter(address _router) external onlyOwner {
         _setRouter(_router);
         s_router = IRouterClient(_router);
         emit SetCCIPRouter(_router);
     }
 
+    /// @notice Set CCIP router per chain
+    /// @param _baseRewardsPerPeriod base rewards per period
+    /// @param _extraRewardsPerPeriod extra rewards per period
+    /// @param _weeklyDecreaseFactor weekly decrease factor in (X * 1e16, where X is percentage - e.g. 5% = 5*1e16)
     function setPeriodRewards(
         uint _baseRewardsPerPeriod,
         uint _extraRewardsPerPeriod,
@@ -344,12 +352,17 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit SetPeriodRewards(_baseRewardsPerPeriod, _extraRewardsPerPeriod, _weeklyDecreaseFactor);
     }
 
+    /// @notice Set gas limit to be used for for cross message
+    /// @param _gasLimitUsed gas limit 
     function setGasLimit(uint _gasLimitUsed) external onlyOwner {
         require(_gasLimitUsed <= MAX_GAS, "Exceeds MAX_GAS");
         gasLimitUsed = _gasLimitUsed;
         emit SetGasLimit(_gasLimitUsed);
     }
 
+    /// @notice Set master collector address and selector
+    /// @param _masterCollector address of the master collector
+    /// @param _materCollectorChainId Chainlink predefined selector per chain
     function setMasterCollector(address _masterCollector, uint64 _materCollectorChainId) external onlyOwner {
         masterCollector = _masterCollector;
         masterCollectorChain = _materCollectorChainId;
@@ -360,6 +373,9 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit MasterCollectorSet(_masterCollector, _materCollectorChainId);
     }
 
+    /// @notice (ONLY in Master collector): Add a new destination chain CCIP Collector contract
+    /// @param _chainId the chain selector 
+    /// @param _collectorAddress Chainlink predefined selector per chain
     function setCollectorForChain(
         uint64 _chainId,
         address _collectorAddress,
@@ -388,6 +404,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit CollectorForChainSet(_chainId, _collectorAddress);
     }
 
+    /// @notice Reset most of the data in the contract
     function resetAllData() external onlyOwner {
         require(numOfActiveCollectors > 0, "AlreadyResetAllSlots");
         for (uint i = 0; i < numOfActiveCollectors; i++) {
@@ -397,9 +414,13 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             lastPeriodForChain[chainSelector[i]] = 0;
         }
         numOfActiveCollectors = 0;
+        collectedResultsForPeriod = 0;
         masterCollector = address(0);
         masterCollectorChain = 0;
         period = 0;
+        numOfMessagesReceived = 0;
+        baseRewardsPerPeriod = 0;
+        extraRewardsPerPeriod = 0;
         emit RemovedAllData();
     }
 

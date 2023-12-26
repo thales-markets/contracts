@@ -60,6 +60,9 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         return allAddresses;
     }
 
+    /// @notice Get all addresses from the address book based on the contract names
+    /// @param _contractNames array of contract names
+    /// @return contracts array of addresses
     function getAddresses(string[] calldata _contractNames) external view returns (address[] memory contracts) {
         contracts = new address[](_contractNames.length);
         for (uint i = 0; i < _contractNames.length; i++) {
@@ -68,11 +71,17 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    /// @notice Get address from the addressBook based on the contract name
+    /// @param _contractName name of the contract
+    /// @return contract_ the address of the contract
     function getAddress(string calldata _contractName) external view returns (address contract_) {
         if (addressBook[_contractName] == address(0)) revert InvalidAddressForContractName(_contractName);
         contract_ = addressBook[_contractName];
     }
 
+    /// @notice Check if a contract name has been assigned with an address
+    /// @param _contractName name of the contract
+    /// @return contractExists returns true if the contract exists or false if the address is set to ZERO address
     function checkIfContractExists(string calldata _contractName) external view returns (bool contractExists) {
         contractExists = addressBook[_contractName] != address(0);
     }
@@ -106,6 +115,8 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         emit NewContractInAddressBook(_contractName, _address);
     }
 
+    /// @notice Reset a contract name to ZERO address
+    /// @param _contractName name of the contract
     function resetAddressForContract(string memory _contractName) external onlyOwner {
         require(addressBook[_contractName] != address(0), "AlreadyReset");
         addressBook[_contractName] = address(0);

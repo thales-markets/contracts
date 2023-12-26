@@ -93,7 +93,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     uint constant ONE = 1e18;
     uint constant ONE_PERCENT = 1e16;
 
-    uint public SNXVolumeRewardsMultiplier;
+    uint private SNXVolumeRewardsMultiplier;
 
     mapping(address => uint) private _lastStakingPeriod;
 
@@ -255,7 +255,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         periodExtraReward = _extraReward;
         extraRewardsActive = _extraRewardsActive;
 
-        emit StakingRewardsParametersChanged(_fixedReward, _extraReward, _extraRewardsActive);
+        emit StakingRewardsParametersChanged(
+            _fixedReward,
+            _extraReward,
+            _extraRewardsActive
+        );
     }
 
     /// @notice Set contract addresses
@@ -339,6 +343,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit LastPeriodTimestampSet(_lastPeriodTimestamp);
     }
 
+
     /// @notice Get the base reward amount available for the claim for the account
     /// @param account to get the base reward amount available for the claim for
     /// @return the base reward amount available for the claim for the account
@@ -354,6 +359,13 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 .mul(currentPeriodRewards)
                 .div(totalStakedLastPeriodEnd.add(totalEscrowedLastPeriodEnd));
         }
+    }
+
+    /// @notice [DEPRECATED maintained because of IStakingThales] Get the total protocol volume for the account
+    /// @param account to get the total protocol volume for
+    /// @return the total protocol volume for the account
+    function getAMMVolume(address account) external view returns (uint) {
+        return 0;
     }
 
     /// @notice Get the total bonus rewards for the account
@@ -415,8 +427,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         if (addressResolver.checkIfContractExists("CrossChainCollector")) {
             if (!readOnlyMode) {
                 paused = true;
-                lastPauseTime = block.timestamp;
                 closingPeriodInProgress = true;
+                lastPauseTime = block.timestamp;
                 closingPeriodPauseTime = block.timestamp;
             }
             ICCIPCollector(addressResolver.getAddress("CrossChainCollector")).sendOnClosePeriod(
@@ -581,7 +593,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             "Invalid address"
         );
         amount = _reverseTransformCollateral(amount);
-
         if (address(stakingThalesBonusRewardsManager) != address(0)) {
             stakingThalesBonusRewardsManager.storePoints(account, msg.sender, amount, periodsOfStaking);
         }
@@ -625,7 +636,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
         _lastRewardsClaimedPeriod[destAccount] = periodsOfStaking;
         _lastStakingPeriod[destAccount] = periodsOfStaking;
-
         delete lastUnstakeTime[msg.sender];
         delete unstaking[msg.sender];
         delete unstakingAmount[msg.sender];
@@ -634,6 +644,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         delete stakerFeesClaimed[msg.sender];
         delete _lastRewardsClaimedPeriod[msg.sender];
         delete _lastStakingPeriod[msg.sender];
+        
 
         emit AccountMerged(msg.sender, destAccount);
     }
@@ -742,6 +753,15 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 .div(totalStakedLastPeriodEnd.add(totalEscrowedLastPeriodEnd));
     }
 
+    function _getTotalAMMVolume(address account) internal view returns (uint totalAMMforAccount) {
+        if (!(periodsOfStaking >= lastAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
+            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+                if (periodsOfStaking < stakerAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                    totalAMMforAccount = totalAMMforAccount.add(stakerAMMVolume[account][i].amount);
+            }
+        }
+    }
+
     function _transformCollateral(uint _amount) internal view returns (uint) {
         return (ICCIPCollector(address(feeToken)).decimals() == 6) ? _amount * 1e12 : _amount;
     }
@@ -769,7 +789,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         bool mergeAccountEnabled,
         bool readOnlyMode
     );
-    event StakingRewardsParametersChanged(uint fixedPeriodReward, uint periodExtraReward, bool extraRewardsActive);
+    event StakingRewardsParametersChanged(
+        uint fixedPeriodReward,
+        uint periodExtraReward,
+        bool extraRewardsActive
+    );
     event AddressesChanged(
         address thalesAMM,
         address thalesRangedAMM,

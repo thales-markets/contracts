@@ -225,7 +225,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         );
     }
 
-    function _getSkewByAssetAndDirection(bytes32 _asset, SpeedMarket.Direction _direction) internal returns (uint) {
+    function _getSkewByAssetAndDirection(bytes32 _asset, SpeedMarket.Direction _direction) internal view returns (uint) {
         return
             (((currentRiskPerAssetAndDirection[_asset][_direction] * ONE) /
                 maxRiskPerAssetAndDirection[_asset][_direction]) * maxSkewImpact) / ONE;
@@ -262,9 +262,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             );
         }
 
-        currentRiskPerAsset[asset] += buyinAmount * 2 - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE;
-        require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
-
         // LP fee by delta time + skew impact based on risk per direction and asset - discount as half of opposite skew
         lpFeeWithSkew =
             speedMarketsAMMUtils.getFeeByTimeThreshold(
@@ -275,6 +272,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             ) +
             skew -
             discount;
+
+        currentRiskPerAsset[asset] += (buyinAmount * 2 - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE);
+        require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
     }
 
     function _handleReferrerAndSafeBox(
@@ -394,6 +394,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         address collateral,
         bool toEth
     ) external payable nonReentrant notPaused {
+        require(multicollateralEnabled, "Multicollateral offramp not enabled");
         address user = SpeedMarket(market).user();
         require(msg.sender == user, "Only allowed from market owner");
         uint amountBefore = sUSD.balanceOf(user);

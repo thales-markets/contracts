@@ -85,24 +85,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "sportsAMMLiquidityPool",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "thalesAMMLiquidityPool",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "parlayAMMLiquidityPool",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "stakingThalesBonusRewardsManager",
         "type": "address"
       }
@@ -995,7 +977,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "returnValue",
         "type": "uint256"
       }
     ],
@@ -1201,21 +1183,6 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "parlayAMMLiquidityPool",
-    "outputs": [
-      {
-        "internalType": "contract IParlayAMMLiquidityPool",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -1319,21 +1286,6 @@
       {
         "internalType": "address",
         "name": "_addressResolver",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_sportsAMMLiquidityPool",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_thalesAMMLiquidityPool",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlayAMMLiquidityPool",
         "type": "address"
       },
       {
@@ -1549,21 +1501,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "sportsAMMLiquidityPool",
-    "outputs": [
-      {
-        "internalType": "contract ISportsAMMLiquidityPool",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
@@ -1759,21 +1696,6 @@
     "outputs": [
       {
         "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "thalesAMMLiquidityPool",
-    "outputs": [
-      {
-        "internalType": "contract IThalesAMMLiquidityPool",
         "name": "",
         "type": "address"
       }

@@ -245,9 +245,6 @@ contract('StakingThales', (accounts) => {
 			ThalesStakingRewardsPoolDeployed.address,
 			AddressResolverDeployed.address,
 			ZERO_ADDRESS,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
 			{ from: owner }
 		);
 		let CCIPRouterContract = artifacts.require('MockCCIPRouter');
@@ -296,9 +293,6 @@ contract('StakingThales', (accounts) => {
 			PriceFeedInstance.address,
 			ThalesStakingRewardsPoolDeployed.address,
 			AddressManager.address,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
 			StakingThalesBonusRewardsManager.address,
 			{ from: owner }
 		);
@@ -398,9 +392,6 @@ contract('StakingThales', (accounts) => {
 				PriceFeedInstance.address,
 				ThalesStakingRewardsPoolDeployed.address,
 				AddressManager.address,
-				ZERO_ADDRESS,
-				ZERO_ADDRESS,
-				ZERO_ADDRESS,
 				ZERO_ADDRESS,
 				{ from: owner }
 			);

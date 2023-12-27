@@ -123,11 +123,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     mapping(address => bool) public supportedSportVault;
     mapping(address => bool) public supportedAMMVault;
 
-    ISportsAMMLiquidityPool public sportsAMMLiquidityPool;
-    IThalesAMMLiquidityPool public thalesAMMLiquidityPool;
+    ISportsAMMLiquidityPool private sportsAMMLiquidityPool;
+    IThalesAMMLiquidityPool private thalesAMMLiquidityPool;
 
     IStakingThalesBonusRewardsManager public stakingThalesBonusRewardsManager;
-    IParlayAMMLiquidityPool public parlayAMMLiquidityPool;
+    IParlayAMMLiquidityPool private parlayAMMLiquidityPool;
 
     bool public readOnlyMode;
     bool public closingPeriodInProgress;
@@ -255,11 +255,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         periodExtraReward = _extraReward;
         extraRewardsActive = _extraRewardsActive;
 
-        emit StakingRewardsParametersChanged(
-            _fixedReward,
-            _extraReward,
-            _extraRewardsActive
-        );
+        emit StakingRewardsParametersChanged(_fixedReward, _extraReward, _extraRewardsActive);
     }
 
     /// @notice Set contract addresses
@@ -269,8 +265,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param _priceFeed address of price feed contract
     /// @param _thalesStakingRewardsPool address of Thales staking rewards pool
     /// @param _addressResolver address of address resolver contract
-    /// @param _sportsAMMLiquidityPool address of Sport AMM Liquidity Pool
-    /// @param _thalesAMMLiquidityPool address of thales AMM Liquidity Pool
     /// @param _stakingThalesBonusRewardsManager manager for TIP-135 gamification systme
     function setAddresses(
         address _thalesAMM,
@@ -279,9 +273,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address _priceFeed,
         address _thalesStakingRewardsPool,
         address _addressResolver,
-        address _sportsAMMLiquidityPool,
-        address _thalesAMMLiquidityPool,
-        address _parlayAMMLiquidityPool,
         address _stakingThalesBonusRewardsManager
     ) external onlyOwner {
         thalesAMM = _thalesAMM;
@@ -290,9 +281,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         priceFeed = IPriceFeed(_priceFeed);
         ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);
         addressResolver = IAddressResolver(_addressResolver);
-        sportsAMMLiquidityPool = ISportsAMMLiquidityPool(_sportsAMMLiquidityPool);
-        thalesAMMLiquidityPool = IThalesAMMLiquidityPool(_thalesAMMLiquidityPool);
-        parlayAMMLiquidityPool = IParlayAMMLiquidityPool(_parlayAMMLiquidityPool);
         stakingThalesBonusRewardsManager = IStakingThalesBonusRewardsManager(_stakingThalesBonusRewardsManager);
         emit AddressesChanged(
             _thalesAMM,
@@ -301,9 +289,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             _priceFeed,
             _thalesStakingRewardsPool,
             _addressResolver,
-            _sportsAMMLiquidityPool,
-            _thalesAMMLiquidityPool,
-            _parlayAMMLiquidityPool,
             _stakingThalesBonusRewardsManager
         );
     }
@@ -343,7 +328,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit LastPeriodTimestampSet(_lastPeriodTimestamp);
     }
 
-
     /// @notice Get the base reward amount available for the claim for the account
     /// @param account to get the base reward amount available for the claim for
     /// @return the base reward amount available for the claim for the account
@@ -371,14 +355,13 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @notice Get the total bonus rewards for the account
     /// @param account to get the total bonus rewards for
     /// @return the total bonus rewards for the account
-    function getTotalBonus(address account) public view returns (uint) {
+    function getTotalBonus(address account) public view returns (uint returnValue) {
         if (
             (address(stakingThalesBonusRewardsManager) != address(0)) && stakingThalesBonusRewardsManager.useNewBonusModel()
         ) {
-            return
-                periodExtraReward
-                    .mul(stakingThalesBonusRewardsManager.getUserRoundBonusShare(account, periodsOfStaking - 1))
-                    .div(ONE);
+            returnValue = periodExtraReward
+                .mul(stakingThalesBonusRewardsManager.getUserRoundBonusShare(account, periodsOfStaking - 1))
+                .div(ONE);
         }
     }
 
@@ -496,18 +479,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(_stakedBalances[msg.sender] >= amount, "Account doesnt have that much staked");
         require(!unstaking[msg.sender], "Account has already triggered unstake cooldown");
 
-        if (address(sportsAMMLiquidityPool) != address(0)) {
-            require(!sportsAMMLiquidityPool.isUserLPing(msg.sender), "Cannot unstake while LPing");
-        }
-
-        if (address(thalesAMMLiquidityPool) != address(0)) {
-            require(!thalesAMMLiquidityPool.isUserLPing(msg.sender), "Cannot unstake while LPing");
-        }
-
-        if (address(parlayAMMLiquidityPool) != address(0)) {
-            require(!parlayAMMLiquidityPool.isUserLPing(msg.sender), "Cannot unstake while LPing");
-        }
-
         if (_calculateAvailableRewardsToClaim(msg.sender) > 0) {
             _claimReward(msg.sender);
         }
@@ -614,18 +585,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             "Cannot merge, cancel unstaking on both accounts before merging"
         );
 
-        if (address(sportsAMMLiquidityPool) != address(0)) {
-            require(!sportsAMMLiquidityPool.isUserLPing(msg.sender), "Cannot merge while LPing");
-        }
-
-        if (address(thalesAMMLiquidityPool) != address(0)) {
-            require(!thalesAMMLiquidityPool.isUserLPing(msg.sender), "Cannot merge while LPing");
-        }
-
-        if (address(parlayAMMLiquidityPool) != address(0)) {
-            require(!parlayAMMLiquidityPool.isUserLPing(msg.sender), "Cannot merge while LPing");
-        }
-
         iEscrowThales.mergeAccount(msg.sender, destAccount);
 
         _stakedBalances[destAccount] = _stakedBalances[destAccount].add(_stakedBalances[msg.sender]);
@@ -644,7 +603,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         delete stakerFeesClaimed[msg.sender];
         delete _lastRewardsClaimedPeriod[msg.sender];
         delete _lastStakingPeriod[msg.sender];
-        
 
         emit AccountMerged(msg.sender, destAccount);
     }
@@ -753,15 +711,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 .div(totalStakedLastPeriodEnd.add(totalEscrowedLastPeriodEnd));
     }
 
-    function _getTotalAMMVolume(address account) internal view returns (uint totalAMMforAccount) {
-        if (!(periodsOfStaking >= lastAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
-            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-                if (periodsOfStaking < stakerAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                    totalAMMforAccount = totalAMMforAccount.add(stakerAMMVolume[account][i].amount);
-            }
-        }
-    }
-
     function _transformCollateral(uint _amount) internal view returns (uint) {
         return (ICCIPCollector(address(feeToken)).decimals() == 6) ? _amount * 1e12 : _amount;
     }
@@ -789,11 +738,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         bool mergeAccountEnabled,
         bool readOnlyMode
     );
-    event StakingRewardsParametersChanged(
-        uint fixedPeriodReward,
-        uint periodExtraReward,
-        bool extraRewardsActive
-    );
+    event StakingRewardsParametersChanged(uint fixedPeriodReward, uint periodExtraReward, bool extraRewardsActive);
     event AddressesChanged(
         address thalesAMM,
         address thalesRangedAMM,
@@ -801,9 +746,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address priceFeed,
         address ThalesStakingRewardsPool,
         address addressResolver,
-        address sportsAMMLiquidityPool,
-        address thalesAMMLiquidityPool,
-        address parlayAMMLiquidityPool,
         address stakingThalesBonusRewardsManager
     );
     event ReceivedStakingRewardsUpdate(uint _currentPeriodRewards, uint _extraRewards, uint _revShare);

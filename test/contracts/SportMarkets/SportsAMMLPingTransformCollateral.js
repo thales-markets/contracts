@@ -276,9 +276,6 @@ contract('SportsAMM', (accounts) => {
 			second,
 			second,
 			second,
-			second,
-			second,
-			second,
 			ZERO_ADDRESS,
 			{ from: owner }
 		);

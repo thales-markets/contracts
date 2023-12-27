@@ -303,9 +303,6 @@ contract('ParlayAMM', (accounts) => {
 			second,
 			second,
 			second,
-			second,
-			second,
-			second,
 			ZERO_ADDRESS,
 			{ from: owner }
 		);

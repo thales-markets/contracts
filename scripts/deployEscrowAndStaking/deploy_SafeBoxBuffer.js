@@ -19,7 +19,7 @@ async function main() {
 	let CCIP_Router;
 	let masterCollector;
 	let masterChainSelector;
-    let AddressManagerAddress;
+	let AddressManagerAddress;
 	const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 	if (network == 'homestead') {
@@ -49,7 +49,7 @@ async function main() {
 		masterCollector = false;
 		masterChainSelector = '0';
 		CCIP_Router = getTargetAddress('CCIPRouter', network);
-        AddressManagerAddress = getTargetAddress('AddressManager', network);
+		AddressManagerAddress = getTargetAddress('AddressManager', network);
 	}
 	if (networkObj.chainId == 5) {
 		networkObj.name = 'goerli';
@@ -57,7 +57,7 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
 		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
-        AddressManagerAddress = getTargetAddress('AddressManager', network);
+		AddressManagerAddress = getTargetAddress('AddressManager', network);
 	}
 	if (networkObj.chainId == 420) {
 		networkObj.name = 'optimisticGoerli';
@@ -69,7 +69,7 @@ async function main() {
 		CCIP_Router = getTargetAddress('CCIPRouter', network);
 		masterCollector = true;
 		masterChainSelector = '2664363617261496610';
-        AddressManagerAddress = getTargetAddress('AddressManager', network);
+		AddressManagerAddress = getTargetAddress('AddressManager', network);
 	}
 
 	if (networkObj.chainId == 42161) {
@@ -82,7 +82,7 @@ async function main() {
 		masterCollector = false;
 		masterChainSelector = '0';
 		CCIP_Router = getTargetAddress('CCIPRouter', network);
-        AddressManagerAddress = getTargetAddress('AddressManager', network);
+		AddressManagerAddress = getTargetAddress('AddressManager', network);
 	}
 
 	if (networkObj.chainId == 8453) {
@@ -95,7 +95,7 @@ async function main() {
 		masterCollector = false;
 		masterChainSelector = '0';
 		CCIP_Router = getTargetAddress('CCIPRouter', network);
-        AddressManagerAddress = getTargetAddress('AddressManager', network);
+		AddressManagerAddress = getTargetAddress('AddressManager', network);
 	}
 
 	if (networkObj.chainId == 84531) {
@@ -104,7 +104,7 @@ async function main() {
 		CCIP_Router = getTargetAddress('CCIPRouter', network);
 		masterCollector = false;
 		masterChainSelector = '0';
-        AddressManagerAddress = getTargetAddress('AddressManager', network);
+		AddressManagerAddress = getTargetAddress('AddressManager', network);
 	}
 
 	if (networkObj.chainId == 421613) {
@@ -113,7 +113,7 @@ async function main() {
 		CCIP_Router = getTargetAddress('CCIPRouter', network);
 		masterCollector = false;
 		masterChainSelector = '0';
-        AddressManagerAddress = getTargetAddress('AddressManager', network);
+		AddressManagerAddress = getTargetAddress('AddressManager', network);
 	}
 
 	const SafeBoxBuffer = await ethers.getContractFactory('SafeBoxBuffer');

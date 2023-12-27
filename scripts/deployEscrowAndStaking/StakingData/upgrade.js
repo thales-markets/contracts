@@ -8,7 +8,7 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	console.log("networkObj:", networkObj );
+	console.log('networkObj:', networkObj);
 	if (networkObj.chainId == 420) {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';

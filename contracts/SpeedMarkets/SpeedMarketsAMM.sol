@@ -635,6 +635,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice maximum risk per asset
     function setMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset) external onlyOwner {
         maxRiskPerAsset[asset] = _maxRiskPerAsset;
+        currentRiskPerAsset[asset] = 0; // TODO: this can be removed with next upgrade
         emit SetMaxRiskPerAsset(asset, _maxRiskPerAsset);
     }
 

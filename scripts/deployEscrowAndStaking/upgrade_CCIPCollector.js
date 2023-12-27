@@ -100,7 +100,12 @@ async function main() {
 
 	await delay(5000);
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 5 || networkObj.chainId == 42161) {
+	if (
+		networkObj.chainId == 10 ||
+		networkObj.chainId == 5 ||
+		networkObj.chainId == 42161 ||
+		networkObj.chainId == 8453
+	) {
 		const implementation = await upgrades.prepareUpgrade(
 			CrossChainCollectorAddress,
 			CrossChainCollector,

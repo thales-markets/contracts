@@ -166,13 +166,15 @@
 		"ParlayPolicy": "0x6880b6fc24Ac20a9081FfA39B1A504A44BAEB2dE",
 		"ParlayPolicyImplementation": "0x899B77fc0E210BE9ADe1531EddE6898a836eC9D1",
 		"AddressManager": "0x9b4c63Bb86139188bbbA9C93C498a60dCB0d94bf",
-		"AddressManagerImplementation": "0x935b3779743CFAD643fCfc609473E0164348a88C",
+		"AddressManagerImplementation": "0x7e2eA51355AEa97bBEcE28213D84d7502601B281",
 		"ChainedSpeedMarketMastercopy": "0xE5a381e2D10A6482598662d0c2a8512596Cf73E7",
 		"ChainedSpeedMarketsAMM": "0xFf8Cf5ABF583D0979C0B9c35d62dd1fD52cce7C7",
 		"ChainedSpeedMarketsAMMImplementation": "0xd4F5063C350D921928679bE89877d79455D4A3f3",
 		"CCIPRouter": "0x261c05167db67b2b619f9d312e0753f3721ad6e8",
 		"CrossChainCollector": "0x674d702069a7c12389B65a39b5a33829280f0E23",
-		"CrossChainCollectorImplementation": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c"
+		"CrossChainCollectorImplementation": "0x323d27caFBc684832E31c03fce6e553eba1d13aa",
+		"SafeBoxBuffer": "0x3263B3E8Eda05b23aA774Cb7f1c126B3831b80A4",
+		"SafeBoxBufferImplementation": "0xc35A243c7Df8c3E08ddB0c70fF0427eA92E99611"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -306,13 +308,15 @@
 		"ParlayPolicyImplementation": "0x899B77fc0E210BE9ADe1531EddE6898a836eC9D1",
 		"SportPositionalMarketFactoryImplementation": "0x1D5477DB1f8B582678f3C1A1D270f7fb7Bd7d8d8",
 		"AddressManager": "0x6DD969E6d2da27Ed8472c9B9A6673BC67dEc1D53",
-		"AddressManagerImplementation": "0x823D03A9f13c08915833cB4249F9d4C2800BCdc3",
+		"AddressManagerImplementation": "0xc35A243c7Df8c3E08ddB0c70fF0427eA92E99611",
 		"ChainedSpeedMarketMastercopy": "0x342D29603CE81cF3aC1B004A5e19C6Ff6d7fe516",
 		"ChainedSpeedMarketsAMM": "0xe92B4c614b04c239d30c31A7ea1290AdDCb8217D",
 		"ChainedSpeedMarketsAMMImplementation": "0x6B5FE966Ea9B05d8E628E772B0b745734D069983",
 		"CCIPRouter": "0xe92634289a1841a979c11c2f618b33d376e4ba85",
 		"CrossChainCollector": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c",
-		"CrossChainCollectorImplementation": "0x794668C4e3a5EDd6B6C4e9842DF7f109f7141F2B"
+		"CrossChainCollectorImplementation": "0x3263B3E8Eda05b23aA774Cb7f1c126B3831b80A4",
+		"SafeBoxBuffer": "0xEd31481E4B1ded06ee5ed48C0205fA479Ffeb866",
+		"SafeBoxBufferImplementation": "0x393960FF3e10e13A2aEc0F4b1E79fA2B5f544B80"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
@@ -425,10 +429,12 @@
 		"ChainedSpeedMarketsAMM": "0x6848F001ddDb4442d352C495c7B4a231e3889b70",
 		"ChainedSpeedMarketsAMMImplementation": "0x45BE47DbD54B77e16d9CcfDeF1BCb320425dDa1D",
 		"AddressManager": "0xE2A98958E33E0110344DDeeF08eF42BA9D553050",
-		"AddressManagerImplementation": "0xde4D28bdf33b527c8eEFe01064E6D629F833ce72",
+		"AddressManagerImplementation": "0x393960FF3e10e13A2aEc0F4b1E79fA2B5f544B80",
 		"CCIPRouter": "0x673aa85efd75080031d44fca061575d1da427a28",
 		"CrossChainCollector": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c",
-		"CrossChainCollectorImplementation": "0x794668C4e3a5EDd6B6C4e9842DF7f109f7141F2B"
+		"CrossChainCollectorImplementation": "0xEd31481E4B1ded06ee5ed48C0205fA479Ffeb866",
+		"SafeBoxBuffer": "0x51c2589084488077318E43837B29C165d98A9152",
+		"SafeBoxBufferImplementation": "0x674d702069a7c12389B65a39b5a33829280f0E23"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

@@ -713,11 +713,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function _transformCollateral(uint _amount) internal view returns (uint) {
-        return (ICCIPCollector(address(feeToken)).decimals() == 6) ? _amount * 1e12 : _amount;
+        return (ICCIPCollector(address(feeToken)).decimals() == 6) ? _amount / 1e12 : _amount;
     }
 
     function _reverseTransformCollateral(uint _amount) internal view returns (uint) {
-        return (ICCIPCollector(address(feeToken)).decimals() == 6) ? _amount / 1e12 : _amount;
+        return (ICCIPCollector(address(feeToken)).decimals() == 6) ? _amount * 1e12 : _amount;
     }
 
     /* ========== EVENTS ========== */

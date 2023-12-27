@@ -103,18 +103,8 @@ contract('StakingThales', (accounts) => {
 			true,
 			true
 		);
-		await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(
-			100000,
-			100000,
-			false,
-			'15',
-			'12',
-			'3',
-			'1',
-			'10'
-		);
+		await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(100000, 100000, false);
 		await StakingThalesDeployed.connect(owner).setAddresses(
-			SNXRewardsDeployed.address,
 			dummy,
 			dummy,
 			dummy,

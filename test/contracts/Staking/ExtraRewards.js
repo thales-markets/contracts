@@ -163,12 +163,7 @@ contract('StakingThales', (accounts) => {
 			await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(
 				toWei(deposit.toString(), 'ether'),
 				toWei('21000', 'ether'),
-				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10'
+				false
 			);
 			await EscrowThalesDeployed.connect(owner).setStakingThalesContract(
 				StakingThalesDeployed.address

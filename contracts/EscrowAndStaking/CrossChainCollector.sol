@@ -153,40 +153,6 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit SentOnClosePeriod(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, _revShare);
     }
 
-    /// @notice Used for sending staking information at the end of each period by the (local) Staking contract on the particular chain.
-    /// @param _totalStakedLastPeriodEnd the amount of staked THALES at the end of a period
-    /// @param _totalEscrowedLastPeriodEnd the amount of escrowed THALES at the end of a period
-    /// @param _bonusPoints the total bonus points at the end of a period
-    /// @param _revShare the total revenue at the end of a period
-    function sendOnClosePeriodAdmin(
-        uint _totalStakedLastPeriodEnd,
-        uint _totalEscrowedLastPeriodEnd,
-        uint _bonusPoints,
-        uint _revShare
-    ) external onlyOwner {
-        if (masterCollector == address(this)) {
-            _storeRewards(
-                masterCollectorChain,
-                _totalStakedLastPeriodEnd,
-                _totalEscrowedLastPeriodEnd,
-                _bonusPoints,
-                _revShare
-            );
-            ++collectedResultsForPeriod;
-            if (collectedResultsForPeriod == numOfActiveCollectors) {
-                readyToBroadcast = true;
-            }
-        } else {
-            bytes memory message = abi.encode(
-                _totalStakedLastPeriodEnd,
-                _totalEscrowedLastPeriodEnd,
-                _bonusPoints,
-                _revShare
-            );
-            _sendMessageToChain(masterCollectorChain, message);
-        }
-        emit SentOnClosePeriod(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, _revShare);
-    }
 
     /// @notice (If it is master collector) when all messages are received from each chain, the final calculated amounts are broadcasted to all Staking contracts via CCIP
     function broadcastMessageToAll() external nonReentrant {

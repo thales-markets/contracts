@@ -424,6 +424,17 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit ClosedPeriod(periodsOfStaking, lastPeriodTimeStamp);
     }
 
+    function simulateCloseRound() external onlyOwner {
+        if (addressResolver.checkIfContractExists("CrossChainCollector")) {
+            ICCIPCollector(addressResolver.getAddress("CrossChainCollector")).sendOnClosePeriod(
+                totalStakedLastPeriodEnd,
+                totalEscrowedLastPeriodEnd,
+                stakingThalesBonusRewardsManager.totalRoundBonusPoints(periodsOfStaking - 1),
+                _reverseTransformCollateral(feeToken.balanceOf(address(this)))
+            );
+        }
+    }
+
     /// @notice Updating the staking rewards parameters after closed period with the calculated values via CCIP
     /// @param _currentPeriodRewards the calculated base rewards to be distributed for the current period on the particular chain
     /// @param _extraRewards the calculated extra rewards to be distributed for the current period on the particular chain

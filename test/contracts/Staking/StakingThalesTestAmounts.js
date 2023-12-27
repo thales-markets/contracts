@@ -166,7 +166,6 @@ contract('StakingThales', (accounts) => {
 			from: owner,
 		});
 		await StakingThalesDeployed.setAddresses(
-			SNXRewardsDeployed.address,
 			dummy,
 			dummy,
 			dummy,
@@ -217,17 +216,9 @@ contract('StakingThales', (accounts) => {
 				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, toUnit(70000));
-				await StakingThalesDeployed.setStakingRewardsParameters(
-					fixedReward,
-					100000,
-					false,
-					'15',
-					'12',
-					'3',
-					'1',
-					'10',
-					{ from: owner }
-				);
+				await StakingThalesDeployed.setStakingRewardsParameters(fixedReward, 100000, false, {
+					from: owner,
+				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
 
@@ -319,17 +310,9 @@ contract('StakingThales', (accounts) => {
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, toUnit(70000));
 
-				await StakingThalesDeployed.setStakingRewardsParameters(
-					fixedReward,
-					100000,
-					false,
-					'15',
-					'12',
-					'3',
-					'1',
-					'10',
-					{ from: owner }
-				);
+				await StakingThalesDeployed.setStakingRewardsParameters(fixedReward, 100000, false, {
+					from: owner,
+				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
 
@@ -437,17 +420,9 @@ contract('StakingThales', (accounts) => {
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 				let answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, toUnit(70000));
-				await StakingThalesDeployed.setStakingRewardsParameters(
-					fixedReward,
-					100000,
-					false,
-					'15',
-					'12',
-					'3',
-					'1',
-					'10',
-					{ from: owner }
-				);
+				await StakingThalesDeployed.setStakingRewardsParameters(fixedReward, 100000, false, {
+					from: owner,
+				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
 
@@ -591,17 +566,9 @@ contract('StakingThales', (accounts) => {
 					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 					let answer = await StakingThalesDeployed.fixedPeriodReward.call();
 					assert.bnEqual(answer, toUnit(70000));
-					await StakingThalesDeployed.setStakingRewardsParameters(
-						fixedReward,
-						100000,
-						false,
-						'15',
-						'12',
-						'3',
-						'1',
-						'10',
-						{ from: owner }
-					);
+					await StakingThalesDeployed.setStakingRewardsParameters(fixedReward, 100000, false, {
+						from: owner,
+					});
 					answer = await StakingThalesDeployed.fixedPeriodReward.call();
 					assert.bnEqual(answer, fixedReward);
 

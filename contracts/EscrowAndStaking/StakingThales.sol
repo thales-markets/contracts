@@ -457,6 +457,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 }
             }
             currentPeriodRewards = _currentPeriodRewards;
+            periodExtraReward = _extraRewards;
             closingPeriodInProgress = false;
             if (closingPeriodPauseTime == lastPauseTime) {
                 paused = !safeBoxBufferSet || insufficientFundsInBuffer;

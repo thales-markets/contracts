@@ -407,6 +407,16 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         currentPeriodFees = feeToken.balanceOf(address(this));
         totalStakedLastPeriodEnd = _totalStakedAmount;
 
+        _sendRoundClosingMessageCrosschain();
+        emit ClosedPeriod(periodsOfStaking, lastPeriodTimeStamp);
+    }
+
+    /// @notice if CCIP is configured, this method will send the staking data to relevant chains
+    function sendRoundClosingMessageCrosschain() external onlyOwner {
+        _sendRoundClosingMessageCrosschain();
+    }
+
+    function _sendRoundClosingMessageCrosschain() internal {
         if (addressResolver.checkIfContractExists("CrossChainCollector")) {
             if (!readOnlyMode) {
                 paused = true;
@@ -414,18 +424,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 lastPauseTime = block.timestamp;
                 closingPeriodPauseTime = block.timestamp;
             }
-            ICCIPCollector(addressResolver.getAddress("CrossChainCollector")).sendOnClosePeriod(
-                totalStakedLastPeriodEnd,
-                totalEscrowedLastPeriodEnd,
-                stakingThalesBonusRewardsManager.totalRoundBonusPoints(periodsOfStaking - 1),
-                _reverseTransformCollateral(feeToken.balanceOf(address(this)))
-            );
-        }
-        emit ClosedPeriod(periodsOfStaking, lastPeriodTimeStamp);
-    }
-
-    function simulateCloseRound() external onlyOwner {
-        if (addressResolver.checkIfContractExists("CrossChainCollector")) {
             ICCIPCollector(addressResolver.getAddress("CrossChainCollector")).sendOnClosePeriod(
                 totalStakedLastPeriodEnd,
                 totalEscrowedLastPeriodEnd,

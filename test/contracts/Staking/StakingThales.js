@@ -230,7 +230,7 @@ contract('StakingThales', (accounts) => {
 			{ from: owner }
 		);
 		await SNXRewardsDeployed.setIssuanceRatio('1666666666666666666'.toString());
-		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, {
+		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, false, {
 			from: owner,
 		});
 		let StakingThalesBonusRewardsManagerContract = artifacts.require(
@@ -1286,13 +1286,13 @@ contract('StakingThales', (accounts) => {
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 
-			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, false, true, {
+			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, false, true, false, {
 				from: owner,
 			});
 			await expect(StakingThalesDeployed.mergeAccount(second, { from: first })).to.be.revertedWith(
 				'Merge account is disabled'
 			);
-			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, {
+			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, false, {
 				from: owner,
 			});
 

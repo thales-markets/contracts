@@ -397,6 +397,12 @@
         "internalType": "bool",
         "name": "readOnlyMode",
         "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "sendCCIPMessage",
+        "type": "bool"
       }
     ],
     "name": "StakingParametersChanged",
@@ -1420,6 +1426,11 @@
       {
         "internalType": "bool",
         "name": "_readOnlyMode",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_sendCCIPMessage",
         "type": "bool"
       }
     ],

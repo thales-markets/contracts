@@ -133,6 +133,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     bool public closingPeriodInProgress;
     uint public closingPeriodPauseTime;
 
+    bool sendCCIPMessage;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -218,13 +220,16 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param _durationPeriod duration of the staking period
     /// @param _unstakeDurationPeriod duration of the unstaking cooldown period
     /// @param _mergeAccountEnabled enable/disable account merging
+    /// @param _readOnlyMode enable/disable readonlymode
+    /// @param _sendCCIPMessage enable/disable sending CCIP message
     function setStakingParameters(
         bool _claimEnabled,
         bool _distributeFeesEnabled,
         uint _durationPeriod,
         uint _unstakeDurationPeriod,
         bool _mergeAccountEnabled,
-        bool _readOnlyMode
+        bool _readOnlyMode,
+        bool _sendCCIPMessage
     ) external onlyOwner {
         claimEnabled = _claimEnabled;
         distributeFeesEnabled = _distributeFeesEnabled;
@@ -232,13 +237,15 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         unstakeDurationPeriod = _unstakeDurationPeriod;
         mergeAccountEnabled = _mergeAccountEnabled;
         readOnlyMode = _readOnlyMode;
+        sendCCIPMessage = _sendCCIPMessage;
         emit StakingParametersChanged(
             _claimEnabled,
             _distributeFeesEnabled,
             _durationPeriod,
             _unstakeDurationPeriod,
             _mergeAccountEnabled,
-            _readOnlyMode
+            _readOnlyMode,
+            _sendCCIPMessage
         );
     }
 
@@ -407,7 +414,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         currentPeriodFees = feeToken.balanceOf(address(this));
         totalStakedLastPeriodEnd = _totalStakedAmount;
 
-        _sendRoundClosingMessageCrosschain();
+        if (sendCCIPMessage) {
+            _sendRoundClosingMessageCrosschain();
+        }
         emit ClosedPeriod(periodsOfStaking, lastPeriodTimeStamp);
     }
 
@@ -746,7 +755,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint durationPeriod,
         uint unstakeDurationPeriod,
         bool mergeAccountEnabled,
-        bool readOnlyMode
+        bool readOnlyMode,
+        bool sendCCIPMessage
     );
     event StakingRewardsParametersChanged(uint fixedPeriodReward, uint periodExtraReward, bool extraRewardsActive);
     event AddressesChanged(

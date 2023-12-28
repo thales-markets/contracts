@@ -605,45 +605,42 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit AMMAddressesChanged(_mastercopy, _speedMarketsAMMUtils, _addressManager);
     }
 
-    /// @notice Set minimum and maximum buyin amounts
-    function setAmounts(uint _minBuyinAmount, uint _maxBuyinAmount) external onlyOwner {
+    /// @notice Set parameters for limits
+    function setLimitParams(
+        uint _minBuyinAmount,
+        uint _maxBuyinAmount,
+        uint _minimalTimeToMaturity,
+        uint _maximalTimeToMaturity,
+        uint64 _maximumPriceDelay,
+        uint64 _maximumPriceDelayForResolving
+    ) external onlyOwner {
         minBuyinAmount = _minBuyinAmount;
         maxBuyinAmount = _maxBuyinAmount;
-        emit AmountsChanged(_minBuyinAmount, _maxBuyinAmount);
-    }
-
-    /// @notice Set minimum and maximum time to maturity
-    function setTimes(uint _minimalTimeToMaturity, uint _maximalTimeToMaturity) external onlyOwner {
         minimalTimeToMaturity = _minimalTimeToMaturity;
         maximalTimeToMaturity = _maximalTimeToMaturity;
-        emit TimesChanged(_minimalTimeToMaturity, _maximalTimeToMaturity);
-    }
-
-    /// @notice map asset to PythID, e.g. "ETH" as bytes 32 to an equivalent ID from pyth docs
-    function setAssetToPythID(bytes32 asset, bytes32 pythId) external onlyOwner {
-        assetToPythId[asset] = pythId;
-        emit SetAssetToPythID(asset, pythId);
-    }
-
-    /// @notice whats the longest a price can be delayed
-    function setMaximumPriceDelays(uint64 _maximumPriceDelay, uint64 _maximumPriceDelayForResolving) external onlyOwner {
         maximumPriceDelay = _maximumPriceDelay;
         maximumPriceDelayForResolving = _maximumPriceDelayForResolving;
-        emit SetMaximumPriceDelays(_maximumPriceDelay, _maximumPriceDelayForResolving);
+        emit LimitParamsChanged(
+            _minBuyinAmount,
+            _maxBuyinAmount,
+            _minimalTimeToMaturity,
+            _maximalTimeToMaturity,
+            _maximumPriceDelay,
+            _maximumPriceDelayForResolving
+        );
     }
 
-    /// @notice maximum risk per asset
-    function setMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset) external onlyOwner {
+    /// @notice maximum risk per asset and per asset and direction
+    function setMaxRisks(
+        bytes32 asset,
+        uint _maxRiskPerAsset,
+        uint _maxRiskPerAssetAndDirection
+    ) external onlyOwner {
         maxRiskPerAsset[asset] = _maxRiskPerAsset;
         currentRiskPerAsset[asset] = 0; // TODO: this can be removed with next upgrade
-        emit SetMaxRiskPerAsset(asset, _maxRiskPerAsset);
-    }
-
-    /// @notice maximum risk per asset and direction
-    function setMaxRiskPerAssetAndDirection(bytes32 asset, uint _maxRiskPerAssetAndDirection) external onlyOwner {
         maxRiskPerAssetAndDirection[asset][SpeedMarket.Direction.Up] = _maxRiskPerAssetAndDirection;
         maxRiskPerAssetAndDirection[asset][SpeedMarket.Direction.Down] = _maxRiskPerAssetAndDirection;
-        emit SetMaxRiskPerAssetAndDirection(asset, _maxRiskPerAssetAndDirection);
+        emit SetMaxRisks(asset, _maxRiskPerAsset, _maxRiskPerAssetAndDirection);
     }
 
     /// @notice set SafeBox and max skew impact
@@ -679,6 +676,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     function setSupportedAsset(bytes32 asset, bool _supported) external onlyOwner {
         supportedAsset[asset] = _supported;
         emit SetSupportedAsset(asset, _supported);
+    }
+
+    /// @notice map asset to PythID, e.g. "ETH" as bytes 32 to an equivalent ID from pyth docs
+    function setAssetToPythID(bytes32 asset, bytes32 pythId) external onlyOwner {
+        assetToPythId[asset] = pythId;
+        emit SetAssetToPythID(asset, pythId);
     }
 
     /// @notice set multi-collateral enabled
@@ -733,15 +736,19 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event MarketResolved(address _market, SpeedMarket.Direction _result, bool _userIsWinner);
 
     event AMMAddressesChanged(address _mastercopy, SpeedMarketsAMMUtils _speedMarketsAMMUtils, address _addressManager);
-    event AmountsChanged(uint _minBuyinAmount, uint _maxBuyinAmount);
-    event TimesChanged(uint _minimalTimeToMaturity, uint _maximalTimeToMaturity);
-    event SetAssetToPythID(bytes32 asset, bytes32 pythId);
-    event SetMaximumPriceDelays(uint _maximumPriceDelay, uint _maximumPriceDelayForResolving);
-    event SetMaxRiskPerAsset(bytes32 asset, uint _maxRiskPerAsset);
-    event SetMaxRiskPerAssetAndDirection(bytes32 asset, uint _maxRiskPerAssetAndDirection);
+    event LimitParamsChanged(
+        uint _minBuyinAmount,
+        uint _maxBuyinAmount,
+        uint _minimalTimeToMaturity,
+        uint _maximalTimeToMaturity,
+        uint _maximumPriceDelay,
+        uint _maximumPriceDelayForResolving
+    );
+    event SetMaxRisks(bytes32 asset, uint _maxRiskPerAsset, uint _maxRiskPerAssetAndDirection);
     event SafeBoxAndMaxSkewImpactChanged(uint _safeBoxImpact, uint _maxSkewImpact);
     event SetLPFeeParams(uint[] _timeThresholds, uint[] _lpFees, uint _lpFee);
     event SetSupportedAsset(bytes32 asset, bool _supported);
+    event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event MultiCollateralOnOffRampEnabled(bool _enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);

@@ -32,6 +32,8 @@ contract('StakingThales', (accounts) => {
 	let SafeBoxBuffer;
 	let AddressManager;
 
+	let ThalesSixDecimal;
+
 	let CCIPCollector;
 	let CCIPRouter;
 	let StakingThalesBonusRewardsManager;
@@ -64,6 +66,8 @@ contract('StakingThales', (accounts) => {
 			SNXRewardsDeployed = await SNXRewards.new();
 			ThalesDeployed = await Thales.new({ from: owner });
 			ThalesFeeDeployed = await Thales.new({ from: owner });
+			let ThalesSixDecimalContract = artifacts.require('ThalesSixDecimal');
+			ThalesSixDecimal = await ThalesSixDecimalContract.new({ from: owner });
 
 			ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
 			ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
@@ -256,7 +260,7 @@ contract('StakingThales', (accounts) => {
 		);
 		StakingThalesBonusRewardsManager = await StakingThalesBonusRewardsManagerContract.new();
 		await StakingThalesBonusRewardsManager.initialize(owner, StakingThalesDeployed.address);
-		await CCIPCollector.initialize(CCIPRouter.address, true, 5, { from: owner });
+		await CCIPCollector.initialize(CCIPRouter.address, true, 5, 5, { from: owner });
 
 		// await CCIPCollector.setStakingThales(StakingThalesDeployed.address, { from: owner });
 		let SafeBoxContract = artifacts.require('SafeBoxBuffer');
@@ -662,6 +666,111 @@ contract('StakingThales', (accounts) => {
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			await StakingThalesDeployed.claimReward({ from: first });
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);
+			assert.bnEqual(answer, answer2);
+			await AddressManager.setAddressInAddressBook('CrossChainCollector', CCIPCollector.address, {
+				from: owner,
+			});
+			await AddressManager.setAddressInAddressBook('SafeBoxBuffer', SafeBoxBuffer.address, {
+				from: owner,
+			});
+			// await StakingThalesDeployed.setCrossChainCollector(
+			// 	CCIPCollector.address,
+			// 	SafeBoxBuffer.address,
+			// 	{ from: owner }
+			// );
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			assert.equal(await StakingThalesDeployed.paused(), true);
+			await expect(StakingThalesDeployed.claimReward({ from: first })).to.be.revertedWith(
+				'This action cannot be performed while the contract is paused'
+			);
+			await AddressManager.setAddressInAddressBook('CrossChainCollector', second, { from: owner });
+			await AddressManager.setAddressInAddressBook('SafeBoxBuffer', SafeBoxBuffer.address, {
+				from: owner,
+			});
+			// await StakingThalesDeployed.setCrossChainCollector(second, SafeBoxBuffer.address, {
+			// 	from: owner,
+			// });
+			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
+			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
+			await expect(
+				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: owner })
+			).to.be.revertedWith('InvCCIP');
+			await sUSDSynth.transfer(StakingThalesDeployed.address, 1001, { from: initialCreator });
+			// await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1001, {
+			// 	from: owner,
+			// });
+			await StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: second });
+			assert.equal(await StakingThalesDeployed.paused(), false);
+			await StakingThalesDeployed.claimReward({ from: first });
+		});
+		it('Use 6 decimals: Stake with first, claim reward, activate CCIP, close period, staking paused, update rewards, claim reward', async () => {
+			let StakingThales = artifacts.require('StakingThales');
+			StakingThalesDeployed = await StakingThales.new({ from: managerOwner });
+			await StakingThalesDeployed.initialize(
+				owner,
+				EscrowThalesDeployed.address,
+				ThalesDeployed.address,
+				ThalesSixDecimal.address,
+				WEEK,
+				WEEK,
+				SNXRewardsDeployed.address
+			);
+
+			await StakingThalesDeployed.setAddresses(
+				dummy,
+				dummy,
+				dummy,
+				PriceFeedInstance.address,
+				ThalesStakingRewardsPoolDeployed.address,
+				AddressManager.address,
+				StakingThalesBonusRewardsManager.address,
+				{ from: owner }
+			);
+			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, false, {
+				from: owner,
+			});
+			await AddressManager.setAddressInAddressBook('StakingThales', StakingThalesDeployed.address, {
+				from: owner,
+			});
+			let deposit = toUnit(100000);
+			let stake = toUnit(1500);
+			await ThalesDeployed.transfer(first, stake, { from: owner });
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, true, {
+				from: owner,
+			});
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			await EscrowThalesDeployed.setThalesStakingRewardsPool(
+				ThalesStakingRewardsPoolDeployed.address,
+				{ from: owner }
+			);
+			await ThalesStakingRewardsPoolDeployed.setStakingThalesContract(
+				StakingThalesDeployed.address,
+				{ from: owner }
+			);
+			let answer = await StakingThalesDeployed.getContractFeeFunds();
+			assert.bnEqual(answer, 0);
+			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
+				'Staking period has not started'
+			);
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, toUnit(200000), {
+				from: owner,
+			});
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
+			await StakingThalesDeployed.stake(stake, { from: first });
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			console.log('Available fees to claim: ', fromUnit(answer));
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			console.log('Available rewards to claim: ', fromUnit(answer));
 			await StakingThalesDeployed.claimReward({ from: first });
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });

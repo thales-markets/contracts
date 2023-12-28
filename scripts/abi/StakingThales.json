@@ -1257,6 +1257,15 @@
   },
   {
     "constant": false,
+    "inputs": [],
+    "name": "sendRoundClosingMessageCrosschain",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
     "inputs": [
       {
         "internalType": "address",

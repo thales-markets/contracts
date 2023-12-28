@@ -75,18 +75,21 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     uint private constant ONE_MILLION_GAS = 1e6;
     uint private constant MAX_GAS = 10 * ONE_MILLION_GAS;
     uint private constant ONE = 1e18;
+    uint64 public localChainSelector;
 
     /* ========== INITIALIZERS ========== */
     function initialize(
         address _router,
         bool _masterCollector,
-        uint64 _masterCollectorSelector
+        uint64 _masterCollectorSelector,
+        uint64 _localChainSelector
     ) public initializer {
         setOwner(msg.sender);
         initNonReentrant();
         _setRouter(_router);
         s_router = IRouterClient(_router);
         gasLimitUsed = ONE_MILLION_GAS;
+        localChainSelector = _localChainSelector;
         if (_masterCollector) {
             masterCollector = address(this);
             masterCollectorChain = _masterCollectorSelector;
@@ -104,7 +107,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     /// @notice Check if this CCIP contract is a master collector CCIP contract
     function isMasterCollector() external view returns (bool isMaster) {
-        isMaster = masterCollector == address(this);
+        isMaster = masterCollector == address(this) && localChainSelector == masterCollectorChain;
     }
 
     /// @notice Get the chain selector number of the last message received on contract
@@ -129,7 +132,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     ) external {
         address _stakingThales_ = addressManager.getAddress("StakingThales");
         require(msg.sender == _stakingThales_, "InvSender");
-        if (masterCollector == address(this)) {
+        if (masterCollector == address(this) && localChainSelector == masterCollectorChain) {
             _storeRewards(
                 masterCollectorChain,
                 _totalStakedLastPeriodEnd,
@@ -153,7 +156,6 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit SentOnClosePeriod(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, _revShare);
     }
 
-
     /// @notice (If it is master collector) when all messages are received from each chain, the final calculated amounts are broadcasted to all Staking contracts via CCIP
     function broadcastMessageToAll() external nonReentrant {
         require(readyToBroadcast, "NotReadyToBroadcast");
@@ -173,7 +175,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     /// @notice processing/handling received messages
     function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
         // decoding the message
-        if (!messageIdAlreadyReceived[any2EvmMessage.messageId]) {
+        if (!messageIdAlreadyReceived[any2EvmMessage.messageId] && localChainSelector > 0) {
             // check if the particular message has been already received
             address sender = abi.decode(any2EvmMessage.sender, (address)); // get the message sender (used for further checks)
             messagesReceivedFromChainSelector[numOfMessagesReceived] = any2EvmMessage.sourceChainSelector; // store the chain selector of the message
@@ -181,9 +183,9 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
             messageIdAlreadyReceived[any2EvmMessage.messageId] = true; // flag the message as received
             ++numOfMessagesReceived; // increase the message counter
 
-            if (masterCollector == address(this)) {
-                // if the contract is master collector, use master collector mode of processing
+            if (masterCollector == address(this) && localChainSelector == masterCollectorChain) {
                 uint sourceChainSelector = any2EvmMessage.sourceChainSelector; // cache the source collector
+                // if the contract is master collector, use master collector mode of processing
                 if (
                     collectorAddress[sourceChainSelector] == sender && lastPeriodForChain[sourceChainSelector] < period // check if the sender is registered and it is first incoming message in this period
                 ) {
@@ -195,7 +197,11 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                         readyToBroadcast = true; // calculated results are ready for broadcasting
                     }
                 }
-            } else if (masterCollector == sender) {
+            } else if (
+                masterCollector == sender &&
+                localChainSelector != any2EvmMessage.sourceChainSelector &&
+                localChainSelector != masterCollectorChain
+            ) {
                 // receive broadcast message from master node
                 // if this contract is not a master collector
                 _updateRewardsOnStakingContract(any2EvmMessage.data); // process and send incoming message to local Staking contract
@@ -364,7 +370,12 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     /// @notice Set master collector address and selector
     /// @param _masterCollector address of the master collector
     /// @param _materCollectorChainId Chainlink predefined selector per chain
-    function setMasterCollector(address _masterCollector, uint64 _materCollectorChainId) external onlyOwner {
+    function setMasterCollector(
+        address _masterCollector,
+        uint64 _materCollectorChainId,
+        uint64 _localChainSelector
+    ) external onlyOwner {
+        localChainSelector = _localChainSelector;
         masterCollector = _masterCollector;
         masterCollectorChain = _materCollectorChainId;
         collectorAddress[_materCollectorChainId] = _masterCollector;
@@ -382,7 +393,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         address _collectorAddress,
         uint _slot
     ) external onlyOwner {
-        require(masterCollector == address(this), "NonMasterCollector");
+        require(masterCollector == address(this) && localChainSelector == masterCollectorChain, "NonMasterCollector");
         require(_slot <= numOfActiveCollectors, "SlotTooBig");
         if (_slot == numOfActiveCollectors) {
             chainSelector[numOfActiveCollectors] = _chainId;

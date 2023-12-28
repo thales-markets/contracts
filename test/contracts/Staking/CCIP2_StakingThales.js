@@ -698,7 +698,7 @@ contract('StakingThales', (accounts) => {
 			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
 			await expect(
-				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: owner })
+				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: third })
 			).to.be.revertedWith('InvCCIP');
 			await sUSDSynth.transfer(StakingThalesDeployed.address, 1001, { from: initialCreator });
 			// await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1001, {
@@ -793,6 +793,7 @@ contract('StakingThales', (accounts) => {
 			// 	SafeBoxBuffer.address,
 			// 	{ from: owner }
 			// );
+			await ThalesSixDecimal.transfer(StakingThalesDeployed.address, 200 * 1e6, { from: owner });
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			assert.equal(await StakingThalesDeployed.paused(), true);
@@ -808,16 +809,26 @@ contract('StakingThales', (accounts) => {
 			// });
 			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
+			await ThalesSixDecimal.transfer(SafeBoxBuffer.address, 100000 * 1e6, { from: owner });
 			await expect(
-				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: owner })
+				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: third })
 			).to.be.revertedWith('InvCCIP');
 			await sUSDSynth.transfer(StakingThalesDeployed.address, 1001, { from: initialCreator });
 			// await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1001, {
 			// 	from: owner,
 			// });
-			await StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: second });
+			await StakingThalesDeployed.updateStakingRewards(deposit, 100000, toUnit(10), {
+				from: second,
+			});
 			assert.equal(await StakingThalesDeployed.paused(), false);
+			balanceOfUser = await ThalesSixDecimal.balanceOf(first);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			console.log('Available fees to claim: ', answer.toString());
+			assert.equal(answer.toString(), '10000000'); // 10 usd with 6 decimals
 			await StakingThalesDeployed.claimReward({ from: first });
+			let newBalance = await ThalesSixDecimal.balanceOf(first);
+			console.log('Balance initially: ', balanceOfUser.toString());
+			console.log('Balance after: ', newBalance.toString());
 		});
 
 		it('Stake with first, claim reward, activate CCIP, close period, staking paused, update rewards, SafeBoxBuffer is address(0)', async () => {
@@ -878,7 +889,7 @@ contract('StakingThales', (accounts) => {
 			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
 			await expect(
-				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: owner })
+				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: third })
 			).to.be.revertedWith('InvCCIP');
 			await AddressManager.setAddressInAddressBook('CrossChainCollector', second, { from: owner });
 			await AddressManager.setAddressInAddressBook('SafeBoxBuffer', dummy, { from: owner });
@@ -973,7 +984,7 @@ contract('StakingThales', (accounts) => {
 			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
 			await expect(
-				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: owner })
+				StakingThalesDeployed.updateStakingRewards(deposit, 100000, 1000, { from: third })
 			).to.be.revertedWith('InvCCIP');
 			await AddressManager.setAddressInAddressBook('CrossChainCollector', second, { from: owner });
 			await AddressManager.setAddressInAddressBook('SafeBoxBuffer', dummy, { from: owner });
@@ -1138,6 +1149,9 @@ contract('StakingThales', (accounts) => {
 			assert.equal(paused, true);
 			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
 			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
+			await StakingThalesDeployed.setStakingRewardsParameters(toUnit(1000000), 100000, false, {
+				from: owner,
+			});
 			await StakingThalesDeployed.updateStakingRewards(toUnit(1000000), 1000000, 1000, {
 				from: second,
 			});

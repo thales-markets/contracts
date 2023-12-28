@@ -172,7 +172,7 @@
 		"ChainedSpeedMarketsAMMImplementation": "0xd4F5063C350D921928679bE89877d79455D4A3f3",
 		"CCIPRouter": "0x261c05167db67b2b619f9d312e0753f3721ad6e8",
 		"CrossChainCollector": "0x674d702069a7c12389B65a39b5a33829280f0E23",
-		"CrossChainCollectorImplementation": "0x323d27caFBc684832E31c03fce6e553eba1d13aa",
+		"CrossChainCollectorImplementation": "0xE9Ec756Eb37452F3e00D0409ce96C53E97f1c286",
 		"SafeBoxBuffer": "0x3263B3E8Eda05b23aA774Cb7f1c126B3831b80A4",
 		"SafeBoxBufferImplementation": "0xc35A243c7Df8c3E08ddB0c70fF0427eA92E99611"
 	},
@@ -314,7 +314,7 @@
 		"ChainedSpeedMarketsAMMImplementation": "0x6B5FE966Ea9B05d8E628E772B0b745734D069983",
 		"CCIPRouter": "0xe92634289a1841a979c11c2f618b33d376e4ba85",
 		"CrossChainCollector": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c",
-		"CrossChainCollectorImplementation": "0x3263B3E8Eda05b23aA774Cb7f1c126B3831b80A4",
+		"CrossChainCollectorImplementation": "0x8b186D1C759e4d37471A89821c7f0a68E10C5F5F",
 		"SafeBoxBuffer": "0xEd31481E4B1ded06ee5ed48C0205fA479Ffeb866",
 		"SafeBoxBufferImplementation": "0x393960FF3e10e13A2aEc0F4b1E79fA2B5f544B80"
 	},
@@ -432,7 +432,7 @@
 		"AddressManagerImplementation": "0x393960FF3e10e13A2aEc0F4b1E79fA2B5f544B80",
 		"CCIPRouter": "0x673aa85efd75080031d44fca061575d1da427a28",
 		"CrossChainCollector": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c",
-		"CrossChainCollectorImplementation": "0xEd31481E4B1ded06ee5ed48C0205fA479Ffeb866",
+		"CrossChainCollectorImplementation": "0xE9Ec756Eb37452F3e00D0409ce96C53E97f1c286",
 		"SafeBoxBuffer": "0x51c2589084488077318E43837B29C165d98A9152",
 		"SafeBoxBufferImplementation": "0x674d702069a7c12389B65a39b5a33829280f0E23"
 	},

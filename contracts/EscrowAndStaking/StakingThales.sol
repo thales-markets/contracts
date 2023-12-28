@@ -257,7 +257,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint _fixedReward,
         uint _extraReward,
         bool _extraRewardsActive
-    ) public onlyOwner {
+    ) external onlyOwner {
         fixedPeriodReward = _fixedReward;
         periodExtraReward = _extraReward;
         extraRewardsActive = _extraRewardsActive;
@@ -453,8 +453,15 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     ) external nonReentrant {
         if (!readOnlyMode) {
             // if it is readOnlyMode==true  discard all following the updates
-            require(msg.sender == addressResolver.getAddress("CrossChainCollector"), "InvCCIP");
+            require(msg.sender == addressResolver.getAddress("CrossChainCollector") || msg.sender == owner, "InvCCIP");
             require(closingPeriodInProgress, "NotInClosePeriod");
+
+            require(
+                _currentPeriodRewards <= fixedPeriodReward &&
+                    _extraRewards <= fixedPeriodReward &&
+                    _revShare <= 5 * fixedPeriodReward,
+                "Rejected due to suspicious values"
+            );
 
             bool safeBoxBufferSet = addressResolver.checkIfContractExists("SafeBoxBuffer");
             bool insufficientFundsInBuffer;

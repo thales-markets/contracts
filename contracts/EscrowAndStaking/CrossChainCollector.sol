@@ -151,7 +151,7 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     /// @notice (If it is master collector) when all messages are received from each chain, the final calculated amounts are broadcasted to all Staking contracts via CCIP
     function broadcastMessageToAll() external nonReentrant {
-        require(readyToBroadcast, "NotReadyToBroadcast");
+        require(readyToBroadcast || msg.sender == owner, "NotReadyToBroadcast");
         // the flag is true only if collectedResultsForPeriod == numOfActiveCollectors
         _broadcastMessageToAll(); // messages are broadcasted
         collectedResultsForPeriod = 0; // message counter is reset

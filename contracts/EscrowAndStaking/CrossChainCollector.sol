@@ -412,10 +412,11 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit MasterCollectorSet(_masterCollector, _materCollectorChainId);
     }
 
-    /// @notice (Only admin) Set period to a value 
+    /// @notice (Only admin) Set period to a value
     /// @param _toPeriod period value
     function resetPeriod(uint _toPeriod) external onlyOwner {
         period = _toPeriod;
+        emit PeriodManuallySet(_toPeriod);
     }
 
     /// @notice (ONLY in Master collector): Add a new destination chain CCIP Collector contract
@@ -502,4 +503,5 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     );
     event SetGasLimit(uint _gasLimitUsed);
     event RemovedAllData();
+    event PeriodManuallySet(uint _toPeriod);
 }

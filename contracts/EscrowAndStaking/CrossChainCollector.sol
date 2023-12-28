@@ -180,10 +180,13 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
                 _bonusPoints,
                 _revShare
             );
-            ++collectedResultsForPeriod;
-            if (collectedResultsForPeriod == numOfActiveCollectors) {
-                readyToBroadcast = true;
+            if (lastPeriodForChain[localChainSelector] < period) {
+                ++collectedResultsForPeriod;
+                if (collectedResultsForPeriod == numOfActiveCollectors) {
+                    readyToBroadcast = true;
+                }
             }
+            lastPeriodForChain[localChainSelector] = period;
         } else {
             bytes memory message = abi.encode(
                 _totalStakedLastPeriodEnd,

@@ -132,6 +132,46 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
     ) external {
         address _stakingThales_ = addressManager.getAddress("StakingThales");
         require(msg.sender == _stakingThales_, "InvSender");
+        _sendOnClosePeriod(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, _revShare);
+    }
+
+    /// @notice Only Admin function: Used for sending staking information at the end of each period by the (local) Staking contract on the particular chain.
+    /// @param _totalStakedLastPeriodEnd the amount of staked THALES at the end of a period
+    /// @param _totalEscrowedLastPeriodEnd the amount of escrowed THALES at the end of a period
+    /// @param _bonusPoints the total bonus points at the end of a period
+    /// @param _revShare the total revenue at the end of a period
+    function sendOnClosePeriodAdmin(
+        uint _totalStakedLastPeriodEnd,
+        uint _totalEscrowedLastPeriodEnd,
+        uint _bonusPoints,
+        uint _revShare
+    ) external onlyOwner {
+        _sendOnClosePeriod(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, _revShare);
+    }
+
+    /// @notice (If it is master collector) when all messages are received from each chain, the final calculated amounts are broadcasted to all Staking contracts via CCIP
+    function broadcastMessageToAll() external nonReentrant {
+        require(readyToBroadcast, "NotReadyToBroadcast");
+        // the flag is true only if collectedResultsForPeriod == numOfActiveCollectors
+        _broadcastMessageToAll(); // messages are broadcasted
+        collectedResultsForPeriod = 0; // message counter is reset
+        readyToBroadcast = false; // the broadcast flag is reset
+        ++period; // the period is increased
+        if (weeklyRewardsDecreaseFactor > 0) {
+            // in case of dynamic decrease of rewards
+            _setRewardsForNextPeriod(); // the rewards for the next period are decreased
+        }
+    }
+
+    /* ========== INTERNAL FUNCTIONS ========== */
+
+    /// @notice function triggered by local Staking contract on close period
+    function _sendOnClosePeriod(
+        uint _totalStakedLastPeriodEnd,
+        uint _totalEscrowedLastPeriodEnd,
+        uint _bonusPoints,
+        uint _revShare
+    ) internal {
         if (masterCollector == address(this) && localChainSelector == masterCollectorChain) {
             _storeRewards(
                 masterCollectorChain,
@@ -155,22 +195,6 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         }
         emit SentOnClosePeriod(_totalStakedLastPeriodEnd, _totalEscrowedLastPeriodEnd, _bonusPoints, _revShare);
     }
-
-    /// @notice (If it is master collector) when all messages are received from each chain, the final calculated amounts are broadcasted to all Staking contracts via CCIP
-    function broadcastMessageToAll() external nonReentrant {
-        require(readyToBroadcast, "NotReadyToBroadcast");
-        // the flag is true only if collectedResultsForPeriod == numOfActiveCollectors
-        _broadcastMessageToAll(); // messages are broadcasted
-        collectedResultsForPeriod = 0; // message counter is reset
-        readyToBroadcast = false; // the broadcast flag is reset
-        ++period; // the period is increased
-        if (weeklyRewardsDecreaseFactor > 0) {
-            // in case of dynamic decrease of rewards
-            _setRewardsForNextPeriod(); // the rewards for the next period are decreased
-        }
-    }
-
-    /* ========== INTERNAL FUNCTIONS ========== */
 
     /// @notice processing/handling received messages
     function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {

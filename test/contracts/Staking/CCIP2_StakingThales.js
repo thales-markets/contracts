@@ -762,16 +762,22 @@ contract('StakingThales', (accounts) => {
 			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, toUnit(200000), {
 				from: owner,
 			});
+			await ThalesSixDecimal.transfer(StakingThalesDeployed.address, 100 * 1e6, { from: owner });
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
 			await fastForward(WEEK + SECOND);
+			let balanceOfStakingFees = await ThalesSixDecimal.balanceOf(StakingThalesDeployed.address);
+			console.log('Balance of StakingFees: ', balanceOfStakingFees.toString());
 			await StakingThalesDeployed.closePeriod({ from: second });
 			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
-			console.log('Available fees to claim: ', fromUnit(answer));
+			console.log('Available fees to claim: ', answer.toString());
 			answer = await StakingThalesDeployed.getRewardsAvailable(first);
 			console.log('Available rewards to claim: ', fromUnit(answer));
 			await StakingThalesDeployed.claimReward({ from: first });
+			let balanceOfUser = await ThalesSixDecimal.balanceOf(first);
+			console.log('Balance of User: ', balanceOfUser.toString());
+			assert.equal(balanceOfUser.toString(), balanceOfStakingFees.toString());
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);

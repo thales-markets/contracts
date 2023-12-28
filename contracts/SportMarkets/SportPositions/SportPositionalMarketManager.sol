@@ -167,13 +167,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function getDoubleChanceMarketsByParentMarket(address market) external view returns (address[] memory) {
-        if (doubleChanceMarketsByParent[market].length > 0) {
-            address[] memory markets = new address[](3);
-            for (uint i = 0; i < doubleChanceMarketsByParent[market].length; i++) {
-                markets[i] = doubleChanceMarketsByParent[market][i];
-            }
-            return markets;
-        }
+        return _getDoubleChanceMarkets(market);
     }
 
     function maturedMarkets(uint index, uint pageSize) external view override returns (address[] memory) {
@@ -288,6 +282,16 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     function _isResolvedMarket(address _market) internal view returns (bool _flag) {
         return ISportPositionalMarket(_market).resolved();
+    }
+
+    function _getDoubleChanceMarkets(address market) internal view returns (address[] memory markets) {
+        uint length = doubleChanceMarketsByParent[market].length;
+        if (length > 0) {
+            markets = new address[](length);
+            for (uint i = 0; i < length; i++) {
+                markets[i] = doubleChanceMarketsByParent[market][i];
+            }
+        }
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
@@ -655,7 +659,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function _hasAnyMintsForChildren(address _market) internal view returns (bool) {
-        return _hasAnyMints(_market, true) || _hasAnyMints(_market, false);
+        return _hasAnyMints(_market, true) || _hasAnyMints(_market, false) || _hasAnyMintsDoubleChance(_market);
     }
 
     function _hasAnyMints(address _market, bool checkPlayerProps) internal view returns (bool) {
@@ -673,6 +677,18 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         for (uint i = 0; i < numberOfChildMarkets; i++) {
             address child = IGameChildMarket(childMarketContract).mainMarketChildMarketIndex(_market, i);
             if (ISportPositionalMarket(child).optionsInitialized()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function _hasAnyMintsDoubleChance(address _market) internal view returns (bool) {
+        address[] memory childMarkets = _getDoubleChanceMarkets(_market);
+
+        for (uint i = 0; i < childMarkets.length; i++) {
+            if (childMarkets[i] != address(0) && ISportPositionalMarket(childMarkets[i]).optionsInitialized()) {
                 return true;
             }
         }

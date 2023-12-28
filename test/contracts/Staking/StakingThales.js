@@ -242,7 +242,7 @@ contract('StakingThales', (accounts) => {
 		CCIPRouter = await CCIPRouterContract.new();
 		let CCIPCollectorContract = artifacts.require('CrossChainCollector');
 		CCIPCollector = await CCIPCollectorContract.new();
-		await CCIPCollector.initialize(CCIPRouter.address, true, 5, { from: owner });
+		await CCIPCollector.initialize(CCIPRouter.address, true, 5, 5, { from: owner });
 
 		let SafeBoxContract = artifacts.require('SafeBoxBuffer');
 		SafeBoxBuffer = await SafeBoxContract.new();

@@ -236,7 +236,7 @@ contract('StakingThales', (accounts) => {
 			{ from: owner }
 		);
 		await SNXRewardsDeployed.setIssuanceRatio('1666666666666666666'.toString());
-		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, false, {
+		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, false, true, {
 			from: owner,
 		});
 		await StakingThalesDeployed.setStakingRewardsParameters(100000, 100000, false, { from: owner });
@@ -552,7 +552,7 @@ contract('StakingThales', (accounts) => {
 		it('Stake with first account and claim reward - readOnlyMode', async () => {
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);
-			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, {
+			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, true, {
 				from: owner,
 			});
 			await ThalesDeployed.transfer(first, stake, { from: owner });
@@ -731,7 +731,7 @@ contract('StakingThales', (accounts) => {
 				StakingThalesBonusRewardsManager.address,
 				{ from: owner }
 			);
-			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, false, {
+			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, false, true, {
 				from: owner,
 			});
 			await AddressManager.setAddressInAddressBook('StakingThales', StakingThalesDeployed.address, {

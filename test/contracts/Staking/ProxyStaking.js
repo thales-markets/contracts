@@ -101,7 +101,8 @@ contract('StakingThales', (accounts) => {
 			WEEK,
 			WEEK,
 			true,
-			true
+			true,
+			false
 		);
 		await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(100000, 100000, false);
 		await StakingThalesDeployed.connect(owner).setAddresses(

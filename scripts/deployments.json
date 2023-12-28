@@ -432,7 +432,7 @@
 		"AddressManagerImplementation": "0x393960FF3e10e13A2aEc0F4b1E79fA2B5f544B80",
 		"CCIPRouter": "0x673aa85efd75080031d44fca061575d1da427a28",
 		"CrossChainCollector": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c",
-		"CrossChainCollectorImplementation": "0xE9Ec756Eb37452F3e00D0409ce96C53E97f1c286",
+		"CrossChainCollectorImplementation": "0xCd39Ca01844b07c47f19d7Aca120F9681e9dd33A",
 		"SafeBoxBuffer": "0x51c2589084488077318E43837B29C165d98A9152",
 		"SafeBoxBufferImplementation": "0x674d702069a7c12389B65a39b5a33829280f0E23"
 	},

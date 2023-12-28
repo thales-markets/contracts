@@ -409,8 +409,13 @@ contract CrossChainCollector is Initializable, ProxyOwned, ProxyPausable, ProxyR
         chainSelector[0] = _materCollectorChainId;
         chainSelectorIndex[_materCollectorChainId] = 0;
         numOfActiveCollectors = numOfActiveCollectors == 0 ? 1 : numOfActiveCollectors;
-        period++;
         emit MasterCollectorSet(_masterCollector, _materCollectorChainId);
+    }
+
+    /// @notice (Only admin) Set period to a value 
+    /// @param _toPeriod period value
+    function resetPeriod(uint _toPeriod) external onlyOwner {
+        period = _toPeriod;
     }
 
     /// @notice (ONLY in Master collector): Add a new destination chain CCIP Collector contract

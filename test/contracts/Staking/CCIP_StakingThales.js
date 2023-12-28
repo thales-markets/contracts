@@ -55,9 +55,9 @@ contract('CCIP Staking', (accounts) => {
 			await StakingThalesBonusRewardsManagerA.initialize(owner, StakingMockA.address);
 			await StakingThalesBonusRewardsManagerB.initialize(owner, StakingMockB.address);
 
-			await CCIPCollectorA.initialize(CCIPRouter.address, true, 5, { from: owner });
-			await CCIPCollectorB.initialize(CCIPRouter.address, false, 0, { from: owner });
-
+			await CCIPCollectorA.initialize(CCIPRouter.address, true, 10, 10, { from: owner });
+			await CCIPCollectorB.initialize(CCIPRouter.address, false, 0, 20, { from: owner });
+			await CCIPRouter.setInterfaces(10, 20);
 			let AddressManagerContract = artifacts.require('AddressManager');
 			AddressManagerA = await AddressManagerContract.new();
 			AddressManagerB = await AddressManagerContract.new();
@@ -113,7 +113,6 @@ contract('CCIP Staking', (accounts) => {
 				{ from: owner }
 			);
 			await StakingThalesBonusRewardsManagerA.setManager(staker, { from: owner });
-			await CCIPCollectorA.set;
 		});
 		it('SetGasLimit higher', async () => {
 			// set to 9 million
@@ -292,7 +291,7 @@ contract('CCIP Staking', (accounts) => {
 
 			await StakingThalesBonusRewardsManagerB.setStakingBaseDivider(100000, { from: owner });
 			await StakingThalesBonusRewardsManagerB.setMaxStakingMultiplier(toUnit(4), { from: owner });
-			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, { from: owner });
+			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, 20, { from: owner });
 			let masterCollectorInB = await CCIPCollectorB.masterCollector();
 			let masterCollectorChainInB = await CCIPCollectorB.masterCollectorChain();
 			assert.equal(masterCollectorInB, CCIPCollectorA.address);
@@ -302,7 +301,17 @@ contract('CCIP Staking', (accounts) => {
 				' chainId: ',
 				masterCollectorChainInB.toString()
 			);
-			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			let activeCollectorsInA = await CCIPCollectorA.numOfActiveCollectors();
+			console.log('numOfActiveCollectors: ', activeCollectorsInA.toString());
+			await CCIPCollectorA.setCollectorForChain(20, CCIPCollectorB.address, 1, { from: owner });
+			let localCollectorA = await CCIPCollectorA.localChainSelector();
+			console.log('Collector A local selector: ', localCollectorA.toString());
+			let masterCollectorChainA = await CCIPCollectorA.masterCollectorChain();
+			console.log('Collector A master selector: ', masterCollectorChainA.toString());
+
+			activeCollectorsInA = await CCIPCollectorA.numOfActiveCollectors();
+			console.log('numOfActiveCollectors: ', activeCollectorsInA.toString());
+
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
@@ -462,9 +471,9 @@ contract('CCIP Staking', (accounts) => {
 			assert.equal(await CCIPCollectorA.getRouter(), CCIPRouter.address);
 		});
 		it('CCIP: set chain selector to 0 and back', async () => {
-			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			await CCIPCollectorA.setCollectorForChain(20, CCIPCollectorB.address, 1, { from: owner });
 			await CCIPCollectorA.setCollectorForChain(0, ZERO_ADDRESS, 1, { from: owner });
-			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			await CCIPCollectorA.setCollectorForChain(20, CCIPCollectorB.address, 1, { from: owner });
 		});
 		it('CCIP: equal rewards distribution', async () => {
 			await StakingMockA.stake(toUnit(1000), {
@@ -496,7 +505,8 @@ contract('CCIP Staking', (accounts) => {
 
 			await StakingThalesBonusRewardsManagerB.setStakingBaseDivider(100000, { from: owner });
 			await StakingThalesBonusRewardsManagerB.setMaxStakingMultiplier(toUnit(4), { from: owner });
-			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, { from: owner });
+			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, 20, { from: owner });
+			await CCIPCollectorA.setMasterCollector(CCIPCollectorA.address, 10, 10, { from: owner });
 			let masterCollectorInB = await CCIPCollectorB.masterCollector();
 			let masterCollectorChainInB = await CCIPCollectorB.masterCollectorChain();
 			assert.equal(masterCollectorInB, CCIPCollectorA.address);
@@ -506,7 +516,7 @@ contract('CCIP Staking', (accounts) => {
 				' chainId: ',
 				masterCollectorChainInB.toString()
 			);
-			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			await CCIPCollectorA.setCollectorForChain(20, CCIPCollectorB.address, 1, { from: owner });
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
@@ -690,7 +700,7 @@ contract('CCIP Staking', (accounts) => {
 
 			await StakingThalesBonusRewardsManagerB.setStakingBaseDivider(100000, { from: owner });
 			await StakingThalesBonusRewardsManagerB.setMaxStakingMultiplier(toUnit(4), { from: owner });
-			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, { from: owner });
+			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, 20, { from: owner });
 			let masterCollectorInB = await CCIPCollectorB.masterCollector();
 			let masterCollectorChainInB = await CCIPCollectorB.masterCollectorChain();
 			assert.equal(masterCollectorInB, CCIPCollectorA.address);
@@ -700,7 +710,7 @@ contract('CCIP Staking', (accounts) => {
 				' chainId: ',
 				masterCollectorChainInB.toString()
 			);
-			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			await CCIPCollectorA.setCollectorForChain(20, CCIPCollectorB.address, 1, { from: owner });
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
@@ -896,7 +906,7 @@ contract('CCIP Staking', (accounts) => {
 
 			await StakingThalesBonusRewardsManagerB.setStakingBaseDivider(100000, { from: owner });
 			await StakingThalesBonusRewardsManagerB.setMaxStakingMultiplier(toUnit(4), { from: owner });
-			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, { from: owner });
+			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, 20, { from: owner });
 			let masterCollectorInB = await CCIPCollectorB.masterCollector();
 			let masterCollectorChainInB = await CCIPCollectorB.masterCollectorChain();
 			assert.equal(masterCollectorInB, CCIPCollectorA.address);
@@ -906,7 +916,7 @@ contract('CCIP Staking', (accounts) => {
 				' chainId: ',
 				masterCollectorChainInB.toString()
 			);
-			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			await CCIPCollectorA.setCollectorForChain(20, CCIPCollectorB.address, 1, { from: owner });
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
@@ -1111,7 +1121,7 @@ contract('CCIP Staking', (accounts) => {
 
 			await StakingThalesBonusRewardsManagerB.setStakingBaseDivider(100000, { from: owner });
 			await StakingThalesBonusRewardsManagerB.setMaxStakingMultiplier(toUnit(4), { from: owner });
-			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, { from: owner });
+			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, 20, { from: owner });
 			let masterCollectorInB = await CCIPCollectorB.masterCollector();
 			let masterCollectorChainInB = await CCIPCollectorB.masterCollectorChain();
 			assert.equal(masterCollectorInB, CCIPCollectorA.address);
@@ -1121,7 +1131,7 @@ contract('CCIP Staking', (accounts) => {
 				' chainId: ',
 				masterCollectorChainInB.toString()
 			);
-			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			await CCIPCollectorA.setCollectorForChain(20, CCIPCollectorB.address, 1, { from: owner });
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
@@ -1323,7 +1333,7 @@ contract('CCIP Staking', (accounts) => {
 
 			await StakingThalesBonusRewardsManagerB.setStakingBaseDivider(100000, { from: owner });
 			await StakingThalesBonusRewardsManagerB.setMaxStakingMultiplier(toUnit(4), { from: owner });
-			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, { from: owner });
+			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, 20, { from: owner });
 			let masterCollectorInB = await CCIPCollectorB.masterCollector();
 			let masterCollectorChainInB = await CCIPCollectorB.masterCollectorChain();
 			assert.equal(masterCollectorInB, CCIPCollectorA.address);
@@ -1333,7 +1343,7 @@ contract('CCIP Staking', (accounts) => {
 				' chainId: ',
 				masterCollectorChainInB.toString()
 			);
-			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			await CCIPCollectorA.setCollectorForChain(20, CCIPCollectorB.address, 1, { from: owner });
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
 			console.log('isMasterCollectorA: ', isMasterCollectorA);
 
@@ -1557,7 +1567,7 @@ contract('CCIP Staking', (accounts) => {
 
 			await StakingThalesBonusRewardsManagerB.setStakingBaseDivider(100000, { from: owner });
 			await StakingThalesBonusRewardsManagerB.setMaxStakingMultiplier(toUnit(4), { from: owner });
-			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, { from: owner });
+			await CCIPCollectorB.setMasterCollector(CCIPCollectorA.address, 10, 20, { from: owner });
 			let masterCollectorInB = await CCIPCollectorB.masterCollector();
 			let masterCollectorChainInB = await CCIPCollectorB.masterCollectorChain();
 			assert.equal(masterCollectorInB, CCIPCollectorA.address);
@@ -1567,9 +1577,9 @@ contract('CCIP Staking', (accounts) => {
 				' chainId: ',
 				masterCollectorChainInB.toString()
 			);
-			await CCIPCollectorA.setCollectorForChain(10, CCIPCollectorB.address, 1, { from: owner });
+			await CCIPCollectorA.setCollectorForChain(20, CCIPCollectorB.address, 1, { from: owner });
 			let isMasterCollectorA = await CCIPCollectorA.isMasterCollector();
-
+			assert.equal(isMasterCollectorA, true);
 			await CCIPCollectorA.setPeriodRewards(toUnit(50000), toUnit(3000), toUnit(0.9), {
 				from: owner,
 			});

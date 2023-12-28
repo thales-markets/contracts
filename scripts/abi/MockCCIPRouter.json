@@ -151,6 +151,50 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "interface1",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "interface2",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "_inter1",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_inter2",
+        "type": "uint64"
+      }
+    ],
+    "name": "setInterfaces",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "stateMutability": "payable",
     "type": "receive"
   }

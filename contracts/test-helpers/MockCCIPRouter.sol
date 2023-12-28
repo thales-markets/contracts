@@ -8,6 +8,9 @@ import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.s
 import {IERC165} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/utils/introspection/IERC165.sol";
 
 contract MockCCIPRouter {
+    uint64 public interface1;
+    uint64 public interface2;
+
     receive() external payable {}
 
     function getFee(uint64 destinationChainSelector, Client.EVM2AnyMessage memory message)
@@ -16,6 +19,11 @@ contract MockCCIPRouter {
         returns (uint256 fee)
     {
         return 0;
+    }
+
+    function setInterfaces(uint64 _inter1, uint64 _inter2) external {
+        interface1 = _inter1;
+        interface2 = _inter2;
     }
 
     function ccipSend(uint64 destinationChainSelector, Client.EVM2AnyMessage memory message)
@@ -27,7 +35,7 @@ contract MockCCIPRouter {
         bytes32 messageId = keccak256(abi.encode(destinationChainSelector, receiver));
         Client.Any2EVMMessage memory messageToBeReceved = Client.Any2EVMMessage({
             messageId: messageId,
-            sourceChainSelector: destinationChainSelector,
+            sourceChainSelector: destinationChainSelector == interface1 ? interface2 : interface1,
             sender: abi.encode(msg.sender),
             data: message.data,
             destTokenAmounts: new Client.EVMTokenAmount[](0)

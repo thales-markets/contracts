@@ -76,9 +76,33 @@
         "internalType": "uint256",
         "name": "_maxBuyinAmount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minimalTimeToMaturity",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maximalTimeToMaturity",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maximumPriceDelay",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maximumPriceDelayForResolving",
+        "type": "uint256"
       }
     ],
-    "name": "AmountsChanged",
+    "name": "LimitParamsChanged",
     "type": "event"
   },
   {
@@ -382,19 +406,6 @@
         "internalType": "uint256",
         "name": "_maxRiskPerAsset",
         "type": "uint256"
-      }
-    ],
-    "name": "SetMaxRiskPerAsset",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
       },
       {
         "indexed": false,
@@ -403,26 +414,7 @@
         "type": "uint256"
       }
     ],
-    "name": "SetMaxRiskPerAssetAndDirection",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maximumPriceDelay",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maximumPriceDelayForResolving",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaximumPriceDelays",
+    "name": "SetMaxRisks",
     "type": "event"
   },
   {
@@ -442,25 +434,6 @@
       }
     ],
     "name": "SetSupportedAsset",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_minimalTimeToMaturity",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maximalTimeToMaturity",
-        "type": "uint256"
-      }
-    ],
-    "name": "TimesChanged",
     "type": "event"
   },
   {
@@ -1331,24 +1304,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_minBuyinAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxBuyinAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "setAmounts",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -1390,41 +1345,25 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
+        "internalType": "uint256",
+        "name": "_minBuyinAmount",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_maxRiskPerAsset",
+        "name": "_maxBuyinAmount",
         "type": "uint256"
-      }
-    ],
-    "name": "setMaxRiskPerAsset",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
       },
       {
         "internalType": "uint256",
-        "name": "_maxRiskPerAssetAndDirection",
+        "name": "_minimalTimeToMaturity",
         "type": "uint256"
-      }
-    ],
-    "name": "setMaxRiskPerAssetAndDirection",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maximalTimeToMaturity",
+        "type": "uint256"
+      },
       {
         "internalType": "uint64",
         "name": "_maximumPriceDelay",
@@ -1436,7 +1375,30 @@
         "type": "uint64"
       }
     ],
-    "name": "setMaximumPriceDelays",
+    "name": "setLimitParams",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxRiskPerAsset",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxRiskPerAssetAndDirection",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxRisks",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1512,24 +1474,6 @@
       }
     ],
     "name": "setSupportedAsset",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_minimalTimeToMaturity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maximalTimeToMaturity",
-        "type": "uint256"
-      }
-    ],
-    "name": "setTimes",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

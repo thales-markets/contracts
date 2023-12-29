@@ -157,29 +157,17 @@ contract('StakingThales', (accounts) => {
 			{ from: owner }
 		);
 		await SNXRewardsDeployed.setIssuanceRatio('1666666666666666666'.toString());
-		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, { from: owner });
-		await StakingThalesDeployed.setStakingRewardsParameters(
-			100000,
-			100000,
-			false,
-			'15',
-			'12',
-			'3',
-			'1',
-			'10',
-			{ from: owner }
-		);
+		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, false, {
+			from: owner,
+		});
+		await StakingThalesDeployed.setStakingRewardsParameters(100000, 100000, false, { from: owner });
 		await StakingThalesDeployed.setAddresses(
-			SNXRewardsDeployed.address,
 			dummy,
 			dummy,
 			dummy,
 			PriceFeedInstance.address,
 			ThalesStakingRewardsPoolDeployed.address,
 			AddressResolverDeployed.address,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
 			ZERO_ADDRESS,
 			{ from: owner }
 		);

@@ -25,4 +25,10 @@ interface IAddressManager {
     function speedMarketsAMM() external view returns (address);
 
     function getAddresses() external view returns (Addresses memory);
+
+    function getAddresses(string[] calldata _contractNames) external view returns (address[] memory contracts);
+
+    function getAddress(string memory _contractName) external view returns (address contract_);
+
+    function checkIfContractExists(string memory _contractName) external view returns (bool contractExists);
 }

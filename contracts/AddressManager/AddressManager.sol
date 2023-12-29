@@ -24,6 +24,8 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
 
     address public speedMarketsAMM;
 
+    mapping(string => address) public addressBook;
+
     function initialize(
         address _owner,
         address _safeBox,
@@ -58,6 +60,32 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         return allAddresses;
     }
 
+    /// @notice Get all addresses from the address book based on the contract names
+    /// @param _contractNames array of contract names
+    /// @return contracts array of addresses
+    function getAddresses(string[] calldata _contractNames) external view returns (address[] memory contracts) {
+        contracts = new address[](_contractNames.length);
+        for (uint i = 0; i < _contractNames.length; i++) {
+            if (addressBook[_contractNames[i]] == address(0)) revert InvalidAddressForContractName(_contractNames[i]);
+            contracts[i] = addressBook[_contractNames[i]];
+        }
+    }
+
+    /// @notice Get address from the addressBook based on the contract name
+    /// @param _contractName name of the contract
+    /// @return contract_ the address of the contract
+    function getAddress(string calldata _contractName) external view returns (address contract_) {
+        if (addressBook[_contractName] == address(0)) revert InvalidAddressForContractName(_contractName);
+        contract_ = addressBook[_contractName];
+    }
+
+    /// @notice Check if a contract name has been assigned with an address
+    /// @param _contractName name of the contract
+    /// @return contractExists returns true if the contract exists or false if the address is set to ZERO address
+    function checkIfContractExists(string calldata _contractName) external view returns (bool contractExists) {
+        contractExists = addressBook[_contractName] != address(0);
+    }
+
     //////////////////setters/////////////////
 
     /// @notice set corresponding addresses
@@ -78,8 +106,26 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         emit SetAddresses(_safeBox, _referrals, _stakingThales, _multiCollateralOnOffRamp, _pyth, _speedMarketsAMM);
     }
 
+    /// @notice Set contract name and address in the address book
+    /// @param _contractName name of the contract
+    /// @param _address the address of the contract
+    function setAddressInAddressBook(string memory _contractName, address _address) external onlyOwner {
+        require(_address != address(0), "InvalidAddress");
+        addressBook[_contractName] = _address;
+        emit NewContractInAddressBook(_contractName, _address);
+    }
+
+    /// @notice Reset a contract name to ZERO address
+    /// @param _contractName name of the contract
+    function resetAddressForContract(string memory _contractName) external onlyOwner {
+        require(addressBook[_contractName] != address(0), "AlreadyReset");
+        addressBook[_contractName] = address(0);
+        emit NewContractInAddressBook(_contractName, address(0));
+    }
+
     //////////////////events/////////////////
 
+    event NewContractInAddressBook(string _contractName, address _address);
     event SetAddresses(
         address _safeBox,
         address _referrals,
@@ -88,4 +134,6 @@ contract AddressManager is Initializable, ProxyOwned, ProxyPausable {
         address _pyth,
         address _speedMarketsAMM
     );
+
+    error InvalidAddressForContractName(string _contractName);
 }

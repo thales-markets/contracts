@@ -95,28 +95,23 @@ contract('StakingThales', (accounts) => {
 			WEEK,
 			SNXRewardsDeployed.address,
 		]);
-		await StakingThalesDeployed.connect(owner).setStakingParameters(true, true, WEEK, WEEK, true);
-		await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(
-			100000,
-			100000,
-			false,
-			'15',
-			'12',
-			'3',
-			'1',
-			'10'
+		await StakingThalesDeployed.connect(owner).setStakingParameters(
+			true,
+			true,
+			WEEK,
+			WEEK,
+			true,
+			true,
+			false
 		);
+		await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(100000, 100000, false);
 		await StakingThalesDeployed.connect(owner).setAddresses(
-			SNXRewardsDeployed.address,
 			dummy,
 			dummy,
 			dummy,
 			dummy,
 			dummy,
 			AddressResolverDeployed.address,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
 			ZERO_ADDRESS
 		);
 	});

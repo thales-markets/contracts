@@ -13,4 +13,6 @@ interface IStakingThalesBonusRewardsManager {
     function getUserRoundBonusShare(address user, uint round) external view returns (uint);
 
     function useNewBonusModel() external view returns (bool);
+
+    function totalRoundBonusPoints(uint round) external view returns (uint);
 }

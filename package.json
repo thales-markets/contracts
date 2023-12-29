@@ -54,6 +54,7 @@
 	"dependencies": {
 		"@chainlink/contracts": "^0.4.0",
 		"@chainlink/contracts-0.0.10": "npm:@chainlink/contracts@0.0.10",
+		"@chainlink/contracts-ccip": "^0.7.6",
 		"@eth-optimism/contracts": "^0.4.14",
 		"@eth-optimism/message-relayer": "^0.2.4",
 		"@eth-optimism/watcher": "0.0.1-alpha.8",

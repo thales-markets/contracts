@@ -4,9 +4,11 @@ const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 async function main() {
+	let accounts = await ethers.getSigners();
+	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-
+	console.log('networkObj:', networkObj);
 	if (networkObj.chainId == 420) {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
@@ -19,12 +21,16 @@ async function main() {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
 
 	const StakingData = await ethers.getContractFactory('StakingData');
 	const StakingDataAddress = getTargetAddress('StakingData', network);
 
 	let implementation;
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 8453) {
 		implementation = await upgrades.prepareUpgrade(StakingDataAddress, StakingData);
 	}
 

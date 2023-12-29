@@ -2,9 +2,7 @@
 
 pragma solidity ^0.5.16;
 
-import "../interfaces/IAddressResolver.sol";
-
-contract AddressResolverHelper is IAddressResolver {
+contract AddressResolverHelper {
     address public snxAddress;
 
     constructor() public {}
@@ -14,6 +12,10 @@ contract AddressResolverHelper is IAddressResolver {
         // to silence compiler warning
         name = name;
         return snxAddress;
+    }
+
+    function checkIfContractExists(string calldata _contractName) external view returns (bool contractExists) {
+        contractExists = false;
     }
 
     function setSNXRewardsAddress(address _snxAddress) external {

@@ -142,31 +142,6 @@
             "type": "uint256"
           },
           {
-            "internalType": "uint256",
-            "name": "maxSNXRewardsPercentage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "maxAMMVolumeRewardsPercentage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "maxThalesRoyaleRewardsPercentage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "SNXVolumeRewardsMultiplier",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "AMMVolumeRewardsMultiplier",
-            "type": "uint256"
-          },
-          {
             "internalType": "bool",
             "name": "canClosePeriod",
             "type": "bool"
@@ -247,41 +222,6 @@
           {
             "internalType": "uint256",
             "name": "totalBonus",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "snxBonus",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "ammBonus",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "snxStaked",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "ammVolume",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "thalesAmmVolume",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "rangedAmmVolume",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "sportsAmmVolume",
             "type": "uint256"
           },
           {

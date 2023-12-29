@@ -29,6 +29,11 @@ contract('StakingThales', (accounts) => {
 		ProxyStakingDeployed,
 		ThalesStakingRewardsPoolDeployed;
 	let ThalesStakingRewardsPool;
+	let SafeBoxBuffer;
+	let CCIPCollector;
+	let CCIPRouter;
+	let StakingThalesBonusRewardsManager;
+	let AddressManager;
 
 	let initializeStalkingData, initializeEscrowData;
 
@@ -225,32 +230,69 @@ contract('StakingThales', (accounts) => {
 			{ from: owner }
 		);
 		await SNXRewardsDeployed.setIssuanceRatio('1666666666666666666'.toString());
-		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, { from: owner });
-		await StakingThalesDeployed.setStakingRewardsParameters(
-			100000,
-			100000,
-			false,
-			'15',
-			'12',
-			'3',
-			'1',
-			'10',
-			{ from: owner }
+		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, false, {
+			from: owner,
+		});
+		let StakingThalesBonusRewardsManagerContract = artifacts.require(
+			'StakingThalesBonusRewardsManager'
 		);
+		StakingThalesBonusRewardsManager = await StakingThalesBonusRewardsManagerContract.new();
+		await StakingThalesBonusRewardsManager.initialize(owner, StakingThalesDeployed.address);
+		let CCIPRouterContract = artifacts.require('MockCCIPRouter');
+		CCIPRouter = await CCIPRouterContract.new();
+		let CCIPCollectorContract = artifacts.require('CrossChainCollector');
+		CCIPCollector = await CCIPCollectorContract.new();
+		await CCIPCollector.initialize(CCIPRouter.address, true, 5, 5, { from: owner });
+
+		let SafeBoxContract = artifacts.require('SafeBoxBuffer');
+		SafeBoxBuffer = await SafeBoxContract.new();
+		await SafeBoxBuffer.initialize(StakingThalesDeployed.address, ThalesFeeDeployed.address, {
+			from: owner,
+		});
+		await StakingThalesDeployed.setStakingRewardsParameters(100000, 100000, false, { from: owner });
+		await StakingThalesBonusRewardsManager.setStakingBaseDivider(100000, { from: owner });
+		await StakingThalesBonusRewardsManager.setMaxStakingMultiplier(toUnit(4), { from: owner });
+		await StakingThalesBonusRewardsManager.setMultipliers(toUnit(0.25), toUnit(0.5), toUnit(1), {
+			from: owner,
+		});
 		await StakingThalesDeployed.setAddresses(
-			SNXRewardsDeployed.address,
 			dummy,
 			dummy,
 			dummy,
 			PriceFeedInstance.address,
 			ThalesStakingRewardsPoolDeployed.address,
 			AddressResolverDeployed.address,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS,
+			StakingThalesBonusRewardsManager.address,
 			{ from: owner }
 		);
+		let AddressManagerContract = artifacts.require('AddressManager');
+		AddressManager = await AddressManagerContract.new();
+		await AddressManager.initialize(
+			owner,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS,
+			ZERO_ADDRESS
+		);
+		await AddressManager.setAddressInAddressBook('CrossChainCollector', CCIPCollector.address, {
+			from: owner,
+		});
+		await AddressManager.setAddressInAddressBook('SafeBoxBuffer', SafeBoxBuffer.address, {
+			from: owner,
+		});
+		await CCIPCollector.setAddressManager(AddressManager.address, { from: owner });
+		await AddressManager.setAddressInAddressBook('StakingThales', StakingThalesDeployed.address, {
+			from: owner,
+		});
+		// await StakingThalesDeployed.setCrossChainCollector(
+		// 	CCIPCollector.address,
+		// 	SafeBoxBuffer.address,
+		// 	{
+		// 		from: owner,
+		// 	}
+		// );
 	});
 
 	describe('EscrowThales basic check', () => {
@@ -377,17 +419,9 @@ contract('StakingThales', (accounts) => {
 			let deposit = toUnit(100000);
 			let lowerDeposit = toUnit(500);
 			await ThalesDeployed.transfer(first, toUnit(2), { from: owner });
-			await StakingThalesDeployed.setStakingRewardsParameters(
-				deposit,
-				100000,
-				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
-				{ from: owner }
-			);
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -411,17 +445,9 @@ contract('StakingThales', (accounts) => {
 		it('Close staking period with enough funds (100,000) in StakingThales and claim single user ', async () => {
 			let deposit = toUnit(100000);
 			await ThalesDeployed.transfer(first, toUnit(2), { from: owner });
-			await StakingThalesDeployed.setStakingRewardsParameters(
-				deposit,
-				100000,
-				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
-				{ from: owner }
-			);
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -512,17 +538,9 @@ contract('StakingThales', (accounts) => {
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);
 			await ThalesDeployed.transfer(first, stake, { from: owner });
-			await StakingThalesDeployed.setStakingRewardsParameters(
-				deposit,
-				100000,
-				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
-				{ from: owner }
-			);
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -551,17 +569,9 @@ contract('StakingThales', (accounts) => {
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);
 			await ThalesDeployed.transfer(first, stake, { from: owner });
-			await StakingThalesDeployed.setStakingRewardsParameters(
-				deposit,
-				100000,
-				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
-				{ from: owner }
-			);
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -593,17 +603,9 @@ contract('StakingThales', (accounts) => {
 			let lowerDeposit = toUnit(500);
 			let stake = toUnit(1500);
 			await ThalesDeployed.transfer(first, stake, { from: owner });
-			await StakingThalesDeployed.setStakingRewardsParameters(
-				deposit,
-				100000,
-				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
-				{ from: owner }
-			);
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -647,17 +649,9 @@ contract('StakingThales', (accounts) => {
 			let lowerDeposit = toUnit(500);
 			let stake = toUnit(1500);
 			await ThalesDeployed.transfer(first, stake, { from: owner });
-			await StakingThalesDeployed.setStakingRewardsParameters(
-				deposit,
-				100000,
-				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
-				{ from: owner }
-			);
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -714,17 +708,9 @@ contract('StakingThales', (accounts) => {
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);
 
-			await StakingThalesDeployed.setStakingRewardsParameters(
-				deposit,
-				100000,
-				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
-				{ from: owner }
-			);
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -782,17 +768,9 @@ contract('StakingThales', (accounts) => {
 			let stake = toUnit(1500);
 			let weeks = 10;
 			await ThalesDeployed.transfer(first, stake, { from: owner });
-			await StakingThalesDeployed.setStakingRewardsParameters(
-				deposit,
-				100000,
-				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
-				{ from: owner }
-			);
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -843,17 +821,9 @@ contract('StakingThales', (accounts) => {
 			let stake = toUnit(1500);
 			let weeks = 11;
 			await ThalesDeployed.transfer(first, stake, { from: owner });
-			await StakingThalesDeployed.setStakingRewardsParameters(
-				deposit,
-				100000,
-				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
-				{ from: owner }
-			);
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -897,11 +867,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -954,11 +920,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -1011,11 +973,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -1062,11 +1020,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -1113,11 +1067,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -1178,11 +1128,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -1309,11 +1255,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -1344,13 +1286,13 @@ contract('StakingThales', (accounts) => {
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 
-			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, false, {
+			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, false, true, false, {
 				from: owner,
 			});
 			await expect(StakingThalesDeployed.mergeAccount(second, { from: first })).to.be.revertedWith(
 				'Merge account is disabled'
 			);
-			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, {
+			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, true, false, {
 				from: owner,
 			});
 
@@ -1419,11 +1361,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -1506,11 +1444,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -1610,11 +1544,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -1716,11 +1646,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -1829,11 +1755,7 @@ contract('StakingThales', (accounts) => {
 				deposit,
 				100000,
 				false,
-				'15',
-				'12',
-				'3',
-				'1',
-				'10',
+
 				{ from: owner }
 			);
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {

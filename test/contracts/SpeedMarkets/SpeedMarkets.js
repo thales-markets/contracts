@@ -43,7 +43,7 @@ contract('SpeedMarkets', (accounts) => {
 				)
 			).to.be.revertedWith('revert');
 
-			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(10));
+			await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(10), toUnit(100));
 
 			await expect(
 				speedMarketsAMM.createNewMarket(
@@ -75,7 +75,7 @@ contract('SpeedMarkets', (accounts) => {
 				)
 			).to.be.revertedWith('Risk per asset exceeded');
 
-			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(5));
+			await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(10), toUnit(5));
 
 			await expect(
 				speedMarketsAMM.createNewMarket(
@@ -91,8 +91,7 @@ contract('SpeedMarkets', (accounts) => {
 				)
 			).to.be.revertedWith('Risk per direction exceeded');
 
-			await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
-			await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(100));
+			await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(100));
 
 			const maxSkewImpact = (await speedMarketsAMM.maxSkewImpact()) / 1e18;
 			let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(

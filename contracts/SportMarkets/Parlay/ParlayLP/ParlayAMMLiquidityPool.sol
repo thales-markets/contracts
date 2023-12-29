@@ -221,11 +221,11 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         isTradingMarketInARound[marketRound][market] = true;
     }
 
-    function transferToPool(address _market, uint _amount) external nonReentrant whenNotPaused roundClosingNotPrepared {
+    function transferToPool(address _market, uint _amount) external whenNotPaused roundClosingNotPrepared onlyAMM {
         uint marketRound = getMarketRound(_market);
         address liquidityPoolRound = marketRound <= 1 ? defaultLiquidityProvider : _getOrCreateRoundPool(marketRound);
         sUSD.safeTransferFrom(address(parlayAMM), liquidityPoolRound, _amount);
-        if (isTradingMarketInARound[marketRound][_market] && ParlayMarket(_market).areAllPositionsResolved()) {
+        if (isTradingMarketInARound[marketRound][_market]) {
             marketAlreadyExercisedInRound[marketRound][_market] = true;
         }
     }
@@ -403,10 +403,11 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (market.hasMarketLostButHasExercisableWinningPositions()) {
+                (bool isExercisable, ) = market.isParlayExercisable();
+                if (isExercisable && !market.isUserTheWinner()) {
                     parlayAMM.exerciseParlay(marketAddress);
                 }
-                if (market.areAllPositionsResolved()) {
+                if (market.isUserTheWinner() || market.resolved()) {
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
                 }
             }
@@ -431,11 +432,11 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             address marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (market.hasMarketLostButHasExercisableWinningPositions()) {
+                (bool isExercisable, ) = market.isParlayExercisable();
+                if (isExercisable && !market.isUserTheWinner()) {
                     parlayAMM.exerciseParlay(marketAddress);
-                    count += 1;
                 }
-                if (market.areAllPositionsResolved()) {
+                if (market.isUserTheWinner() || market.resolved()) {
                     marketAlreadyExercisedInRound[round][marketAddress] = true;
                     count += 1;
                 }
@@ -521,7 +522,8 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             marketAddress = tradingMarketsPerRound[round][i];
             if (!marketAlreadyExercisedInRound[round][marketAddress]) {
                 market = ParlayMarket(marketAddress);
-                if (market.hasMarketLostButHasExercisableWinningPositions()) {
+                (bool isExercisable, ) = market.isParlayExercisable();
+                if (isExercisable && !market.isUserTheWinner()) {
                     return true;
                 }
             }

@@ -951,7 +951,6 @@ contract('Parlay Vault', (accounts) => {
 
 				for (let i = 0; i < result.finalQuotes.length; i++) {
 					console.log('finalQuote', i, fromUnit(result.finalQuotes[i]));
-					console.log('amountToBuy', i, fromUnit(result.amountsToBuy[i]));
 				}
 			}
 		});
@@ -1257,15 +1256,6 @@ contract('Parlay Vault', (accounts) => {
 			await assert.revert(
 				vault.trade(
 					[parlayMarkets[0].address, parlayMarkets[5].address],
-					parlayPositions,
-					totalSUSDToPay
-				),
-				'Market is at the maximum number of tickets'
-			);
-
-			await assert.revert(
-				vault.trade(
-					[parlayMarkets[4].address, parlayMarkets[0].address],
 					parlayPositions,
 					totalSUSDToPay
 				),

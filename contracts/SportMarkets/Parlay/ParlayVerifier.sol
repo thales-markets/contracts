@@ -31,16 +31,6 @@ contract ParlayVerifier {
         address parlayAMM;
     }
 
-    struct FinalQuoteParameters {
-        address[] sportMarkets;
-        uint[] positions;
-        uint[] buyQuoteAmounts;
-        ISportsAMM sportsAmm;
-        uint sUSDAfterFees;
-        uint defaultONE;
-        uint[] sgpFees;
-    }
-
     struct VerifyMarket {
         address[] sportMarkets;
         uint[] positions;
@@ -552,134 +542,40 @@ contract ParlayVerifier {
         uint numOfMarkets = params.sportMarkets.length;
         uint inverseSum;
         bool eligible;
-        uint[] memory marketOdds;
-        (eligible, marketOdds, params.sgpFees) = _verifyMarkets(
+        amountsToBuy = new uint[](numOfMarkets);
+        (eligible, finalQuotes, params.sgpFees) = _verifyMarkets(
             VerifyMarket(params.sportMarkets, params.positions, params.sportsAMM, params.parlayAMM, params.defaultONE)
         );
         if (eligible && numOfMarkets == params.positions.length && numOfMarkets > 0 && numOfMarkets <= params.parlaySize) {
-            finalQuotes = new uint[](numOfMarkets);
-            amountsToBuy = new uint[](numOfMarkets);
             for (uint i = 0; i < numOfMarkets; i++) {
                 if (params.positions[i] > 2) {
                     totalQuote = 0;
                     break;
                 }
-                if (marketOdds.length == 0) {
+                if (finalQuotes.length == 0) {
                     totalQuote = 0;
                     break;
                 }
-                finalQuotes[i] = (params.defaultONE * marketOdds[i]);
+                finalQuotes[i] = (params.defaultONE * finalQuotes[i]);
+                if (params.sgpFees[i] > 0) {
+                    finalQuotes[i] = ((finalQuotes[i] * ONE * ONE) / params.sgpFees[i]) / ONE;
+                }
                 totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
-                skewImpact = skewImpact + finalQuotes[i];
-                // use as inverseQuotes
-                finalQuotes[i] = ONE - finalQuotes[i];
-                inverseSum = inverseSum + finalQuotes[i];
-                if (totalQuote == 0) {
-                    totalQuote = 0;
-                    break;
+            }
+            if (totalQuote != 0) {
+                if (totalQuote < IParlayMarketsAMM(params.parlayAMM).maxSupportedOdds()) {
+                    totalQuote = IParlayMarketsAMM(params.parlayAMM).maxSupportedOdds();
+                }
+                totalBuyAmount = (params.totalSUSDToPay * ONE) / totalQuote;
+                _calculateRisk(params.sportMarkets, (totalBuyAmount - params.totalSUSDToPay), params.sportsAMM.parlayAMM());
+            }
+
+            for (uint i = 0; i < numOfMarkets; i++) {
+                //consider if this works well for Arbitrum at 6 decimals
+                if (finalQuotes[i] > 0) {
+                    amountsToBuy[i] = (ONE * params.totalSUSDToPay) / finalQuotes[i];
                 }
             }
-            if (totalQuote > 0) {
-                for (uint i = 0; i < finalQuotes.length; i++) {
-                    // use finalQuotes as inverseQuotes in equation
-                    // skewImpact is sumOfQuotes
-                    // inverseSum is sum of InverseQuotes
-                    amountsToBuy[i] =
-                        ((ONE * finalQuotes[i] * params.totalSUSDToPay * skewImpact)) /
-                        (totalQuote * inverseSum * skewImpact);
-                }
-                (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = calculateFinalQuotes(
-                    FinalQuoteParameters(
-                        params.sportMarkets,
-                        params.positions,
-                        amountsToBuy,
-                        params.sportsAMM,
-                        params.totalSUSDToPay,
-                        params.defaultONE,
-                        params.sgpFees
-                    )
-                );
-            }
-        }
-    }
-
-    function calculateFinalQuotes(FinalQuoteParameters memory params)
-        internal
-        view
-        returns (
-            uint totalQuote,
-            uint totalBuyAmount,
-            uint skewImpact,
-            uint[] memory finalQuotes,
-            uint[] memory buyAmountPerMarket
-        )
-    {
-        uint[] memory buyQuoteAmountPerMarket = new uint[](params.sportMarkets.length);
-        buyAmountPerMarket = params.buyQuoteAmounts;
-        finalQuotes = new uint[](params.sportMarkets.length);
-        uint feesIncluded;
-        for (uint i = 0; i < params.sportMarkets.length; i++) {
-            totalBuyAmount += params.buyQuoteAmounts[i];
-            // buyQuote always calculated with added SportsAMM fees
-            buyQuoteAmountPerMarket[i] = (params.defaultONE *
-                params.sportsAmm.buyFromAmmQuote(
-                    params.sportMarkets[i],
-                    obtainSportsAMMPosition(params.positions[i]),
-                    params.buyQuoteAmounts[i]
-                ));
-            if (buyQuoteAmountPerMarket[i] == 0) {
-                totalQuote = 0;
-                totalBuyAmount = 0;
-            }
-        }
-        for (uint i = 0; i < params.sportMarkets.length; i++) {
-            finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / params.buyQuoteAmounts[i]) / ONE;
-            // where the SGP fee is actually applied
-            if (params.sgpFees[i] > 0) {
-                finalQuotes[i] = ((finalQuotes[i] * ONE * ONE) / params.sgpFees[i]) / ONE;
-                feesIncluded += params.sgpFees[i] > ONE ? params.sgpFees[i] - ONE : (ONE - params.sgpFees[i]);
-            }
-            totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
-        }
-        if (totalQuote > 0) {
-            if (totalQuote < IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds()) {
-                totalQuote = IParlayMarketsAMM(params.sportsAmm.parlayAMM()).maxSupportedOdds();
-            }
-            uint expectedPayout = ((params.sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
-            skewImpact = expectedPayout > totalBuyAmount
-                ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
-                : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
-            buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
-            totalBuyAmount = _applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
-            _calculateRisk(params.sportMarkets, (totalBuyAmount - params.sUSDAfterFees), params.sportsAmm.parlayAMM());
-            if (feesIncluded > 0) {
-                if (skewImpact > feesIncluded) {
-                    skewImpact = skewImpact - feesIncluded;
-                } else {
-                    skewImpact = feesIncluded - skewImpact;
-                }
-            }
-        } else {
-            totalBuyAmount = 0;
-        }
-    }
-
-    function _applySkewImpact(
-        uint _value,
-        uint _skewImpact,
-        bool _addition
-    ) internal pure returns (uint newValue) {
-        newValue = _addition ? (((ONE + _skewImpact) * _value) / ONE) : (((ONE - _skewImpact) * _value) / ONE);
-    }
-
-    function _applySkewImpactBatch(
-        uint[] memory _values,
-        uint _skewImpact,
-        bool _addition
-    ) internal pure returns (uint[] memory newValues) {
-        newValues = new uint[](_values.length);
-        for (uint i = 0; i < _values.length; i++) {
-            newValues[i] = _applySkewImpact(_values[i], _skewImpact, _addition);
         }
     }
 
@@ -750,14 +646,6 @@ contract ParlayVerifier {
     function sort(address[] memory data) external pure returns (address[] memory) {
         _quickSort(data, int(0), int(data.length - 1));
         return data;
-    }
-
-    function applySkewImpact(
-        uint _value,
-        uint _skewImpact,
-        bool _addition
-    ) external pure returns (uint newValue) {
-        newValue = _applySkewImpact(_value, _skewImpact, _addition);
     }
 
     function calculateCombinationKey(address[] memory _sportMarkets) external pure returns (bytes32) {

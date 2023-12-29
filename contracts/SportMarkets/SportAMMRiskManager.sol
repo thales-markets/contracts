@@ -90,7 +90,8 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     /// @param _market to get cap for
     /// @return toReturn cap to use
     function calculateCapToBeUsed(address _market) external view returns (uint toReturn) {
-        return _calculateCapToBeUsed(_market);
+        (uint tag1, uint tag2) = ISportPositionalMarket(_market).getTags();
+        return _calculateCapToBeUsed(_market, tag1, tag2);
     }
 
     /// @notice returns if market is in to much of a risk
@@ -98,8 +99,9 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     /// @param _market for which is calculation done
     /// @return _isNotRisky true/false
     function isTotalSpendingLessThanTotalRisk(uint _totalSpent, address _market) external view returns (bool _isNotRisky) {
-        uint capToBeUsed = _calculateCapToBeUsed(_market);
-        uint riskMultiplier = _calculateRiskMultiplier(_market);
+        (uint tag1, uint tag2) = ISportPositionalMarket(_market).getTags();
+        uint capToBeUsed = _calculateCapToBeUsed(_market, tag1, tag2);
+        uint riskMultiplier = _calculateRiskMultiplier(_market, tag1, tag2);
         return _totalSpent <= capToBeUsed * riskMultiplier;
     }
 
@@ -150,11 +152,14 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
 
     /* ========== INTERNALS ========== */
 
-    function _calculateRiskMultiplier(address market) internal view returns (uint toReturn) {
+    function _calculateRiskMultiplier(
+        address market,
+        uint tag1,
+        uint tag2
+    ) internal view returns (uint toReturn) {
         uint marketRisk = riskMultiplierPerMarket[market];
 
         if (marketRisk == 0) {
-            (uint tag1, ) = _getTagsForMarket(market);
             uint riskPerTag = riskMultiplierForSport[tag1];
             marketRisk = riskPerTag > 0 ? riskPerTag : defaultRiskMultiplier;
         }
@@ -162,9 +167,12 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         toReturn = marketRisk;
     }
 
-    function _calculateCapToBeUsed(address market) internal view returns (uint toReturn) {
+    function _calculateCapToBeUsed(
+        address market,
+        uint tag1,
+        uint tag2
+    ) internal view returns (uint toReturn) {
         toReturn = capPerMarket[market];
-        (uint tag1, uint tag2) = _getTagsForMarket(market);
         if (toReturn == 0) {
             uint capFirstTag = capPerSport[tag1];
             capFirstTag = capFirstTag > 0 ? capFirstTag : defaultCapPerGame;
@@ -195,12 +203,6 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
                     (((dynamicLiquidityCutoffTime - timeToStart) * remainingFromCutOff) / dynamicLiquidityCutoffTime);
             }
         }
-    }
-
-    function _getTagsForMarket(address _market) internal view returns (uint tag1, uint tag2) {
-        ISportPositionalMarket sportMarket = ISportPositionalMarket(_market);
-        tag1 = sportMarket.tags(0);
-        tag2 = sportMarket.isChild() ? sportMarket.tags(1) : 0;
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */
@@ -372,7 +374,7 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         uint min_spread,
         uint min_spreadPerAddress
     ) external view returns (uint min_spreadToUse) {
-        (uint tag1, uint tag2) = _getTagsForMarket(market);
+        (uint tag1, uint tag2) = ISportPositionalMarket(market).getTags();
         uint minSpreadByTags = minSpreadPerSport[tag1][tag2];
         uint minSpreadByPrimaryTag = minSpreadPerSport[tag1][0];
         uint spreadForTag = tag2 > 0 && minSpreadByTags > 0 ? minSpreadByTags : minSpreadByPrimaryTag;
@@ -382,13 +384,41 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
     }
 
     function getMaxSpreadForMarket(address _market, uint max_spread) external view returns (uint maxSpread) {
-        (uint tag1, ) = _getTagsForMarket(_market);
+        (uint tag1, ) = ISportPositionalMarket(_market).getTags();
         uint _maxSpreadPerSport = maxSpreadPerSport[tag1];
         maxSpread = _maxSpreadPerSport > 0 ? _maxSpreadPerSport : max_spread;
     }
 
+    function getCapAndMaxSpreadForMarket(address _market, uint max_spread) public view returns (uint cap, uint maxSpread) {
+        (uint tag1, uint tag2) = ISportPositionalMarket(_market).getTags();
+        uint _maxSpreadPerSport = maxSpreadPerSport[tag1];
+        maxSpread = _maxSpreadPerSport > 0 ? _maxSpreadPerSport : max_spread;
+        cap = _calculateCapToBeUsed(_market, tag1, tag2);
+    }
+
+    function getCapMaxSpreadAndMinOddsForMarket(
+        address _market,
+        uint max_spread,
+        uint minSupportedOdds
+    )
+        external
+        view
+        returns (
+            uint cap,
+            uint maxSpread,
+            uint minOddsForMarket
+        )
+    {
+        (uint tag1, uint tag2) = ISportPositionalMarket(_market).getTags();
+        uint _maxSpreadPerSport = maxSpreadPerSport[tag1];
+        maxSpread = _maxSpreadPerSport > 0 ? _maxSpreadPerSport : max_spread;
+        cap = _calculateCapToBeUsed(_market, tag1, tag2);
+        uint _minSupportedOddsPerSport = minSupportedOddsPerSport[tag1];
+        minOddsForMarket = _minSupportedOddsPerSport > 0 ? _minSupportedOddsPerSport : minSupportedOdds;
+    }
+
     function getMinOddsForMarket(address _market, uint minSupportedOdds) external view returns (uint minOdds) {
-        (uint tag1, ) = _getTagsForMarket(_market);
+        (uint tag1, ) = ISportPositionalMarket(_market).getTags();
         uint _minSupportedOddsPerSport = minSupportedOddsPerSport[tag1];
         minOdds = _minSupportedOddsPerSport > 0 ? _minSupportedOddsPerSport : minSupportedOdds;
     }

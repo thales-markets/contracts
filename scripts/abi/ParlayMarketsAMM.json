@@ -850,30 +850,6 @@
         "type": "address"
       }
     ],
-    "name": "exercisableSportPositionsInParlay",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "isExercisable",
-        "type": "bool"
-      },
-      {
-        "internalType": "address[]",
-        "name": "exercisableMarkets",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_parlayMarket",
-        "type": "address"
-      }
-    ],
     "name": "exerciseParlay",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1306,6 +1282,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "parlaysWithNewFormat",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "paused",
     "outputs": [
@@ -1326,30 +1321,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_parlayMarket",
-        "type": "address"
-      }
-    ],
-    "name": "resolvableSportPositionsInParlay",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "isAnyResolvable",
-        "type": "bool"
-      },
-      {
-        "internalType": "address[]",
-        "name": "resolvableMarkets",
-        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -1479,6 +1450,30 @@
       }
     ],
     "name": "riskPerGameCombination",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "riskPerMarketAndPosition",
     "outputs": [
       {
         "internalType": "uint256",

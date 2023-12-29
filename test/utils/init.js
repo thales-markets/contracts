@@ -42,13 +42,10 @@ module.exports = {
 		await MockPriceFeedDeployed.setPricetoReturn(10000);
 
 		await speedMarketsAMM.initialize(owner, exoticUSD.address);
-		await speedMarketsAMM.setAmounts(toUnit(5), toUnit(1000));
-		await speedMarketsAMM.setTimes(3600, 86400);
-		await speedMarketsAMM.setMaximumPriceDelays(60, 30);
+		await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(1000), 3600, 86400, 60, 30);
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
-		await speedMarketsAMM.setMaxRiskPerAsset(toBytes32('ETH'), toUnit(1000));
-		await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('ETH'), toUnit(100));
-		await speedMarketsAMM.setMaxRiskPerAssetAndDirection(toBytes32('BTC'), toUnit(100));
+		await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(100));
+		await speedMarketsAMM.setMaxRisks(toBytes32('BTC'), toUnit(1000), toUnit(100));
 		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05));
 		await speedMarketsAMM.setLPFeeParams(
 			[15, 30, 60, 120],

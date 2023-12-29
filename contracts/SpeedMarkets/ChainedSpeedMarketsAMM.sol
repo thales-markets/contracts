@@ -57,7 +57,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     uint public maxProfitPerIndividualMarket;
 
-    uint public payoutMultiplier;
+    uint private payoutMultiplier; // unused, part of payoutMultipliers
 
     uint public maxRisk;
     uint public currentRisk;
@@ -66,12 +66,17 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     bool public multicollateralEnabled;
 
-    /// @return The address of the address manager contract
+    /// @notice The address of the address manager contract
     IAddressManager public addressManager;
+
+    /// @notice payout multipliers for each number of chained markets, starting from minChainedMarkets up to maxChainedMarkets
+    /// e.g. for 2-6 chained markets [1.7, 1.8, 1.9, 1.95, 2] - for 2 chained markets multiplier is 1.7, for 3 it is 1.8, ...
+    uint[] public payoutMultipliers;
 
     // using this to solve stack too deep
     struct TempData {
         uint payout;
+        uint payoutMultiplier;
         PythStructs.Price pythPrice;
         ISpeedMarketsAMM.Params speedAMMParams;
     }
@@ -144,10 +149,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint _buyinAmount,
         uint8 _numOfDirections,
         uint _payoutMultiplier
-    ) internal pure returns (uint payout) {
-        payout = _buyinAmount;
+    ) internal pure returns (uint _payout) {
+        _payout = _buyinAmount;
         for (uint8 i = 0; i < _numOfDirections; i++) {
-            payout = (payout * _payoutMultiplier) / ONE;
+            _payout = (_payout * _payoutMultiplier) / ONE;
         }
     }
 
@@ -200,7 +205,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             "Wrong number of directions"
         );
 
-        tempData.payout = _getPayout(buyinAmount, uint8(directions.length), payoutMultiplier);
+        tempData.payoutMultiplier = payoutMultipliers[uint8(directions.length) - minChainedMarkets];
+        tempData.payout = _getPayout(buyinAmount, uint8(directions.length), tempData.payoutMultiplier);
         require(tempData.payout <= maxProfitPerIndividualMarket, "Profit too high");
 
         currentRisk += (tempData.payout - buyinAmount);
@@ -235,7 +241,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 directions,
                 buyinAmount,
                 tempData.speedAMMParams.safeBoxImpact,
-                payoutMultiplier
+                tempData.payoutMultiplier
             )
         );
 
@@ -259,7 +265,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             tempData.pythPrice.price,
             directions,
             buyinAmount,
-            payoutMultiplier,
+            tempData.payoutMultiplier,
             tempData.speedAMMParams.safeBoxImpact
         );
     }
@@ -393,7 +399,11 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             _maturedMarketsPerUser[user].add(market);
 
             uint buyinAmount = ChainedSpeedMarket(market).buyinAmount();
-            uint payout = _getPayout(buyinAmount, ChainedSpeedMarket(market).numOfDirections(), payoutMultiplier);
+            uint payout = _getPayout(
+                buyinAmount,
+                ChainedSpeedMarket(market).numOfDirections(),
+                ChainedSpeedMarket(market).payoutMultiplier()
+            );
 
             if (!ChainedSpeedMarket(market).isUserWinner()) {
                 if (currentRisk > payout) {
@@ -486,7 +496,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint _maxBuyinAmount,
         uint _maxProfitPerIndividualMarket,
         uint _maxRisk,
-        uint _payoutMultiplier
+        uint[] calldata _payoutMultipliers
     ) external onlyOwner {
         require(_minChainedMarkets > 1, "min 2 chained markets");
         minTimeFrame = _minTimeFrame;
@@ -497,7 +507,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         maxBuyinAmount = _maxBuyinAmount;
         maxProfitPerIndividualMarket = _maxProfitPerIndividualMarket;
         maxRisk = _maxRisk;
-        payoutMultiplier = _payoutMultiplier;
+        payoutMultipliers = _payoutMultipliers;
         emit LimitParamsChanged(
             _minTimeFrame,
             _maxTimeFrame,
@@ -507,7 +517,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             _maxBuyinAmount,
             _maxProfitPerIndividualMarket,
             _maxRisk,
-            _payoutMultiplier
+            _payoutMultipliers
         );
     }
 
@@ -562,7 +572,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint _maxBuyinAmount,
         uint _maxProfitPerIndividualMarket,
         uint _maxRisk,
-        uint _payoutMultiplier
+        uint[] _payoutMultipliers
     );
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event MultiCollateralOnOffRampEnabled(bool _enabled);

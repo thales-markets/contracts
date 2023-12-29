@@ -87,65 +87,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_game",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_position",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlayOwner",
-        "type": "address"
-      }
-    ],
-    "name": "addParlayForGamePosition",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlayOwner",
-        "type": "address"
-      }
-    ],
-    "name": "addUserParlay",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_parlayMarket",
-        "type": "address[]"
-      }
-    ],
-    "name": "exerciseParlays",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "",
         "type": "address"
       },
@@ -166,83 +107,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_sportMarket",
-        "type": "address"
-      }
-    ],
-    "name": "getAllParlaysForGame",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "homeParlays",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "awayParlays",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "drawParlays",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_sportMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_position",
-        "type": "uint256"
-      }
-    ],
-    "name": "getAllParlaysForGamePosition",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_sportMarket",
-        "type": "address[]"
-      }
-    ],
-    "name": "getAllParlaysForGames",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "parlays",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "numOfParlays",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -520,25 +384,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_userAccount",
-        "type": "address"
-      }
-    ],
-    "name": "getUserParlays",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "userAllParlays",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_owner",
         "type": "address"
       },
@@ -551,64 +396,6 @@
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_game",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlay",
-        "type": "address"
-      }
-    ],
-    "name": "isGameInParlay",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "containsParlay",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "position",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_game",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_position",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlay",
-        "type": "address"
-      }
-    ],
-    "name": "isGamePositionInParlay",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "containsParlay",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -754,29 +541,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_game",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_position",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlayMarket",
-        "type": "address"
-      }
-    ],
-    "name": "removeParlayForGamePosition",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

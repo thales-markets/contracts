@@ -97,7 +97,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         uint maxBuyinAmount;
         uint maxProfitPerIndividualMarket;
         Risk risk;
-        uint payoutMultiplier;
+        uint[] payoutMultipliers;
     }
 
     function initialize(address _owner, address _speedMarketsAMM) external initializer {
@@ -212,8 +212,8 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         uint[] memory timeThresholdsForFees = new uint[](lpFeesLength);
         uint[] memory lpFees = new uint[](lpFeesLength);
         for (uint i = 0; i < lpFeesLength; i++) {
-            timeThresholdsForFees[i] = (ISpeedMarketsAMM(speedMarketsAMM).timeThresholdsForFees(i));
-            lpFees[i] = (ISpeedMarketsAMM(speedMarketsAMM).lpFees(i));
+            timeThresholdsForFees[i] = ISpeedMarketsAMM(speedMarketsAMM).timeThresholdsForFees(i);
+            lpFees[i] = ISpeedMarketsAMM(speedMarketsAMM).lpFees(i);
         }
 
         return
@@ -249,21 +249,30 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         risk.current = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).currentRisk();
         risk.max = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxRisk();
 
+        uint minChainedMarkets = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minChainedMarkets();
+        uint maxChainedMarkets = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxChainedMarkets();
+        uint differentChainedMarketsSize = maxChainedMarkets - minChainedMarkets + 1;
+
+        uint[] memory payoutMultipliers = new uint[](differentChainedMarketsSize);
+        for (uint i = 0; i < differentChainedMarketsSize; i++) {
+            payoutMultipliers[i] = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).payoutMultipliers(i);
+        }
+
         return
             ChainedSpeedMarketsAMMParameters(
                 allLengths[0], // numActiveMarkets
                 allLengths[1], // numMaturedMarkets
                 _walletAddress != address(0) ? allLengths[2] : 0, // numActiveMarketsPerUser
                 _walletAddress != address(0) ? allLengths[3] : 0, // numMaturedMarketsPerUser
-                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minChainedMarkets(),
-                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxChainedMarkets(),
+                minChainedMarkets,
+                maxChainedMarkets,
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minTimeFrame(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxTimeFrame(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minBuyinAmount(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxBuyinAmount(),
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).maxProfitPerIndividualMarket(),
                 risk,
-                IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).payoutMultiplier()
+                payoutMultipliers
             );
     }
 

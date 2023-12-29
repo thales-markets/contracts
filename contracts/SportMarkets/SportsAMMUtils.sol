@@ -58,6 +58,18 @@ contract SportsAMMUtils {
         uint minSupportedOdds;
     }
 
+    struct AvailableHigher {
+        address market;
+        ISportsAMM.Position positionFirst;
+        ISportsAMM.Position positionSecond;
+        bool inverse;
+        address marketPool;
+        uint minOdds;
+        uint cap;
+        uint maxSpreadForMarket;
+        uint spentOnGame;
+    }
+
     function buyPriceImpactImbalancedSkew(
         uint amount,
         uint balanceOtherSide,
@@ -159,7 +171,7 @@ contract SportsAMMUtils {
         uint baseOdds,
         uint balance,
         uint max_spread
-    ) public view returns (uint availableAmount) {
+    ) public pure returns (uint availableAmount) {
         uint discountedPrice = (baseOdds * (ONE - max_spread / 2)) / ONE;
         uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
         if ((capUsed + additionalBufferFromSelling) > spentOnThisGame) {
@@ -523,44 +535,42 @@ contract SportsAMMUtils {
         tag3 = sportMarket.isChild() && sportMarket.tags(1) == TAG_NUMBER_PLAYERS ? sportMarket.tags(2) : 0;
     }
 
-    function getAvailableHigherForPositions(
-        address market,
-        ISportsAMM.Position positionFirst,
-        ISportsAMM.Position positionSecond,
-        bool inverse,
-        SportAMMLiquidityPool liquidityPool
-    ) public view returns (uint _availableHigher) {
-        (uint baseOddsFirst, uint baseOddsSecond) = obtainOddsMulti(market, positionFirst, positionSecond);
+    function getAvailableHigherForPositions(AvailableHigher memory params) public view returns (uint _availableHigher) {
+        (uint baseOddsFirst, uint baseOddsSecond) = obtainOddsMulti(
+            params.market,
+            params.positionFirst,
+            params.positionSecond
+        );
 
-        baseOddsFirst = sportsAMM.floorBaseOdds(baseOddsFirst, market);
-        baseOddsSecond = sportsAMM.floorBaseOdds(baseOddsSecond, market);
+        baseOddsFirst = baseOddsFirst < params.minOdds ? params.minOdds : baseOddsFirst;
+        baseOddsSecond = baseOddsSecond < params.minOdds ? params.minOdds : baseOddsSecond;
 
         (uint balanceFirst, uint balanceSecond) = getBalanceOfPositionsOnMarketByPositions(
-            market,
-            liquidityPool.getMarketPool(market),
-            positionFirst,
-            positionSecond
+            params.market,
+            params.marketPool,
+            params.positionFirst,
+            params.positionSecond
+        );
+        uint _availableOtherSideFirst = calculateAvailableToBuy(
+            params.cap,
+            params.spentOnGame,
+            baseOddsFirst,
+            baseOddsFirst,
+            params.maxSpreadForMarket
         );
 
-        uint _availableOtherSideFirst = sportsAMM.availableToBuyFromAMMWithBaseOdds(
-            market,
-            positionFirst,
-            baseOddsFirst,
-            balanceFirst,
-            true
-        );
-        uint _availableOtherSideSecond = sportsAMM.availableToBuyFromAMMWithBaseOdds(
-            market,
-            positionSecond,
+        uint _availableOtherSideSecond = calculateAvailableToBuy(
+            params.cap,
+            params.spentOnGame,
             baseOddsSecond,
             balanceSecond,
-            true
+            params.maxSpreadForMarket
         );
 
         _availableHigher = _availableOtherSideFirst;
         if (
-            (inverse && _availableOtherSideFirst > _availableOtherSideSecond) ||
-            (!inverse && _availableOtherSideFirst <= _availableOtherSideSecond)
+            (params.inverse && _availableOtherSideFirst > _availableOtherSideSecond) ||
+            (!params.inverse && _availableOtherSideFirst <= _availableOtherSideSecond)
         ) {
             _availableHigher = _availableOtherSideSecond;
         }

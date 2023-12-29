@@ -680,6 +680,11 @@
         "internalType": "address",
         "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isTwoPositional",
+        "type": "bool"
       }
     ],
     "name": "setFirstNormalizedOdds",

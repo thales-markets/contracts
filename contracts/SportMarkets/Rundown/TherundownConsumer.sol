@@ -523,7 +523,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             gameIdPerMarket[address(market)] = game.gameId;
             marketCreated[address(market)] = true;
 
-            oddsObtainer.setFirstNormalizedOdds(game.gameId, address(market));
+            oddsObtainer.setFirstNormalizedOdds(game.gameId, address(market), twoPositionSport[sportsIdPerGame[_gameId]]);
             marketForTeamName[game.homeTeam] = address(market);
             marketForTeamName[game.awayTeam] = address(market);
 

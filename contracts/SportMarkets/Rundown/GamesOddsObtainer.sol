@@ -172,8 +172,18 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice set first odds on creation market
     /// @param _gameId game id
     /// @param _market market
-    function setFirstNormalizedOdds(bytes32 _gameId, address _market) external onlyConsumer {
+    /// @param _isTwoPositional is sport two positional
+    function setFirstNormalizedOdds(
+        bytes32 _gameId,
+        address _market,
+        bool _isTwoPositional
+    ) external onlyConsumer {
         _setNormalizedOdds(_market, _gameId, true);
+        if (!_areOddsValid(gameOdds[_gameId], _isTwoPositional)) {
+            invalidOdds[_market] = true;
+            _pauseOrUnpauseMarkets(gameOdds[_gameId], _market, true, true);
+            emit InvalidOddsForMarket(_gameId, _market, _gameId, gameOdds[_gameId]);
+        }
     }
 
     /// @notice set backup odds to be main odds

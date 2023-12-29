@@ -608,6 +608,35 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_parent",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_player",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_option",
+        "type": "uint8"
+      }
+    ],
+    "name": "getAllChildMarketsForParentPlayerOption",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "_children",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "_parents",
         "type": "address[]"

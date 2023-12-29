@@ -133,7 +133,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     bool public closingPeriodInProgress;
     uint public closingPeriodPauseTime;
 
-    bool sendCCIPMessage;
+    bool public sendCCIPMessage;
 
     /* ========== CONSTRUCTOR ========== */
 

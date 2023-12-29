@@ -20,6 +20,10 @@ async function main() {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
 	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
 
 	const owner = new ethers.Wallet(user_key1, ethers.provider);
 
@@ -49,7 +53,7 @@ async function main() {
 		StakingImplementation = await getImplementationAddress(ethers.provider, StakingAddress);
 	}
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 42161) {
+	if (networkObj.chainId == 10 || networkObj.chainId == 42161 || networkObj.chainId == 8453) {
 		StakingImplementation = await upgrades.prepareUpgrade(StakingAddress, StakingContract);
 		await delay(5000);
 		console.log('Staking upgraded');

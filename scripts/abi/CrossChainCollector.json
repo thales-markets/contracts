@@ -185,6 +185,19 @@
   },
   {
     "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_toPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "PeriodManuallySet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
     "inputs": [],
     "name": "RemovedAllData",
     "type": "event"

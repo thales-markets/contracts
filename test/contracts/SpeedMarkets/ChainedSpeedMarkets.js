@@ -15,7 +15,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 	let mockPyth, priceFeedUpdateData, fee;
 	let mockWeth, swapRouterMock, MockPriceFeedDeployed;
 
-	const PAYOUT_MULTIPLIER = 1.9;
+	const PAYOUT_MULTIPLIERS = [toUnit(1.7), toUnit(1.78), toUnit(1.82), toUnit(1.84), toUnit(1.9)];
 	const DEFAULT_REFERRER_FEE = 0.005;
 	const SILVER_REFERRER_FEE = 0.0075;
 	const GOLD_REFERRER_FEE = 0.01;
@@ -181,7 +181,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			toUnit(20), // maxBuyinAmount
 			toUnit(500), // maxProfitPerIndividualMarket
 			toUnit(1000), // maxRisk
-			toUnit(PAYOUT_MULTIPLIER)
+			PAYOUT_MULTIPLIERS
 		);
 
 		await referrals.setWhitelistedAddress(chainedSpeedMarketsAMM.address, true);
@@ -247,11 +247,12 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 			console.log('Check payout');
 			let marketBalance = await exoticUSD.balanceOf(market);
+			let payoutMultiplier = PAYOUT_MULTIPLIERS[numOfDirections - 2] / 1e18; // minChainedMarkets = 2
 			assert.equal(
-				marketBalance / 1e18,
-				(buyinAmount * PAYOUT_MULTIPLIER ** numOfDirections).toFixed(5)
+				(marketBalance / 1e18).toFixed(5),
+				(buyinAmount * payoutMultiplier ** numOfDirections).toFixed(5)
 			);
-			assert.equal(marketDataArray[0].payoutMultiplier / 1e18, PAYOUT_MULTIPLIER);
+			assert.equal(marketDataArray[0].payoutMultiplier / 1e18, payoutMultiplier);
 
 			console.log('Check default referrer fee');
 			let referrerBalance = await exoticUSD.balanceOf(referrerAddress);
@@ -267,7 +268,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				toUnit(20), // maxBuyinAmount
 				toUnit(500), // maxProfitPerIndividualMarket
 				toUnit(900), // maxRisk DECREASED
-				toUnit(PAYOUT_MULTIPLIER)
+				PAYOUT_MULTIPLIERS
 			);
 			await expect(
 				chainedSpeedMarketsAMM.createNewMarket(
@@ -290,7 +291,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				toUnit(20), // maxBuyinAmount
 				toUnit(500), // maxProfitPerIndividualMarket
 				toUnit(2000), // maxRisk INCREASED
-				toUnit(PAYOUT_MULTIPLIER)
+				PAYOUT_MULTIPLIERS
 			);
 			await chainedSpeedMarketsAMM.createNewMarket(
 				toBytes32('ETH'),
@@ -342,8 +343,9 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 			let expectedCurrentRisk = 0;
 			for (let marketData of marketDataArray) {
+				payoutMultiplier = PAYOUT_MULTIPLIERS[marketData.directions.length - 2] / 1e18; // minChainedMarkets = 2
 				expectedCurrentRisk +=
-					buyinAmount * PAYOUT_MULTIPLIER ** marketData.directions.length - buyinAmount;
+					buyinAmount * payoutMultiplier ** marketData.directions.length - buyinAmount;
 			}
 			assert.equal((chainedAmmData.risk.current / 1e18).toFixed(5), expectedCurrentRisk.toFixed(5));
 
@@ -372,7 +374,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				toUnit(20), // maxBuyinAmount
 				toUnit(500), // maxProfitPerIndividualMarket
 				toUnit(5000), // maxRisk INCREASED
-				toUnit(PAYOUT_MULTIPLIER)
+				PAYOUT_MULTIPLIERS
 			);
 
 			let buyinAmount = 10;

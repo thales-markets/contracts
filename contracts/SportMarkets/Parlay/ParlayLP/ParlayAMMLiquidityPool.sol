@@ -145,16 +145,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         address roundPool = _getOrCreateRoundPool(nextRound);
         sUSD.safeTransferFrom(msg.sender, roundPool, amount);
 
-        if (!whitelistedDeposits[msg.sender]) {
-            require(!onlyWhitelistedStakersAllowed || whitelistedStakers[msg.sender], "Only whitelisted stakers allowed");
-            require(address(stakingThales) != address(0), "Staking Thales not set");
-            require(
-                (balancesPerRound[round][msg.sender] + amount + balancesPerRound[nextRound][msg.sender]) <=
-                    _transformCollateral((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
-                "Not enough staked THALES"
-            );
-        }
-
         require(msg.sender != defaultLiquidityProvider, "Can't deposit directly as default liquidity provider");
 
         // new user enters the pool

@@ -634,13 +634,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         _setPausing ? _pause() : _unpause();
     }
 
-    /// @notice Set onlyWhitelistedStakersAllowed variable
-    /// @param flagToSet self explanatory
-    function setOnlyWhitelistedStakersAllowed(bool flagToSet) external onlyOwner {
-        onlyWhitelistedStakersAllowed = flagToSet;
-        emit SetOnlyWhitelistedStakersAllowed(flagToSet);
-    }
-
     /// @notice Set setNeedsTransformingCollateral variable
     /// @param _needsTransformingCollateral self explanatory
     function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
@@ -773,7 +766,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event AddedIntoWhitelistStaker(address _whitelistAddress, bool _flag);
     event RoundLengthChanged(uint roundLength);
-    event SetOnlyWhitelistedStakersAllowed(bool flagToSet);
     event RoundClosingPrepared(uint round);
     event RoundClosingBatchProcessed(uint round, uint batchSize);
     event UtilizationRateChanged(uint utilizationRate);

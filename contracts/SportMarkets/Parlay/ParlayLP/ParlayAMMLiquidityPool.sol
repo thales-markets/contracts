@@ -637,13 +637,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         _setPausing ? _pause() : _unpause();
     }
 
-    /// @notice Set onlyWhitelistedStakersAllowed variable
-    /// @param flagToSet self explanatory
-    function setOnlyWhitelistedStakersAllowed(bool flagToSet) external onlyOwner {
-        onlyWhitelistedStakersAllowed = flagToSet;
-        emit SetOnlyWhitelistedStakersAllowed(flagToSet);
-    }
-
     /// @notice Set _poolRoundMastercopy
     /// @param _poolRoundMastercopy to clone round pools from
     function setPoolRoundMastercopy(address _poolRoundMastercopy) external onlyOwner {
@@ -769,7 +762,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event AddedIntoWhitelistStaker(address _whitelistAddress, bool _flag);
     event RoundLengthChanged(uint roundLength);
-    event SetOnlyWhitelistedStakersAllowed(bool flagToSet);
     event RoundClosingPrepared(uint round);
     event RoundClosingBatchProcessed(uint round, uint batchSize);
     event UtilizationRateChanged(uint utilizationRate);

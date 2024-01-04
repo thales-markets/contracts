@@ -656,13 +656,6 @@ contract SportAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable
         emit PoolRoundMastercopyChanged(poolRoundMastercopy);
     }
 
-    /// @notice Set _stakedThalesMultiplier
-    /// @param _stakedThalesMultiplier the number of sUSD one can deposit per THALES staked
-    function setStakedThalesMultiplier(uint _stakedThalesMultiplier) external onlyOwner {
-        stakedThalesMultiplier = _stakedThalesMultiplier;
-        emit StakedThalesMultiplierChanged(_stakedThalesMultiplier);
-    }
-
     /// @notice Set IStakingThales contract
     /// @param _stakingThales IStakingThales address
     function setStakingThales(IStakingThales _stakingThales) external onlyOwner {

@@ -909,10 +909,6 @@ contract('SportsAMM', (accounts) => {
 			});
 			await mockStakingThales.stake(toUnit(100), { from: secondLiquidityProvider });
 
-			await SportAMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
-				from: owner,
-			});
-
 			await SportAMMLiquidityPool.setStakingThales(mockStakingThales.address, {
 				from: owner,
 			});

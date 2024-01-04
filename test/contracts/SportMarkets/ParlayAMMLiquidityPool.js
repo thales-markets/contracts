@@ -1268,10 +1268,6 @@ contract('ParlayAMM', (accounts) => {
 			});
 			await mockStakingThales.stake(toUnit(100), { from: secondParlayAMMLiquidityProvider });
 
-			await ParlayAMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
-				from: owner,
-			});
-
 			await ParlayAMMLiquidityPool.setStakingThales(mockStakingThales.address, {
 				from: owner,
 			});
@@ -2044,10 +2040,6 @@ contract('ParlayAMM', (accounts) => {
 					from: secondParlayAMMLiquidityProvider,
 				});
 				await mockStakingThales.stake(toUnit(100), { from: secondParlayAMMLiquidityProvider });
-
-				await ParlayAMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
-					from: owner,
-				});
 
 				await ParlayAMMLiquidityPool.setStakingThales(mockStakingThales.address, {
 					from: owner,

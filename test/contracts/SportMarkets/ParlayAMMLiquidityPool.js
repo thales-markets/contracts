@@ -1289,20 +1289,10 @@ contract('ParlayAMM', (accounts) => {
 			).to.be.revertedWith('Deposit amount exceeds AMM LP cap');
 			let totalDeposited = await ParlayAMMLiquidityPool.totalDeposited();
 			console.log('Total deposited', fromUnit(totalDeposited));
-			await expect(
-				ParlayAMMLiquidityPool.deposit(toUnit(101), { from: secondParlayAMMLiquidityProvider })
-			).to.be.revertedWith('Not enough staked THALES');
 
 			await expect(
 				ParlayAMMLiquidityPool.deposit(toUnit(1), { from: secondParlayAMMLiquidityProvider })
 			).to.be.revertedWith('Amount less than minDepositAmount');
-
-			await ParlayAMMLiquidityPool.setOnlyWhitelistedStakersAllowed(true, {
-				from: owner,
-			});
-			await expect(
-				ParlayAMMLiquidityPool.deposit(toUnit(101), { from: secondParlayAMMLiquidityProvider })
-			).to.be.revertedWith('Only whitelisted stakers allowed');
 
 			let getMaxAvailableDepositForUser =
 				await ParlayAMMLiquidityPool.getMaxAvailableDepositForUser(

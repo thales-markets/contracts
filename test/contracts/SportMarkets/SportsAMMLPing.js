@@ -930,19 +930,8 @@ contract('SportsAMM', (accounts) => {
 			).to.be.revertedWith('Deposit amount exceeds AMM LP cap');
 
 			await expect(
-				SportAMMLiquidityPool.deposit(toUnit(101), { from: secondLiquidityProvider })
-			).to.be.revertedWith('Not enough staked THALES');
-
-			await expect(
 				SportAMMLiquidityPool.deposit(toUnit(1), { from: secondLiquidityProvider })
 			).to.be.revertedWith('Amount less than minDepositAmount');
-
-			await SportAMMLiquidityPool.setOnlyWhitelistedStakersAllowed(true, {
-				from: owner,
-			});
-			await expect(
-				SportAMMLiquidityPool.deposit(toUnit(101), { from: secondLiquidityProvider })
-			).to.be.revertedWith('Only whitelisted stakers allowed');
 
 			let getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(
 				secondLiquidityProvider

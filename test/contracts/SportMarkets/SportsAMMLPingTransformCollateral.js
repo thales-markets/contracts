@@ -635,10 +635,6 @@ contract('SportsAMM', (accounts) => {
 				from: firstLiquidityProvider,
 			});
 
-			await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
-				from: owner,
-			});
-
 			let isUserLPing = await SportAMMLiquidityPool.isUserLPing(firstLiquidityProvider);
 			console.log('isUserLPing firstLiquidityProvider: ' + isUserLPing);
 
@@ -899,9 +895,6 @@ contract('SportsAMM', (accounts) => {
 			);
 			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
 
-			await SportAMMLiquidityPool.setWhitelistedStakerAddresses([secondLiquidityProvider], true, {
-				from: owner,
-			});
 			await SportAMMLiquidityPool.deposit(toUnitSix(100), { from: secondLiquidityProvider });
 
 			getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(

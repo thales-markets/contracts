@@ -713,34 +713,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         emit RoundLengthChanged(_roundLength);
     }
 
-    /// @notice set addresses which can deposit into the AMM bypassing the staking checks
-    /// @param _whitelistedAddresses Addresses to set the whitelist flag for
-    /// @param _flag to set
-    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
-        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
-        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
-            // only if current flag is different, if same skip it
-            if (whitelistedDeposits[_whitelistedAddresses[index]] != _flag) {
-                whitelistedDeposits[_whitelistedAddresses[index]] = _flag;
-                emit AddedIntoWhitelist(_whitelistedAddresses[index], _flag);
-            }
-        }
-    }
-
-    /// @notice set addresses which can deposit into the AMM when only whitelisted stakers are allowed
-    /// @param _whitelistedAddresses Addresses to set the whitelist flag for
-    /// @param _flag to set
-    function setWhitelistedStakerAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
-        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
-        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
-            // only if current flag is different, if same skip it
-            if (whitelistedStakers[_whitelistedAddresses[index]] != _flag) {
-                whitelistedStakers[_whitelistedAddresses[index]] = _flag;
-                emit AddedIntoWhitelistStaker(_whitelistedAddresses[index], _flag);
-            }
-        }
-    }
-
     /// @notice set utilization rate parameter
     /// @param _utilizationRate value as percentage
     function setUtilizationRate(uint _utilizationRate) external onlyOwner {

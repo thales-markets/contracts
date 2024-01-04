@@ -938,12 +938,6 @@ contract('SportsAMM', (accounts) => {
 			);
 			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
 
-			let getNeededStakedThalesToWithdrawForUser =
-				await SportAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(secondLiquidityProvider);
-			console.log(
-				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
-			);
-
 			await SportAMMLiquidityPool.setWhitelistedStakerAddresses([secondLiquidityProvider], true, {
 				from: owner,
 			});
@@ -953,12 +947,6 @@ contract('SportsAMM', (accounts) => {
 				secondLiquidityProvider
 			);
 			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
-
-			getNeededStakedThalesToWithdrawForUser =
-				await SportAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(secondLiquidityProvider);
-			console.log(
-				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
-			);
 
 			ammBalance = await Thales.balanceOf(SportsAMM.address);
 			console.log('ammBalance: ' + ammBalance / 1e18);

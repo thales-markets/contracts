@@ -467,17 +467,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             : 0;
     }
 
-    //deprecated User can now withdraw at any time
-    /// @notice Return how much the user needs to have staked to withdraw
-    /// @param user address to check
-    /// @return neededStaked how much the user needs to have staked to withdraw
-    function getNeededStakedThalesToWithdrawForUser(address user) external view returns (uint neededStaked) {
-        uint nextRound = round + 1;
-        neededStaked =
-            _reverseTransformCollateral((balancesPerRound[round][user] + balancesPerRound[nextRound][user]) * ONE) /
-            stakedThalesMultiplier;
-    }
-
     /// @notice get the pool address for the market
     /// @param market to check
     /// @return roundPool the pool address for the market

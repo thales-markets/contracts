@@ -1299,14 +1299,6 @@ contract('ParlayAMM', (accounts) => {
 					secondParlayAMMLiquidityProvider
 				);
 			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
-
-			let getNeededStakedThalesToWithdrawForUser =
-				await ParlayAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(
-					secondParlayAMMLiquidityProvider
-				);
-			console.log(
-				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
-			);
 		});
 
 		describe('Exercise whole parlay cancellation of totals market', () => {

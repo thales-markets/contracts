@@ -317,19 +317,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "flagToSet",
-        "type": "bool"
-      }
-    ],
-    "name": "SetOnlyWhitelistedStakersAllowed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "safeBox",
         "type": "address"
@@ -1277,19 +1264,6 @@
       }
     ],
     "name": "setNeedsTransformingCollateral",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "flagToSet",
-        "type": "bool"
-      }
-    ],
-    "name": "setOnlyWhitelistedStakersAllowed",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

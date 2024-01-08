@@ -214,9 +214,6 @@ contract('ThalesAMM', (accounts) => {
 		await sUSDSynth.approve(ThalesAMMLiquidityPool.address, toUnit('100000'), {
 			from: firstLiquidityProvider,
 		});
-		await ThalesAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
-			from: owner,
-		});
 		await ThalesAMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
 		await ThalesAMMLiquidityPool.start({ from: owner });
 		await ThalesAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {

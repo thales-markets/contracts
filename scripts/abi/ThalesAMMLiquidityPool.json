@@ -304,19 +304,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "flagToSet",
-        "type": "bool"
-      }
-    ],
-    "name": "SetOnlyWhitelistedStakersAllowed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "safeBox",
         "type": "address"
@@ -660,25 +647,6 @@
       {
         "internalType": "uint256",
         "name": "stakedThalesForUser",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
-    "name": "getNeededStakedThalesToWithdrawForUser",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "neededStaked",
         "type": "uint256"
       }
     ],
@@ -1290,19 +1258,6 @@
   {
     "inputs": [
       {
-        "internalType": "bool",
-        "name": "flagToSet",
-        "type": "bool"
-      }
-    ],
-    "name": "setOnlyWhitelistedStakersAllowed",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -1373,19 +1328,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_stakedThalesMultiplier",
-        "type": "uint256"
-      }
-    ],
-    "name": "setStakedThalesMultiplier",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -1418,42 +1360,6 @@
       }
     ],
     "name": "setUtilizationRate",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_whitelistedAddresses",
-        "type": "address[]"
-      },
-      {
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "setWhitelistedAddresses",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_whitelistedAddresses",
-        "type": "address[]"
-      },
-      {
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "setWhitelistedStakerAddresses",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

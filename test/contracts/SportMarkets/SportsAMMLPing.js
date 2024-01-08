@@ -631,17 +631,9 @@ contract('SportsAMM', (accounts) => {
 				from: firstLiquidityProvider,
 			});
 
-			await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
-				from: owner,
-			});
-
 			await Thales.transfer(thirdLiquidityProvider, toUnit('100'), { from: owner });
 			await Thales.approve(SportAMMLiquidityPool.address, toUnit('100'), {
 				from: thirdLiquidityProvider,
-			});
-
-			await SportAMMLiquidityPool.setWhitelistedAddresses([thirdLiquidityProvider], true, {
-				from: owner,
 			});
 
 			let isUserLPing = await SportAMMLiquidityPool.isUserLPing(firstLiquidityProvider);
@@ -917,10 +909,6 @@ contract('SportsAMM', (accounts) => {
 			});
 			await mockStakingThales.stake(toUnit(100), { from: secondLiquidityProvider });
 
-			await SportAMMLiquidityPool.setStakedThalesMultiplier(toUnit(1), {
-				from: owner,
-			});
-
 			await SportAMMLiquidityPool.setStakingThales(mockStakingThales.address, {
 				from: owner,
 			});
@@ -930,46 +918,20 @@ contract('SportsAMM', (accounts) => {
 			).to.be.revertedWith('Deposit amount exceeds AMM LP cap');
 
 			await expect(
-				SportAMMLiquidityPool.deposit(toUnit(101), { from: secondLiquidityProvider })
-			).to.be.revertedWith('Not enough staked THALES');
-
-			await expect(
 				SportAMMLiquidityPool.deposit(toUnit(1), { from: secondLiquidityProvider })
 			).to.be.revertedWith('Amount less than minDepositAmount');
-
-			await SportAMMLiquidityPool.setOnlyWhitelistedStakersAllowed(true, {
-				from: owner,
-			});
-			await expect(
-				SportAMMLiquidityPool.deposit(toUnit(101), { from: secondLiquidityProvider })
-			).to.be.revertedWith('Only whitelisted stakers allowed');
 
 			let getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(
 				secondLiquidityProvider
 			);
 			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
 
-			let getNeededStakedThalesToWithdrawForUser =
-				await SportAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(secondLiquidityProvider);
-			console.log(
-				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
-			);
-
-			await SportAMMLiquidityPool.setWhitelistedStakerAddresses([secondLiquidityProvider], true, {
-				from: owner,
-			});
 			await SportAMMLiquidityPool.deposit(toUnit(100), { from: secondLiquidityProvider });
 
 			getMaxAvailableDepositForUser = await SportAMMLiquidityPool.getMaxAvailableDepositForUser(
 				secondLiquidityProvider
 			);
 			console.log('getMaxAvailableDepositForUser  ' + getMaxAvailableDepositForUser[1] / 1e18);
-
-			getNeededStakedThalesToWithdrawForUser =
-				await SportAMMLiquidityPool.getNeededStakedThalesToWithdrawForUser(secondLiquidityProvider);
-			console.log(
-				'getNeededStakedThalesToWithdrawForUser  ' + getNeededStakedThalesToWithdrawForUser / 1e18
-			);
 
 			ammBalance = await Thales.balanceOf(SportsAMM.address);
 			console.log('ammBalance: ' + ammBalance / 1e18);
@@ -1098,9 +1060,6 @@ contract('SportsAMM', (accounts) => {
 				from: firstLiquidityProvider,
 			});
 
-			await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
-				from: owner,
-			});
 			await SportAMMLiquidityPool.deposit(toUnit(1000), { from: firstLiquidityProvider });
 			await SportAMMLiquidityPool.start({ from: owner });
 			await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {
@@ -1253,9 +1212,6 @@ contract('SportsAMM', (accounts) => {
 				from: firstLiquidityProvider,
 			});
 
-			await SportAMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
-				from: owner,
-			});
 			await SportAMMLiquidityPool.deposit(toUnit(1000), { from: firstLiquidityProvider });
 			await SportAMMLiquidityPool.start({ from: owner });
 			await SportAMMLiquidityPool.setDefaultLiquidityProvider(defaultLiquidityProvider, {

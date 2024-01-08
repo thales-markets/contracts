@@ -145,16 +145,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         address roundPool = _getOrCreateRoundPool(nextRound);
         sUSD.safeTransferFrom(msg.sender, roundPool, amount);
 
-        if (!whitelistedDeposits[msg.sender]) {
-            require(!onlyWhitelistedStakersAllowed || whitelistedStakers[msg.sender], "Only whitelisted stakers allowed");
-            require(address(stakingThales) != address(0), "Staking Thales not set");
-            require(
-                (balancesPerRound[round][msg.sender] + amount + balancesPerRound[nextRound][msg.sender]) <=
-                    _transformCollateral((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
-                "Not enough staked THALES"
-            );
-        }
-
         require(msg.sender != defaultLiquidityProvider, "Can't deposit directly as default liquidity provider");
 
         // new user enters the pool
@@ -477,17 +467,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             : 0;
     }
 
-    //deprecated User can now withdraw at any time
-    /// @notice Return how much the user needs to have staked to withdraw
-    /// @param user address to check
-    /// @return neededStaked how much the user needs to have staked to withdraw
-    function getNeededStakedThalesToWithdrawForUser(address user) external view returns (uint neededStaked) {
-        uint nextRound = round + 1;
-        neededStaked =
-            _reverseTransformCollateral((balancesPerRound[round][user] + balancesPerRound[nextRound][user]) * ONE) /
-            stakedThalesMultiplier;
-    }
-
     /// @notice get the pool address for the market
     /// @param market to check
     /// @return roundPool the pool address for the market
@@ -658,26 +637,12 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         _setPausing ? _pause() : _unpause();
     }
 
-    /// @notice Set onlyWhitelistedStakersAllowed variable
-    /// @param flagToSet self explanatory
-    function setOnlyWhitelistedStakersAllowed(bool flagToSet) external onlyOwner {
-        onlyWhitelistedStakersAllowed = flagToSet;
-        emit SetOnlyWhitelistedStakersAllowed(flagToSet);
-    }
-
     /// @notice Set _poolRoundMastercopy
     /// @param _poolRoundMastercopy to clone round pools from
     function setPoolRoundMastercopy(address _poolRoundMastercopy) external onlyOwner {
         require(_poolRoundMastercopy != address(0), "Can not set a zero address!");
         poolRoundMastercopy = _poolRoundMastercopy;
         emit PoolRoundMastercopyChanged(poolRoundMastercopy);
-    }
-
-    /// @notice Set _stakedThalesMultiplier
-    /// @param _stakedThalesMultiplier the number of sUSD one can deposit per THALES staked
-    function setStakedThalesMultiplier(uint _stakedThalesMultiplier) external onlyOwner {
-        stakedThalesMultiplier = _stakedThalesMultiplier;
-        emit StakedThalesMultiplierChanged(_stakedThalesMultiplier);
     }
 
     /// @notice Set IStakingThales contract
@@ -732,34 +697,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         require(!started, "Can't change round length after start");
         roundLength = _roundLength;
         emit RoundLengthChanged(_roundLength);
-    }
-
-    /// @notice set addresses which can deposit into the AMM bypassing the staking checks
-    /// @param _whitelistedAddresses Addresses to set the whitelist flag for
-    /// @param _flag to set
-    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
-        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
-        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
-            // only if current flag is different, if same skip it
-            if (whitelistedDeposits[_whitelistedAddresses[index]] != _flag) {
-                whitelistedDeposits[_whitelistedAddresses[index]] = _flag;
-                emit AddedIntoWhitelist(_whitelistedAddresses[index], _flag);
-            }
-        }
-    }
-
-    /// @notice set addresses which can deposit into the AMM when only whitelisted stakers are allowed
-    /// @param _whitelistedAddresses Addresses to set the whitelist flag for
-    /// @param _flag to set
-    function setWhitelistedStakerAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
-        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
-        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
-            // only if current flag is different, if same skip it
-            if (whitelistedStakers[_whitelistedAddresses[index]] != _flag) {
-                whitelistedStakers[_whitelistedAddresses[index]] = _flag;
-                emit AddedIntoWhitelistStaker(_whitelistedAddresses[index], _flag);
-            }
-        }
     }
 
     /// @notice set utilization rate parameter
@@ -825,7 +762,6 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event AddedIntoWhitelistStaker(address _whitelistAddress, bool _flag);
     event RoundLengthChanged(uint roundLength);
-    event SetOnlyWhitelistedStakersAllowed(bool flagToSet);
     event RoundClosingPrepared(uint round);
     event RoundClosingBatchProcessed(uint round, uint batchSize);
     event UtilizationRateChanged(uint utilizationRate);

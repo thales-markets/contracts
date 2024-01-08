@@ -14,7 +14,7 @@ import "../interfaces/IAddressManager.sol";
 contract SafeBoxBuffer is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    IAddressManager private addressManager;
+    IAddressManager public addressManager;
     IERC20Upgradeable public sUSD;
 
     /* ========== INITIALIZERS ========== */

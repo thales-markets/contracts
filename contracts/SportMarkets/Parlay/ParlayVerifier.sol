@@ -547,12 +547,12 @@ contract ParlayVerifier {
             VerifyMarket(params.sportMarkets, params.positions, params.sportsAMM, params.parlayAMM, params.defaultONE)
         );
         if (eligible && numOfMarkets == params.positions.length && numOfMarkets > 0 && numOfMarkets <= params.parlaySize) {
-            if (finalQuotes.length == 0) {
-                totalQuote = 0;
-                break;
-            }
             for (uint i = 0; i < numOfMarkets; i++) {
                 if (params.positions[i] > 2) {
+                    totalQuote = 0;
+                    break;
+                }
+                if (finalQuotes.length == 0) {
                     totalQuote = 0;
                     break;
                 }

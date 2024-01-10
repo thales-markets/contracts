@@ -556,6 +556,10 @@ contract ParlayVerifier {
                     totalQuote = 0;
                     break;
                 }
+                if (finalQuotes[i] == 0) {
+                    totalQuote = 0;
+                    break;
+                }
                 finalQuotes[i] = (params.defaultONE * finalQuotes[i]);
                 if (params.sgpFees[i] > 0) {
                     finalQuotes[i] = ((finalQuotes[i] * ONE * ONE) / params.sgpFees[i]) / ONE;

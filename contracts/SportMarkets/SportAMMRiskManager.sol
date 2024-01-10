@@ -172,35 +172,37 @@ contract SportAMMRiskManager is Initializable, ProxyOwned, PausableUpgradeable, 
         uint tag1,
         uint tag2
     ) internal view returns (uint toReturn) {
-        toReturn = capPerMarket[market];
-        if (toReturn == 0) {
-            uint capFirstTag = capPerSport[tag1];
-            capFirstTag = capFirstTag > 0 ? capFirstTag : defaultCapPerGame;
-            toReturn = capFirstTag;
+        (uint maturity, ) = ISportPositionalMarket(market).times();
+        if (maturity > block.timestamp) {
+            toReturn = capPerMarket[market];
+            if (toReturn == 0) {
+                uint capFirstTag = capPerSport[tag1];
+                capFirstTag = capFirstTag > 0 ? capFirstTag : defaultCapPerGame;
+                toReturn = capFirstTag;
 
-            if (tag2 > 0) {
-                uint capSecondTag = capPerSportAndChild[tag1][tag2];
-                toReturn = capSecondTag > 0 ? capSecondTag : capFirstTag / 2;
+                if (tag2 > 0) {
+                    uint capSecondTag = capPerSportAndChild[tag1][tag2];
+                    toReturn = capSecondTag > 0 ? capSecondTag : capFirstTag / 2;
+                }
             }
-        }
 
-        uint dynamicLiquidityCutoffTime = dynamicLiquidityCutoffTimePerSport[tag1];
-        if (dynamicLiquidityCutoffTime > 0) {
-            (uint maturity, ) = ISportPositionalMarket(market).times();
-            uint timeToStart = maturity - block.timestamp;
-            uint cutOffLiquidity = (toReturn * ONE) /
-                (
-                    dynamicLiquidityCutoffDividerPerSport[tag1] > 0
-                        ? dynamicLiquidityCutoffDividerPerSport[tag1]
-                        : DEFAULT_DYNAMIC_LIQUIDITY_CUTOFF_DIVIDER
-                );
-            if (timeToStart >= dynamicLiquidityCutoffTime) {
-                toReturn = cutOffLiquidity;
-            } else {
-                uint remainingFromCutOff = toReturn - cutOffLiquidity;
-                toReturn =
-                    cutOffLiquidity +
-                    (((dynamicLiquidityCutoffTime - timeToStart) * remainingFromCutOff) / dynamicLiquidityCutoffTime);
+            uint dynamicLiquidityCutoffTime = dynamicLiquidityCutoffTimePerSport[tag1];
+            if (dynamicLiquidityCutoffTime > 0) {
+                uint timeToStart = maturity - block.timestamp;
+                uint cutOffLiquidity = (toReturn * ONE) /
+                    (
+                        dynamicLiquidityCutoffDividerPerSport[tag1] > 0
+                            ? dynamicLiquidityCutoffDividerPerSport[tag1]
+                            : DEFAULT_DYNAMIC_LIQUIDITY_CUTOFF_DIVIDER
+                    );
+                if (timeToStart >= dynamicLiquidityCutoffTime) {
+                    toReturn = cutOffLiquidity;
+                } else {
+                    uint remainingFromCutOff = toReturn - cutOffLiquidity;
+                    toReturn =
+                        cutOffLiquidity +
+                        (((dynamicLiquidityCutoffTime - timeToStart) * remainingFromCutOff) / dynamicLiquidityCutoffTime);
+                }
             }
         }
     }

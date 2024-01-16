@@ -46,6 +46,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         bool resolved;
         uint safeBoxImpact;
         uint lpFee;
+        uint createdAt;
     }
 
     struct TempData {
@@ -349,7 +350,8 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             buyinAmount,
             false,
             safeBoxImpact,
-            tempData.lpFeeWithSkew
+            tempData.lpFeeWithSkew,
+            block.timestamp
         );
 
         totalCollateralizedAmount += (2 * buyinAmount);

@@ -11,7 +11,7 @@ module.exports = {
 		let SpeedMarketsAMMContract = artifacts.require('SpeedMarkets');
 		let speedMarketsAMM = await SpeedMarketsAMMContract.new();
 
-		let SpeedMarketsAMMDataContract = artifacts.require('SpeedMarketsAMMData');
+		let SpeedMarketsAMMDataContract = artifacts.require('SpeedMarketsData');
 		let speedMarketsAMMData = await SpeedMarketsAMMDataContract.new();
 		await speedMarketsAMMData.initialize(owner, speedMarketsAMM.address);
 		await speedMarketsAMMData.setSpeedMarketsAMM(speedMarketsAMM.address, ZERO_ADDRESS, {

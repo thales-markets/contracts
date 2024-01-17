@@ -709,6 +709,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getAvailableAmountForNewMarkets",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "availableAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -791,6 +804,25 @@
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "market",
+        "type": "bytes32"
+      }
+    ],
+    "name": "isUserWinnerForMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isWinner",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

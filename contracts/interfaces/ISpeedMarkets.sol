@@ -24,14 +24,14 @@ interface ISpeedMarkets {
         uint lpFee;
         uint createdAt;
     }
-
-    function speedMarket(bytes32 _market) external view returns (SpeedMarketData memory);
-         struct Params {
+    struct Params {
         bool supportedAsset;
         bytes32 pythId;
         uint safeBoxImpact;
         uint64 maximumPriceDelay;
     }
+
+    function speedMarket(bytes32 _market) external view returns (SpeedMarketData memory);
 
     function sUSD() external view returns (IERC20Upgradeable);
 

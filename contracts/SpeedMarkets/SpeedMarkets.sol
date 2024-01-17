@@ -21,6 +21,7 @@ import {IReferrals} from "../interfaces/IReferrals.sol";
 
 import "../interfaces/IAddressManager.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
+import "../interfaces/ISpeedMarkets.sol";
 
 import "./SpeedMarketsAMMUtils.sol";
 
@@ -258,10 +259,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
                 "Risk per direction exceeded"
             );
         }
-
-        currentRiskPerAsset[asset] += buyinAmount * 2 - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE;
-        require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
-
         // LP fee by delta time + skew impact based on risk per direction and asset - discount as half of opposite skew
         lpFeeWithSkew =
             speedMarketsAMMUtils.getFeeByTimeThreshold(
@@ -272,6 +269,9 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             ) +
             skew -
             discount;
+
+        currentRiskPerAsset[asset] += buyinAmount * 2 - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE;
+        require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
     }
 
     function _handleReferrerAndSafeBox(
@@ -622,6 +622,14 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         params.safeBoxImpact = safeBoxImpact;
         params.maximumPriceDelay = maximumPriceDelay;
         return params;
+    }
+
+    function isUserWinnerForMarket(bytes32 market) external view returns (bool isWinner) {
+        isWinner = speedMarket[market].resolved && (speedMarket[market].direction == speedMarket[market].result);
+    }
+
+    function getAvailableAmountForNewMarkets() external view returns (uint availableAmount) {
+        availableAmount = _getAvailableAmount();
     }
 
     //////////////////setters/////////////////

@@ -9,10 +9,11 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
 import "../interfaces/ISpeedMarkets.sol";
-import "../interfaces/IChainedSpeedMarketsAMM.sol";
 
-import "./SpeedMarket.sol";
-import "./ChainedSpeedMarket.sol";
+// import "../interfaces/IChainedSpeedMarketsAMM.sol";
+
+// import "./SpeedMarket.sol";
+// import "./ChainedSpeedMarket.sol";
 
 /// @title An AMM data fetching for Thales speed markets
 contract SpeedMarketsData is Initializable, ProxyOwned, ProxyPausable {
@@ -33,24 +34,6 @@ contract SpeedMarketsData is Initializable, ProxyOwned, ProxyPausable {
         bool isUserWinner;
         uint safeBoxImpact;
         uint lpFee;
-        uint256 createdAt;
-    }
-
-    struct ChainedMarketData {
-        address user;
-        bytes32 asset;
-        uint64 timeFrame;
-        uint64 initialStrikeTime;
-        uint64 strikeTime;
-        int64 initialStrikePrice;
-        ISpeedMarkets.Direction[] directions;
-        int64[] strikePrices;
-        int64[] finalPrices;
-        uint buyinAmount;
-        uint payoutMultiplier;
-        bool resolved;
-        bool isUserWinner;
-        uint safeBoxImpact;
         uint256 createdAt;
     }
 
@@ -123,7 +106,6 @@ contract SpeedMarketsData is Initializable, ProxyOwned, ProxyPausable {
         return markets;
     }
 
- 
     /// @notice return all risk data (current and max) by specified asset
     function getRiskPerAsset(bytes32 asset) external view returns (Risk memory) {
         Risk memory risk;

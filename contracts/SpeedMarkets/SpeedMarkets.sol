@@ -20,10 +20,7 @@ import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import {IReferrals} from "../interfaces/IReferrals.sol";
 
 import "../interfaces/IAddressManager.sol";
-import "../interfaces/ISpeedMarketsAMM.sol";
 import "../interfaces/ISpeedMarkets.sol";
-
-import "./SpeedMarketsAMMUtils.sol";
 
 /// @title An AMM for Thales speed markets
 contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
@@ -58,7 +55,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     uint private constant ONE = 1e18;
     uint private constant MAX_APPROVAL = type(uint256).max;
     uint private constant SKEW_SLIPPAGE = 1e16;
-    SpeedMarketsAMMUtils private speedMarketsAMMUtils;
+    uint private constant SECONDS_PER_MINUTE = 60;
     IERC20Upgradeable public sUSD;
     //eth 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace
     IPyth public pyth;
@@ -186,7 +183,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             convertedAmount = iMultiCollateralOnOffRamp.onramp(collateral, collateralAmount);
         }
 
-        uint lpFeeForDeltaTime = speedMarketsAMMUtils.getFeeByTimeThreshold(
+        uint lpFeeForDeltaTime = _getFeeByTimeThreshold(
             uint64(strikeTime - block.timestamp),
             timeThresholdsForFees,
             lpFees,
@@ -261,7 +258,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         }
         // LP fee by delta time + skew impact based on risk per direction and asset - discount as half of opposite skew
         lpFeeWithSkew =
-            speedMarketsAMMUtils.getFeeByTimeThreshold(
+            _getFeeByTimeThreshold(
                 uint64(strikeTime - block.timestamp),
                 timeThresholdsForFees,
                 lpFees,
@@ -272,6 +269,23 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
         currentRiskPerAsset[asset] += buyinAmount * 2 - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE;
         require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
+    }
+
+    /// @notice get dynamic fee based on defined time thresholds for a given delta time
+    function _getFeeByTimeThreshold(
+        uint64 _deltaTimeSec,
+        uint[] memory _timeThresholds,
+        uint[] memory _fees,
+        uint _defaultFee
+    ) internal pure returns (uint fee) {
+        fee = _defaultFee;
+        uint _deltaTime = _deltaTimeSec / SECONDS_PER_MINUTE;
+        for (uint i = _timeThresholds.length; i > 0; i--) {
+            if (_deltaTime >= _timeThresholds[i - 1]) {
+                fee = _fees[i - 1];
+                break;
+            }
+        }
     }
 
     function _handleReferrerAndSafeBox(
@@ -615,8 +629,8 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     /// @notice get parmas for create market
-    function getParams(bytes32 asset) external view returns (ISpeedMarketsAMM.Params memory) {
-        ISpeedMarketsAMM.Params memory params;
+    function getParams(bytes32 asset) external view returns (ISpeedMarkets.Params memory) {
+        ISpeedMarkets.Params memory params;
         params.supportedAsset = supportedAsset[asset];
         params.pythId = assetToPythId[asset];
         params.safeBoxImpact = safeBoxImpact;
@@ -635,12 +649,10 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     //////////////////setters/////////////////
 
     /// @notice Set addresses used in AMM
-    /// @param _speedMarketsAMMUtils address of speed markets AMM utils
     /// @param _addressManager address manager contract
-    function setAMMAddresses(SpeedMarketsAMMUtils _speedMarketsAMMUtils, address _addressManager) external onlyOwner {
-        speedMarketsAMMUtils = _speedMarketsAMMUtils;
+    function setAMMAddresses(address _addressManager) external onlyOwner {
         addressManager = IAddressManager(_addressManager);
-        emit AMMAddressesChanged(_speedMarketsAMMUtils, _addressManager);
+        emit AMMAddressesChanged(_addressManager);
     }
 
     /// @notice map asset to PythID, e.g. "ETH" as bytes 32 to an equivalent ID from pyth docs
@@ -780,7 +792,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
     event MarketResolved(bytes32 _market, Direction _result, bool _userIsWinner);
 
-    event AMMAddressesChanged(SpeedMarketsAMMUtils _speedMarketsAMMUtils, address _addressManager);
+    event AMMAddressesChanged(address _addressManager);
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event SetMaxRisks(bytes32 asset, uint _maxRiskPerAsset, uint _maxRiskPerAssetAndDirection);
     event SafeBoxAndMaxSkewImpactChanged(uint _safeBoxImpact, uint _maxSkewImpact);

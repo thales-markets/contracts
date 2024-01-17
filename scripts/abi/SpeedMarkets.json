@@ -4,12 +4,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "contract SpeedMarketsAMMUtils",
-        "name": "_speedMarketsAMMUtils",
-        "type": "address"
-      },
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "_addressManager",
         "type": "address"
@@ -773,7 +767,7 @@
             "type": "uint64"
           }
         ],
-        "internalType": "struct ISpeedMarketsAMM.Params",
+        "internalType": "struct ISpeedMarkets.Params",
         "name": "",
         "type": "tuple"
       }
@@ -1294,11 +1288,6 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "contract SpeedMarketsAMMUtils",
-        "name": "_speedMarketsAMMUtils",
-        "type": "address"
-      },
       {
         "internalType": "address",
         "name": "_addressManager",

@@ -112,7 +112,7 @@ module.exports = {
 		let SpeedMarketsAMMUtilsContract = artifacts.require('SpeedMarketsAMMUtils');
 		let speedMarketsAMMUtils = await SpeedMarketsAMMUtilsContract.new();
 
-		await speedMarketsAMM.setAMMAddresses(speedMarketsAMMUtils.address, addressManager.address, {
+		await speedMarketsAMM.setAMMAddresses(addressManager.address, {
 			from: owner,
 		});
 

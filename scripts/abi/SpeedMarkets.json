@@ -137,55 +137,6 @@
         "internalType": "uint256",
         "name": "_buyinAmount",
         "type": "uint256"
-      }
-    ],
-    "name": "MarketCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "_asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_strikeTime",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "int64",
-        "name": "_strikePrice",
-        "type": "int64"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum SpeedMarkets.Direction",
-        "name": "_direction",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_buyinAmount",
-        "type": "uint256"
       },
       {
         "indexed": false,
@@ -211,6 +162,12 @@
         "internalType": "bytes32",
         "name": "_market",
         "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "int64",
+        "name": "_finalPrice",
+        "type": "int64"
       },
       {
         "indexed": false,
@@ -1117,19 +1074,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "pyth",
-    "outputs": [
-      {
-        "internalType": "contract IPyth",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -1253,19 +1197,6 @@
     "outputs": [
       {
         "internalType": "contract IERC20Upgradeable",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "safeBox",
-    "outputs": [
-      {
-        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -1545,19 +1476,6 @@
         "internalType": "uint256",
         "name": "createdAt",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "stakingThales",
-    "outputs": [
-      {
-        "internalType": "contract IStakingThales",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",

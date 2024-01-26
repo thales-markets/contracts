@@ -57,7 +57,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     uint private constant SKEW_SLIPPAGE = 1e16;
     uint private constant SECONDS_PER_MINUTE = 60;
     IERC20Upgradeable public sUSD;
-    //eth 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace
+
     IAddressManager public addressManager;
 
     uint64 public maximumPriceDelay;
@@ -342,9 +342,9 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             sUSD.safeTransferFrom(msg.sender, address(this), totalAmountToTransfer);
         }
 
-        bytes32 srm = _generateSpeedMarketUUID(msg.sender, asset, strikeTime, direction, buyinAmount, block.timestamp);
+        bytes32 market = _generateSpeedMarketUUID(msg.sender, asset, strikeTime, direction, buyinAmount, block.timestamp);
 
-        speedMarket[srm] = SpeedMarketData(
+        speedMarket[market] = SpeedMarketData(
             msg.sender,
             asset,
             strikeTime,
@@ -363,11 +363,11 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
         _handleReferrerAndSafeBox(referrer, buyinAmount, contractsAddresses);
 
-        _activeMarkets.add(srm);
-        _activeMarketsPerUser[msg.sender].add(srm);
+        _activeMarkets.add(market);
+        _activeMarketsPerUser[msg.sender].add(market);
 
         emit MarketCreatedWithFees(
-            address(this),
+            market,
             msg.sender,
             asset,
             strikeTime,
@@ -428,10 +428,12 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     /// @notice resolveMarkets in a batch
-    function resolveMarketsBatch(
-        bytes32[] calldata markets,
-        bytes[] calldata priceUpdateData
-    ) external payable nonReentrant notPaused {
+    function resolveMarketsBatch(bytes32[] calldata markets, bytes[] calldata priceUpdateData)
+        external
+        payable
+        nonReentrant
+        notPaused
+    {
         for (uint i = 0; i < markets.length; i++) {
             if (canResolveMarket(markets[i])) {
                 bytes[] memory subarray = new bytes[](1);
@@ -467,10 +469,10 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     /// @notice admin resolve for a given markets with finalPrices
-    function resolveMarketManuallyBatch(
-        bytes32[] calldata markets,
-        int64[] calldata finalPrices
-    ) external isAddressWhitelisted {
+    function resolveMarketManuallyBatch(bytes32[] calldata markets, int64[] calldata finalPrices)
+        external
+        isAddressWhitelisted
+    {
         for (uint i = 0; i < markets.length; i++) {
             if (canResolveMarket(markets[i])) {
                 _resolveMarketManually(markets[i], finalPrices[i]);
@@ -586,12 +588,20 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     /// @notice activeMarkets returns list of active markets per user
-    function activeMarketsPerUser(uint index, uint pageSize, address user) external view returns (bytes32[] memory) {
+    function activeMarketsPerUser(
+        uint index,
+        uint pageSize,
+        address user
+    ) external view returns (bytes32[] memory) {
         return _activeMarketsPerUser[user].getPage(index, pageSize);
     }
 
     /// @notice maturedMarkets returns list of matured markets per user
-    function maturedMarketsPerUser(uint index, uint pageSize, address user) external view returns (bytes32[] memory) {
+    function maturedMarketsPerUser(
+        uint index,
+        uint pageSize,
+        address user
+    ) external view returns (bytes32[] memory) {
         return _maturedMarketsPerUser[user].getPage(index, pageSize);
     }
 
@@ -673,7 +683,11 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     /// @notice maximum risk per asset and per asset and direction
-    function setMaxRisks(bytes32 asset, uint _maxRiskPerAsset, uint _maxRiskPerAssetAndDirection) external onlyOwner {
+    function setMaxRisks(
+        bytes32 asset,
+        uint _maxRiskPerAsset,
+        uint _maxRiskPerAssetAndDirection
+    ) external onlyOwner {
         maxRiskPerAsset[asset] = _maxRiskPerAsset;
         maxRiskPerAssetAndDirection[asset][Direction.Up] = _maxRiskPerAssetAndDirection;
         maxRiskPerAssetAndDirection[asset][Direction.Down] = _maxRiskPerAssetAndDirection;
@@ -693,7 +707,11 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     /// @param _timeThresholds array of time thresholds (minutes) for different fees in ascending order
     /// @param _lpFees array of fees applied to each time frame defined in _timeThresholds
     /// @param _lpFee default LP fee when there are no dynamic fees
-    function setLPFeeParams(uint[] calldata _timeThresholds, uint[] calldata _lpFees, uint _lpFee) external onlyOwner {
+    function setLPFeeParams(
+        uint[] calldata _timeThresholds,
+        uint[] calldata _lpFees,
+        uint _lpFee
+    ) external onlyOwner {
         require(_timeThresholds.length == _lpFees.length, "Times and fees must have the same length");
         delete timeThresholdsForFees;
         delete lpFees;
@@ -740,7 +758,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     //////////////////events/////////////////
 
     event MarketCreatedWithFees(
-        address _market,
+        bytes32 _market,
         address _user,
         bytes32 _asset,
         uint _strikeTime,

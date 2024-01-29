@@ -634,10 +634,12 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         return params;
     }
 
+    /// @notice get if user is winner for market
     function isUserWinnerForMarket(bytes32 market) external view returns (bool isWinner) {
         isWinner = speedMarket[market].resolved && (speedMarket[market].direction == speedMarket[market].result);
     }
 
+    /// @notice get available amount to be collateralized
     function getAvailableAmountForNewMarkets() external view returns (uint availableAmount) {
         availableAmount = _getAvailableAmount();
     }

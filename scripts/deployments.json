@@ -963,5 +963,13 @@
 		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
 		"Vault": "",
 		"VaultImplementation": ""
+	},
+	"blastSepolia": {
+		"ExoticUSD": "0x0E350351d27F950c92280c6B76ee49f0a64275fe",
+		"SpeedMarketsAMM": "0xA2dCFEe657Bc0a71AC31d146366246202eae18a4",
+		"SpeedMarketsAMMImplementation": "0x1a41CE7DbF0aE2A2749717CB6EE2Fa80fbd90d48",
+		"SpeedMarketMastercopy": "0xE8eB19E45608B90Af2046a44A0d6a736FCc8D337",
+		"Referrals": "0x10764f2787841E928E53e5Be1588a73E3c994EDe",
+		"ReferralsImplementation": "0xe4123FdC540FD3f969d71eC14e0839dC63A11AE6"
 	}
 }

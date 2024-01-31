@@ -70,6 +70,14 @@ module.exports = {
 					browserURL: 'https://opbnbscan.com/',
 				},
 			},
+			{
+				network: 'blast_sepolia',
+				chainId: 168587773,
+				urls: {
+					apiURL: 'https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan',
+					browserURL: 'https://testnet.blastscan.io/',
+				},
+			},
 		],
 		// Your API key for Etherscan
 		// Obtain one at https://etherscan.io/
@@ -91,6 +99,7 @@ module.exports = {
 			baseMainnet: BASESCAN_API_KEY,
 			baseGoerli: BASESCAN_API_KEY,
 			opbnbtest: OPBNBTEST_API_KEY,
+			blast_sepolia: 'blast_sepolia',
 		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
@@ -261,6 +270,10 @@ module.exports = {
 			gasPrice: 1000000000,
 			url: 'https://base-goerli.publicnode.com',
 			accounts: [PRIVATE_KEY],
+		},
+		blast_sepolia: {
+			url: 'https://sepolia.blast.io',
+			accounts: [process.env.PRIVATE_KEY],
 		},
 	},
 

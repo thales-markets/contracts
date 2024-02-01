@@ -43,6 +43,12 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 168587773) {
+		networkObj.name = 'blastSepolia';
+		network = 'blastSepolia';
+		proxySUSD = getTargetAddress('ExoticUSD', network);
+	}
+
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 

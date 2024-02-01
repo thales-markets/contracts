@@ -934,7 +934,7 @@
 		"SpeedMarketsImplementation": "0x1Bc1A28b3ce057941536bda55C784f8dC205956D",
 		"Referrals": "0x79c6cD67e3068DCD6bc7330211506025d114DEEd",
 		"SafeBox": "0x9fBc8aE0f320C52dB9Ee2b29A0Bf3128160A188c",
-		"	AddressManager": "0x34c92650784422E5c61C550DBEE6e57022DDCa62",
+		"AddressManager": "0x34c92650784422E5c61C550DBEE6e57022DDCa62",
 		"SpeedMarketsData": "0x6356454D76642c72edb9170EF1102418D656887d",
 		"SpeedMarketsDataImplementation": "0x0cc50eadac9da5afdd5d95ee093cf325ac031701"
 	},

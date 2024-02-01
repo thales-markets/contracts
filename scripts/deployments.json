@@ -174,7 +174,7 @@
 		"CrossChainCollector": "0x674d702069a7c12389B65a39b5a33829280f0E23",
 		"CrossChainCollectorImplementation": "0xE9Ec756Eb37452F3e00D0409ce96C53E97f1c286",
 		"SafeBoxBuffer": "0x3263B3E8Eda05b23aA774Cb7f1c126B3831b80A4",
-		"SafeBoxBufferImplementation": "0xc35A243c7Df8c3E08ddB0c70fF0427eA92E99611"
+		"SafeBoxBufferImplementation": "0x96e99c78f0fDf597BAD936DC33D79EB796aF55fC"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -316,7 +316,7 @@
 		"CrossChainCollector": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c",
 		"CrossChainCollectorImplementation": "0x8b186D1C759e4d37471A89821c7f0a68E10C5F5F",
 		"SafeBoxBuffer": "0xEd31481E4B1ded06ee5ed48C0205fA479Ffeb866",
-		"SafeBoxBufferImplementation": "0x393960FF3e10e13A2aEc0F4b1E79fA2B5f544B80"
+		"SafeBoxBufferImplementation": "0x38a50ebB6b299361D4492D488F95e13bE0A6b693"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
@@ -434,7 +434,7 @@
 		"CrossChainCollector": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c",
 		"CrossChainCollectorImplementation": "0xCd39Ca01844b07c47f19d7Aca120F9681e9dd33A",
 		"SafeBoxBuffer": "0x51c2589084488077318E43837B29C165d98A9152",
-		"SafeBoxBufferImplementation": "0x674d702069a7c12389B65a39b5a33829280f0E23"
+		"SafeBoxBufferImplementation": "0xb8e8E6cF3AbD16070013B23c92601D0eeA83a02E"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

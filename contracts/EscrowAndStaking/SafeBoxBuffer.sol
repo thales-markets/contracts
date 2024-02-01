@@ -32,7 +32,7 @@ contract SafeBoxBuffer is Initializable, ProxyOwned, ProxyPausable, ProxyReentra
     /// @notice Function dedicated for Staking contract to pull extra needed funds for revenue share in a given staking period
     /// @param _amount the extra amount required for revenue share in a period
     function pullExtraFunds(uint _amount) external nonReentrant notPaused {
-        require(msg.sender == addressManager.getAddress("StakingThales"), "InvCaller");
+        require(msg.sender == addressManager.getAddress("StakingThales") || msg.sender == owner, "InvCaller");
         sUSD.safeTransfer(msg.sender, _amount);
         emit FundsPulled(msg.sender, _amount);
     }

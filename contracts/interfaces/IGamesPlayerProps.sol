@@ -23,6 +23,8 @@ interface IGamesPlayerProps {
 
     function obtainPlayerProps(PlayerProps memory _player, uint _sportId) external;
 
+    function cancelMartketsForPlayerInAGame(bytes32 gameId, bytes32 playerId) external;
+
     function resolvePlayerProps(PlayerPropsResolver memory _result) external;
 
     function cancelMarketFromManager(address _market) external;

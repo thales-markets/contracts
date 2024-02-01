@@ -2052,6 +2052,318 @@ contract('PlayerProps', (accounts) => {
 			assert.equal(true, await deployedMarket.cancelled());
 		});
 
+		it('Create game and create player props for game, change line, create new market, cancel via reciever', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid1));
+			assert.bnEqual(1649890800, await TherundownConsumerDeployed.getGameStartTime(gameid2));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
+
+			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-20700, result[0]);
+			assert.bnEqual(17700, result[1]);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			assert.equal('Atlanta Hawks', game.homeTeam);
+			assert.equal('Charlotte Hornets', game.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdCreate,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			// invalid odds zero as draw
+			const tx_odds = await GamesOddsReceiverDeployed.fulfillGamesOdds(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				[10300, -11300, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				[0, 0],
+				{
+					from: third,
+				}
+			);
+
+			let result_final = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(10300, result_final[0]);
+			assert.bnEqual(-11300, result_final[1]);
+			assert.bnEqual(0, result_final[2]);
+
+			// adding player props
+
+			assert.bnEqual(0, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
+
+			const tx_playerProps = await GamesPlayerPropsReceiverDeployed.fulfillPlayerProps(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				['0x3431373836333400000000000000000000000000000000000000000000000000'],
+				[37],
+				['Nikola Jokic'],
+				[285],
+				[-11500, 11500],
+				{
+					from: third,
+				}
+			);
+
+			assert.bnEqual(1, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
+			let mainMarketPlayerPropsChild =
+				await GamesPlayerPropsDeployed.mainMarketPlayerOptionLineChildMarket(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37,
+					285
+				);
+			assert.bnEqual(
+				mainMarketPlayerPropsChild,
+				await GamesPlayerPropsDeployed.currentActiveChildMarketPerPlayerAndOption(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+			assert.bnEqual(
+				marketAdd,
+				await GamesPlayerPropsDeployed.childMarketMainMarket(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.normalizedOddsForMarketFulfilled(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.childMarketCreated(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				285,
+				await GamesPlayerPropsDeployed.childMarketLine(mainMarketPlayerPropsChild)
+			);
+			assert.bnEqual(
+				mainMarketPlayerPropsChild,
+				await GamesPlayerPropsDeployed.mainMarketChildMarketIndex(marketAdd, 0)
+			);
+			assert.bnEqual(
+				1,
+				await GamesPlayerPropsDeployed.numberOfChildMarketsPerPlayerAndOption(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+
+			const tx_playerPropsLineChange = await GamesPlayerPropsReceiverDeployed.fulfillPlayerProps(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				['0x3431373836333400000000000000000000000000000000000000000000000000'],
+				[37],
+				['Nikola Jokic'],
+				[295],
+				[-11500, 11500],
+				{
+					from: third,
+				}
+			);
+			assert.bnEqual(2, await GamesPlayerPropsDeployed.numberOfChildMarkets(marketAdd));
+			let mainMarketPlayerPropsChild2 =
+				await GamesPlayerPropsDeployed.mainMarketPlayerOptionLineChildMarket(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37,
+					295
+				);
+			assert.bnEqual(
+				mainMarketPlayerPropsChild2,
+				await GamesPlayerPropsDeployed.currentActiveChildMarketPerPlayerAndOption(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+			assert.bnEqual(
+				marketAdd,
+				await GamesPlayerPropsDeployed.childMarketMainMarket(mainMarketPlayerPropsChild2)
+			);
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.normalizedOddsForMarketFulfilled(mainMarketPlayerPropsChild2)
+			);
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.childMarketCreated(mainMarketPlayerPropsChild2)
+			);
+			assert.bnEqual(
+				295,
+				await GamesPlayerPropsDeployed.childMarketLine(mainMarketPlayerPropsChild2)
+			);
+			assert.bnEqual(
+				mainMarketPlayerPropsChild2,
+				await GamesPlayerPropsDeployed.mainMarketChildMarketIndex(marketAdd, 1)
+			);
+			assert.bnEqual(
+				2,
+				await GamesPlayerPropsDeployed.numberOfChildMarketsPerPlayerAndOption(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+
+			let getAllChildMarketsForParents =
+				await GamesPlayerPropsDeployed.getAllChildMarketsForParents([marketAdd]);
+
+			assert.bnEqual(2, getAllChildMarketsForParents.length);
+			assert.bnEqual(getAllChildMarketsForParents[0], mainMarketPlayerPropsChild);
+			assert.bnEqual(getAllChildMarketsForParents[1], mainMarketPlayerPropsChild2);
+
+			assert.bnEqual(
+				false,
+				await GamesPlayerPropsDeployed.resolveFulfilledForPlayerProps(
+					'0x6536306366613738303834366166363839373862343935373965356366333936',
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+
+			let childMarket = await SportPositionalMarketContract.at(mainMarketPlayerPropsChild);
+			let childMarket2 = await SportPositionalMarketContract.at(mainMarketPlayerPropsChild);
+
+			assert.equal(false, await childMarket.resolved());
+			assert.equal(0, await childMarket.finalResult());
+
+			await GamesPlayerPropsReceiverDeployed.fulfillPlayerProps(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				['0x3431373836333400000000000000000000000000000000000000000000000000'],
+				[38],
+				['Nikola Jokic'],
+				[295],
+				[-11500, 11500],
+				{
+					from: third,
+				}
+			);
+
+			let mainMarketPlayerPropsChild3 =
+				await GamesPlayerPropsDeployed.mainMarketPlayerOptionLineChildMarket(
+					marketAdd,
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					38,
+					295
+				);
+
+			let childMarket3 = await SportPositionalMarketContract.at(mainMarketPlayerPropsChild3);
+
+			assert.equal(false, await childMarket3.resolved());
+			assert.equal(0, await childMarket3.finalResult());
+
+			await fastForward(await currentTime());
+
+			const tx_2 = await TherundownConsumerDeployed.resolveMarketManually(
+				marketAdd,
+				1,
+				120,
+				60,
+				false,
+				{
+					from: third,
+				}
+			);
+			assert.equal(
+				true,
+				await await TherundownConsumerDeployed.isGameResolvedOrCanceled(
+					'0x6536306366613738303834366166363839373862343935373965356366333936'
+				)
+			);
+
+			const tx_playerPropsResolve =
+				await GamesPlayerPropsReceiverDeployed.fulfillResultOfPlayerProps(
+					['0x6536306366613738303834366166363839373862343935373965356366333936'],
+					['0x3431373836333400000000000000000000000000000000000000000000000000'],
+					[38],
+					[290],
+					[1],
+					{
+						from: third,
+					}
+				);
+
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.resolveFulfilledForPlayerProps(
+					'0x6536306366613738303834366166363839373862343935373965356366333936',
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					38
+				)
+			);
+
+			const tx_canceling = await GamesPlayerPropsReceiverDeployed.cancelMartketsForPlayerInAGame(
+				['0x6536306366613738303834366166363839373862343935373965356366333936'],
+				['0x3431373836333400000000000000000000000000000000000000000000000000'],
+				{
+					from: third,
+				}
+			);
+
+			assert.equal(true, await childMarket.resolved());
+			assert.equal(0, await childMarket.finalResult());
+
+			assert.equal(true, await childMarket3.resolved());
+
+			assert.bnEqual(
+				true,
+				await GamesPlayerPropsDeployed.resolveFulfilledForPlayerProps(
+					'0x6536306366613738303834366166363839373862343935373965356366333936',
+					'0x3431373836333400000000000000000000000000000000000000000000000000',
+					37
+				)
+			);
+
+			assert.equal(true, await childMarket.cancelled());
+			assert.equal(true, await childMarket2.cancelled());
+			assert.equal(false, await childMarket3.cancelled());
+		});
+
 		it('Create game and create player props for game, change line, create new market, cancel via manager player props', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 

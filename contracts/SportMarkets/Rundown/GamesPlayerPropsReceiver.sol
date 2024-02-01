@@ -126,6 +126,21 @@ contract GamesPlayerPropsReceiver is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    /// @notice canceling all options for a player in a game
+    /// @param _gameIds for which gameids markets are canceling
+    /// @param _playerIds for which playerids market is canceling
+    function cancelMartketsForPlayerInAGame(bytes32[] memory _gameIds, bytes32[] memory _playerIds)
+        external
+        isAddressWhitelisted
+    {
+        for (uint i = 0; i < _gameIds.length; i++) {
+            // game needs to be resolved or canceled
+            if (consumer.isGameResolvedOrCanceled(_gameIds[i])) {
+                playerProps.cancelMartketsForPlayerInAGame(_gameIds[i], _playerIds[i]);
+            }
+        }
+    }
+
     /// @notice fulfill all data necessary to resolve player props markets with CL node
     /// @param _playerProps array player Props
     function fulfillPlayerPropsCLResolved(bytes[] memory _playerProps) external onlyWrapper {

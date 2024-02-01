@@ -172,6 +172,37 @@ contract GamesPlayerProps is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    /// @notice cancel all player props markets in a game for player
+    /// @param gameId game in which player will be canceled
+    /// @param playerId player for which all props will be canceled
+    function cancelMartketsForPlayerInAGame(bytes32 gameId, bytes32 playerId) external canExecute {
+        // Retrieve the main market address for the game
+        address _main = consumer.marketPerGameId(gameId);
+        require(_main != address(0), "Main market not found");
+        // Retrieve all options for the player in the game
+        uint8[] memory options = allOptionsPerPlayer[gameId][playerId];
+        // Iterate through each options to cancel child markets
+        for (uint8 i = 0; i < options.length; i++) {
+            // Skip if already resolved
+            if (!resolveFulfilledForPlayerProps[gameId][playerId][options[i]]) {
+                uint numberOfChildsPerOptions = numberOfChildMarketsPerPlayerAndOption[_main][playerId][options[i]];
+                for (uint j = 0; j < numberOfChildsPerOptions; j++) {
+                    address child = mainMarketChildMarketPerPlayerAndOptionIndex[_main][playerId][options[i]][j];
+                    // Skip if already resolved
+                    if (!childMarketResolved[child]) {
+                        if (invalidOddsForPlayerProps[gameId][playerId][options[i]]) {
+                            consumer.pauseOrUnpauseMarket(child, false);
+                        }
+                        // Resolve the market as cancelled
+                        _resolveMarket(child, uint16(CANCELLED), CANCELLED);
+                        childMarketResolved[child] = true;
+                    }
+                }
+                resolveFulfilledForPlayerProps[gameId][playerId][options[i]] = true;
+            }
+        }
+    }
+
     /// @notice cancel playerProp
     /// @param _market market for cancelation
     function cancelMarketFromManager(address _market) external onlyManager {

@@ -49,6 +49,11 @@
       "address": "0x82dD5508537C2355c321584EcB440E3340d3aB79",
       "txHash": "0xed5447e63173992a3a15aa1b98f381b35246517457cdbb4134500e50fb431d9e",
       "kind": "transparent"
+    },
+    {
+      "address": "0x2073Db849e3b724f5c98823f8F2bd70B23e82B16",
+      "txHash": "0xb460c3587fd009089aac4a9cfebca285dd5c96bfa6799fd2e98858670341e457",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -650,6 +655,121 @@
         "types": {
           "t_address": {
             "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "2ece03a1e6430e262b796620226a3d97c4f18153a5434d795b4e9ade4045ee51": {
+      "address": "0x32077d9F7BF3994f3A0E905b3EefF34410eCA9A5",
+      "txHash": "0xc6d98f9304499468f2fd1e296d87bfa7c9313a7e6294a412b5cf7b643b29212e",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:12"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "safeBox",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:15"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "referrals",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:17"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "stakingThales",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:19"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "multiCollateralOnOffRamp",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:21"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "pyth",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:23"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "speedMarketsAMM",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:25"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "addressBook",
+            "type": "t_mapping(t_string_memory_ptr,t_address)",
+            "src": "contracts\\AddressManager\\AddressManager.sol:27"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_string_memory_ptr,t_address)": {
+            "label": "mapping(string => address)"
+          },
+          "t_string_storage": {
+            "label": "string"
           },
           "t_uint256": {
             "label": "uint256"

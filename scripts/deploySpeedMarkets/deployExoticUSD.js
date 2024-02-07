@@ -1,9 +1,17 @@
-const { ethers } = require('hardhat');
-const { setTargetAddress, getTargetAddress } = require('../helpers');
+const { ethers, upgrades } = require('hardhat');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
+const snx = require('synthetix-2.50.4-ovm');
+const { artifacts, contract, web3 } = require('hardhat');
+const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { toBytes32 } = require('../../index');
+const w3utils = require('web3-utils');
 
 async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	let thalesAddress, ProxyERC20sUSDaddress;
+
+	let proxySUSD;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -46,33 +54,30 @@ async function main() {
 	if (networkObj.chainId == 168587773) {
 		networkObj.name = 'blastSepolia';
 		network = 'blastSepolia';
-		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
+	let accounts = await ethers.getSigners();
+	let owner = accounts[0];
+
+	console.log('Owner is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	const SpeedMarketsAMMUtils = await ethers.getContractFactory('SpeedMarketsAMMUtils');
-	const SpeedMarketsAMMUtilsDeployed = await SpeedMarketsAMMUtils.deploy();
-	await SpeedMarketsAMMUtilsDeployed.deployed();
+	const ExoticUSD = await ethers.getContractFactory('ExoticUSD');
+	const ExoticUSDDeployed = await ExoticUSD.deploy();
+	await ExoticUSDDeployed.deployed();
 
-	setTargetAddress('SpeedMarketsAMMUtils', network, SpeedMarketsAMMUtilsDeployed.address);
+	setTargetAddress('ExoticUSD', network, ExoticUSDDeployed.address);
 
-	await delay(5000);
+	delay(5000);
 
 	try {
 		await hre.run('verify:verify', {
-			address: SpeedMarketsAMMUtilsDeployed.address,
+			address: ExoticUSDDeployed.address,
 		});
 	} catch (e) {
 		console.log(e);
 	}
-}
-
-function delay(time) {
-	return new Promise(function (resolve) {
-		setTimeout(resolve, time);
-	});
 }
 
 main()
@@ -81,3 +86,9 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
+
+function delay(time) {
+	return new Promise(function (resolve) {
+		setTimeout(resolve, time);
+	});
+}

@@ -23,7 +23,6 @@ const CACHE_FOLDER = 'cache';
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const INFURA = process.env.INFURA;
-const INFURA_POLYGON = process.env.INFURA_POLYGON;
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY;
 const OP_ETHERSCAN_KEY = process.env.OP_ETHERSCAN_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
@@ -70,15 +69,19 @@ module.exports = {
 					browserURL: 'https://opbnbscan.com/',
 				},
 			},
+			{
+				network: 'blastSepolia',
+				chainId: 168587773,
+				urls: {
+					apiURL: 'https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan',
+					browserURL: 'https://testnet.blastscan.io/',
+				},
+			},
 		],
 		// Your API key for Etherscan
 		// Obtain one at https://etherscan.io/
 		apiKey: {
 			mainnet: ETHERSCAN_KEY,
-			ropsten: ETHERSCAN_KEY,
-			rinkeby: ETHERSCAN_KEY,
-			goerli: ETHERSCAN_KEY,
-			kovan: ETHERSCAN_KEY,
 			// optimism
 			optimisticEthereum: OP_ETHERSCAN_KEY,
 			optimisticGoerli: OP_ETHERSCAN_KEY,
@@ -91,6 +94,7 @@ module.exports = {
 			baseMainnet: BASESCAN_API_KEY,
 			baseGoerli: BASESCAN_API_KEY,
 			opbnbtest: OPBNBTEST_API_KEY,
+			blastSepolia: 'blast_sepolia',
 		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
@@ -183,21 +187,6 @@ module.exports = {
 			url: 'http://localhost:8545',
 			loggingEnabled: true,
 		},
-		ropsten: {
-			gasPrice: 'auto',
-			url: 'https://ropsten.infura.io/v3/' + INFURA,
-			accounts: [PRIVATE_KEY],
-		},
-		goerli: {
-			gasPrice: 'auto',
-			url: 'https://goerli.infura.io/v3/' + INFURA,
-			accounts: [PRIVATE_KEY],
-		},
-		kovan: {
-			gasPrice: 'auto',
-			url: 'https://kovan.infura.io/v3/' + INFURA,
-			accounts: [PRIVATE_KEY],
-		},
 		mainnet: {
 			gasPrice: 'auto',
 			url: 'https://mainnet.infura.io/v3/' + INFURA,
@@ -261,6 +250,10 @@ module.exports = {
 			gasPrice: 1000000000,
 			url: 'https://base-goerli.publicnode.com',
 			accounts: [PRIVATE_KEY],
+		},
+		blastSepolia: {
+			url: 'https://sepolia.blast.io',
+			accounts: [process.env.PRIVATE_KEY],
 		},
 	},
 

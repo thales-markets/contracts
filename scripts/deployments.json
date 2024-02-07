@@ -482,6 +482,18 @@
 		"ChainedSpeedMarketsAMM": "0x14D2d7f64D6F10f8eF06372c2e5E36850661a537",
 		"ChainedSpeedMarketsAMMImplementation": "0x56411C5Dcf946D30Bd85Ce6F9b0B6aB3387158ac"
 	},
+	"zkSyncNetwork": {
+		"ProxyUSDC": "0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4",
+		"Pyth": "0xf087c864AEccFb6A2Bf1Af6A0382B0d0f6c5D834",
+		"SpeedMarketMastercopy": "0x85EC8f3D82a73D0E1f3a66a55224E9196bD97938",
+		"SpeedMarkets": "0x508F31897c25C436b257E37763E157Cb53D0a6fa",
+		"SpeedMarketsImplementation": "0x1Bc1A28b3ce057941536bda55C784f8dC205956D",
+		"Referrals": "0x79c6cD67e3068DCD6bc7330211506025d114DEEd",
+		"SafeBox": "0x9fBc8aE0f320C52dB9Ee2b29A0Bf3128160A188c",
+		"AddressManager": "0x34c92650784422E5c61C550DBEE6e57022DDCa62",
+		"SpeedMarketsData": "0x6356454D76642c72edb9170EF1102418D656887d",
+		"SpeedMarketsDataImplementation": "0x0cc50eadac9da5afdd5d95ee093cf325ac031701"
+	},
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
 		"SafeBox": "0xCd9c0E99396627C7746b4363B880939Ac2828d3E",
@@ -517,6 +529,30 @@
 		"SpeedMarketsAMMImplementation": "0xc62E56E756a3D14ffF838e820F38d845a16D49dE",
 		"SpeedMarketMastercopy": "0x8FE726b27e89Cd484981B2D27160186920Af2d17"
 	},
+	"blastSepolia": {
+		"ExoticUSD": "0x0E350351d27F950c92280c6B76ee49f0a64275fe",
+		"SpeedMarketsAMM": "0xA2dCFEe657Bc0a71AC31d146366246202eae18a4",
+		"SpeedMarketsAMMImplementation": "0x1a41CE7DbF0aE2A2749717CB6EE2Fa80fbd90d48",
+		"SpeedMarketMastercopy": "0xE8eB19E45608B90Af2046a44A0d6a736FCc8D337",
+		"Referrals": "0x10764f2787841E928E53e5Be1588a73E3c994EDe",
+		"ReferralsImplementation": "0xe4123FdC540FD3f969d71eC14e0839dC63A11AE6",
+		"SpeedMarketsAMMData": "0x82dD5508537C2355c321584EcB440E3340d3aB79",
+		"SpeedMarketsAMMDataImplementation": "0x28580e4992b5b024484253FCf763Dd451883ae56",
+		"SpeedMarketsAMMUtils": "0xfb64E79A562F7250131cf528242CEB10fDC82395",
+		"SafeBox": "0xd866b2332d4383C1Bf719732177e2D9109c99DBc",
+		"AddressManager": "0x2073Db849e3b724f5c98823f8F2bd70B23e82B16",
+		"AddressManagerImplementation": "0x32077d9F7BF3994f3A0E905b3EefF34410eCA9A5",
+		"Pyth": "0xA2aa501b19aff244D90cc15a4Cf739D2725B5729"
+	},
+	"mainnet": {
+		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",
+		"L1StandardBridge": "0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1",
+		"OpThales_L1": "0x8947da500Eb47F82df21143D0C01A29862a8C3c5",
+		"InvestorsAirdropUnclaimedRetro": "0x4f896abE9E28C2Db248a8DdAC205ca1cf84A2771",
+		"VestingEscrowInvestors": "0x088c6Ad16ba124F1d40fD2A3EDe63ef2E8dAe39f",
+		"VestingEscrowInvestorsImplementation": "0xcA52bcA5Bd68B75b38a0ef2bAC683fC245e0F912",
+		"ThalesCouncilNFT": "0xA71F5fACaF3e021897931BE44b10d68F89EC6a3B"
+	},
 	"opbnbtest": {
 		"ProxysUSD": "0x845e27b8a4ad1fe3dc0b41b900dc8c1bb45141c3",
 		"ProxyERC20sUSD": "0x845e27b8a4ad1fe3dc0b41b900dc8c1bb45141c3",
@@ -543,15 +579,6 @@
 		"ThalesAMMLiquidityPoolDataImplementation": "0xff9d1B34f369CAf91c6b69761e2A06f78ed3cd9d",
 		"ThalesAMMDefaultLiquidityProvider": "0x4E365EC643BB54F11572725B7849605A320f4FE5",
 		"ThalesAMMDefaultLiquidityProviderImplementation": "0x261C4500a87f0203cE5EB6706645f7f1bd614B5d"
-	},
-	"mainnet": {
-		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",
-		"L1StandardBridge": "0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1",
-		"OpThales_L1": "0x8947da500Eb47F82df21143D0C01A29862a8C3c5",
-		"InvestorsAirdropUnclaimedRetro": "0x4f896abE9E28C2Db248a8DdAC205ca1cf84A2771",
-		"VestingEscrowInvestors": "0x088c6Ad16ba124F1d40fD2A3EDe63ef2E8dAe39f",
-		"VestingEscrowInvestorsImplementation": "0xcA52bcA5Bd68B75b38a0ef2bAC683fC245e0F912",
-		"ThalesCouncilNFT": "0xA71F5fACaF3e021897931BE44b10d68F89EC6a3B"
 	},
 	"optimisticGoerli": {
 		"ExoticUSD": "0xE1ceaa829525a08C1d39A5CEBe4b42aF58d77198",
@@ -714,18 +741,6 @@
 		"AddressManager": "0x737003435896a2a5349EB43863072DC731887429",
 		"AddressManagerImplementation": "0x06269ABa0B163B1735f99c3145f609A22E776C27"
 	},
-	"zkSyncNetwork": {
-		"ProxyUSDC": "0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4",
-		"Pyth": "0xf087c864AEccFb6A2Bf1Af6A0382B0d0f6c5D834",
-		"SpeedMarketMastercopy": "0x85EC8f3D82a73D0E1f3a66a55224E9196bD97938",
-		"SpeedMarkets": "0x508F31897c25C436b257E37763E157Cb53D0a6fa",
-		"SpeedMarketsImplementation": "0x1Bc1A28b3ce057941536bda55C784f8dC205956D",
-		"Referrals": "0x79c6cD67e3068DCD6bc7330211506025d114DEEd",
-		"SafeBox": "0x9fBc8aE0f320C52dB9Ee2b29A0Bf3128160A188c",
-		"AddressManager": "0x34c92650784422E5c61C550DBEE6e57022DDCa62",
-		"SpeedMarketsData": "0x6356454D76642c72edb9170EF1102418D656887d",
-		"SpeedMarketsDataImplementation": "0x0cc50eadac9da5afdd5d95ee093cf325ac031701"
-	},
 	"localhost": {
 		"Airdrop": "",
 		"OngoingAirdrop": "0xB74DD224F1652672Fc5d18404Fe5AF120e1e0991",
@@ -751,20 +766,5 @@
 		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
 		"Vault": "",
 		"VaultImplementation": ""
-	},
-	"blastSepolia": {
-		"ExoticUSD": "0x0E350351d27F950c92280c6B76ee49f0a64275fe",
-		"SpeedMarketsAMM": "0xA2dCFEe657Bc0a71AC31d146366246202eae18a4",
-		"SpeedMarketsAMMImplementation": "0x1a41CE7DbF0aE2A2749717CB6EE2Fa80fbd90d48",
-		"SpeedMarketMastercopy": "0xE8eB19E45608B90Af2046a44A0d6a736FCc8D337",
-		"Referrals": "0x10764f2787841E928E53e5Be1588a73E3c994EDe",
-		"ReferralsImplementation": "0xe4123FdC540FD3f969d71eC14e0839dC63A11AE6",
-		"SpeedMarketsAMMData": "0x82dD5508537C2355c321584EcB440E3340d3aB79",
-		"SpeedMarketsAMMDataImplementation": "0x28580e4992b5b024484253FCf763Dd451883ae56",
-		"SpeedMarketsAMMUtils": "0xfb64E79A562F7250131cf528242CEB10fDC82395",
-		"SafeBox": "0xd866b2332d4383C1Bf719732177e2D9109c99DBc",
-		"AddressManager": "0x2073Db849e3b724f5c98823f8F2bd70B23e82B16",
-		"AddressManagerImplementation": "0x32077d9F7BF3994f3A0E905b3EefF34410eCA9A5",
-		"Pyth": "0xA2aa501b19aff244D90cc15a4Cf739D2725B5729"
 	}
 }

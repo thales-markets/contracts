@@ -434,6 +434,19 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
         }
     }
 
+    /// @notice retrieve surplus funds
+    function retrieveLeftoverRoundFunds(uint[] calldata rounds) external nonReentrant whenNotPaused onlyOwner {
+        for (uint i = 0; i < rounds.length; i++) {
+            uint iteratedRound = rounds[i];
+            require(iteratedRound > 1, "Can't pull from default rounds");
+            require(iteratedRound < round, "Can't pull from current or future rounds");
+            address roundPool = roundPools[iteratedRound];
+            uint currentBalance = sUSD.balanceOf(roundPool);
+            sUSD.safeTransferFrom(roundPool, msg.sender, currentBalance);
+            emit LeftoverFundsPulled(round);
+        }
+    }
+
     /* ========== VIEWS ========== */
 
     /// @notice whether the user is currently LPing
@@ -767,4 +780,5 @@ contract ParlayAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
     event UtilizationRateChanged(uint utilizationRate);
     event SetSafeBoxParams(address safeBox, uint safeBoxImpact);
     event SafeBoxSharePaid(uint safeBoxShare, uint safeBoxAmount);
+    event LeftoverFundsPulled(uint round);
 }

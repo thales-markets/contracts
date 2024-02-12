@@ -478,12 +478,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         }
     }
 
-    /// @notice owner can resolve market for a given market address with finalPrice
-    function resolveMarketAsOwner(bytes32 _market, int64 _finalPrice) external onlyOwner {
-        require(canResolveMarket(_market), "Can not resolve");
-        _resolveMarketWithPrice(_market, _finalPrice);
-    }
-
     function _resolveMarketManually(bytes32 _market, int64 _finalPrice) internal {
         require(canResolveMarket(_market), "Can not resolve manually");
         _resolveMarketWithPrice(_market, _finalPrice);

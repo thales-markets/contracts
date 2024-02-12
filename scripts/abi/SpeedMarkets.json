@@ -1104,24 +1104,6 @@
         "type": "int64"
       }
     ],
-    "name": "resolveMarketAsOwner",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_market",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "int64",
-        "name": "_finalPrice",
-        "type": "int64"
-      }
-    ],
     "name": "resolveMarketManually",
     "outputs": [],
     "stateMutability": "nonpayable",

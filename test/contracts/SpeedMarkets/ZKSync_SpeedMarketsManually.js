@@ -91,34 +91,5 @@ contract('SpeedMarkets', (accounts) => {
 			let ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
 			console.log('numActiveMarkets after resolve' + ammData.numActiveMarkets);
 		});
-
-		it('resolve market as owner', async () => {
-			let { speedMarketsAMM, priceFeedUpdateData, fee, initialSkewImapct } = await speedMarketsInit(
-				accounts
-			);
-
-			await speedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				0,
-				36000,
-				0,
-				toUnit(10),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				initialSkewImapct,
-				{ value: fee }
-			);
-
-			await fastForward(86400);
-
-			let PRICE_DOWN = 180042931000;
-			let markets = await speedMarketsAMM.activeMarkets(0, 1);
-			let market = markets[0];
-
-			await expect(
-				speedMarketsAMM.resolveMarketAsOwner(market, PRICE_DOWN, { from: user })
-			).to.be.revertedWith('Only the contract owner may perform this action');
-			await speedMarketsAMM.resolveMarketAsOwner(market, PRICE_DOWN, { from: owner });
-		});
 	});
 });

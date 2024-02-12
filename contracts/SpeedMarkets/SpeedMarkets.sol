@@ -474,9 +474,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         isAddressWhitelisted
     {
         for (uint i = 0; i < markets.length; i++) {
-            if (canResolveMarket(markets[i])) {
-                _resolveMarketManually(markets[i], finalPrices[i]);
-            }
+            _resolveMarketManually(markets[i], finalPrices[i]);
         }
     }
 
@@ -487,11 +485,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     function _resolveMarketManually(bytes32 _market, int64 _finalPrice) internal {
-        Direction direction = speedMarket[_market].direction;
-        int64 strikePrice = speedMarket[_market].strikePrice;
-        bool isUserWinner = (_finalPrice < strikePrice && direction == Direction.Down) ||
-            (_finalPrice > strikePrice && direction == Direction.Up);
-        require(canResolveMarket(_market) && !isUserWinner, "Can not resolve manually");
+        require(canResolveMarket(_market), "Can not resolve manually");
         _resolveMarketWithPrice(_market, _finalPrice);
     }
 

@@ -145,7 +145,7 @@
 		"ThalesAMMLiquidityPoolDataImplementation": "0xB23Ea6561953B406f4806cD177377D6940420608",
 		"StakingThalesBonusRewardsManager": "0xc07520843239C2CAA28101D8241D9132669B4271",
 		"StakingThalesBonusRewardsManagerImplementation": "0x962654fE9534c616fe1F3Bd7c12065d54551BCb8",
-		"ParlayAMMLiquidityPoolImplementation": "0xF766d4a02Bb36CE2D26D0CeE48C5e7214fA842b9",
+		"ParlayAMMLiquidityPoolImplementation": "0x27B16E1288601731f97766de0D5c6E02047B3e0e",
 		"ParlayAMMLiquidityPoolRoundMastercopy": "0xa01AD492B19314bEfBcE4891B927A030d660ffA5",
 		"ParlayAMMLiquidityPoolData": "0x6d4393FAd7A2928c10cdD0bcdd7702B39086d8b2",
 		"ParlayAMMLiquidityPoolDataImplementation": "0xaA7aD7b27Fc419d00B4Bef275E7F6020953a824F",
@@ -284,7 +284,7 @@
 		"ThalesAMMLiquidityPoolDataImplementation": "0xade53971B171f61d474754d9Cad9Ca20564347Bf",
 		"StakingThalesBonusRewardsManager": "0x6535F4cCC70E0CCb192a8A224d5eBA420DDF9e3f",
 		"StakingThalesBonusRewardsManagerImplementation": "0x506EbA82fEF8022cDC4d8f7EE31C3d37A9c752dD",
-		"ParlayAMMLiquidityPoolImplementation": "0xe63747009b896FEAD2bC82c487e0743a3e6EC42E",
+		"ParlayAMMLiquidityPoolImplementation": "0x0946BfE3c543e0B770B7F7e508c8A566947C4278",
 		"ParlayAMMLiquidityPoolRoundMastercopy": "0x65eBe63c2C0717aC76698e675dA58A1361B85Aa7",
 		"ParlayAMMLiquidityPoolData": "0xB5F1924136d7A72C3E5E746Ba2E23A3bfd499097",
 		"ParlayAMMLiquidityPoolDataImplementation": "0x0281B682Fb5Ee287B5DB7519BE9425b34Fb11503",
@@ -706,7 +706,6 @@
 		"AddressManager": "0x737003435896a2a5349EB43863072DC731887429",
 		"AddressManagerImplementation": "0x06269ABa0B163B1735f99c3145f609A22E776C27"
 	},
-
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
 		"SafeBox": "0xCd9c0E99396627C7746b4363B880939Ac2828d3E",

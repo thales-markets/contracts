@@ -489,7 +489,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] += amountsToBuy[i];
             require(
                 riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] <
-                    sportsAmm.riskManager().calculateCapToBeUsed(_sportMarkets[i]),
+                    sportsAmm.riskManager().calculateCapToBeUsed(_sportMarkets[i]) * 2,
                 "Risk per individual market and position exceeded"
             );
             if (!ISportPositionalMarket(_sportMarkets[i]).optionsInitialized()) {
@@ -578,7 +578,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         for (uint i = 0; i < _sportMarkets.length; i++) {
             if (
                 riskPerMarketAndPosition[_sportMarkets[i]][_positions[i]] + amountsToBuy[i] >
-                sportsAmm.riskManager().calculateCapToBeUsed(_sportMarkets[i])
+                sportsAmm.riskManager().calculateCapToBeUsed(_sportMarkets[i]) * 2
             ) {
                 finalQuotes[i] = 0;
                 totalQuote = 0;

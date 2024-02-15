@@ -138,6 +138,12 @@ contract OvertimeVoucherEscrow is Initializable, ProxyOwned, PausableUpgradeable
         return block.timestamp >= periodEnd[period];
     }
 
+    /// @notice retrieveSUSDAmount retrieves sUSD from this contract
+    /// @param amount how much to retrieve
+    function retrieveSUSDAmount(uint amount) external onlyOwner {
+        sUSD.transfer(msg.sender, amount);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier canClaim() {

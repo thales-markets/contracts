@@ -241,6 +241,10 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
         emit FinalPositioningDateUpdated(_toDate);
     }
 
+    function retrieveSUSDAmount(uint amount) external onlyOwner {
+        sUSD.safeTransfer(msg.sender, amount);
+    }
+
     function assignGameIdsToRound(uint _roundId, uint[] memory _gameIds) external onlyOwner {
         // Validation of game ids
         for (uint i = 0; i < _gameIds.length; i++) {

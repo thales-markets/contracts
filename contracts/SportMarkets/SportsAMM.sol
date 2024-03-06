@@ -852,6 +852,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 spentOnParent[parent] += toMint;
             }
             liquidityPool.getOptionsForBuy(params.market, params.amount - toMint, params.position);
+            if (params.amount > toMint) {
+                uint discountedAmount = params.amount - toMint;
+                uint paidForDiscountedAmount = (params.sUSDPaid * discountedAmount) / params.amount;
+                emit BoughtWithDiscount(msg.sender, discountedAmount, paidForDiscountedAmount);
+            }
         }
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(params.market).getOptions();
@@ -1150,4 +1155,5 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint payout,
         uint payoutInCollateral
     );
+    event BoughtWithDiscount(address buyer, uint amount, uint sUSDPaid);
 }

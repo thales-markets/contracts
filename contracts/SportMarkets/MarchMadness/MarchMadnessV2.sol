@@ -171,6 +171,14 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
 
     /* ========== INTERNALS ========== */
 
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal virtual override {
+        require(from == address(0) || to == address(0), "NonTransferrableERC721Token: non transferrable");
+    }
+
     function isValidGameId(uint _gameId) internal pure returns (bool) {
         return _gameId >= 0 && _gameId < NUMBER_OF_GAMES;
     }

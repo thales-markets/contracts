@@ -66,6 +66,7 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
         notAfterFinalDate
         returns (uint newItemId)
     {
+        require(IERC20Upgradeable(sUSD).balanceOf(msg.sender) >= mintingPrice, "Not enough balance");
         IERC20Upgradeable(sUSD).safeTransferFrom(msg.sender, address(this), mintingPrice);
 
         newItemId = _mintInternal(_brackets);

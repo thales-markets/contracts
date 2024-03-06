@@ -5,10 +5,15 @@ const { artifacts, contract, network } = require('hardhat');
 
 const { assert } = require('../../../utils/common');
 
+const { toBN } = web3.utils;
+const { toWei } = require('web3-utils');
+const toUnitSix = (amount) => toBN(toWei(amount.toString(), 'ether') / 1e12);
+
 contract('MarchMadness', (accounts) => {
 	const [first, owner, second, third] = accounts;
 	let MarchMadnessContract;
 	let marchMadness;
+	let exoticUSD;
 
 	const bracketsArray = Array(63).fill(1);
 
@@ -18,6 +23,19 @@ contract('MarchMadness', (accounts) => {
 		marchMadness = await MarchMadnessContract.new({
 			from: owner,
 		});
+
+		let TestUSDC = artifacts.require('TestUSDC');
+		exoticUSD = await TestUSDC.new();
+
+		await exoticUSD.mint(second, toUnitSix(100));
+		let balance = await exoticUSD.balanceOf(second);
+		console.log('Balance of user is ' + balance / 1e6);
+
+		await marchMadness.setsUSD(exoticUSD.address, {
+			from: owner,
+		});
+
+		await exoticUSD.approve(marchMadness.address, toUnitSix(100), { from: second });
 	});
 
 	describe('Contract managment', () => {
@@ -99,34 +117,28 @@ contract('MarchMadness', (accounts) => {
 				'Can not mint after settled date'
 			);
 		});
+
+		it('Should mint x2', async () => {
+			const dateTo = new Date('02-25-2033').getTime() * 1000;
+
+			await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
+
+			await marchMadness.mint(bracketsArray, { from: second });
+
+			let balance = await marchMadness.balanceOf(second);
+			console.log('Balance is: ' + balance);
+			assert.bnGt(await marchMadness.balanceOf(second), 0);
+
+			await marchMadness.mint(bracketsArray, { from: second });
+			balance = await marchMadness.balanceOf(second);
+			console.log('Balance is: ' + balance);
+			assert.bnGt(await marchMadness.balanceOf(second), 1);
+
+			await expect(marchMadness.mint(bracketsArray, { from: first })).to.be.revertedWith(
+				'Not enough balance'
+			);
+		});
 	});
-	//
-	// 	it('Should mint', async () => {
-	// 		const dateTo = new Date('02-25-2033').getTime() * 1000;
-	//
-	// 		await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
-	//
-	// 		await marchMadness.mint(bracketsArray, { from: first });
-	//
-	// 		assert.bnEqual(await marchMadness.getBracketsByMinter(first), bracketsArray);
-	//
-	// 		assert.bnGt(await marchMadness.balanceOf(first), 0);
-	// 	});
-	//
-	// 	it('Should revert, already minted from address', async () => {
-	// 		const dateTo = new Date('02-25-2033').getTime() * 1000;
-	//
-	// 		await marchMadness.setFinalDateForPositioning(dateTo, { from: owner });
-	//
-	// 		await marchMadness.mint(bracketsArray, { from: first });
-	//
-	// 		assert.bnGt(await marchMadness.balanceOf(first), 0);
-	//
-	// 		await expect(marchMadness.mint(bracketsArray, { from: first })).to.be.revertedWith(
-	// 			'Address already minted'
-	// 		);
-	// 	});
-	// });
 
 	// describe('Updating minted positions/Getting correct positions', () => {
 	// 	it('Should update already minted position, before that testing reverting on update brackets', async () => {

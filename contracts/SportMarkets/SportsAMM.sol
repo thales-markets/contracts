@@ -830,9 +830,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             ? address(ISportPositionalMarket(params.market).parentMarket())
             : params.market;
 
+        uint toMint;
         if (dcs.isDoubleChance) {
             ISportPositionalMarket(params.market).mint(params.amount);
-            _mintParentPositions(params.market, params.amount, dcs);
+            toMint = _mintParentPositions(params.market, params.amount, dcs);
 
             (address parentMarketPosition1, address parentMarketPosition2) = sportAmmUtils.getParentMarketPositionAddresses(
                 params.market
@@ -844,7 +845,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             IERC20Upgradeable(parentMarketPosition1).safeTransfer(params.market, params.amount);
             IERC20Upgradeable(parentMarketPosition2).safeTransfer(params.market, params.amount);
         } else {
-            uint toMint = availableInContract < params.amount ? params.amount - availableInContract : 0;
+            toMint = availableInContract < params.amount ? params.amount - availableInContract : 0;
             if (toMint > 0) {
                 liquidityPool.commitTrade(params.market, toMint);
                 ISportPositionalMarket(params.market).mint(toMint);
@@ -852,11 +853,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 spentOnParent[parent] += toMint;
             }
             liquidityPool.getOptionsForBuy(params.market, params.amount - toMint, params.position);
-            if (params.amount > toMint) {
-                uint discountedAmount = params.amount - toMint;
-                uint paidForDiscountedAmount = (params.sUSDPaid * discountedAmount) / params.amount;
-                emit BoughtWithDiscount(msg.sender, discountedAmount, paidForDiscountedAmount);
-            }
+        }
+        if (params.amount > toMint) {
+            uint discountedAmount = params.amount - toMint;
+            uint paidForDiscountedAmount = (params.sUSDPaid * discountedAmount) / params.amount;
+            emit BoughtWithDiscount(msg.sender, discountedAmount, paidForDiscountedAmount);
         }
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(params.market).getOptions();
@@ -1080,7 +1081,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address market,
         uint amount,
         DoubleChanceStruct memory dcs
-    ) internal {
+    ) internal returns (uint toMint) {
         (uint availableInContract1, uint availableInContract2) = sportAmmUtils.getBalanceOfPositionsOnMarketByPositions(
             dcs.parentMarket,
             liquidityPool.getMarketPool(market),
@@ -1091,7 +1092,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint toMintPosition1 = availableInContract1 < amount ? amount - availableInContract1 : 0;
         uint toMintPosition2 = availableInContract2 < amount ? amount - availableInContract2 : 0;
 
-        uint toMint = toMintPosition1 < toMintPosition2 ? toMintPosition2 : toMintPosition1;
+        toMint = toMintPosition1 < toMintPosition2 ? toMintPosition2 : toMintPosition1;
 
         if (toMint > 0) {
             liquidityPool.commitTrade(dcs.parentMarket, toMint);

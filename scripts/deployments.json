@@ -316,7 +316,8 @@
 		"CrossChainCollector": "0x25f29136801b0Eac63C586FFD249B49F1d96DB9c",
 		"CrossChainCollectorImplementation": "0x8b186D1C759e4d37471A89821c7f0a68E10C5F5F",
 		"SafeBoxBuffer": "0xEd31481E4B1ded06ee5ed48C0205fA479Ffeb866",
-		"SafeBoxBufferImplementation": "0x38a50ebB6b299361D4492D488F95e13bE0A6b693"
+		"SafeBoxBufferImplementation": "0x38a50ebB6b299361D4492D488F95e13bE0A6b693",
+		"MarchMadnessV2": "0x62e60328f13334B9cCdE47963d67A99Ed66BC01a"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",

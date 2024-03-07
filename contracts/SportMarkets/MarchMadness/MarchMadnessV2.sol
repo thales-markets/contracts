@@ -46,6 +46,12 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
     IERC20Upgradeable public sUSD;
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
 
+    address public safeBox;
+
+    uint public sbFee;
+
+    mapping(address => bool) public whitelistedAddresses;
+
     /* ========== MODIFIER ========== */
 
     modifier notAfterFinalDate() {
@@ -103,6 +109,8 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
         addressToTokenId[msg.sender] = newItemId;
 
         _setTokenURI(newItemId, urlToUse);
+
+        IERC20Upgradeable(sUSD).safeTransfer(safeBox, (mintingPrice * sbFee) / 1e18);
 
         emit Mint(msg.sender, newItemId, _brackets);
     }
@@ -192,6 +200,10 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
         return _teamId > 0 && _teamId <= NUMBER_OF_TEAMS;
     }
 
+    function isWhitelistedAddress(address _address) external view returns (bool) {
+        return whitelistedAddresses[_address];
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     function setMultiCollateralOnOffRamp(address _onramper) external onlyOwner {
@@ -203,6 +215,17 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
     function setsUSD(address _address) external onlyOwner {
         sUSD = IERC20Upgradeable(_address);
         emit SetsUSD(_address);
+    }
+
+    function setSafeBox(address _safeBox, uint _sbFee) external onlyOwner {
+        safeBox = _safeBox;
+        sbFee = _sbFee;
+        emit SetSafeBox(_safeBox, _sbFee);
+    }
+
+    function setWhitelistedAddress(address _address, bool enabled) external onlyOwner {
+        whitelistedAddresses[_address] = enabled;
+        emit SetWhitelistedAddress(_address, enabled);
     }
 
     function setMintingPrice(uint _mintingPrice) external onlyOwner {
@@ -218,7 +241,8 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
         urlToUse = _urlToUse;
     }
 
-    function setResultForGame(uint _gameId, uint _teamId) external onlyOwner {
+    function setResultForGame(uint _gameId, uint _teamId) external {
+        require(msg.sender == owner() || whitelistedAddresses[msg.sender], "Invalid caller");
         require(isValidTeamIndex(_teamId), "Not valid team index");
         require(isValidGameId(_gameId), "Not valid game index");
         results[_gameId] = _teamId;
@@ -226,7 +250,8 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
         emit ResultForGameAdded(_gameId, _teamId);
     }
 
-    function setResultArray(uint[NUMBER_OF_GAMES] memory _results) external onlyOwner {
+    function setResultArray(uint[NUMBER_OF_GAMES] memory _results) external {
+        require(msg.sender == owner() || whitelistedAddresses[msg.sender], "Invalid caller");
         for (uint i = 0; i < _results.length; i++) {
             require(isValidGameId(i), "Not valid game index");
 
@@ -268,4 +293,6 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
     event SetsUSD(address _address);
     event SetMultiCollateralOnOffRamp(address _onramper);
     event SetMintingPrice(uint mintingPrice);
+    event SetSafeBox(address _safeBox, uint _sbFee);
+    event SetWhitelistedAddress(address whitelisted, bool enabled);
 }

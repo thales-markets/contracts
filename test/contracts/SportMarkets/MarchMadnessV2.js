@@ -3,14 +3,24 @@
 const { expect } = require('chai');
 const { artifacts, contract, network } = require('hardhat');
 
-const { assert } = require('../../../utils/common');
+const { assert } = require('../../utils/common');
 
 const { toBN } = web3.utils;
 const { toWei } = require('web3-utils');
 const toUnitSix = (amount) => toBN(toWei(amount.toString(), 'ether') / 1e12);
 
+const {
+	fastForward,
+	toUnit,
+	fromUnit,
+	currentTime,
+	bytesToString,
+	multiplyDecimalRound,
+	divideDecimalRound,
+} = require('../../utils')();
+
 contract('MarchMadness', (accounts) => {
-	const [first, owner, second, third] = accounts;
+	const [first, owner, second, safeBox] = accounts;
 	let MarchMadnessContract;
 	let marchMadness;
 	let exoticUSD;
@@ -32,6 +42,10 @@ contract('MarchMadness', (accounts) => {
 		console.log('Balance of user is ' + balance / 1e6);
 
 		await marchMadness.setsUSD(exoticUSD.address, {
+			from: owner,
+		});
+
+		await marchMadness.setSafeBox(safeBox, toUnit(0.1), {
 			from: owner,
 		});
 
@@ -80,7 +94,7 @@ contract('MarchMadness', (accounts) => {
 
 		it('Should revert adding the result for game, not owner', async () => {
 			await expect(marchMadness.setResultForGame(1, 1, { from: first })).to.be.revertedWith(
-				'Ownable: caller is not the owner'
+				'Invalid caller'
 			);
 		});
 
@@ -137,6 +151,10 @@ contract('MarchMadness', (accounts) => {
 			await expect(marchMadness.mint(bracketsArray, { from: first })).to.be.revertedWith(
 				'Not enough balance'
 			);
+
+			balance = await exoticUSD.balanceOf(safeBox);
+			console.log('SafeBox Balance is: ' + balance / 1e6);
+			assert.bnGt(balance, 0);
 		});
 	});
 

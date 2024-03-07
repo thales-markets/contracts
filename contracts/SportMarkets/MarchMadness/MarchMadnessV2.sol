@@ -36,6 +36,7 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
     uint[NUMBER_OF_GAMES] public results;
 
     mapping(uint => uint[NUMBER_OF_GAMES]) public itemToBrackets;
+    mapping(address => uint[]) public addressToTokenIds;
     mapping(uint => uint[]) public roundToGameIds;
 
     string public urlToUse;
@@ -105,6 +106,7 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
         _mint(msg.sender, newItemId);
 
         itemToBrackets[newItemId] = _brackets;
+        addressToTokenIds[msg.sender].push(newItemId);
 
         _setTokenURI(newItemId, urlToUse);
 
@@ -129,6 +131,10 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
     /* ========== VIEW ========== */
     function getResults() external view returns (uint[NUMBER_OF_GAMES] memory) {
         return results;
+    }
+
+    function getAddressToTokenIds(address addressToFetchFor) external view returns (uint[] memory) {
+        return addressToTokenIds[addressToFetchFor];
     }
 
     function isTeamWinnerOfGameId(uint _gameId, uint _teamId) public view returns (bool _flag) {

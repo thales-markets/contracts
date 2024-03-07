@@ -155,6 +155,11 @@ contract('MarchMadness', (accounts) => {
 			balance = await exoticUSD.balanceOf(safeBox);
 			console.log('SafeBox Balance is: ' + balance / 1e6);
 			assert.bnGt(balance, 0);
+
+			let tokenIds = await marchMadness.getAddressToTokenIds(second);
+			console.log('tokenIds: ' + tokenIds);
+
+			assert.bnEqual(toUnit(tokenIds.length), toUnit(2));
 		});
 	});
 

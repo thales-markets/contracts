@@ -22,7 +22,9 @@ const {
 contract('MarchMadness', (accounts) => {
 	const [first, owner, second, safeBox] = accounts;
 	let MarchMadnessContract;
+	let MarchMadnessContractData;
 	let marchMadness;
+	let marchMadnessData;
 	let exoticUSD;
 
 	const bracketsArray = Array(63).fill(1);
@@ -30,7 +32,13 @@ contract('MarchMadness', (accounts) => {
 	beforeEach(async () => {
 		MarchMadnessContract = artifacts.require('MarchMadnessV2');
 
+		MarchMadnessContractData = artifacts.require('MarchMadnessV2Data');
+
 		marchMadness = await MarchMadnessContract.new({
+			from: owner,
+		});
+
+		marchMadnessData = await MarchMadnessContractData.new(marchMadness.address, {
 			from: owner,
 		});
 
@@ -159,6 +167,10 @@ contract('MarchMadness', (accounts) => {
 			console.log('tokenIds: ' + tokenIds);
 
 			assert.bnEqual(toUnit(tokenIds.length), toUnit(2));
+
+			let brackets = await marchMadnessData.getBracketsByItemId(1);
+			console.log('brackets are: ' + brackets);
+			assert.bnGt(toUnit(brackets.length), 0);
 		});
 	});
 

@@ -462,6 +462,25 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "itemId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getBracketsByItemId",
+    "outputs": [
+      {
+        "internalType": "uint256[63]",
+        "name": "brackets",
+        "type": "uint256[63]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_tokenId",
         "type": "uint256"
       }
@@ -656,11 +675,6 @@
         "type": "uint256"
       },
       {
-        "internalType": "bool",
-        "name": "isEth",
-        "type": "bool"
-      },
-      {
         "internalType": "uint256[63]",
         "name": "_brackets",
         "type": "uint256[63]"
@@ -675,6 +689,25 @@
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[63]",
+        "name": "_brackets",
+        "type": "uint256[63]"
+      }
+    ],
+    "name": "mintWithEth",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "newItemId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1213,5 +1246,9 @@
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]

@@ -32,13 +32,7 @@ contract('MarchMadness', (accounts) => {
 	beforeEach(async () => {
 		MarchMadnessContract = artifacts.require('MarchMadnessV2');
 
-		MarchMadnessContractData = artifacts.require('MarchMadnessV2Data');
-
 		marchMadness = await MarchMadnessContract.new({
-			from: owner,
-		});
-
-		marchMadnessData = await MarchMadnessContractData.new(marchMadness.address, {
 			from: owner,
 		});
 
@@ -168,7 +162,7 @@ contract('MarchMadness', (accounts) => {
 
 			assert.bnEqual(toUnit(tokenIds.length), toUnit(2));
 
-			let brackets = await marchMadnessData.getBracketsByItemId(1);
+			let brackets = await marchMadness.getBracketsByItemId(1);
 			console.log('brackets are: ' + brackets);
 			assert.bnGt(toUnit(brackets.length), 0);
 		});

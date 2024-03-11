@@ -52,6 +52,8 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
 
     mapping(address => bool) public whitelistedAddresses;
 
+    receive() external payable {}
+
     /* ========== MODIFIER ========== */
 
     modifier notAfterFinalDate() {
@@ -81,17 +83,25 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
     function mintWithDiffCollateral(
         address collateral,
         uint collateralAmount,
-        bool isEth,
         uint[NUMBER_OF_GAMES] calldata _brackets
     ) external whenNotPaused notAfterFinalDate returns (uint newItemId) {
-        uint convertedAmount;
-        if (isEth) {
-            convertedAmount = multiCollateralOnOffRamp.onrampWithEth{value: collateralAmount}(collateralAmount);
-        } else {
-            IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
-            IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralAmount);
-            convertedAmount = multiCollateralOnOffRamp.onramp(collateral, collateralAmount);
-        }
+        IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
+        IERC20Upgradeable(collateral).approve(address(multiCollateralOnOffRamp), collateralAmount);
+        uint convertedAmount = multiCollateralOnOffRamp.onramp(collateral, collateralAmount);
+
+        require(convertedAmount > mintingPrice, "insufficient collateral");
+
+        newItemId = _mintInternal(_brackets);
+    }
+
+    function mintWithEth(uint[NUMBER_OF_GAMES] calldata _brackets)
+        external
+        payable
+        whenNotPaused
+        notAfterFinalDate
+        returns (uint newItemId)
+    {
+        uint convertedAmount = multiCollateralOnOffRamp.onrampWithEth{value: msg.value}(msg.value);
 
         require(convertedAmount > mintingPrice, "insufficient collateral");
 
@@ -129,6 +139,12 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
     }
 
     /* ========== VIEW ========== */
+
+    function getBracketsByItemId(uint itemId) public view returns (uint[63] memory brackets) {
+        brackets = itemToBrackets[itemId];
+        return brackets;
+    }
+
     function getResults() external view returns (uint[NUMBER_OF_GAMES] memory) {
         return results;
     }

@@ -198,6 +198,13 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
         return totalPoints;
     }
 
+    function getTotalPointsByTokenIds(uint[] calldata _tokenIds) public view returns (uint[] memory totalPoints) {
+        totalPoints = new uint[](_tokenIds.length);
+        for (uint i = 0; i < _tokenIds.length; i++) {
+            totalPoints[i] = getTotalPointsByTokenId(_tokenIds[i]);
+        }
+    }
+
     /* ========== INTERNALS ========== */
 
     function _beforeTokenTransfer(

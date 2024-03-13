@@ -165,6 +165,10 @@ contract('MarchMadness', (accounts) => {
 			let brackets = await marchMadness.getBracketsByItemId(1);
 			console.log('brackets are: ' + brackets);
 			assert.bnGt(toUnit(brackets.length), 0);
+
+			let points = await marchMadness.getTotalPointsByTokenIds([1, 2]);
+			console.log('points are: ' + points);
+			assert.bnGt(toUnit(points.length), 0);
 		});
 	});
 

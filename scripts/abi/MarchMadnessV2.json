@@ -555,6 +555,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256[]",
+        "name": "_tokenIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "getTotalPointsByTokenIds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "totalPoints",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "owner",
         "type": "address"

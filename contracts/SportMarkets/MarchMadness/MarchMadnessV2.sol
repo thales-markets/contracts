@@ -205,6 +205,10 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
         }
     }
 
+    function getCurrentTokenId() external view returns (uint) {
+        return _tokenIds.current();
+    }
+
     /* ========== INTERNALS ========== */
 
     function _beforeTokenTransfer(

@@ -169,6 +169,10 @@ contract('MarchMadness', (accounts) => {
 			let points = await marchMadness.getTotalPointsByTokenIds([1, 2]);
 			console.log('points are: ' + points);
 			assert.bnGt(toUnit(points.length), 0);
+
+			let currentId = await marchMadness.getCurrentTokenId();
+			console.log('currentId is: ' + currentId);
+			assert.bnGt(toUnit(currentId), 0);
 		});
 	});
 

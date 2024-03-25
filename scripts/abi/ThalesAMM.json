@@ -104,6 +104,49 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "toEth",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "payout",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "payoutInCollateral",
+        "type": "uint256"
+      }
+    ],
+    "name": "ExercisedWithOfframp",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -218,19 +261,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaxSpread",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "minPrice",
         "type": "uint256"
       },
@@ -245,22 +275,21 @@
         "internalType": "uint256",
         "name": "capPerMarket",
         "type": "uint256"
-      }
-    ],
-    "name": "SetMinMaxSupportedPriceCapPerMarket",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_spread",
+        "name": "minSpread",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxSpread",
         "type": "uint256"
       }
     ],
-    "name": "SetMinSpread",
+    "name": "SetMinMaxSpreadsAndSupportedPriceAndCap",
     "type": "event"
   },
   {
@@ -274,6 +303,25 @@
       }
     ],
     "name": "SetMinimalTimeLeftToMaturity",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_onramper",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "SetMultiCollateralOnOffRamp",
     "type": "event"
   },
   {
@@ -488,32 +536,32 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
+        "name": "_market",
         "type": "address"
       },
       {
         "internalType": "enum IThalesAMM.Position",
-        "name": "position",
+        "name": "_position",
         "type": "uint8"
       },
       {
         "internalType": "uint256",
-        "name": "amount",
+        "name": "_amount",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "expectedPayout",
+        "name": "_expectedPayout",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "additionalSlippage",
+        "name": "_additionalSlippage",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "collateral",
+        "name": "_collateral",
         "type": "address"
       },
       {
@@ -531,6 +579,55 @@
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum IThalesAMM.Position",
+        "name": "_position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_additionalSlippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
+      }
+    ],
+    "name": "buyFromAMMWithEth",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -689,19 +786,6 @@
   },
   {
     "inputs": [],
-    "name": "curveOnrampEnabled",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "curveSUSD",
     "outputs": [
       {
@@ -714,16 +798,26 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "dai",
-    "outputs": [
+    "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_toEth",
+        "type": "bool"
       }
     ],
-    "stateMutability": "view",
+    "name": "exerciseWithOfframp",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -879,19 +973,6 @@
   },
   {
     "inputs": [],
-    "name": "maxAllowedPegSlippagePercentage",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "maxSupportedPrice",
     "outputs": [
       {
@@ -969,6 +1050,32 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "multiCollateralOnOffRamp",
+    "outputs": [
+      {
+        "internalType": "contract IMultiCollateralOnOffRamp",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "multicollateralEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1090,24 +1197,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "retrieveSUSDAmount",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "sUSD",
     "outputs": [
@@ -1198,31 +1287,80 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
+        "name": "_market",
         "type": "address"
       },
       {
         "internalType": "enum IThalesAMM.Position",
-        "name": "position",
+        "name": "_position",
         "type": "uint8"
       },
       {
         "internalType": "uint256",
-        "name": "amount",
+        "name": "_amount",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "expectedPayout",
+        "name": "_expectedPayout",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "additionalSlippage",
+        "name": "_additionalSlippage",
         "type": "uint256"
       }
     ],
     "name": "sellToAMM",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum IThalesAMM.Position",
+        "name": "_position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_additionalSlippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isEth",
+        "type": "bool"
+      }
+    ],
+    "name": "sellToAMMWithDifferentCollateral",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1296,44 +1434,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_curveSUSD",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_dai",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_usdc",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_usdt",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_curveOnrampEnabled",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxAllowedPegSlippagePercentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCurveSUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -1366,24 +1466,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_minspread",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxspread",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMinMaxSpread",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "_minSupportedPrice",
         "type": "uint256"
       },
@@ -1396,9 +1478,19 @@
         "internalType": "uint256",
         "name": "_capPerMarket",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minspread",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxspread",
+        "type": "uint256"
       }
     ],
-    "name": "setMinMaxSupportedPriceAndCap",
+    "name": "setMinMaxSpreadsAndSupportedPriceAndCap",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1430,6 +1522,24 @@
       }
     ],
     "name": "setMinimalTimeLeftToMaturity",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_onramper",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "setMultiCollateralOnOffRamp",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1611,60 +1721,6 @@
     "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "all",
-        "type": "bool"
-      }
-    ],
-    "name": "transferTokens",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "usdc",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "usdt",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

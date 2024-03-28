@@ -243,8 +243,9 @@ contract('StakingThales', (accounts) => {
 			let rewardsAvailable = await StakingThalesDeployed.getRewardsAvailable(first);
 			//console.log('rewards available:' + rewardsAvailable);
 			await StakingThalesDeployed.stake(500, { from: first });
-			answer = await StakingThalesDeployed.claimReward({ from: first });
-
+			await expect(StakingThalesDeployed.claimReward({ from: first })).to.be.revertedWith(
+				'Already claimed'
+			);
 			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
 			//console.log('totalAccountEscrowedAmount' + totalAccountEscrowedAmount);
 

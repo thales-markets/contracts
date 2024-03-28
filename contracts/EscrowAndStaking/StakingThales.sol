@@ -654,7 +654,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function _claimReward(address account) internal notPaused {
         require(claimEnabled, "Claiming is not enabled.");
         require(startTimeStamp > 0, "Staking period has not started");
-
+        require(_lastRewardsClaimedPeriod[account] < periodsOfStaking, "Already claimed");
+        
         //Calculate rewards
         if (distributeFeesEnabled) {
             uint availableFeesToClaim = _calculateAvailableFeesToClaim(account);

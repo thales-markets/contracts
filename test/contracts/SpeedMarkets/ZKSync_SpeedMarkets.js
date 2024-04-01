@@ -204,11 +204,10 @@ contract('SpeedMarkets', (accounts) => {
 			let marketPerUser = marketsPerUser[0];
 			console.log('marketPerUser is ' + marketPerUser);
 
-			// let SpeedMarket = artifacts.require('SpeedMarket');
-			// let speedMarket = await SpeedMarket.at(market);
 			let speedMarket = await speedMarketsAMM.speedMarket(market);
 			let strikeTime = speedMarket.strikeTime;
 			console.log('Strike time is ' + speedMarket.strikeTime);
+			console.log('Publish time is ' + speedMarket.strikePricePublishTime);
 
 			let marketData = await speedMarketsAMMData.getMarketsData([market]);
 			console.log('marketData ' + marketData);

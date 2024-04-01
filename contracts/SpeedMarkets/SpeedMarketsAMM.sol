@@ -346,6 +346,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 asset,
                 strikeTime,
                 tempData.pythPrice.price,
+                uint64(tempData.pythPrice.publishTime),
                 direction,
                 buyinAmount,
                 safeBoxImpact,

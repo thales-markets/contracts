@@ -1179,7 +1179,9 @@ contract('StakingThales', (accounts) => {
 
 			vested = deposit.div(toBN(users.length));
 			await StakingThalesDeployed.startUnstake(stake[0].sub(unstakeAmount), { from: users[0] });
-			await StakingThalesDeployed.claimReward({ from: users[1] });
+			await expect(StakingThalesDeployed.claimReward({ from: users[1] })).to.be.revertedWith(
+				'Already claimed'
+			);
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			period++;

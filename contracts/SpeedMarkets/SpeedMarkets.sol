@@ -693,6 +693,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint _maxRiskPerAssetAndDirection
     ) external onlyOwner {
         maxRiskPerAsset[asset] = _maxRiskPerAsset;
+        currentRiskPerAsset[asset] = 0;
         maxRiskPerAssetAndDirection[asset][Direction.Up] = _maxRiskPerAssetAndDirection;
         maxRiskPerAssetAndDirection[asset][Direction.Down] = _maxRiskPerAssetAndDirection;
         emit SetMaxRisks(asset, _maxRiskPerAsset, _maxRiskPerAssetAndDirection);

@@ -1,5 +1,96 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_timeFrame",
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum SpeedMarket.Direction[]",
+        "name": "_directions",
+        "type": "uint8[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyinAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "_priceUpdateData",
+        "type": "bytes[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
+      }
+    ],
+    "name": "createNewMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_timeFrame",
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum SpeedMarket.Direction[]",
+        "name": "_directions",
+        "type": "uint8[]"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "_priceUpdateData",
+        "type": "bytes[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_collateralAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
+      }
+    ],
+    "name": "createNewMarketWithDifferentCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "currentRisk",
     "outputs": [

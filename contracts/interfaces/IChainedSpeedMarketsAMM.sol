@@ -10,6 +10,27 @@ import "../SpeedMarkets/ChainedSpeedMarket.sol";
 interface IChainedSpeedMarketsAMM {
     function sUSD() external view returns (IERC20Upgradeable);
 
+    function createNewMarket(
+        address _user,
+        bytes32 _asset,
+        uint64 _timeFrame,
+        SpeedMarket.Direction[] calldata _directions,
+        uint _buyinAmount,
+        bytes[] calldata _priceUpdateData,
+        address _referrer
+    ) external;
+
+    function createNewMarketWithDifferentCollateral(
+        address _user,
+        bytes32 _asset,
+        uint64 _timeFrame,
+        SpeedMarket.Direction[] calldata _directions,
+        bytes[] calldata _priceUpdateData,
+        address _collateral,
+        uint _collateralAmount,
+        address _referrer
+    ) external;
+
     function minChainedMarkets() external view returns (uint);
 
     function maxChainedMarkets() external view returns (uint);

@@ -34,6 +34,31 @@ interface ISpeedMarkets {
 
     function speedMarket(bytes32 _market) external view returns (SpeedMarketData memory);
 
+    function createNewMarket(
+        address _user,
+        bytes32 _asset,
+        uint64 _strikeTime,
+        uint64 _delta,
+        Direction _direction,
+        uint _buyinAmount,
+        bytes[] calldata _priceUpdateData,
+        address _referrer,
+        uint _skewImpact
+    ) external;
+
+    function createNewMarketWithDifferentCollateral(
+        address _user,
+        bytes32 _asset,
+        uint64 _strikeTime,
+        uint64 _delta,
+        Direction _direction,
+        bytes[] calldata _priceUpdateData,
+        address _collateral,
+        uint _collateralAmount,
+        address _referrer,
+        uint _skewImpact
+    ) external;
+
     function sUSD() external view returns (IERC20Upgradeable);
 
     function supportedAsset(bytes32 _asset) external view returns (bool);

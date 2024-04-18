@@ -568,6 +568,11 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -616,6 +621,11 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -649,11 +659,6 @@
         "internalType": "uint256",
         "name": "collateralAmount",
         "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "isEth",
-        "type": "bool"
       },
       {
         "internalType": "address",

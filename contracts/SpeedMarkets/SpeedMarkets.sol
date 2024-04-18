@@ -51,11 +51,12 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     struct TempData {
         uint lpFeeWithSkew;
         PythStructs.Price pythPrice;
+        IPyth iPyth;
     }
 
     uint private constant ONE = 1e18;
     uint private constant MAX_APPROVAL = type(uint256).max;
-    uint private constant SKEW_SLIPPAGE = 1e16;
+    uint private constant SKEW_SLIPPAGE = 2e16;
     uint private constant SECONDS_PER_MINUTE = 60;
     IERC20Upgradeable public sUSD;
 
@@ -108,6 +109,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
     /// @notice create new market for given strike time, in case it is zero delta time is used
     function createNewMarket(
+        address user,
         bytes32 asset,
         uint64 strikeTime,
         uint64 delta,
@@ -116,9 +118,10 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         bytes[] calldata priceUpdateData,
         address referrer,
         uint skewImpact
-    ) external payable nonReentrant notPaused {
+    ) external payable nonReentrant notPaused onlyPool {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
         _createNewMarket(
+            user,
             asset,
             strikeTime == 0 ? uint64(block.timestamp + delta) : strikeTime,
             direction,
@@ -133,6 +136,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
     /// @notice create new market with different collateral (not sUSD) for a given strike time, in case it is zero delta time is used
     function createNewMarketWithDifferentCollateral(
+        address user,
         bytes32 asset,
         uint64 strikeTime,
         uint64 delta,
@@ -140,27 +144,26 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         bytes[] calldata priceUpdateData,
         address collateral,
         uint collateralAmount,
-        bool isEth,
         address referrer,
         uint skewImpact
-    ) external payable nonReentrant notPaused {
+    ) external payable nonReentrant notPaused onlyPool {
         _createNewMarketWithDifferentCollateral(
+            user,
             asset,
             strikeTime == 0 ? uint64(block.timestamp + delta) : strikeTime,
             direction,
             priceUpdateData,
             collateral,
             collateralAmount,
-            isEth,
             referrer,
             skewImpact
         );
     }
 
     function _getBuyinWithConversion(
+        address user,
         address collateral,
         uint collateralAmount,
-        bool isEth,
         uint64 strikeTime,
         IAddressManager.Addresses memory contractsAddresses
     ) internal returns (uint buyinAmount) {
@@ -171,14 +174,9 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             contractsAddresses.multiCollateralOnOffRamp
         );
 
-        uint convertedAmount;
-        if (isEth) {
-            convertedAmount = iMultiCollateralOnOffRamp.onrampWithEth{value: collateralAmount}(collateralAmount);
-        } else {
-            IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
-            IERC20Upgradeable(collateral).approve(address(iMultiCollateralOnOffRamp), collateralAmount);
-            convertedAmount = iMultiCollateralOnOffRamp.onramp(collateral, collateralAmount);
-        }
+        IERC20Upgradeable(collateral).safeTransferFrom(user, address(this), collateralAmount);
+        IERC20Upgradeable(collateral).approve(address(iMultiCollateralOnOffRamp), collateralAmount);
+        uint convertedAmount = iMultiCollateralOnOffRamp.onramp(collateral, collateralAmount);
 
         uint lpFeeForDeltaTime = _getFeeByTimeThreshold(
             uint64(strikeTime - block.timestamp),
@@ -194,19 +192,20 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     function _createNewMarketWithDifferentCollateral(
+        address user,
         bytes32 asset,
         uint64 strikeTime,
         Direction direction,
         bytes[] calldata priceUpdateData,
         address collateral,
         uint collateralAmount,
-        bool isEth,
         address referrer,
         uint skewImpact
     ) internal {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        uint buyinAmount = _getBuyinWithConversion(collateral, collateralAmount, isEth, strikeTime, contractsAddresses);
+        uint buyinAmount = _getBuyinWithConversion(user, collateral, collateralAmount, strikeTime, contractsAddresses);
         _createNewMarket(
+            user,
             asset,
             strikeTime,
             direction,
@@ -281,6 +280,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     function _handleReferrerAndSafeBox(
+        address user,
         address referrer,
         uint buyinAmount,
         IAddressManager.Addresses memory contractsAddresses
@@ -289,10 +289,10 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         if (address(iReferrals) != address(0)) {
             address newOrExistingReferrer;
             if (referrer != address(0)) {
-                iReferrals.setReferrer(referrer, msg.sender);
+                iReferrals.setReferrer(referrer, user);
                 newOrExistingReferrer = referrer;
             } else {
-                newOrExistingReferrer = iReferrals.referrals(msg.sender);
+                newOrExistingReferrer = iReferrals.referrals(user);
             }
 
             if (newOrExistingReferrer != address(0)) {
@@ -300,7 +300,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
                 if (referrerFeeByTier > 0) {
                     referrerShare = (buyinAmount * referrerFeeByTier) / ONE;
                     sUSD.safeTransfer(newOrExistingReferrer, referrerShare);
-                    emit ReferrerPaid(newOrExistingReferrer, msg.sender, referrerShare, buyinAmount);
+                    emit ReferrerPaid(newOrExistingReferrer, user, referrerShare, buyinAmount);
                 }
             }
         }
@@ -309,6 +309,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     function _createNewMarket(
+        address user,
         bytes32 asset,
         uint64 strikeTime,
         Direction direction,
@@ -328,10 +329,10 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         TempData memory tempData;
         tempData.lpFeeWithSkew = _handleRiskAndGetFee(asset, direction, buyinAmount, strikeTime, skewImpact);
 
-        IPyth iPyth = IPyth(contractsAddresses.pyth);
-        iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(priceUpdateData)}(priceUpdateData);
+        tempData.iPyth = IPyth(contractsAddresses.pyth);
+        tempData.iPyth.updatePriceFeeds{value: tempData.iPyth.getUpdateFee(priceUpdateData)}(priceUpdateData);
 
-        tempData.pythPrice = iPyth.getPriceUnsafe(assetToPythId[asset]);
+        tempData.pythPrice = tempData.iPyth.getPriceUnsafe(assetToPythId[asset]);
 
         require(
             (tempData.pythPrice.publishTime + maximumPriceDelay) > block.timestamp && tempData.pythPrice.price > 0,
@@ -340,13 +341,13 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
         if (transferSusd) {
             uint totalAmountToTransfer = (buyinAmount * (ONE + safeBoxImpact + tempData.lpFeeWithSkew)) / ONE;
-            sUSD.safeTransferFrom(msg.sender, address(this), totalAmountToTransfer);
+            sUSD.safeTransferFrom(user, address(this), totalAmountToTransfer);
         }
 
-        bytes32 market = _generateSpeedMarketUUID(msg.sender, asset, strikeTime, direction, buyinAmount, block.timestamp);
+        bytes32 market = _generateSpeedMarketUUID(user, asset, strikeTime, direction, buyinAmount, block.timestamp);
 
         speedMarket[market] = SpeedMarketData(
-            msg.sender,
+            user,
             asset,
             strikeTime,
             tempData.pythPrice.price,
@@ -363,14 +364,14 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
         totalCollateralizedAmount += (2 * buyinAmount);
 
-        _handleReferrerAndSafeBox(referrer, buyinAmount, contractsAddresses);
+        _handleReferrerAndSafeBox(user, referrer, buyinAmount, contractsAddresses);
 
         _activeMarkets.add(market);
-        _activeMarketsPerUser[msg.sender].add(market);
+        _activeMarketsPerUser[user].add(market);
 
         emit MarketCreatedWithFees(
             market,
-            msg.sender,
+            user,
             asset,
             strikeTime,
             tempData.pythPrice.price,
@@ -757,6 +758,12 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
     modifier isAddressWhitelisted() {
         require(whitelistedAddresses[msg.sender], "Resolver not whitelisted");
+        _;
+    }
+
+    modifier onlyPool() {
+        address speedMarketsPool = addressManager.getAddress("SpeedMarketsPool");
+        require(msg.sender == speedMarketsPool, "only Pool");
         _;
     }
 

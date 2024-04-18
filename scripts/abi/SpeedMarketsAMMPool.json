@@ -1,0 +1,719 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "timeFrame",
+            "type": "uint64"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction[]",
+            "name": "directions",
+            "type": "uint8[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDefaultCollateral",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct SpeedMarketsAMMPool.ChainedSpeedMarketElem",
+        "name": "_chainedSpeedMarketElem",
+        "type": "tuple"
+      }
+    ],
+    "name": "AddChainedSpeedMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "strikeTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "delta",
+            "type": "uint64"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction",
+            "name": "direction",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDefaultCollateral",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewImpact",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct SpeedMarketsAMMPool.SpeedMarketElem",
+        "name": "_speedMarketElem",
+        "type": "tuple"
+      }
+    ],
+    "name": "AddSpeedMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_size",
+        "type": "uint256"
+      }
+    ],
+    "name": "CreateChainedSpeedMarkets",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_size",
+        "type": "uint256"
+      }
+    ],
+    "name": "CreateSpeedMarkets",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "_errorMessage",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_isDefaultCollateral",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "_delta",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "_strikeTime",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_createdAt",
+        "type": "uint256"
+      }
+    ],
+    "name": "LogError",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oldOwner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerNominated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isPaused",
+        "type": "bool"
+      }
+    ],
+    "name": "PauseChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_speedMarketsAMM",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_chainedSpeedMarketsAMM",
+        "type": "address"
+      }
+    ],
+    "name": "SetSpeedMarketsAMM",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_timeFrame",
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum SpeedMarket.Direction[]",
+        "name": "_directions",
+        "type": "uint8[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyinAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isDefaultCollateral",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
+      }
+    ],
+    "name": "addChainedSpeedMarketToPool",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_strikeTime",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_delta",
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum SpeedMarket.Direction",
+        "name": "_direction",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyinAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isDefaultCollateral",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_skewImpact",
+        "type": "uint256"
+      }
+    ],
+    "name": "addSpeedMarketToPool",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "chainedSpeedMarketsAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chainedSpeedMarketsPool",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "timeFrame",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint256",
+        "name": "buyinAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isDefaultCollateral",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "createdAt",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "priceUpdateData",
+            "type": "bytes[]"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMMPool.AssetPriceData[]",
+        "name": "_assetPriceData",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "createChainedSpeedMarketsFromPool",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "priceUpdateData",
+            "type": "bytes[]"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMMPool.AssetPriceData[]",
+        "name": "_assetPriceData",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "createSpeedMarketsFromPool",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "initNonReentrant",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_speedMarketsAMM",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_chainedSpeedMarketsAMM",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastPauseTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "nominateNewOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nominatedOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_paused",
+        "type": "bool"
+      }
+    ],
+    "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_speedMarketsAMM",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_chainedSpeedMarketsAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setSpeedMarketsAMM",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "speedMarketsAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "speedMarketsPool",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "strikeTime",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "delta",
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum SpeedMarket.Direction",
+        "name": "direction",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "buyinAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isDefaultCollateral",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewImpact",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "createdAt",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

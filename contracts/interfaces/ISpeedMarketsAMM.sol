@@ -16,6 +16,31 @@ interface ISpeedMarketsAMM {
 
     function sUSD() external view returns (IERC20Upgradeable);
 
+    function createNewMarket(
+        address _user,
+        bytes32 _asset,
+        uint64 _strikeTime,
+        uint64 _delta,
+        SpeedMarket.Direction _direction,
+        uint _buyinAmount,
+        bytes[] calldata _priceUpdateData,
+        address _referrer,
+        uint _skewImpact
+    ) external;
+
+    function createNewMarketWithDifferentCollateral(
+        address _user,
+        bytes32 _asset,
+        uint64 _strikeTime,
+        uint64 _delta,
+        SpeedMarket.Direction _direction,
+        bytes[] calldata _priceUpdateData,
+        address _collateral,
+        uint _collateralAmount,
+        address _referrer,
+        uint _skewImpact
+    ) external;
+
     function supportedAsset(bytes32 _asset) external view returns (bool);
 
     function assetToPythId(bytes32 _asset) external view returns (bytes32);

@@ -568,49 +568,83 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_strikeTime",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_delta",
-        "type": "uint64"
-      },
-      {
-        "internalType": "enum SpeedMarket.Direction",
-        "name": "_direction",
-        "type": "uint8"
-      },
-      {
-        "internalType": "address",
-        "name": "_collateral",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_collateralAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_referrer",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_skewImpact",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "strikeTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "delta",
+            "type": "uint64"
+          },
+          {
+            "components": [
+              {
+                "internalType": "int64",
+                "name": "price",
+                "type": "int64"
+              },
+              {
+                "internalType": "uint64",
+                "name": "conf",
+                "type": "uint64"
+              },
+              {
+                "internalType": "int32",
+                "name": "expo",
+                "type": "int32"
+              },
+              {
+                "internalType": "uint256",
+                "name": "publishTime",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct PythStructs.Price",
+            "name": "pythPrice",
+            "type": "tuple"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction",
+            "name": "direction",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "collateralAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewImpact",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMM.CreateMarketParams",
+        "name": "_params",
+        "type": "tuple"
       }
     ],
     "name": "createNewMarket",
@@ -692,16 +726,6 @@
     "outputs": [
       {
         "components": [
-          {
-            "internalType": "bool",
-            "name": "supportedAsset",
-            "type": "bool"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "pythId",
-            "type": "bytes32"
-          },
           {
             "internalType": "uint256",
             "name": "safeBoxImpact",

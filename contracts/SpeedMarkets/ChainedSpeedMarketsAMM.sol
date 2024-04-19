@@ -77,8 +77,18 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     struct TempData {
         uint payout;
         uint payoutMultiplier;
-        PythStructs.Price pythPrice;
         ISpeedMarketsAMM.Params speedAMMParams;
+    }
+
+    struct CreateMarketParams {
+        address user;
+        bytes32 asset;
+        uint64 timeFrame;
+        PythStructs.Price pythPrice;
+        SpeedMarket.Direction[] directions;
+        address collateral;
+        uint collateralAmount;
+        address referrer;
     }
 
     receive() external payable {}
@@ -89,30 +99,23 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         sUSD = _sUSD;
     }
 
-    function createNewMarket(
-        address _user,
-        bytes32 _asset,
-        uint64 _timeFrame,
-        SpeedMarket.Direction[] calldata _directions,
-        address _collateral,
-        uint _collateralAmount,
-        address _referrer
-    ) external payable nonReentrant notPaused onlyPending {
+    function createNewMarket(CreateMarketParams calldata _params) external payable nonReentrant notPaused onlyPending {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
 
-        bool isDefaultCollateral = _collateral == address(0);
+        bool isDefaultCollateral = _params.collateral == address(0);
         uint buyinAmount = isDefaultCollateral
-            ? _collateralAmount
-            : _getBuyinWithConversion(_user, _collateral, _collateralAmount, contractsAddresses);
+            ? _params.collateralAmount
+            : _getBuyinWithConversion(_params.user, _params.collateral, _params.collateralAmount, contractsAddresses);
 
         _createNewMarket(
-            _user,
-            _asset,
-            _timeFrame,
-            _directions,
+            _params.user,
+            _params.asset,
+            _params.timeFrame,
+            _params.pythPrice,
+            _params.directions,
             buyinAmount,
             isDefaultCollateral,
-            _referrer,
+            _params.referrer,
             contractsAddresses
         );
     }
@@ -186,15 +189,13 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         address user,
         bytes32 asset,
         uint64 timeFrame,
+        PythStructs.Price calldata pythPrice,
         SpeedMarket.Direction[] calldata directions,
         uint buyinAmount,
         bool transferSusd,
         address referrer,
         IAddressManager.Addresses memory contractsAddresses
     ) internal {
-        TempData memory tempData;
-        tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(asset);
-        require(tempData.speedAMMParams.supportedAsset, "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
         require(timeFrame >= minTimeFrame && timeFrame <= maxTimeFrame, "Wrong time frame");
         require(
@@ -202,6 +203,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             "Wrong number of directions"
         );
 
+        TempData memory tempData;
         tempData.payoutMultiplier = payoutMultipliers[uint8(directions.length) - minChainedMarkets];
         tempData.payout = _getPayout(buyinAmount, uint8(directions.length), tempData.payoutMultiplier);
         require(tempData.payout <= maxProfitPerIndividualMarket, "Profit too high");
@@ -209,12 +211,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         currentRisk += (tempData.payout - buyinAmount);
         require(currentRisk <= maxRisk, "Out of liquidity");
 
-        tempData.pythPrice = IPyth(contractsAddresses.pyth).getPriceUnsafe(tempData.speedAMMParams.pythId);
-        require(
-            (tempData.pythPrice.publishTime + tempData.speedAMMParams.maximumPriceDelay) > block.timestamp &&
-                tempData.pythPrice.price > 0,
-            "Stale price"
-        );
+        tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(asset);
 
         if (transferSusd) {
             uint totalAmountToTransfer = (buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;
@@ -230,7 +227,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 timeFrame,
                 uint64(block.timestamp + timeFrame),
                 uint64(block.timestamp + timeFrame * directions.length), // strike time
-                tempData.pythPrice.price,
+                pythPrice.price,
                 directions,
                 buyinAmount,
                 tempData.speedAMMParams.safeBoxImpact,
@@ -255,7 +252,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             asset,
             timeFrame,
             uint64(block.timestamp + timeFrame * directions.length), // strike time
-            tempData.pythPrice.price,
+            pythPrice.price,
             directions,
             buyinAmount,
             tempData.payoutMultiplier,
@@ -539,8 +536,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     modifier onlyPending() {
-        address pendingSpeedMarkets = addressManager.getAddress("PendingSpeedMarketsAMM");
-        require(msg.sender == pendingSpeedMarkets, "only from Pending");
+        address speedMarketsCreator = addressManager.getAddress("SpeedMarketsAMMCreator");
+        require(msg.sender == speedMarketsCreator, "only from Creator");
         _;
     }
 

@@ -388,39 +388,73 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_timeFrame",
-        "type": "uint64"
-      },
-      {
-        "internalType": "enum SpeedMarket.Direction[]",
-        "name": "_directions",
-        "type": "uint8[]"
-      },
-      {
-        "internalType": "address",
-        "name": "_collateral",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_collateralAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_referrer",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "timeFrame",
+            "type": "uint64"
+          },
+          {
+            "components": [
+              {
+                "internalType": "int64",
+                "name": "price",
+                "type": "int64"
+              },
+              {
+                "internalType": "uint64",
+                "name": "conf",
+                "type": "uint64"
+              },
+              {
+                "internalType": "int32",
+                "name": "expo",
+                "type": "int32"
+              },
+              {
+                "internalType": "uint256",
+                "name": "publishTime",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct PythStructs.Price",
+            "name": "pythPrice",
+            "type": "tuple"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction[]",
+            "name": "directions",
+            "type": "uint8[]"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "collateralAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ChainedSpeedMarketsAMM.CreateMarketParams",
+        "name": "_params",
+        "type": "tuple"
       }
     ],
     "name": "createNewMarket",

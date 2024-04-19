@@ -4,6 +4,8 @@ pragma solidity >=0.5.16;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
+import "../SpeedMarkets/SpeedMarkets.sol";
+
 interface ISpeedMarkets {
     enum Direction {
         Up,
@@ -25,26 +27,10 @@ interface ISpeedMarkets {
         uint lpFee;
         uint createdAt;
     }
-    struct Params {
-        bool supportedAsset;
-        bytes32 pythId;
-        uint safeBoxImpact;
-        uint64 maximumPriceDelay;
-    }
 
     function speedMarket(bytes32 _market) external view returns (SpeedMarketData memory);
 
-    function createNewMarket(
-        address _user,
-        bytes32 _asset,
-        uint64 _strikeTime,
-        uint64 _delta,
-        Direction _direction,
-        address _collateral,
-        uint _collateralAmount,
-        address _referrer,
-        uint _skewImpact
-    ) external;
+    function createNewMarket(SpeedMarkets.CreateMarketParams calldata _params) external;
 
     function sUSD() external view returns (IERC20Upgradeable);
 
@@ -89,6 +75,4 @@ interface ISpeedMarkets {
     function whitelistedAddresses(address _wallet) external view returns (bool);
 
     function getLengths(address _user) external view returns (uint[5] memory);
-
-    function getParams(bytes32 _asset) external view returns (Params memory);
 }

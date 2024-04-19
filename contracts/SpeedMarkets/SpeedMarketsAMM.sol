@@ -98,10 +98,27 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     uint public maxSkewImpact;
     uint private constant SKEW_SLIPPAGE = 2e16;
 
-    // using this to solve stack too deep
-    struct TempData {
-        uint lpFeeWithSkew;
+    /// @param user user wallet address
+    /// @param asset market asset
+    /// @param strikeTime strike time, if zero delta time is used
+    /// @param delta delta time, used if strike time is zero
+    /// @param pythPrice structure with pyth price and publish time
+    /// @param direction direction (UP/DOWN)
+    /// @param collateral collateral address, for default collateral use zero address
+    /// @param collateralAmount collateral amount, for non default includes fees
+    /// @param referrer referrer address
+    /// @param skewImpact skew impact, used to check skew slippage
+    struct CreateMarketParams {
+        address user;
+        bytes32 asset;
+        uint64 strikeTime;
+        uint64 delta;
         PythStructs.Price pythPrice;
+        SpeedMarket.Direction direction;
+        address collateral;
+        uint collateralAmount;
+        address referrer;
+        uint skewImpact;
     }
 
     receive() external payable {}
@@ -112,43 +129,32 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         sUSD = _sUSD;
     }
 
-    /// @notice create new market for given delta/strike time
-    /// @param _user user wallet address
-    /// @param _asset market asset
-    /// @param _strikeTime market strike time, if zero delta time is used
-    /// @param _delta market delta time, used if strike time is zero
-    /// @param _direction market direction UP/DOWN
-    /// @param _collateral collateral address, for default collateral use zero address
-    /// @param _collateralAmount collateral amount, for non default including fees
-    /// @param _referrer referrer address
-    /// @param _skewImpact skew impact, used to check skew slippage
-    function createNewMarket(
-        address _user,
-        bytes32 _asset,
-        uint64 _strikeTime,
-        uint64 _delta,
-        SpeedMarket.Direction _direction,
-        address _collateral,
-        uint _collateralAmount,
-        address _referrer,
-        uint _skewImpact
-    ) external payable nonReentrant notPaused onlyPending {
+    /// @notice create new market for a given delta/strike time
+    /// @param _params parameters for creating market
+    function createNewMarket(CreateMarketParams calldata _params) external payable nonReentrant notPaused onlyCreator {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
 
-        bool isDefaultCollateral = _collateral == address(0);
+        bool isDefaultCollateral = _params.collateral == address(0);
         uint buyinAmount = isDefaultCollateral
-            ? _collateralAmount
-            : _getBuyinWithConversion(_user, _collateral, _collateralAmount, _strikeTime, contractsAddresses);
+            ? _params.collateralAmount
+            : _getBuyinWithConversion(
+                _params.user,
+                _params.collateral,
+                _params.collateralAmount,
+                _params.strikeTime,
+                contractsAddresses
+            );
 
         _createNewMarket(
-            _user,
-            _asset,
-            _strikeTime == 0 ? uint64(block.timestamp + _delta) : _strikeTime,
-            _direction,
+            _params.user,
+            _params.asset,
+            _params.strikeTime == 0 ? uint64(block.timestamp + _params.delta) : _params.strikeTime,
+            _params.pythPrice,
+            _params.direction,
             buyinAmount,
             isDefaultCollateral,
-            _referrer,
-            _skewImpact,
+            _params.referrer,
+            _params.skewImpact,
             contractsAddresses
         );
     }
@@ -269,6 +275,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         address user,
         bytes32 asset,
         uint64 strikeTime,
+        PythStructs.Price calldata pythPrice,
         SpeedMarket.Direction direction,
         uint buyinAmount,
         bool transferSusd,
@@ -276,24 +283,14 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint skewImpact,
         IAddressManager.Addresses memory contractsAddresses
     ) internal {
-        require(supportedAsset[asset], "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
         require(strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not alloowed");
         require(strikeTime <= block.timestamp + maximalTimeToMaturity, "Time too far into the future");
 
-        TempData memory tempData;
-        tempData.lpFeeWithSkew = _handleRiskAndGetFee(asset, direction, buyinAmount, strikeTime, skewImpact);
-
-        IPyth iPyth = IPyth(contractsAddresses.pyth);
-        tempData.pythPrice = iPyth.getPriceUnsafe(assetToPythId[asset]);
-
-        require(
-            (tempData.pythPrice.publishTime + maximumPriceDelay) > block.timestamp && tempData.pythPrice.price > 0,
-            "Stale price"
-        );
+        uint lpFeeWithSkew = _handleRiskAndGetFee(asset, direction, buyinAmount, strikeTime, skewImpact);
 
         if (transferSusd) {
-            uint totalAmountToTransfer = (buyinAmount * (ONE + safeBoxImpact + tempData.lpFeeWithSkew)) / ONE;
+            uint totalAmountToTransfer = (buyinAmount * (ONE + safeBoxImpact + lpFeeWithSkew)) / ONE;
             sUSD.safeTransferFrom(user, address(this), totalAmountToTransfer);
         }
         SpeedMarket srm = SpeedMarket(Clones.clone(speedMarketMastercopy));
@@ -303,12 +300,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 user,
                 asset,
                 strikeTime,
-                tempData.pythPrice.price,
-                uint64(tempData.pythPrice.publishTime),
+                pythPrice.price,
+                uint64(pythPrice.publishTime),
                 direction,
                 buyinAmount,
                 safeBoxImpact,
-                tempData.lpFeeWithSkew
+                lpFeeWithSkew
             )
         );
 
@@ -325,17 +322,17 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         marketHasCreatedAtAttribute[address(srm)] = true;
         marketHasFeeAttribute[address(srm)] = true;
-        emit MarketCreated(address(srm), user, asset, strikeTime, tempData.pythPrice.price, direction, buyinAmount);
+        emit MarketCreated(address(srm), user, asset, strikeTime, pythPrice.price, direction, buyinAmount);
         emit MarketCreatedWithFees(
             address(srm),
             user,
             asset,
             strikeTime,
-            tempData.pythPrice.price,
+            pythPrice.price,
             direction,
             buyinAmount,
             safeBoxImpact,
-            tempData.lpFeeWithSkew
+            lpFeeWithSkew
         );
     }
 
@@ -540,8 +537,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice get parmas for create market
     function getParams(bytes32 asset) external view returns (ISpeedMarketsAMM.Params memory) {
         ISpeedMarketsAMM.Params memory params;
-        params.supportedAsset = supportedAsset[asset];
-        params.pythId = assetToPythId[asset];
         params.safeBoxImpact = safeBoxImpact;
         params.maximumPriceDelay = maximumPriceDelay;
         return params;
@@ -669,9 +664,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         _;
     }
 
-    modifier onlyPending() {
-        address pendingSpeedMarkets = addressManager.getAddress("PendingSpeedMarketsAMM");
-        require(msg.sender == pendingSpeedMarkets, "only from Pending");
+    modifier onlyCreator() {
+        address speedMarketsCreator = addressManager.getAddress("SpeedMarketsAMMCreator");
+        require(msg.sender == speedMarketsCreator, "only from Creator");
         _;
     }
 

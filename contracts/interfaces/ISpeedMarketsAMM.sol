@@ -4,29 +4,20 @@ pragma solidity >=0.5.16;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
+import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
+
 import "../SpeedMarkets/SpeedMarket.sol";
+import "../SpeedMarkets/SpeedMarketsAMM.sol";
 
 interface ISpeedMarketsAMM {
     struct Params {
-        bool supportedAsset;
-        bytes32 pythId;
         uint safeBoxImpact;
         uint64 maximumPriceDelay;
     }
 
     function sUSD() external view returns (IERC20Upgradeable);
 
-    function createNewMarket(
-        address _user,
-        bytes32 _asset,
-        uint64 _strikeTime,
-        uint64 _delta,
-        SpeedMarket.Direction _direction,
-        address _collateral,
-        uint _collateralAmount,
-        address _referrer,
-        uint _skewImpact
-    ) external;
+    function createNewMarket(SpeedMarketsAMM.CreateMarketParams calldata _params) external;
 
     function supportedAsset(bytes32 _asset) external view returns (bool);
 

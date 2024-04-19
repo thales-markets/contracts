@@ -21,7 +21,20 @@ import "./SpeedMarkets.sol";
 contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     int64 private constant ONE = 1e8;
 
-    struct SpeedMarketElem {
+    struct SpeedMarketParams {
+        bytes32 asset;
+        uint64 strikeTime;
+        uint64 delta;
+        int64 strikePrice;
+        int64 strikePriceSlippage;
+        SpeedMarkets.Direction direction;
+        address collateral;
+        uint buyinAmount;
+        address referrer;
+        uint skewImpact;
+    }
+
+    struct PendingSpeedMarket {
         address user;
         bytes32 asset;
         uint64 strikeTime;
@@ -43,7 +56,7 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     uint64 public maximumCreationDelay;
 
-    SpeedMarketElem[] public pendingSpeedMarkets;
+    PendingSpeedMarket[] public pendingSpeedMarkets;
 
     IAddressManager public addressManager;
 
@@ -53,41 +66,31 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
     }
 
     /// @notice add new speed market to pending - waiting for creation
-    function addPendingSpeedMarket(
-        bytes32 _asset,
-        uint64 _strikeTime,
-        uint64 _delta,
-        int64 _strikePrice,
-        int64 _strikePriceSlippage,
-        SpeedMarkets.Direction _direction,
-        address _collateral,
-        uint _buyinAmount,
-        address _referrer,
-        uint _skewImpact
-    ) external payable nonReentrant notPaused {
-        SpeedMarketElem memory speedMarketElem = SpeedMarketElem(
+    /// @param _params parameters for adding pending speed market
+    function addPendingSpeedMarket(SpeedMarketParams calldata _params) external payable nonReentrant notPaused {
+        PendingSpeedMarket memory pendingSpeedMarket = PendingSpeedMarket(
             msg.sender,
-            _asset,
-            _strikeTime,
-            _delta,
-            _strikePrice,
-            _strikePriceSlippage,
-            _direction,
-            _collateral,
-            _buyinAmount,
-            _referrer,
-            _skewImpact,
+            _params.asset,
+            _params.strikeTime,
+            _params.delta,
+            _params.strikePrice,
+            _params.strikePriceSlippage,
+            _params.direction,
+            _params.collateral,
+            _params.buyinAmount,
+            _params.referrer,
+            _params.skewImpact,
             block.timestamp
         );
 
-        pendingSpeedMarkets.push(speedMarketElem);
+        pendingSpeedMarkets.push(pendingSpeedMarket);
 
-        emit AddSpeedMarket(speedMarketElem);
+        emit AddSpeedMarket(pendingSpeedMarket);
     }
 
     /// @notice create all speed markets from pending using latest price feeds from params
     /// @param _assetPriceData array of pyth priceUpdateData per asset
-    function createPendingSpeedMarkets(AssetPriceData[] memory _assetPriceData) external payable nonReentrant notPaused {
+    function createPendingSpeedMarkets(AssetPriceData[] calldata _assetPriceData) external payable nonReentrant notPaused {
         require(pendingSpeedMarkets.length > 0, "No pending markets");
         require(_assetPriceData.length > 0, "Missing asset price"); // TODO: check max number of assets
 
@@ -108,7 +111,7 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
         // process all pending speed markets
         for (uint8 i = 0; i < pendingSpeedMarkets.length; i++) {
-            SpeedMarketElem memory pendingSpeedMarket = pendingSpeedMarkets[i];
+            PendingSpeedMarket memory pendingSpeedMarket = pendingSpeedMarkets[i];
 
             if ((pendingSpeedMarket.createdAt + maximumCreationDelay) <= block.timestamp) {
                 // too late for processing
@@ -154,6 +157,56 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
         delete pendingSpeedMarkets;
     }
 
+    /// @notice create speed market
+    /// @param _speedMarketParams parameters for creating speed market
+    /// @param _assetPriceData array of pyth priceUpdateData per asset
+    function createSpeedMarket(SpeedMarketParams calldata _speedMarketParams, AssetPriceData[] calldata _assetPriceData)
+        external
+        payable
+        nonReentrant
+        notPaused
+    {
+        require(_assetPriceData.length > 0, "Missing asset price"); // TODO: check max number of assets
+
+        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
+
+        ISpeedMarkets iSpeedMarkets = ISpeedMarkets(contractsAddresses.speedMarketsAMM);
+        IPyth iPyth = IPyth(contractsAddresses.pyth);
+
+        // update latest pyth price
+        for (uint8 i = 0; i < _assetPriceData.length; i++) {
+            require(iSpeedMarkets.supportedAsset(_assetPriceData[i].asset), "Asset not supported");
+            iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(_assetPriceData[i].priceUpdateData)}(
+                _assetPriceData[i].priceUpdateData
+            );
+        }
+
+        uint64 maximumPriceDelay = iSpeedMarkets.maximumPriceDelay();
+        PythStructs.Price memory pythPrice = iPyth.getPriceUnsafe(iSpeedMarkets.assetToPythId(_speedMarketParams.asset));
+        require((pythPrice.publishTime + maximumPriceDelay) > block.timestamp && pythPrice.price > 0, "Stale price");
+
+        int64 maxPrice = (_speedMarketParams.strikePrice * (ONE + _speedMarketParams.strikePriceSlippage)) / ONE;
+        int64 minPrice = (_speedMarketParams.strikePrice * (ONE - _speedMarketParams.strikePriceSlippage)) / ONE;
+        require(pythPrice.price <= maxPrice && pythPrice.price >= minPrice, "Pyth price exceeds slippage");
+
+        iSpeedMarkets.createNewMarket(
+            SpeedMarkets.CreateMarketParams(
+                msg.sender,
+                _speedMarketParams.asset,
+                _speedMarketParams.strikeTime,
+                _speedMarketParams.delta,
+                pythPrice,
+                _speedMarketParams.direction,
+                _speedMarketParams.collateral,
+                _speedMarketParams.buyinAmount,
+                _speedMarketParams.referrer,
+                _speedMarketParams.skewImpact
+            )
+        );
+    }
+
+    //////////////////setters/////////////////
+
     /// @notice Set address of address manager
     /// @param _addressManager to use address for fetching other contract addresses
     function setAddressManager(address _addressManager) external onlyOwner {
@@ -169,7 +222,7 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     //////////////////events/////////////////
 
-    event AddSpeedMarket(SpeedMarketElem _speedMarketElem);
+    event AddSpeedMarket(PendingSpeedMarket _PendingSpeedMarket);
     event CreateSpeedMarkets(uint _size);
 
     event SetAddressManager(address _addressManager);

@@ -66,8 +66,8 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct SpeedMarketsCreator.SpeedMarketElem",
-        "name": "_speedMarketElem",
+        "internalType": "struct SpeedMarketsCreator.PendingSpeedMarket",
+        "name": "_PendingSpeedMarket",
         "type": "tuple"
       }
     ],
@@ -211,54 +211,61 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "_asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_strikeTime",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_delta",
-        "type": "uint64"
-      },
-      {
-        "internalType": "int64",
-        "name": "_strikePrice",
-        "type": "int64"
-      },
-      {
-        "internalType": "int64",
-        "name": "_strikePriceSlippage",
-        "type": "int64"
-      },
-      {
-        "internalType": "enum SpeedMarkets.Direction",
-        "name": "_direction",
-        "type": "uint8"
-      },
-      {
-        "internalType": "address",
-        "name": "_collateral",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_buyinAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_referrer",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_skewImpact",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "strikeTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "delta",
+            "type": "uint64"
+          },
+          {
+            "internalType": "int64",
+            "name": "strikePrice",
+            "type": "int64"
+          },
+          {
+            "internalType": "int64",
+            "name": "strikePriceSlippage",
+            "type": "int64"
+          },
+          {
+            "internalType": "enum SpeedMarkets.Direction",
+            "name": "direction",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewImpact",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SpeedMarketsCreator.SpeedMarketParams",
+        "name": "_params",
+        "type": "tuple"
       }
     ],
     "name": "addPendingSpeedMarket",
@@ -300,6 +307,88 @@
       }
     ],
     "name": "createPendingSpeedMarkets",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "strikeTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "delta",
+            "type": "uint64"
+          },
+          {
+            "internalType": "int64",
+            "name": "strikePrice",
+            "type": "int64"
+          },
+          {
+            "internalType": "int64",
+            "name": "strikePriceSlippage",
+            "type": "int64"
+          },
+          {
+            "internalType": "enum SpeedMarkets.Direction",
+            "name": "direction",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewImpact",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SpeedMarketsCreator.SpeedMarketParams",
+        "name": "_speedMarketParams",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "priceUpdateData",
+            "type": "bytes[]"
+          }
+        ],
+        "internalType": "struct SpeedMarketsCreator.AssetPriceData[]",
+        "name": "_assetPriceData",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "createSpeedMarket",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"

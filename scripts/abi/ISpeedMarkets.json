@@ -46,64 +46,6 @@
         "type": "uint8"
       },
       {
-        "internalType": "uint256",
-        "name": "_buyinAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes[]",
-        "name": "_priceUpdateData",
-        "type": "bytes[]"
-      },
-      {
-        "internalType": "address",
-        "name": "_referrer",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_skewImpact",
-        "type": "uint256"
-      }
-    ],
-    "name": "createNewMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_strikeTime",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_delta",
-        "type": "uint64"
-      },
-      {
-        "internalType": "enum ISpeedMarkets.Direction",
-        "name": "_direction",
-        "type": "uint8"
-      },
-      {
-        "internalType": "bytes[]",
-        "name": "_priceUpdateData",
-        "type": "bytes[]"
-      },
-      {
         "internalType": "address",
         "name": "_collateral",
         "type": "address"
@@ -124,7 +66,7 @@
         "type": "uint256"
       }
     ],
-    "name": "createNewMarketWithDifferentCollateral",
+    "name": "createNewMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

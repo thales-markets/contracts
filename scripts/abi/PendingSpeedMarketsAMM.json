@@ -25,19 +25,14 @@
             "type": "uint8[]"
           },
           {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "isDefaultCollateral",
-            "type": "bool"
-          },
-          {
             "internalType": "address",
             "name": "collateral",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
           },
           {
             "internalType": "address",
@@ -51,7 +46,7 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct SpeedMarketsAMMPool.ChainedSpeedMarketElem",
+        "internalType": "struct PendingSpeedMarketsAMM.ChainedSpeedMarketElem",
         "name": "_chainedSpeedMarketElem",
         "type": "tuple"
       }
@@ -90,19 +85,14 @@
             "type": "uint8"
           },
           {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "isDefaultCollateral",
-            "type": "bool"
-          },
-          {
             "internalType": "address",
             "name": "collateral",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
           },
           {
             "internalType": "address",
@@ -121,7 +111,7 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct SpeedMarketsAMMPool.SpeedMarketElem",
+        "internalType": "struct PendingSpeedMarketsAMM.SpeedMarketElem",
         "name": "_speedMarketElem",
         "type": "tuple"
       }
@@ -172,12 +162,6 @@
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "_isDefaultCollateral",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
         "internalType": "uint64",
         "name": "_delta",
         "type": "uint64"
@@ -187,6 +171,12 @@
         "internalType": "uint64",
         "name": "_strikeTime",
         "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -249,17 +239,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_speedMarketsAMM",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_chainedSpeedMarketsAMM",
+        "name": "_addressManager",
         "type": "address"
       }
     ],
-    "name": "SetSpeedMarketsAMM",
+    "name": "SetAddressManager",
     "type": "event"
   },
   {
@@ -287,19 +271,14 @@
         "type": "uint8[]"
       },
       {
-        "internalType": "uint256",
-        "name": "_buyinAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "_isDefaultCollateral",
-        "type": "bool"
-      },
-      {
         "internalType": "address",
         "name": "_collateral",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyinAmount",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -307,7 +286,7 @@
         "type": "address"
       }
     ],
-    "name": "addChainedSpeedMarketToPool",
+    "name": "addPendingChainedSpeedMarket",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -335,19 +314,14 @@
         "type": "uint8"
       },
       {
-        "internalType": "uint256",
-        "name": "_buyinAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "_isDefaultCollateral",
-        "type": "bool"
-      },
-      {
         "internalType": "address",
         "name": "_collateral",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyinAmount",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -360,73 +334,19 @@
         "type": "uint256"
       }
     ],
-    "name": "addSpeedMarketToPool",
+    "name": "addPendingSpeedMarket",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "chainedSpeedMarketsAMM",
+    "name": "addressManager",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IAddressManager",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "chainedSpeedMarketsPool",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint64",
-        "name": "timeFrame",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint256",
-        "name": "buyinAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "isDefaultCollateral",
-        "type": "bool"
-      },
-      {
-        "internalType": "address",
-        "name": "collateral",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "referrer",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "createdAt",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -447,12 +367,12 @@
             "type": "bytes[]"
           }
         ],
-        "internalType": "struct SpeedMarketsAMMPool.AssetPriceData[]",
+        "internalType": "struct PendingSpeedMarketsAMM.AssetPriceData[]",
         "name": "_assetPriceData",
         "type": "tuple[]"
       }
     ],
-    "name": "createChainedSpeedMarketsFromPool",
+    "name": "createPendingChainedSpeedMarkets",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -472,12 +392,12 @@
             "type": "bytes[]"
           }
         ],
-        "internalType": "struct SpeedMarketsAMMPool.AssetPriceData[]",
+        "internalType": "struct PendingSpeedMarketsAMM.AssetPriceData[]",
         "name": "_assetPriceData",
         "type": "tuple[]"
       }
     ],
-    "name": "createSpeedMarketsFromPool",
+    "name": "createPendingSpeedMarkets",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -498,12 +418,7 @@
       },
       {
         "internalType": "address",
-        "name": "_speedMarketsAMM",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_chainedSpeedMarketsAMM",
+        "name": "_addressManager",
         "type": "address"
       }
     ],
@@ -580,55 +495,47 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
-    "name": "setOwner",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "_paused",
-        "type": "bool"
-      }
-    ],
-    "name": "setPaused",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_speedMarketsAMM",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_chainedSpeedMarketsAMM",
-        "type": "address"
-      }
-    ],
-    "name": "setSpeedMarketsAMM",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "speedMarketsAMM",
+    "name": "pendingChainedSpeedMarkets",
     "outputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "user",
         "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "timeFrame",
+        "type": "uint64"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "buyinAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "createdAt",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -642,7 +549,7 @@
         "type": "uint256"
       }
     ],
-    "name": "speedMarketsPool",
+    "name": "pendingSpeedMarkets",
     "outputs": [
       {
         "internalType": "address",
@@ -670,19 +577,14 @@
         "type": "uint8"
       },
       {
-        "internalType": "uint256",
-        "name": "buyinAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "isDefaultCollateral",
-        "type": "bool"
-      },
-      {
         "internalType": "address",
         "name": "collateral",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "buyinAmount",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -701,6 +603,45 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_addressManager",
+        "type": "address"
+      }
+    ],
+    "name": "setAddressManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_paused",
+        "type": "bool"
+      }
+    ],
+    "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

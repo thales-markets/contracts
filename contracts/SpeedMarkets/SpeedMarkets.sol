@@ -51,7 +51,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     struct TempData {
         uint lpFeeWithSkew;
         PythStructs.Price pythPrice;
-        IPyth iPyth;
     }
 
     uint private constant ONE = 1e18;
@@ -109,54 +108,30 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
     /// @notice create new market for given strike time, in case it is zero delta time is used
     function createNewMarket(
-        address user,
-        bytes32 asset,
-        uint64 strikeTime,
-        uint64 delta,
-        Direction direction,
-        uint buyinAmount,
-        bytes[] calldata priceUpdateData,
-        address referrer,
-        uint skewImpact
-    ) external payable nonReentrant notPaused onlyPool {
+        address _user,
+        bytes32 _asset,
+        uint64 _strikeTime,
+        uint64 _delta,
+        Direction _direction,
+        address _collateral,
+        uint _collateralAmount,
+        address _referrer,
+        uint _skewImpact
+    ) external payable nonReentrant notPaused onlyPending {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        _createNewMarket(
-            user,
-            asset,
-            strikeTime == 0 ? uint64(block.timestamp + delta) : strikeTime,
-            direction,
-            buyinAmount,
-            priceUpdateData,
-            true,
-            referrer,
-            skewImpact,
-            contractsAddresses
-        );
-    }
 
-    /// @notice create new market with different collateral (not sUSD) for a given strike time, in case it is zero delta time is used
-    function createNewMarketWithDifferentCollateral(
-        address user,
-        bytes32 asset,
-        uint64 strikeTime,
-        uint64 delta,
-        Direction direction,
-        bytes[] calldata priceUpdateData,
-        address collateral,
-        uint collateralAmount,
-        address referrer,
-        uint skewImpact
-    ) external payable nonReentrant notPaused onlyPool {
-        _createNewMarketWithDifferentCollateral(
-            user,
-            asset,
-            strikeTime == 0 ? uint64(block.timestamp + delta) : strikeTime,
-            direction,
-            priceUpdateData,
-            collateral,
-            collateralAmount,
-            referrer,
-            skewImpact
+        bool isDefaultCollateral = _collateral == address(0);
+        uint buyinAmount = _getBuyinWithConversion(_user, _collateral, _collateralAmount, _strikeTime, contractsAddresses);
+        _createNewMarket(
+            _user,
+            _asset,
+            _strikeTime == 0 ? uint64(block.timestamp + _delta) : _strikeTime,
+            _direction,
+            buyinAmount,
+            isDefaultCollateral,
+            _referrer,
+            _skewImpact,
+            contractsAddresses
         );
     }
 
@@ -189,33 +164,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
         uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
         require(amountDiff >= buyinAmount, "not enough received via onramp");
-    }
-
-    function _createNewMarketWithDifferentCollateral(
-        address user,
-        bytes32 asset,
-        uint64 strikeTime,
-        Direction direction,
-        bytes[] calldata priceUpdateData,
-        address collateral,
-        uint collateralAmount,
-        address referrer,
-        uint skewImpact
-    ) internal {
-        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        uint buyinAmount = _getBuyinWithConversion(user, collateral, collateralAmount, strikeTime, contractsAddresses);
-        _createNewMarket(
-            user,
-            asset,
-            strikeTime,
-            direction,
-            buyinAmount,
-            priceUpdateData,
-            false,
-            referrer,
-            skewImpact,
-            contractsAddresses
-        );
     }
 
     function _getSkewByAssetAndDirection(bytes32 _asset, Direction _direction) internal view returns (uint) {
@@ -314,7 +262,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint64 strikeTime,
         Direction direction,
         uint buyinAmount,
-        bytes[] memory priceUpdateData,
         bool transferSusd,
         address referrer,
         uint skewImpact,
@@ -329,10 +276,8 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         TempData memory tempData;
         tempData.lpFeeWithSkew = _handleRiskAndGetFee(asset, direction, buyinAmount, strikeTime, skewImpact);
 
-        tempData.iPyth = IPyth(contractsAddresses.pyth);
-        tempData.iPyth.updatePriceFeeds{value: tempData.iPyth.getUpdateFee(priceUpdateData)}(priceUpdateData);
-
-        tempData.pythPrice = tempData.iPyth.getPriceUnsafe(assetToPythId[asset]);
+        IPyth iPyth = IPyth(contractsAddresses.pyth);
+        tempData.pythPrice = iPyth.getPriceUnsafe(assetToPythId[asset]);
 
         require(
             (tempData.pythPrice.publishTime + maximumPriceDelay) > block.timestamp && tempData.pythPrice.price > 0,
@@ -761,9 +706,9 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         _;
     }
 
-    modifier onlyPool() {
-        address speedMarketsPool = addressManager.getAddress("SpeedMarketsPool");
-        require(msg.sender == speedMarketsPool, "only Pool");
+    modifier onlyPending() {
+        address pendingSpeedMarkets = addressManager.getAddress("PendingSpeedMarkets");
+        require(msg.sender == pendingSpeedMarkets, "only from Pending");
         _;
     }
 

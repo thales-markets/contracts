@@ -389,89 +389,41 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "user",
+        "name": "_user",
         "type": "address"
       },
       {
         "internalType": "bytes32",
-        "name": "asset",
+        "name": "_asset",
         "type": "bytes32"
       },
       {
         "internalType": "uint64",
-        "name": "timeFrame",
+        "name": "_timeFrame",
         "type": "uint64"
       },
       {
         "internalType": "enum SpeedMarket.Direction[]",
-        "name": "directions",
+        "name": "_directions",
         "type": "uint8[]"
       },
       {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
         "internalType": "uint256",
-        "name": "buyinAmount",
+        "name": "_collateralAmount",
         "type": "uint256"
       },
       {
-        "internalType": "bytes[]",
-        "name": "priceUpdateData",
-        "type": "bytes[]"
-      },
-      {
         "internalType": "address",
-        "name": "referrer",
+        "name": "_referrer",
         "type": "address"
       }
     ],
     "name": "createNewMarket",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint64",
-        "name": "timeFrame",
-        "type": "uint64"
-      },
-      {
-        "internalType": "enum SpeedMarket.Direction[]",
-        "name": "directions",
-        "type": "uint8[]"
-      },
-      {
-        "internalType": "bytes[]",
-        "name": "priceUpdateData",
-        "type": "bytes[]"
-      },
-      {
-        "internalType": "address",
-        "name": "collateral",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "collateralAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "referrer",
-        "type": "address"
-      }
-    ],
-    "name": "createNewMarketWithDifferentCollateral",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"

@@ -15,17 +15,6 @@ interface IChainedSpeedMarketsAMM {
         bytes32 _asset,
         uint64 _timeFrame,
         SpeedMarket.Direction[] calldata _directions,
-        uint _buyinAmount,
-        bytes[] calldata _priceUpdateData,
-        address _referrer
-    ) external;
-
-    function createNewMarketWithDifferentCollateral(
-        address _user,
-        bytes32 _asset,
-        uint64 _timeFrame,
-        SpeedMarket.Direction[] calldata _directions,
-        bytes[] calldata _priceUpdateData,
         address _collateral,
         uint _collateralAmount,
         address _referrer

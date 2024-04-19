@@ -30,19 +30,14 @@
             "type": "uint8"
           },
           {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "isDefaultCollateral",
-            "type": "bool"
-          },
-          {
             "internalType": "address",
             "name": "collateral",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
           },
           {
             "internalType": "address",
@@ -61,7 +56,7 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct SpeedMarketsPool.SpeedMarketElem",
+        "internalType": "struct PendingSpeedMarkets.SpeedMarketElem",
         "name": "_speedMarketElem",
         "type": "tuple"
       }
@@ -99,12 +94,6 @@
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "_isDefaultCollateral",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
         "internalType": "uint64",
         "name": "_delta",
         "type": "uint64"
@@ -114,6 +103,12 @@
         "internalType": "uint64",
         "name": "_strikeTime",
         "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -176,11 +171,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_speedMarketsAMM",
+        "name": "_addressManager",
         "type": "address"
       }
     ],
-    "name": "SetSpeedMarketsAMM",
+    "name": "SetAddressManager",
     "type": "event"
   },
   {
@@ -213,19 +208,14 @@
         "type": "uint8"
       },
       {
-        "internalType": "uint256",
-        "name": "_buyinAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "_isDefaultCollateral",
-        "type": "bool"
-      },
-      {
         "internalType": "address",
         "name": "_collateral",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyinAmount",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -238,9 +228,22 @@
         "type": "uint256"
       }
     ],
-    "name": "addSpeedMarketToPool",
+    "name": "addPendingSpeedMarket",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "addressManager",
+    "outputs": [
+      {
+        "internalType": "contract IAddressManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -258,12 +261,12 @@
             "type": "bytes[]"
           }
         ],
-        "internalType": "struct SpeedMarketsPool.AssetPriceData[]",
+        "internalType": "struct PendingSpeedMarkets.AssetPriceData[]",
         "name": "_assetPriceData",
         "type": "tuple[]"
       }
     ],
-    "name": "createSpeedMarketsFromPool",
+    "name": "createPendingSpeedMarkets",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -284,7 +287,7 @@
       },
       {
         "internalType": "address",
-        "name": "_speedMarketsAMM",
+        "name": "_addressManager",
         "type": "address"
       }
     ],
@@ -361,64 +364,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      }
-    ],
-    "name": "setOwner",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "_paused",
-        "type": "bool"
-      }
-    ],
-    "name": "setPaused",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_speedMarketsAMM",
-        "type": "address"
-      }
-    ],
-    "name": "setSpeedMarketsAMM",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "speedMarketsAMM",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
       }
     ],
-    "name": "speedMarketsPool",
+    "name": "pendingSpeedMarkets",
     "outputs": [
       {
         "internalType": "address",
@@ -446,19 +397,14 @@
         "type": "uint8"
       },
       {
-        "internalType": "uint256",
-        "name": "buyinAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "isDefaultCollateral",
-        "type": "bool"
-      },
-      {
         "internalType": "address",
         "name": "collateral",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "buyinAmount",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -477,6 +423,45 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_addressManager",
+        "type": "address"
+      }
+    ],
+    "name": "setAddressManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_paused",
+        "type": "bool"
+      }
+    ],
+    "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

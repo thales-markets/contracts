@@ -22,19 +22,6 @@ interface ISpeedMarketsAMM {
         uint64 _strikeTime,
         uint64 _delta,
         SpeedMarket.Direction _direction,
-        uint _buyinAmount,
-        bytes[] calldata _priceUpdateData,
-        address _referrer,
-        uint _skewImpact
-    ) external;
-
-    function createNewMarketWithDifferentCollateral(
-        address _user,
-        bytes32 _asset,
-        uint64 _strikeTime,
-        uint64 _delta,
-        SpeedMarket.Direction _direction,
-        bytes[] calldata _priceUpdateData,
         address _collateral,
         uint _collateralAmount,
         address _referrer,

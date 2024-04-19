@@ -90,49 +90,29 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     function createNewMarket(
-        address user,
-        bytes32 asset,
-        uint64 timeFrame,
-        SpeedMarket.Direction[] calldata directions,
-        uint buyinAmount,
-        bytes[] calldata priceUpdateData,
-        address referrer
-    ) external payable nonReentrant notPaused onlyPool {
+        address _user,
+        bytes32 _asset,
+        uint64 _timeFrame,
+        SpeedMarket.Direction[] calldata _directions,
+        address _collateral,
+        uint _collateralAmount,
+        address _referrer
+    ) external payable nonReentrant notPaused onlyPending {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        _createNewMarket(
-            user,
-            asset,
-            timeFrame,
-            directions,
-            buyinAmount,
-            priceUpdateData,
-            true,
-            referrer,
-            contractsAddresses
-        );
-    }
 
-    function createNewMarketWithDifferentCollateral(
-        address user,
-        bytes32 asset,
-        uint64 timeFrame,
-        SpeedMarket.Direction[] calldata directions,
-        bytes[] calldata priceUpdateData,
-        address collateral,
-        uint collateralAmount,
-        address referrer
-    ) external payable nonReentrant notPaused onlyPool {
-        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        uint buyinAmount = _getBuyinWithConversion(user, collateral, collateralAmount, contractsAddresses);
+        bool isDefaultCollateral = _collateral == address(0);
+        uint buyinAmount = isDefaultCollateral
+            ? _collateralAmount
+            : _getBuyinWithConversion(_user, _collateral, _collateralAmount, contractsAddresses);
+
         _createNewMarket(
-            user,
-            asset,
-            timeFrame,
-            directions,
+            _user,
+            _asset,
+            _timeFrame,
+            _directions,
             buyinAmount,
-            priceUpdateData,
-            false,
-            referrer,
+            isDefaultCollateral,
+            _referrer,
             contractsAddresses
         );
     }
@@ -208,7 +188,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint64 timeFrame,
         SpeedMarket.Direction[] calldata directions,
         uint buyinAmount,
-        bytes[] memory priceUpdateData,
         bool transferSusd,
         address referrer,
         IAddressManager.Addresses memory contractsAddresses
@@ -229,10 +208,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
         currentRisk += (tempData.payout - buyinAmount);
         require(currentRisk <= maxRisk, "Out of liquidity");
-
-        IPyth(contractsAddresses.pyth).updatePriceFeeds{value: IPyth(contractsAddresses.pyth).getUpdateFee(priceUpdateData)}(
-            priceUpdateData
-        );
 
         tempData.pythPrice = IPyth(contractsAddresses.pyth).getPriceUnsafe(tempData.speedAMMParams.pythId);
         require(
@@ -563,9 +538,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         _;
     }
 
-    modifier onlyPool() {
-        address speedMarketsPool = addressManager.getAddress("SpeedMarketsAMMPool");
-        require(msg.sender == speedMarketsPool, "only Pool");
+    modifier onlyPending() {
+        address pendingSpeedMarkets = addressManager.getAddress("PendingSpeedMarketsAMM");
+        require(msg.sender == pendingSpeedMarkets, "only from Pending");
         _;
     }
 

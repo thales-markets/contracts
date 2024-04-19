@@ -272,11 +272,17 @@
       {
         "indexed": false,
         "internalType": "uint64",
-        "name": "_maximumCreationDelay",
+        "name": "_maxCreationDelay",
         "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "_maxSupportedAssets",
+        "type": "uint8"
       }
     ],
-    "name": "SetMaxCreationDelay",
+    "name": "SetLimits",
     "type": "event"
   },
   {
@@ -656,12 +662,25 @@
   },
   {
     "inputs": [],
-    "name": "maximumCreationDelay",
+    "name": "maxCreationDelay",
     "outputs": [
       {
         "internalType": "uint64",
         "name": "",
         "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxSupportedAssets",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -869,11 +888,16 @@
     "inputs": [
       {
         "internalType": "uint64",
-        "name": "_maximumCreationDelay",
+        "name": "_maxCreationDelay",
         "type": "uint64"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_maxSupportedAssets",
+        "type": "uint8"
       }
     ],
-    "name": "setMaxCreationDelay",
+    "name": "setLimits",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -196,6 +196,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         address referrer,
         IAddressManager.Addresses memory contractsAddresses
     ) internal {
+        TempData memory tempData;
+        tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(asset);
+        require(tempData.speedAMMParams.supportedAsset, "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
         require(timeFrame >= minTimeFrame && timeFrame <= maxTimeFrame, "Wrong time frame");
         require(
@@ -203,15 +206,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             "Wrong number of directions"
         );
 
-        TempData memory tempData;
         tempData.payoutMultiplier = payoutMultipliers[uint8(directions.length) - minChainedMarkets];
         tempData.payout = _getPayout(buyinAmount, uint8(directions.length), tempData.payoutMultiplier);
         require(tempData.payout <= maxProfitPerIndividualMarket, "Profit too high");
 
         currentRisk += (tempData.payout - buyinAmount);
         require(currentRisk <= maxRisk, "Out of liquidity");
-
-        tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(asset);
 
         if (transferSusd) {
             uint totalAmountToTransfer = (buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;

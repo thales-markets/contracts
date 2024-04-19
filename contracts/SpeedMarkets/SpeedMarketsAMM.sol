@@ -283,6 +283,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint skewImpact,
         IAddressManager.Addresses memory contractsAddresses
     ) internal {
+        require(supportedAsset[asset], "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
         require(strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not alloowed");
         require(strikeTime <= block.timestamp + maximalTimeToMaturity, "Time too far into the future");
@@ -534,9 +535,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         ];
     }
 
-    /// @notice get parmas for create market
+    /// @notice get parmas for chianed market
     function getParams(bytes32 asset) external view returns (ISpeedMarketsAMM.Params memory) {
         ISpeedMarketsAMM.Params memory params;
+        params.supportedAsset = supportedAsset[asset];
         params.safeBoxImpact = safeBoxImpact;
         params.maximumPriceDelay = maximumPriceDelay;
         return params;

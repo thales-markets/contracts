@@ -54,7 +54,8 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
         bytes[] priceUpdateData;
     }
 
-    uint64 public maximumCreationDelay;
+    uint8 public maxSupportedAssets;
+    uint64 public maxCreationDelay;
 
     PendingSpeedMarket[] public pendingSpeedMarkets;
 
@@ -92,7 +93,7 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
     /// @param _assetPriceData array of pyth priceUpdateData per asset
     function createPendingSpeedMarkets(AssetPriceData[] calldata _assetPriceData) external payable nonReentrant notPaused {
         require(pendingSpeedMarkets.length > 0, "No pending markets");
-        require(_assetPriceData.length > 0, "Missing asset price"); // TODO: check max number of assets
+        require(_assetPriceData.length > 0 && _assetPriceData.length <= maxSupportedAssets, "Wrong number of asset prices");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
 
@@ -113,7 +114,7 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
         for (uint8 i = 0; i < pendingSpeedMarkets.length; i++) {
             PendingSpeedMarket memory pendingSpeedMarket = pendingSpeedMarkets[i];
 
-            if ((pendingSpeedMarket.createdAt + maximumCreationDelay) <= block.timestamp) {
+            if ((pendingSpeedMarket.createdAt + maxCreationDelay) <= block.timestamp) {
                 // too late for processing
                 continue;
             }
@@ -166,7 +167,7 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
         nonReentrant
         notPaused
     {
-        require(_assetPriceData.length > 0, "Missing asset price"); // TODO: check max number of assets
+        require(_assetPriceData.length > 0 && _assetPriceData.length <= maxSupportedAssets, "Wrong number of asset prices");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
 
@@ -214,10 +215,11 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit SetAddressManager(_addressManager);
     }
 
-    /// @notice Set parameters for limits
-    function setMaxCreationDelay(uint64 _maximumCreationDelay) external onlyOwner {
-        maximumCreationDelay = _maximumCreationDelay;
-        emit SetMaxCreationDelay(_maximumCreationDelay);
+    /// @notice Set limits: creation delay and max supported assets
+    function setLimits(uint64 _maxCreationDelay, uint8 _maxSupportedAssets) external onlyOwner {
+        maxCreationDelay = _maxCreationDelay;
+        maxSupportedAssets = _maxSupportedAssets;
+        emit SetLimits(_maxCreationDelay, _maxSupportedAssets);
     }
 
     //////////////////events/////////////////
@@ -226,7 +228,7 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
     event CreateSpeedMarkets(uint _size);
 
     event SetAddressManager(address _addressManager);
-    event SetMaxCreationDelay(uint64 _maximumCreationDelay);
+    event SetLimits(uint64 _maxCreationDelay, uint8 _maxSupportedAssets);
 
     event LogError(
         string _errorMessage,

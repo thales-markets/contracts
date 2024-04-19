@@ -180,6 +180,11 @@
       {
         "components": [
           {
+            "internalType": "bool",
+            "name": "supportedAsset",
+            "type": "bool"
+          },
+          {
             "internalType": "uint256",
             "name": "safeBoxImpact",
             "type": "uint256"

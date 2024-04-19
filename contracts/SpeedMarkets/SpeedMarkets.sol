@@ -285,6 +285,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint skewImpact,
         IAddressManager.Addresses memory contractsAddresses
     ) internal {
+        require(supportedAsset[asset], "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
         require(strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not alloowed");
         require(strikeTime <= block.timestamp + maximalTimeToMaturity, "Time too far into the future");

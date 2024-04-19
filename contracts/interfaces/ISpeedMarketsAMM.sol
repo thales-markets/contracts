@@ -11,6 +11,7 @@ import "../SpeedMarkets/SpeedMarketsAMM.sol";
 
 interface ISpeedMarketsAMM {
     struct Params {
+        bool supportedAsset;
         uint safeBoxImpact;
         uint64 maximumPriceDelay;
     }

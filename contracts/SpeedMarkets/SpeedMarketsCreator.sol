@@ -19,7 +19,7 @@ import "./SpeedMarkets.sol";
 
 /// @title speed/chained markets prepared for creation with latest Pyth price
 contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
-    int64 private constant ONE = 1e8;
+    int64 private constant ONE = 1e8; // Pyth price has 8 decimals
 
     struct SpeedMarketParams {
         bytes32 asset;

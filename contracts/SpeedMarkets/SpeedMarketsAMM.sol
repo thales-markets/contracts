@@ -135,20 +135,21 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
 
         bool isDefaultCollateral = _params.collateral == address(0);
+        uint64 strikeTime = _params.strikeTime == 0 ? uint64(block.timestamp + _params.delta) : _params.strikeTime;
         uint buyinAmount = isDefaultCollateral
             ? _params.collateralAmount
             : _getBuyinWithConversion(
                 _params.user,
                 _params.collateral,
                 _params.collateralAmount,
-                _params.strikeTime,
+                strikeTime,
                 contractsAddresses
             );
 
         _createNewMarket(
             _params.user,
             _params.asset,
-            _params.strikeTime == 0 ? uint64(block.timestamp + _params.delta) : _params.strikeTime,
+            strikeTime,
             _params.pythPrice,
             _params.direction,
             buyinAmount,

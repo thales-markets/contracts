@@ -2,12 +2,11 @@
 
 const { artifacts, contract } = require('hardhat');
 const { assert } = require('../../utils/common');
-const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
+const { ZERO_ADDRESS } = require('../../utils/helpers');
 const { speedMarketsInit } = require('../../utils/zksync_init');
-
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const { getCreateSpeedAMMParams } = require('../../utils/speedMarkets');
 
 contract('SpeedMarkets', (accounts) => {
 	const [owner, user, safeBox, proxyUser] = accounts;
@@ -15,10 +14,10 @@ contract('SpeedMarkets', (accounts) => {
 	describe('Test Speed markets ', () => {
 		it('deploy and test', async () => {
 			let {
+				creatorAccount,
 				speedMarketsAMM,
 				speedMarketsAMMData,
 				addressManager,
-				priceFeedUpdateData,
 				fee,
 				mockPyth,
 				MockPriceFeedDeployed,
@@ -82,18 +81,23 @@ contract('SpeedMarkets', (accounts) => {
 				toUnit('0.01')
 			);
 
-			await speedMarketsAMM.createNewMarketWithDifferentCollateral(
-				toBytes32('ETH'),
-				now + 36000,
-				0,
-				0,
-				[priceFeedUpdateData],
-				exoticOP.address,
-				toUnit(10),
-				false,
-				ZERO_ADDRESS,
-				initialSkewImapct,
-				{ value: fee, from: user }
+			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
+			const buyinAmountParam = 10;
+
+			await speedMarketsAMM.createNewMarket(
+				getCreateSpeedAMMParams(
+					user,
+					'ETH',
+					strikeTimeParam,
+					now,
+					buyinAmountParam,
+					0,
+					initialSkewImapct,
+					0,
+					exoticOP.address,
+					ZERO_ADDRESS
+				),
+				{ from: creatorAccount }
 			);
 
 			let ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);

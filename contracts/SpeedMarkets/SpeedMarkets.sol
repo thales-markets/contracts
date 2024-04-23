@@ -131,13 +131,15 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
         bool isDefaultCollateral = _params.collateral == address(0);
         uint64 strikeTime = _params.strikeTime == 0 ? uint64(block.timestamp + _params.delta) : _params.strikeTime;
-        uint buyinAmount = _getBuyinWithConversion(
-            _params.user,
-            _params.collateral,
-            _params.collateralAmount,
-            strikeTime,
-            contractsAddresses
-        );
+        uint buyinAmount = isDefaultCollateral
+            ? _params.collateralAmount
+            : _getBuyinWithConversion(
+                _params.user,
+                _params.collateral,
+                _params.collateralAmount,
+                strikeTime,
+                contractsAddresses
+            );
 
         _createNewMarket(
             _params.user,

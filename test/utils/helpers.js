@@ -9,10 +9,13 @@ const { currentTime, toUnit } = require('./index')();
 const { toBytes32 } = require('../../index');
 const abi = require('ethereumjs-abi');
 const Big = require('big.js');
-const { BigNumber } = require('ethers');
 const { numberExponentToLarge } = require('../../scripts/helpers');
 
+const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+
 module.exports = {
+	ZERO_ADDRESS,
+
 	encodeCall(name, argument, values) {
 		const methodId = abi.methodID(name, argument).toString('hex');
 		const params = abi.rawEncode(argument, values).toString('hex');
@@ -29,7 +32,7 @@ module.exports = {
 		const receipt = await web3.eth.getTransactionReceipt(hash);
 
 		// And required ABIs to fully decode them
-		contracts.forEach(contract => {
+		contracts.forEach((contract) => {
 			const abi = 'abi' in contract ? contract.abi : artifacts.require(contract).abi;
 			abiDecoder.addABI(abi);
 		});
@@ -179,17 +182,17 @@ module.exports = {
 		expected = [],
 		ignoreParents = [],
 	}) {
-		const removeExcessParams = abiEntry => {
+		const removeExcessParams = (abiEntry) => {
 			// Clone to not mutate anything processed by truffle
 			const clone = JSON.parse(JSON.stringify(abiEntry));
 			// remove the signature in the cases where it's in the parent ABI but not the subclass
 			delete clone.signature;
 			// remove input and output named params
-			(clone.inputs || []).map(input => {
+			(clone.inputs || []).map((input) => {
 				delete input.name;
 				return input;
 			});
-			(clone.outputs || []).map(input => {
+			(clone.outputs || []).map((input) => {
 				delete input.name;
 				return input;
 			});
@@ -207,9 +210,9 @@ module.exports = {
 			)
 			.map(removeExcessParams)
 			.filter(
-				entry =>
+				(entry) =>
 					!combinedParentsABI.find(
-						parentABIEntry => JSON.stringify(parentABIEntry) === JSON.stringify(entry)
+						(parentABIEntry) => JSON.stringify(parentABIEntry) === JSON.stringify(entry)
 					)
 			)
 			.map(({ name }) => name);
@@ -284,7 +287,7 @@ module.exports = {
 
 		const resolver = mocks['AddressResolver'];
 
-		const returnMockFromResolver = contract => mocks[web3.utils.hexToUtf8(contract)].address;
+		const returnMockFromResolver = (contract) => mocks[web3.utils.hexToUtf8(contract)].address;
 		resolver.smocked.requireAndGetAddress.will.return.with(returnMockFromResolver);
 		resolver.smocked.getAddress.will.return.with(returnMockFromResolver);
 
@@ -297,12 +300,7 @@ module.exports = {
 	// returns the sqrt price as a 64x96
 	encodePriceSqrt(reserve1, reserve0) {
 		return numberExponentToLarge(
-			Big(reserve1)
-				.div(reserve0)
-				.sqrt()
-				.mul(Big(2).pow(96))
-				.round()
-				.toString()
+			Big(reserve1).div(reserve0).sqrt().mul(Big(2).pow(96)).round().toString()
 		);
 	},
 };

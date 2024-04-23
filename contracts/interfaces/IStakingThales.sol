@@ -33,4 +33,10 @@ interface IStakingThales {
     function getContractFeeFunds() external view returns (uint);
 
     function getAMMVolume(address account) external view returns (uint);
+
+    function updateVolumeAtAmountDecimals(
+        address account,
+        uint amount,
+        uint decimals
+    ) external;
 }

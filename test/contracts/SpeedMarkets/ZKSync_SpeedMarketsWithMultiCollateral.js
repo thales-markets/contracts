@@ -6,7 +6,7 @@ const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { ZERO_ADDRESS } = require('../../utils/helpers');
 const { speedMarketsInit } = require('../../utils/zksync_init');
-const { getCreateSpeedAMMParams, getSkewImpact } = require('../../utils/speedMarkets');
+const { getCreateSpeedAMMParamsZkSync, getSkewImpact } = require('../../utils/speedMarkets');
 
 contract('SpeedMarkets', (accounts) => {
 	const [owner, user, safeBox, proxyUser] = accounts;
@@ -92,7 +92,7 @@ contract('SpeedMarkets', (accounts) => {
 			const buyinAmountParam = 10;
 
 			await speedMarketsAMM.createNewMarket(
-				getCreateSpeedAMMParams(
+				getCreateSpeedAMMParamsZkSync(
 					user,
 					'ETH',
 					strikeTimeParam,
@@ -115,7 +115,7 @@ contract('SpeedMarkets', (accounts) => {
 			const deltaTimeParam = 10 * 60 * 60; // 10 hours
 
 			await speedMarketsAMM.createNewMarket(
-				getCreateSpeedAMMParams(
+				getCreateSpeedAMMParamsZkSync(
 					user,
 					'ETH',
 					0,

@@ -6,7 +6,7 @@ const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/zksync_init');
-const { getCreateSpeedAMMParams, getSkewImpact } = require('../../utils/speedMarkets');
+const { getCreateSpeedAMMParamsZkSync, getSkewImpact } = require('../../utils/speedMarkets');
 
 contract('SpeedMarkets', (accounts) => {
 	const [owner, user] = accounts;
@@ -55,7 +55,15 @@ contract('SpeedMarkets', (accounts) => {
 
 			// buy UP for 10
 			await speedMarketsAMM.createNewMarket(
-				getCreateSpeedAMMParams(user, 'ETH', strikeTimeParam, now, buyinAmountParam, 0, skewImapct),
+				getCreateSpeedAMMParamsZkSync(
+					user,
+					'ETH',
+					strikeTimeParam,
+					now,
+					buyinAmountParam,
+					0,
+					skewImapct
+				),
 				{ from: creatorAccount }
 			);
 
@@ -88,7 +96,15 @@ contract('SpeedMarkets', (accounts) => {
 
 			console.log('buy DOWN for the same amount as previous UP');
 			await speedMarketsAMM.createNewMarket(
-				getCreateSpeedAMMParams(user, 'ETH', strikeTimeParam, now, buyinAmountParam, 1, skewImapct),
+				getCreateSpeedAMMParamsZkSync(
+					user,
+					'ETH',
+					strikeTimeParam,
+					now,
+					buyinAmountParam,
+					1,
+					skewImapct
+				),
 				{ from: creatorAccount }
 			);
 
@@ -115,7 +131,7 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
 
-			const defaultCreateSpeedAMMParams = getCreateSpeedAMMParams(
+			const defaultCreateSpeedAMMParams = getCreateSpeedAMMParamsZkSync(
 				user,
 				'ETH',
 				strikeTimeParam,

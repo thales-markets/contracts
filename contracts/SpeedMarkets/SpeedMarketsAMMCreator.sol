@@ -22,14 +22,14 @@ import "./ChainedSpeedMarketsAMM.sol";
 
 /// @title speed/chained markets prepared for creation with latest Pyth price
 contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
-    int64 private constant ONE = 1e8; // Pyth price has 8 decimals
+    uint private constant ONE = 1e18;
 
     struct SpeedMarketParams {
         bytes32 asset;
         uint64 strikeTime;
         uint64 delta;
-        int64 strikePrice;
-        int64 strikePriceSlippage;
+        uint strikePrice;
+        uint strikePriceSlippage;
         SpeedMarket.Direction direction;
         address collateral;
         uint buyinAmount;
@@ -42,8 +42,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         bytes32 asset;
         uint64 strikeTime;
         uint64 delta;
-        int64 strikePrice;
-        int64 strikePriceSlippage;
+        uint strikePrice;
+        uint strikePriceSlippage;
         SpeedMarket.Direction direction;
         address collateral;
         uint buyinAmount;
@@ -55,8 +55,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     struct ChainedSpeedMarketParams {
         bytes32 asset;
         uint64 timeFrame;
-        int64 strikePrice;
-        int64 strikePriceSlippage;
+        uint strikePrice;
+        uint strikePriceSlippage;
         SpeedMarket.Direction[] directions;
         address collateral;
         uint buyinAmount;
@@ -67,8 +67,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         address user;
         bytes32 asset;
         uint64 timeFrame;
-        int64 strikePrice;
-        int64 strikePriceSlippage;
+        uint strikePrice;
+        uint strikePriceSlippage;
         SpeedMarket.Direction[] directions;
         address collateral;
         uint buyinAmount;
@@ -117,26 +117,24 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         emit AddSpeedMarket(pendingSpeedMarket);
     }
 
-    /// @notice create all speed markets from pending using latest price feeds from params
+    /// @notice create all speed markets from pending using latest price feeds from param
     /// @param _assetPriceData array of pyth priceUpdateData per asset
-    function createPendingSpeedMarkets(AssetPriceData[] calldata _assetPriceData) external payable nonReentrant notPaused {
+    function createFromPendingSpeedMarkets(AssetPriceData[] calldata _assetPriceData)
+        external
+        payable
+        nonReentrant
+        notPaused
+    {
         require(pendingSpeedMarkets.length > 0, "No pending markets");
         require(_assetPriceData.length > 0 && _assetPriceData.length <= maxSupportedAssets, "Wrong number of asset prices");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-
         ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
-        IPyth iPyth = IPyth(contractsAddresses.pyth);
 
-        // update latest pyth price
-        for (uint8 i = 0; i < _assetPriceData.length; i++) {
-            require(iSpeedMarketsAMM.supportedAsset(_assetPriceData[i].asset), "Asset not supported");
-            iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(_assetPriceData[i].priceUpdateData)}(
-                _assetPriceData[i].priceUpdateData
-            );
-        }
+        _updatePythPrice(contractsAddresses, _assetPriceData);
 
         uint64 maximumPriceDelay = iSpeedMarketsAMM.maximumPriceDelay();
+        uint8 createdSize;
 
         // process all pending speed markets
         for (uint8 i = 0; i < pendingSpeedMarkets.length; i++) {
@@ -147,14 +145,13 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 continue;
             }
 
-            PythStructs.Price memory pythPrice = iPyth.getPriceUnsafe(
-                iSpeedMarketsAMM.assetToPythId(pendingSpeedMarket.asset)
+            PythStructs.Price memory pythPrice = _getPythPrice(
+                contractsAddresses,
+                pendingSpeedMarket.asset,
+                maximumPriceDelay,
+                pendingSpeedMarket.strikePrice,
+                pendingSpeedMarket.strikePriceSlippage
             );
-            require((pythPrice.publishTime + maximumPriceDelay) > block.timestamp && pythPrice.price > 0, "Stale price");
-
-            int64 maxPrice = (pendingSpeedMarket.strikePrice * (ONE + pendingSpeedMarket.strikePriceSlippage)) / ONE;
-            int64 minPrice = (pendingSpeedMarket.strikePrice * (ONE - pendingSpeedMarket.strikePriceSlippage)) / ONE;
-            require(pythPrice.price <= maxPrice && pythPrice.price >= minPrice, "Pyth price exceeds slippage");
 
             try
                 iSpeedMarketsAMM.createNewMarket(
@@ -171,21 +168,19 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                         pendingSpeedMarket.skewImpact
                     )
                 )
-            {} catch Error(string memory reason) {
-                emit LogError(
-                    reason,
-                    pendingSpeedMarket.user,
-                    pendingSpeedMarket.delta,
-                    pendingSpeedMarket.strikeTime,
-                    pendingSpeedMarket.collateral,
-                    pendingSpeedMarket.createdAt
-                );
+            {
+                createdSize++;
+            } catch Error(string memory reason) {
+                emit LogError(reason, pendingSpeedMarket);
+            } catch (bytes memory data) {
+                emit LogErrorData(data, pendingSpeedMarket);
             }
         }
 
-        emit CreateSpeedMarkets(pendingSpeedMarkets.length);
-
+        uint pendingSize = pendingSpeedMarkets.length;
         delete pendingSpeedMarkets;
+
+        emit CreateSpeedMarkets(pendingSize, createdSize);
     }
 
     /// @notice create speed market
@@ -200,25 +195,17 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         require(_assetPriceData.length > 0 && _assetPriceData.length <= maxSupportedAssets, "Wrong number of asset prices");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-
         ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
-        IPyth iPyth = IPyth(contractsAddresses.pyth);
 
-        // update latest pyth price
-        for (uint8 i = 0; i < _assetPriceData.length; i++) {
-            require(iSpeedMarketsAMM.supportedAsset(_assetPriceData[i].asset), "Asset not supported");
-            iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(_assetPriceData[i].priceUpdateData)}(
-                _assetPriceData[i].priceUpdateData
-            );
-        }
+        _updatePythPrice(contractsAddresses, _assetPriceData);
 
-        uint64 maximumPriceDelay = iSpeedMarketsAMM.maximumPriceDelay();
-        PythStructs.Price memory pythPrice = iPyth.getPriceUnsafe(iSpeedMarketsAMM.assetToPythId(_speedMarketParams.asset));
-        require((pythPrice.publishTime + maximumPriceDelay) > block.timestamp && pythPrice.price > 0, "Stale price");
-
-        int64 maxPrice = (_speedMarketParams.strikePrice * (ONE + _speedMarketParams.strikePriceSlippage)) / ONE;
-        int64 minPrice = (_speedMarketParams.strikePrice * (ONE - _speedMarketParams.strikePriceSlippage)) / ONE;
-        require(pythPrice.price <= maxPrice && pythPrice.price >= minPrice, "Pyth price exceeds slippage");
+        PythStructs.Price memory pythPrice = _getPythPrice(
+            contractsAddresses,
+            _speedMarketParams.asset,
+            iSpeedMarketsAMM.maximumPriceDelay(),
+            _speedMarketParams.strikePrice,
+            _speedMarketParams.strikePriceSlippage
+        );
 
         iSpeedMarketsAMM.createNewMarket(
             SpeedMarketsAMM.CreateMarketParams(
@@ -239,26 +226,23 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     //////////////////chained/////////////////
 
     /// @notice add new chained speed market to pending - waiting for creation
-    function addPendingChainedSpeedMarket(
-        bytes32 _asset,
-        uint64 _timeFrame,
-        int64 _strikePrice,
-        int64 _strikePriceSlippage,
-        SpeedMarket.Direction[] calldata _directions,
-        address _collateral,
-        uint _buyinAmount,
-        address _referrer
-    ) external payable nonReentrant notPaused {
+    /// @param _params parameters for adding pending chained speed market
+    function addPendingChainedSpeedMarket(ChainedSpeedMarketParams calldata _params)
+        external
+        payable
+        nonReentrant
+        notPaused
+    {
         PendingChainedSpeedMarket memory pendingChainedSpeedMarket = PendingChainedSpeedMarket(
             msg.sender,
-            _asset,
-            _timeFrame,
-            _strikePrice,
-            _strikePriceSlippage,
-            _directions,
-            _collateral,
-            _buyinAmount,
-            _referrer,
+            _params.asset,
+            _params.timeFrame,
+            _params.strikePrice,
+            _params.strikePriceSlippage,
+            _params.directions,
+            _params.collateral,
+            _params.buyinAmount,
+            _params.referrer,
             block.timestamp
         );
 
@@ -267,9 +251,9 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         emit AddChainedSpeedMarket(pendingChainedSpeedMarket);
     }
 
-    /// @notice create all chained speed markets from pending using latest price feeds from params
+    /// @notice create all chained speed markets from pending using latest price feeds from param
     /// @param _assetPriceData array of pyth priceUpdateData per asset
-    function createChainedPendingSpeedMarkets(AssetPriceData[] calldata _assetPriceData)
+    function createFromPendingChainedSpeedMarkets(AssetPriceData[] calldata _assetPriceData)
         external
         payable
         nonReentrant
@@ -279,19 +263,12 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         require(_assetPriceData.length > 0 && _assetPriceData.length <= maxSupportedAssets, "Wrong number of asset prices");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-
         ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
-        IPyth iPyth = IPyth(contractsAddresses.pyth);
 
-        // update latest pyth price
-        for (uint8 i = 0; i < _assetPriceData.length; i++) {
-            require(iSpeedMarketsAMM.supportedAsset(_assetPriceData[i].asset), "Asset not supported");
-            iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(_assetPriceData[i].priceUpdateData)}(
-                _assetPriceData[i].priceUpdateData
-            );
-        }
+        _updatePythPrice(contractsAddresses, _assetPriceData);
 
         uint64 maximumPriceDelay = iSpeedMarketsAMM.maximumPriceDelay();
+        uint8 createdSize;
 
         // process all pending chained speed markets
         for (uint8 i = 0; i < pendingChainedSpeedMarkets.length; i++) {
@@ -302,16 +279,13 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 continue;
             }
 
-            PythStructs.Price memory pythPrice = iPyth.getPriceUnsafe(
-                iSpeedMarketsAMM.assetToPythId(pendingChainedSpeedMarket.asset)
+            PythStructs.Price memory pythPrice = _getPythPrice(
+                contractsAddresses,
+                pendingChainedSpeedMarket.asset,
+                maximumPriceDelay,
+                pendingChainedSpeedMarket.strikePrice,
+                pendingChainedSpeedMarket.strikePriceSlippage
             );
-            require((pythPrice.publishTime + maximumPriceDelay) > block.timestamp && pythPrice.price > 0, "Stale price");
-
-            int64 maxPrice = (pendingChainedSpeedMarket.strikePrice *
-                (ONE + pendingChainedSpeedMarket.strikePriceSlippage)) / ONE;
-            int64 minPrice = (pendingChainedSpeedMarket.strikePrice *
-                (ONE - pendingChainedSpeedMarket.strikePriceSlippage)) / ONE;
-            require(pythPrice.price <= maxPrice && pythPrice.price >= minPrice, "Pyth price exceeds slippage");
 
             try
                 IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(
@@ -326,54 +300,42 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                         pendingChainedSpeedMarket.referrer
                     )
                 )
-            {} catch Error(string memory reason) {
-                emit LogError(
-                    reason,
-                    pendingChainedSpeedMarket.user,
-                    pendingChainedSpeedMarket.timeFrame,
-                    0,
-                    pendingChainedSpeedMarket.collateral,
-                    pendingChainedSpeedMarket.createdAt
-                );
+            {
+                createdSize++;
+            } catch Error(string memory reason) {
+                emit LogChainedError(reason, pendingChainedSpeedMarket);
+            } catch (bytes memory data) {
+                emit LogChainedErrorData(data, pendingChainedSpeedMarket);
             }
         }
 
-        emit CreateChainedSpeedMarkets(pendingChainedSpeedMarkets.length);
-
+        uint pendingSize = pendingChainedSpeedMarkets.length;
         delete pendingChainedSpeedMarkets;
+
+        emit CreateSpeedMarkets(pendingSize, createdSize);
     }
 
     /// @notice create chained speed market
     /// @param _chainedMarketParams parameters for creating chained speed market
     /// @param _assetPriceData array of pyth priceUpdateData per asset
-    function createSpeedMarket(
+    function createChainedSpeedMarket(
         ChainedSpeedMarketParams calldata _chainedMarketParams,
         AssetPriceData[] calldata _assetPriceData
     ) external payable nonReentrant notPaused {
         require(_assetPriceData.length > 0 && _assetPriceData.length <= maxSupportedAssets, "Wrong number of asset prices");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-
         ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
-        IPyth iPyth = IPyth(contractsAddresses.pyth);
 
-        // update latest pyth price
-        for (uint8 i = 0; i < _assetPriceData.length; i++) {
-            require(iSpeedMarketsAMM.supportedAsset(_assetPriceData[i].asset), "Asset not supported");
-            iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(_assetPriceData[i].priceUpdateData)}(
-                _assetPriceData[i].priceUpdateData
-            );
-        }
+        _updatePythPrice(contractsAddresses, _assetPriceData);
 
-        uint64 maximumPriceDelay = iSpeedMarketsAMM.maximumPriceDelay();
-        PythStructs.Price memory pythPrice = iPyth.getPriceUnsafe(
-            iSpeedMarketsAMM.assetToPythId(_chainedMarketParams.asset)
+        PythStructs.Price memory pythPrice = _getPythPrice(
+            contractsAddresses,
+            _chainedMarketParams.asset,
+            iSpeedMarketsAMM.maximumPriceDelay(),
+            _chainedMarketParams.strikePrice,
+            _chainedMarketParams.strikePriceSlippage
         );
-        require((pythPrice.publishTime + maximumPriceDelay) > block.timestamp && pythPrice.price > 0, "Stale price");
-
-        int64 maxPrice = (_chainedMarketParams.strikePrice * (ONE + _chainedMarketParams.strikePriceSlippage)) / ONE;
-        int64 minPrice = (_chainedMarketParams.strikePrice * (ONE - _chainedMarketParams.strikePriceSlippage)) / ONE;
-        require(pythPrice.price <= maxPrice && pythPrice.price >= minPrice, "Pyth price exceeds slippage");
 
         IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(
             ChainedSpeedMarketsAMM.CreateMarketParams(
@@ -387,6 +349,51 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 _chainedMarketParams.referrer
             )
         );
+    }
+
+    function _updatePythPrice(
+        IAddressManager.Addresses memory _contractsAddresses,
+        AssetPriceData[] calldata _assetPriceData
+    ) internal {
+        ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(_contractsAddresses.speedMarketsAMM);
+        IPyth iPyth = IPyth(_contractsAddresses.pyth);
+
+        for (uint8 i = 0; i < _assetPriceData.length; i++) {
+            require(iSpeedMarketsAMM.supportedAsset(_assetPriceData[i].asset), "Asset not supported");
+            iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(_assetPriceData[i].priceUpdateData)}(
+                _assetPriceData[i].priceUpdateData
+            );
+        }
+    }
+
+    function _getPythPrice(
+        IAddressManager.Addresses memory _contractsAddresses,
+        bytes32 _asset,
+        uint64 _maximumPriceDelay,
+        uint _strikePrice,
+        uint _strikePriceSlippage
+    ) internal view returns (PythStructs.Price memory pythPrice) {
+        ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(_contractsAddresses.speedMarketsAMM);
+        IPyth iPyth = IPyth(_contractsAddresses.pyth);
+
+        pythPrice = iPyth.getPriceUnsafe(iSpeedMarketsAMM.assetToPythId(_asset));
+        require((pythPrice.publishTime + _maximumPriceDelay) > block.timestamp && pythPrice.price > 0, "Stale price");
+
+        int64 maxPrice = int64(uint64((_strikePrice * (ONE + _strikePriceSlippage)) / ONE));
+        int64 minPrice = int64(uint64((_strikePrice * (ONE - _strikePriceSlippage)) / ONE));
+        require(pythPrice.price <= maxPrice && pythPrice.price >= minPrice, "Pyth price exceeds slippage");
+    }
+
+    //////////////////getters/////////////////
+
+    /// @notice get length of pending speed markets
+    function getPendingSpeedMarketsSize() external view returns (uint) {
+        return pendingSpeedMarkets.length;
+    }
+
+    /// @notice get length of pending chained speed markets
+    function getPendingChainedSpeedMarketsSize() external view returns (uint) {
+        return pendingChainedSpeedMarkets.length;
     }
 
     //////////////////setters/////////////////
@@ -408,20 +415,15 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     //////////////////events/////////////////
 
     event AddSpeedMarket(PendingSpeedMarket _pendingSpeedMarket);
-    event CreateSpeedMarkets(uint _size);
-
     event AddChainedSpeedMarket(PendingChainedSpeedMarket _pendingChainedSpeedMarket);
-    event CreateChainedSpeedMarkets(uint _size);
+    event CreateSpeedMarkets(uint _pendingSize, uint8 _createdSize);
 
     event SetAddressManager(address _addressManager);
     event SetLimits(uint64 _maxCreationDelay, uint8 _maxSupportedAssets);
 
-    event LogError(
-        string _errorMessage,
-        address _user,
-        uint64 _delta,
-        uint64 _strikeTime,
-        address _collateral,
-        uint256 _createdAt
-    );
+    event LogError(string _errorMessage, PendingSpeedMarket _pendingSpeedMarket);
+    event LogErrorData(bytes _data, PendingSpeedMarket _pendingSpeedMarket);
+
+    event LogChainedError(string _errorMessage, PendingChainedSpeedMarket _pendingChainedSpeedMarket);
+    event LogChainedErrorData(bytes _data, PendingChainedSpeedMarket _pendingChainedSpeedMarket);
 }

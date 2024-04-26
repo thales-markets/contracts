@@ -4,7 +4,7 @@ const { contract } = require('hardhat');
 const { assert } = require('../../utils/common');
 const { toUnit } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/zksync_init');
-const { getCreateSpeedAMMParams } = require('../../utils/speedMarkets');
+const { getCreateSpeedAMMParamsZkSync } = require('../../utils/speedMarkets');
 const { ZERO_ADDRESS } = require('../../utils/helpers');
 
 contract('SpeedMarketsReferrals', (accounts) => {
@@ -16,7 +16,7 @@ contract('SpeedMarketsReferrals', (accounts) => {
 				await speedMarketsInit(accounts);
 
 			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
-			const createSpeedAMMParams = getCreateSpeedAMMParams(
+			const createSpeedAMMParams = getCreateSpeedAMMParamsZkSync(
 				user,
 				'ETH',
 				strikeTimeParam,
@@ -48,7 +48,7 @@ contract('SpeedMarketsReferrals', (accounts) => {
 			await referrals.setSilverAddress(referrerAddress, true);
 
 			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
-			const createSpeedAMMParams = getCreateSpeedAMMParams(
+			const createSpeedAMMParams = getCreateSpeedAMMParamsZkSync(
 				user,
 				'ETH',
 				strikeTimeParam,
@@ -80,7 +80,7 @@ contract('SpeedMarketsReferrals', (accounts) => {
 			await referrals.setGoldAddress(referrerAddress, true);
 
 			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
-			const createSpeedAMMParams = getCreateSpeedAMMParams(
+			const createSpeedAMMParams = getCreateSpeedAMMParamsZkSync(
 				user,
 				'ETH',
 				strikeTimeParam,

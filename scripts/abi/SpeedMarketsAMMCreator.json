@@ -20,14 +20,14 @@
             "type": "uint64"
           },
           {
-            "internalType": "int64",
+            "internalType": "uint256",
             "name": "strikePrice",
-            "type": "int64"
+            "type": "uint256"
           },
           {
-            "internalType": "int64",
+            "internalType": "uint256",
             "name": "strikePriceSlippage",
-            "type": "int64"
+            "type": "uint256"
           },
           {
             "internalType": "enum SpeedMarket.Direction[]",
@@ -90,14 +90,14 @@
             "type": "uint64"
           },
           {
-            "internalType": "int64",
+            "internalType": "uint256",
             "name": "strikePrice",
-            "type": "int64"
+            "type": "uint256"
           },
           {
-            "internalType": "int64",
+            "internalType": "uint256",
             "name": "strikePriceSlippage",
-            "type": "int64"
+            "type": "uint256"
           },
           {
             "internalType": "enum SpeedMarket.Direction",
@@ -145,21 +145,14 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_size",
+        "name": "_pendingSize",
         "type": "uint256"
-      }
-    ],
-    "name": "CreateChainedSpeedMarkets",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "_size",
-        "type": "uint256"
+        "internalType": "uint8",
+        "name": "_createdSize",
+        "type": "uint8"
       }
     ],
     "name": "CreateSpeedMarkets",
@@ -175,37 +168,298 @@
         "type": "string"
       },
       {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "timeFrame",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePriceSlippage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction[]",
+            "name": "directions",
+            "type": "uint8[]"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          }
+        ],
         "indexed": false,
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
+        "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
+        "name": "_pendingChainedSpeedMarket",
+        "type": "tuple"
+      }
+    ],
+    "name": "LogChainedError",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
       {
         "indexed": false,
-        "internalType": "uint64",
-        "name": "_delta",
-        "type": "uint64"
+        "internalType": "bytes",
+        "name": "_data",
+        "type": "bytes"
       },
       {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "timeFrame",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePriceSlippage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction[]",
+            "name": "directions",
+            "type": "uint8[]"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          }
+        ],
         "indexed": false,
-        "internalType": "uint64",
-        "name": "_strikeTime",
-        "type": "uint64"
-      },
+        "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
+        "name": "_pendingChainedSpeedMarket",
+        "type": "tuple"
+      }
+    ],
+    "name": "LogChainedErrorData",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_collateral",
-        "type": "address"
+        "internalType": "string",
+        "name": "_errorMessage",
+        "type": "string"
       },
       {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "strikeTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "delta",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePriceSlippage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction",
+            "name": "direction",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewImpact",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          }
+        ],
         "indexed": false,
-        "internalType": "uint256",
-        "name": "_createdAt",
-        "type": "uint256"
+        "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
+        "name": "_pendingSpeedMarket",
+        "type": "tuple"
       }
     ],
     "name": "LogError",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "_data",
+        "type": "bytes"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "strikeTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "delta",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePriceSlippage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction",
+            "name": "direction",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewImpact",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
+        "name": "_pendingSpeedMarket",
+        "type": "tuple"
+      }
+    ],
+    "name": "LogErrorData",
     "type": "event"
   },
   {
@@ -295,44 +549,51 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "_asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_timeFrame",
-        "type": "uint64"
-      },
-      {
-        "internalType": "int64",
-        "name": "_strikePrice",
-        "type": "int64"
-      },
-      {
-        "internalType": "int64",
-        "name": "_strikePriceSlippage",
-        "type": "int64"
-      },
-      {
-        "internalType": "enum SpeedMarket.Direction[]",
-        "name": "_directions",
-        "type": "uint8[]"
-      },
-      {
-        "internalType": "address",
-        "name": "_collateral",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_buyinAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_referrer",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "timeFrame",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePriceSlippage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction[]",
+            "name": "directions",
+            "type": "uint8[]"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMMCreator.ChainedSpeedMarketParams",
+        "name": "_params",
+        "type": "tuple"
       }
     ],
     "name": "addPendingChainedSpeedMarket",
@@ -360,14 +621,14 @@
             "type": "uint64"
           },
           {
-            "internalType": "int64",
+            "internalType": "uint256",
             "name": "strikePrice",
-            "type": "int64"
+            "type": "uint256"
           },
           {
-            "internalType": "int64",
+            "internalType": "uint256",
             "name": "strikePriceSlippage",
-            "type": "int64"
+            "type": "uint256"
           },
           {
             "internalType": "enum SpeedMarket.Direction",
@@ -428,6 +689,53 @@
             "type": "bytes32"
           },
           {
+            "internalType": "uint64",
+            "name": "timeFrame",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePriceSlippage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum SpeedMarket.Direction[]",
+            "name": "directions",
+            "type": "uint8[]"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMMCreator.ChainedSpeedMarketParams",
+        "name": "_chainedMarketParams",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
             "internalType": "bytes[]",
             "name": "priceUpdateData",
             "type": "bytes[]"
@@ -438,7 +746,7 @@
         "type": "tuple[]"
       }
     ],
-    "name": "createChainedPendingSpeedMarkets",
+    "name": "createChainedSpeedMarket",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -463,7 +771,32 @@
         "type": "tuple[]"
       }
     ],
-    "name": "createPendingSpeedMarkets",
+    "name": "createFromPendingChainedSpeedMarkets",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "asset",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "priceUpdateData",
+            "type": "bytes[]"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMMCreator.AssetPriceData[]",
+        "name": "_assetPriceData",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "createFromPendingSpeedMarkets",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -488,14 +821,14 @@
             "type": "uint64"
           },
           {
-            "internalType": "int64",
+            "internalType": "uint256",
             "name": "strikePrice",
-            "type": "int64"
+            "type": "uint256"
           },
           {
-            "internalType": "int64",
+            "internalType": "uint256",
             "name": "strikePriceSlippage",
-            "type": "int64"
+            "type": "uint256"
           },
           {
             "internalType": "enum SpeedMarket.Direction",
@@ -551,75 +884,29 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "getPendingChainedSpeedMarketsSize",
+    "outputs": [
       {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint64",
-            "name": "timeFrame",
-            "type": "uint64"
-          },
-          {
-            "internalType": "int64",
-            "name": "strikePrice",
-            "type": "int64"
-          },
-          {
-            "internalType": "int64",
-            "name": "strikePriceSlippage",
-            "type": "int64"
-          },
-          {
-            "internalType": "enum SpeedMarket.Direction[]",
-            "name": "directions",
-            "type": "uint8[]"
-          },
-          {
-            "internalType": "address",
-            "name": "collateral",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "referrer",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMMCreator.ChainedSpeedMarketParams",
-        "name": "_chainedMarketParams",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes[]",
-            "name": "priceUpdateData",
-            "type": "bytes[]"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMMCreator.AssetPriceData[]",
-        "name": "_assetPriceData",
-        "type": "tuple[]"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
-    "name": "createSpeedMarket",
-    "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getPendingSpeedMarketsSize",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -764,14 +1051,14 @@
         "type": "uint64"
       },
       {
-        "internalType": "int64",
+        "internalType": "uint256",
         "name": "strikePrice",
-        "type": "int64"
+        "type": "uint256"
       },
       {
-        "internalType": "int64",
+        "internalType": "uint256",
         "name": "strikePriceSlippage",
-        "type": "int64"
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -828,14 +1115,14 @@
         "type": "uint64"
       },
       {
-        "internalType": "int64",
+        "internalType": "uint256",
         "name": "strikePrice",
-        "type": "int64"
+        "type": "uint256"
       },
       {
-        "internalType": "int64",
+        "internalType": "uint256",
         "name": "strikePriceSlippage",
-        "type": "int64"
+        "type": "uint256"
       },
       {
         "internalType": "enum SpeedMarket.Direction",

@@ -303,4 +303,10 @@ module.exports = {
 			Big(reserve1).div(reserve0).sqrt().mul(Big(2).pow(96)).round().toString()
 		);
 	},
+
+	delay(time) {
+		return new Promise(function (resolve) {
+			setTimeout(resolve, time);
+		});
+	},
 };

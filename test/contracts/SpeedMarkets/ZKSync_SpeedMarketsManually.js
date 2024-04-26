@@ -7,7 +7,7 @@ const { expect } = require('chai');
 
 const { fastForward, toUnit } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/zksync_init');
-const { getCreateSpeedAMMParams, getSkewImpact } = require('../../utils/speedMarkets');
+const { getCreateSpeedAMMParamsZkSync, getSkewImpact } = require('../../utils/speedMarkets');
 
 contract('SpeedMarkets', (accounts) => {
 	const [owner, user] = accounts;
@@ -27,7 +27,16 @@ contract('SpeedMarkets', (accounts) => {
 			const deltaTimeParam = 10 * 60 * 60; // 10 hours
 
 			await speedMarketsAMM.createNewMarket(
-				getCreateSpeedAMMParams(user, 'ETH', 0, now, 10, 0, initialSkewImapct, deltaTimeParam),
+				getCreateSpeedAMMParamsZkSync(
+					user,
+					'ETH',
+					0,
+					now,
+					10,
+					0,
+					initialSkewImapct,
+					deltaTimeParam
+				),
 				{ from: creatorAccount }
 			);
 
@@ -44,7 +53,7 @@ contract('SpeedMarkets', (accounts) => {
 			let skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
 
 			await speedMarketsAMM.createNewMarket(
-				getCreateSpeedAMMParams(user, 'ETH', 0, now, 10, 0, skewImapct, deltaTimeParam),
+				getCreateSpeedAMMParamsZkSync(user, 'ETH', 0, now, 10, 0, skewImapct, deltaTimeParam),
 				{ from: creatorAccount }
 			);
 
@@ -86,7 +95,16 @@ contract('SpeedMarkets', (accounts) => {
 			const deltaTimeParam = 10 * 60 * 60; // 10 hours
 
 			await speedMarketsAMM.createNewMarket(
-				getCreateSpeedAMMParams(user, 'ETH', 0, now, 10, 0, initialSkewImapct, deltaTimeParam),
+				getCreateSpeedAMMParamsZkSync(
+					user,
+					'ETH',
+					0,
+					now,
+					10,
+					0,
+					initialSkewImapct,
+					deltaTimeParam
+				),
 				{ from: creatorAccount }
 			);
 

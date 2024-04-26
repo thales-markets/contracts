@@ -228,7 +228,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             );
         }
 
-        // LP fee by delta time + skew impact based on risk per direction and asset - discount as half of opposite skew
+        // (LP fee by delta time) + (skew impact based on risk per direction and asset) - (discount as half of opposite skew)
         lpFeeWithSkew =
             speedMarketsAMMUtils.getFeeByTimeThreshold(
                 uint64(strikeTime - block.timestamp),
@@ -536,7 +536,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         ];
     }
 
-    /// @notice get parmas for chianed market
+    /// @notice get params for chained market
     function getParams(bytes32 asset) external view returns (ISpeedMarketsAMM.Params memory) {
         ISpeedMarketsAMM.Params memory params;
         params.supportedAsset = supportedAsset[asset];

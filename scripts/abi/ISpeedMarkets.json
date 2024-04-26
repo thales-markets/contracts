@@ -93,6 +93,11 @@
             "internalType": "uint256",
             "name": "skewImpact",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "creatorID",
+            "type": "uint8"
           }
         ],
         "internalType": "struct SpeedMarkets.CreateMarketParams",

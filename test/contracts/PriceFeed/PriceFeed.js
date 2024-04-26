@@ -20,7 +20,7 @@ let ownerSigner, accountOneSigner, deployerSigner, oracleSigner;
 
 contract('Price Feed', async (accounts) => {
 	const [owner] = accounts;
-	const [JPY, XTZ, BNB, AELIN, EUR, ETH, LYRA, fastGasPrice] = [
+	const [JPY, XTZ, BNB, AELIN, EUR, ETH, LYRA, THALES, fastGasPrice] = [
 		'JPY',
 		'XTZ',
 		'BNB',
@@ -28,6 +28,7 @@ contract('Price Feed', async (accounts) => {
 		'EUR',
 		'ETH',
 		'LYRA',
+		'THALES',
 		'fastGasPrice',
 	].map(toBytes32);
 	let instance,
@@ -447,6 +448,22 @@ contract('Price Feed', async (accounts) => {
 
 				assert.equal(await instance.connect(ownerSigner).pools(LYRA), pool_LYRA_ETH.address);
 				assert.equal(await instance.connect(ownerSigner).aggregators(LYRA), ZERO_ADDRESS);
+			});
+		});
+
+		describe('Static price for THALES', () => {
+			it('the specific number is returned from static price', async () => {
+				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 3);
+				const result = await instance.connect(accountOneSigner).rateForCurrency(THALES);
+				assert.equal(result, 3);
+
+				const newRate = 123.456;
+				let timestamp;
+				timestamp = await currentTime();
+				// Multiply by 1e8 to match Chainlink's price aggregation
+				await aggregatorJPY.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
+				const resultJPY = await instance.connect(accountOneSigner).rateForCurrency(JPY);
+				assert.bnEqual(resultJPY, toUnit(newRate.toString()));
 			});
 		});
 	});

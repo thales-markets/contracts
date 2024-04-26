@@ -42,6 +42,8 @@ contract PriceFeed is Initializable, ProxyOwned {
 
     mapping(bytes32 => bool) public useLastTickForTWAP;
 
+    mapping(bytes32 => RateAndUpdatedTime) public staticPricePerAsset;
+
     function initialize(address _owner) external initializer {
         setOwner(_owner);
         twapInterval = 300;
@@ -61,7 +63,11 @@ contract PriceFeed is Initializable, ProxyOwned {
         emit AggregatorAdded(currencyKey, address(aggregator));
     }
 
-    function addPool(bytes32 currencyKey, address currencyAddress, address poolAddress) external onlyOwner {
+    function addPool(
+        bytes32 currencyKey,
+        address currencyAddress,
+        address poolAddress
+    ) external onlyOwner {
         // check if aggregator exists for given currency key
         AggregatorV2V3Interface aggregator = aggregators[currencyKey];
         require(address(aggregator) == address(0), "Aggregator already exists for key");
@@ -164,6 +170,11 @@ contract PriceFeed is Initializable, ProxyOwned {
         emit AddressChangedETH(token);
     }
 
+    function setStaticPricePerAsset(bytes32 currencyKey, uint216 rate) external onlyOwner {
+        staticPricePerAsset[currencyKey] = RateAndUpdatedTime({rate: rate, time: uint40(block.timestamp)});
+        emit SetStaticPricePerAsset(currencyKey, rate, block.timestamp);
+    }
+
     function _formatAnswer(bytes32 currencyKey, int256 rate) internal view returns (uint) {
         require(rate >= 0, "Negative rate not supported");
         if (currencyKeyDecimals[currencyKey] > 0) {
@@ -174,6 +185,10 @@ contract PriceFeed is Initializable, ProxyOwned {
     }
 
     function _getRateAndUpdatedTime(bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
+        if (staticPricePerAsset[currencyKey].rate > 0) {
+            return staticPricePerAsset[currencyKey];
+        }
+
         AggregatorV2V3Interface aggregator = aggregators[currencyKey];
         IUniswapV3Pool pool = pools[currencyKey];
         require(address(aggregator) != address(0) || address(pool) != address(0), "No aggregator or pool exists for key");
@@ -183,11 +198,11 @@ contract PriceFeed is Initializable, ProxyOwned {
         } else {
             require(address(aggregators["ETH"]) != address(0), "Price for ETH does not exist");
             uint256 ratio = _getPriceFromSqrtPrice(_getTwap(address(pool), currencyKey));
-            uint256 ethPrice = _getAggregatorRate(address(aggregators["ETH"]), "ETH").rate * 10**18; 
+            uint256 ethPrice = _getAggregatorRate(address(aggregators["ETH"]), "ETH").rate * 10**18;
             address token0 = pool.token0();
             uint answer;
 
-            if(token0 == _ETH || token0 == _wETH) {
+            if (token0 == _ETH || token0 == _wETH) {
                 answer = ethPrice / ratio;
             } else {
                 answer = ethPrice * ratio;
@@ -200,7 +215,7 @@ contract PriceFeed is Initializable, ProxyOwned {
         }
     }
 
-    function _getAggregatorRate(address aggregator, bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory ) {
+    function _getAggregatorRate(address aggregator, bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
         // this view from the aggregator is the most gas efficient but it can throw when there's no data,
         // so let's call it low-level to suppress any reverts
         bytes memory payload = abi.encodeWithSignature("latestRoundData()");
@@ -208,10 +223,7 @@ contract PriceFeed is Initializable, ProxyOwned {
         (bool success, bytes memory returnData) = aggregator.staticcall(payload);
 
         if (success) {
-            (, int256 answer, , uint256 updatedAt, ) = abi.decode(
-                returnData,
-                (uint80, int256, uint256, uint256, uint80)
-            );
+            (, int256 answer, , uint256 updatedAt, ) = abi.decode(returnData, (uint80, int256, uint256, uint256, uint80));
             return RateAndUpdatedTime({rate: uint216(_formatAnswer(currencyKey, answer)), time: uint40(updatedAt)});
         }
 
@@ -255,4 +267,5 @@ contract PriceFeed is Initializable, ProxyOwned {
     event AddressChangedwETH(address token);
     event LastTickForTWAPChanged(bytes32 currencyKey);
     event TwapIntervalChanged(int56 twapInterval);
+    event SetStaticPricePerAsset(bytes32 currencyKey, uint216 rate, uint timestamp);
 }

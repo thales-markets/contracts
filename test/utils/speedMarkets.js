@@ -47,9 +47,6 @@ const getPendingChainedSpeedParams = (
 	referrer || ZERO_ADDRESS,
 ];
 
-const getAssetPriceData = (assets, priceUpdateDataArray) =>
-	assets.map((asset, i) => [toBytes32(asset), [priceUpdateDataArray[i]]]);
-
 const getCreateSpeedAMMParams = (
 	user,
 	asset,
@@ -159,7 +156,6 @@ const getSkewImpact = (riskPerAssetAndDirectionData, maxSkewImpact) => {
 module.exports = {
 	getPendingSpeedParams,
 	getPendingChainedSpeedParams,
-	getAssetPriceData,
 	getCreateSpeedAMMParams,
 	getCreateSpeedAMMParamsZkSync,
 	getCreateChainedSpeedAMMParams,

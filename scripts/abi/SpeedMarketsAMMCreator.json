@@ -528,15 +528,9 @@
         "internalType": "uint64",
         "name": "_maxCreationDelay",
         "type": "uint64"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint8",
-        "name": "_maxSupportedAssets",
-        "type": "uint8"
       }
     ],
-    "name": "SetLimits",
+    "name": "SetMaxCreationDelay",
     "type": "event"
   },
   {
@@ -729,21 +723,9 @@
         "type": "tuple"
       },
       {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes[]",
-            "name": "priceUpdateData",
-            "type": "bytes[]"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMMCreator.AssetPriceData[]",
-        "name": "_assetPriceData",
-        "type": "tuple[]"
+        "internalType": "bytes[]",
+        "name": "_priceUpdateData",
+        "type": "bytes[]"
       }
     ],
     "name": "createChainedSpeedMarket",
@@ -754,21 +736,9 @@
   {
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes[]",
-            "name": "priceUpdateData",
-            "type": "bytes[]"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMMCreator.AssetPriceData[]",
-        "name": "_assetPriceData",
-        "type": "tuple[]"
+        "internalType": "bytes[]",
+        "name": "_priceUpdateData",
+        "type": "bytes[]"
       }
     ],
     "name": "createFromPendingChainedSpeedMarkets",
@@ -779,21 +749,9 @@
   {
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes[]",
-            "name": "priceUpdateData",
-            "type": "bytes[]"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMMCreator.AssetPriceData[]",
-        "name": "_assetPriceData",
-        "type": "tuple[]"
+        "internalType": "bytes[]",
+        "name": "_priceUpdateData",
+        "type": "bytes[]"
       }
     ],
     "name": "createFromPendingSpeedMarkets",
@@ -861,21 +819,9 @@
         "type": "tuple"
       },
       {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes[]",
-            "name": "priceUpdateData",
-            "type": "bytes[]"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMMCreator.AssetPriceData[]",
-        "name": "_assetPriceData",
-        "type": "tuple[]"
+        "internalType": "bytes[]",
+        "name": "_priceUpdateData",
+        "type": "bytes[]"
       }
     ],
     "name": "createSpeedMarket",
@@ -955,19 +901,6 @@
         "internalType": "uint64",
         "name": "",
         "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "maxSupportedAssets",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -1177,14 +1110,9 @@
         "internalType": "uint64",
         "name": "_maxCreationDelay",
         "type": "uint64"
-      },
-      {
-        "internalType": "uint8",
-        "name": "_maxSupportedAssets",
-        "type": "uint8"
       }
     ],
-    "name": "setLimits",
+    "name": "setMaxCreationDelay",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -49,12 +49,6 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
         uint256 createdAt;
     }
 
-    struct AssetPriceData {
-        bytes32 asset;
-        bytes[] priceUpdateData;
-    }
-
-    uint8 public maxSupportedAssets;
     uint64 public maxCreationDelay;
 
     PendingSpeedMarket[] public pendingSpeedMarkets;
@@ -90,21 +84,15 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
     }
 
     /// @notice create all speed markets from pending using latest price feeds from param
-    /// @param _assetPriceData array of pyth priceUpdateData per asset
-    function createFromPendingSpeedMarkets(AssetPriceData[] calldata _assetPriceData)
-        external
-        payable
-        nonReentrant
-        notPaused
-    {
+    /// @param _priceUpdateData pyth priceUpdateData for all supported assets
+    function createFromPendingSpeedMarkets(bytes[] calldata _priceUpdateData) external payable nonReentrant notPaused {
         require(pendingSpeedMarkets.length > 0, "No pending markets");
-        require(_assetPriceData.length > 0 && _assetPriceData.length <= maxSupportedAssets, "Wrong number of asset prices");
+        require(_priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
+        _updatePythPrice(contractsAddresses.pyth, _priceUpdateData);
+
         ISpeedMarkets iSpeedMarkets = ISpeedMarkets(contractsAddresses.speedMarketsAMM);
-
-        _updatePythPrice(contractsAddresses, _assetPriceData);
-
         uint64 maximumPriceDelay = iSpeedMarkets.maximumPriceDelay();
         uint8 createdSize;
 
@@ -158,19 +146,19 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     /// @notice create speed market
     /// @param _speedMarketParams parameters for creating speed market
-    /// @param _assetPriceData array of pyth priceUpdateData per asset
-    function createSpeedMarket(SpeedMarketParams calldata _speedMarketParams, AssetPriceData[] calldata _assetPriceData)
+    /// @param _priceUpdateData pyth priceUpdateData for all supported assets
+    function createSpeedMarket(SpeedMarketParams calldata _speedMarketParams, bytes[] calldata _priceUpdateData)
         external
         payable
         nonReentrant
         notPaused
     {
-        require(_assetPriceData.length > 0 && _assetPriceData.length <= maxSupportedAssets, "Wrong number of asset prices");
+        require(_priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        ISpeedMarkets iSpeedMarkets = ISpeedMarkets(contractsAddresses.speedMarketsAMM);
+        _updatePythPrice(contractsAddresses.pyth, _priceUpdateData);
 
-        _updatePythPrice(contractsAddresses, _assetPriceData);
+        ISpeedMarkets iSpeedMarkets = ISpeedMarkets(contractsAddresses.speedMarketsAMM);
 
         PythStructs.Price memory pythPrice = _getPythPrice(
             contractsAddresses,
@@ -197,19 +185,9 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
         );
     }
 
-    function _updatePythPrice(
-        IAddressManager.Addresses memory _contractsAddresses,
-        AssetPriceData[] calldata _assetPriceData
-    ) internal {
-        ISpeedMarkets iSpeedMarkets = ISpeedMarkets(_contractsAddresses.speedMarketsAMM);
-        IPyth iPyth = IPyth(_contractsAddresses.pyth);
-
-        for (uint8 i = 0; i < _assetPriceData.length; i++) {
-            require(iSpeedMarkets.supportedAsset(_assetPriceData[i].asset), "Asset not supported");
-            iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(_assetPriceData[i].priceUpdateData)}(
-                _assetPriceData[i].priceUpdateData
-            );
-        }
+    function _updatePythPrice(address _pyth, bytes[] calldata _priceUpdateData) internal {
+        IPyth iPyth = IPyth(_pyth);
+        iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(_priceUpdateData)}(_priceUpdateData);
     }
 
     function _getPythPrice(
@@ -246,11 +224,10 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
         emit SetAddressManager(_addressManager);
     }
 
-    /// @notice Set limits: creation delay and max supported assets
-    function setLimits(uint64 _maxCreationDelay, uint8 _maxSupportedAssets) external onlyOwner {
+    /// @notice Set max creation delay
+    function setMaxCreationDelay(uint64 _maxCreationDelay) external onlyOwner {
         maxCreationDelay = _maxCreationDelay;
-        maxSupportedAssets = _maxSupportedAssets;
-        emit SetLimits(_maxCreationDelay, _maxSupportedAssets);
+        emit SetMaxCreationDelay(_maxCreationDelay);
     }
 
     //////////////////events/////////////////
@@ -259,7 +236,7 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
     event CreateSpeedMarkets(uint _pendingSize, uint8 _createdSize);
 
     event SetAddressManager(address _addressManager);
-    event SetLimits(uint64 _maxCreationDelay, uint8 _maxSupportedAssets);
+    event SetMaxCreationDelay(uint64 _maxCreationDelay);
 
     event LogError(string _errorMessage, PendingSpeedMarket _pendingSpeedMarket);
     event LogErrorData(bytes _data, PendingSpeedMarket _pendingSpeedMarket);

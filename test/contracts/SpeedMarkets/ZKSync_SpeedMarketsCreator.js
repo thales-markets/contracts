@@ -6,7 +6,7 @@ const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { ZERO_ADDRESS } = require('../../utils/helpers');
-const { getPendingSpeedParams, getAssetPriceData } = require('../../utils/speedMarkets');
+const { getPendingSpeedParams } = require('../../utils/speedMarkets');
 const { toBN } = require('web3-utils');
 
 contract('SpeedMarketsCreator', (accounts) => {
@@ -97,8 +97,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 		await creator.initialize(owner, addressManager.address);
 		await creator.setAddressManager(addressManager.address);
 
-		const maxCreationDelay = 5; // 5s
-		await creator.setLimits(maxCreationDelay, 2);
+		await creator.setMaxCreationDelay(5); // 5s
 
 		await addressManager.setAddressInAddressBook('SpeedMarketsCreator', creator.address);
 	});
@@ -124,9 +123,8 @@ contract('SpeedMarketsCreator', (accounts) => {
 			assert.equal(pendingSize, 1, 'Should add 1 pending speed market!');
 
 			await exoticUSD.approve(speedMarkets.address, toUnit(100), { from: user });
-			let assetPriceData = getAssetPriceData(['ETH'], [priceFeedUpdateData]);
 
-			await creator.createFromPendingSpeedMarkets(assetPriceData, {
+			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
@@ -144,8 +142,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 			pendingSize = await creator.getPendingSpeedMarketsSize();
 			assert.equal(pendingSize, 2, 'Should add 2 pending speed markets!');
 
-			assetPriceData.push(assetPriceData[0]);
-			await creator.createFromPendingSpeedMarkets(assetPriceData, {
+			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
 				value: 2 * fee,
 				from: user,
 			});
@@ -180,8 +177,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 
 			await fastForward(maxDelayForCreation);
 
-			const assetPriceData = getAssetPriceData(['ETH'], [priceFeedUpdateData]);
-			await creator.createFromPendingSpeedMarkets(assetPriceData, {
+			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
@@ -207,21 +203,18 @@ contract('SpeedMarketsCreator', (accounts) => {
 				BUYIN_AMOUNT
 			);
 
-			let assetPriceData = getAssetPriceData(['ETH'], [priceFeedUpdateData]);
-
 			/*
 			 * Check validations:
 			 * 1. No pending markets
-			 * 2. Wrong number of asset prices
-			 * 3. Asset not supported
-			 * 4. Stale price
-			 * 5. Pyth price exceeds slippage
+			 * 2. Empty price update data
+			 * 3. Stale price
+			 * 4. Pyth price exceeds slippage
 			 */
 
 			// 1. No pending markets
 			console.log('1. Check no pending markets');
 			await expect(
-				creator.createFromPendingSpeedMarkets(assetPriceData, {
+				creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
 					value: fee,
 					from: user,
 				})
@@ -231,31 +224,21 @@ contract('SpeedMarketsCreator', (accounts) => {
 			await exoticUSD.approve(speedMarkets.address, toUnit(100), { from: user });
 			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
 
-			// 2. Wrong number of asset prices
-			console.log('2. Check wrong number of asset prices');
+			// 2. Empty price update data
+			console.log('2. Check empty price update data');
 			await expect(
 				creator.createFromPendingSpeedMarkets([], {
 					value: fee,
 					from: user,
 				})
-			).to.be.revertedWith('Wrong number of asset prices');
-
-			// 3. Asset not supported
-			console.log('3. Check asset not supported');
-			const wrongAssetPriceData = getAssetPriceData(['XXX'], [priceFeedUpdateData]);
-			await expect(
-				creator.createFromPendingSpeedMarkets(wrongAssetPriceData, {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Asset not supported');
+			).to.be.revertedWith('Empty price update data');
 
 			// 4. Stale price
 			console.log('4. Check stale price');
 			let maxPriceDelay = 1; // 1s
 			await speedMarkets.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
 			await expect(
-				creator.createFromPendingSpeedMarkets(assetPriceData, {
+				creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
 					value: fee,
 					from: user,
 				})
@@ -266,8 +249,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 			maxPriceDelay = 60;
 			await speedMarkets.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
 
-			const maxCreationDelay = 60; // 60s
-			await creator.setLimits(maxCreationDelay, 2);
+			await creator.setMaxCreationDelay(60); // 60s
 
 			const currentPrice = Math.round(ETH_STRIKE_PRICE * (1 + STRIKE_PRICE_SLIPPAGE + 0.001)); // 0.1% higher than slippage
 			const nowLocal = await currentTime();
@@ -280,10 +262,9 @@ contract('SpeedMarketsCreator', (accounts) => {
 				74093100,
 				nowLocal // publishTime
 			);
-			assetPriceData = getAssetPriceData(['ETH'], [priceFeedUpdateDataLocal]);
 
 			await expect(
-				creator.createFromPendingSpeedMarkets(assetPriceData, {
+				creator.createFromPendingSpeedMarkets([priceFeedUpdateDataLocal], {
 					value: fee,
 					from: user,
 				})
@@ -320,13 +301,12 @@ contract('SpeedMarketsCreator', (accounts) => {
 					value: fee,
 					from: user,
 				})
-			).to.be.revertedWith('Wrong number of asset prices');
+			).to.be.revertedWith('Empty price update data');
 
 			const activeSpeedMarketsSizeBefore = (await speedMarkets.activeMarkets(0, 10)).length;
-			const assetPriceData = getAssetPriceData(['ETH'], [priceFeedUpdateDataLocal]);
 
 			await exoticUSD.approve(speedMarkets.address, toUnit(100), { from: user });
-			await creator.createSpeedMarket(pendingSpeedParams, assetPriceData, {
+			await creator.createSpeedMarket(pendingSpeedParams, [priceFeedUpdateDataLocal], {
 				value: fee,
 				from: user,
 			});
@@ -357,12 +337,10 @@ contract('SpeedMarketsCreator', (accounts) => {
 			let pendingSize = Number(await creator.getPendingSpeedMarketsSize());
 			assert.equal(pendingSize, pendingSizeBefore + 1, 'Should add 1 pending speed market!');
 
-			const assetPriceData = getAssetPriceData(['ETH'], [priceFeedUpdateData]);
-
 			const activeMarketsSizeBefore = (await speedMarkets.activeMarkets(0, 10)).length;
 
 			// no approval
-			await creator.createFromPendingSpeedMarkets(assetPriceData, {
+			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
@@ -380,7 +358,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
 
 			// Missing address for AddressManager
-			await creator.createFromPendingSpeedMarkets(assetPriceData, {
+			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});

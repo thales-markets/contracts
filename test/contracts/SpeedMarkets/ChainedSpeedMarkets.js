@@ -153,6 +153,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			mockPyth.address,
 			speedMarketsAMM.address
 		);
+		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
 
 		// -------------------------- Chained Speed Markets --------------------------
 		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
@@ -188,15 +189,6 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		await referrals.setWhitelistedAddress(chainedSpeedMarketsAMM.address, true);
 
 		await multiCollateralOnOffRamp.setSupportedAMM(chainedSpeedMarketsAMM.address, true);
-
-		// -------------------------- Creator of Chained Speed Markets --------------------------
-		const Creator = artifacts.require('SpeedMarketsAMMCreator');
-		const creator = await Creator.new();
-
-		await creator.initialize(owner, addressManager.address);
-		await creator.setLimits(5, 2);
-
-		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
 	});
 
 	describe('Test Chained speed markets ', () => {

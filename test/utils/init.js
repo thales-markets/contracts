@@ -109,12 +109,6 @@ module.exports = {
 			speedMarketsAMM.address
 		);
 
-		const Creator = artifacts.require('SpeedMarketsAMMCreator');
-		const creator = await Creator.new();
-
-		await creator.initialize(owner, addressManager.address);
-		await creator.setLimits(5, 2);
-
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
 
 		let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
@@ -139,7 +133,6 @@ module.exports = {
 		let initialSkewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
 
 		return {
-			creator,
 			creatorAccount,
 			speedMarketsAMM,
 			speedMarketsAMMData,

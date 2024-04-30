@@ -62,7 +62,7 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
 
     /// @notice add new speed market to pending - waiting for creation
     /// @param _params parameters for adding pending speed market
-    function addPendingSpeedMarket(SpeedMarketParams calldata _params) external payable nonReentrant notPaused {
+    function addPendingSpeedMarket(SpeedMarketParams calldata _params) external nonReentrant notPaused {
         PendingSpeedMarket memory pendingSpeedMarket = PendingSpeedMarket(
             msg.sender,
             _params.asset,

@@ -592,7 +592,7 @@
     ],
     "name": "addPendingChainedSpeedMarket",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -657,7 +657,7 @@
     ],
     "name": "addPendingSpeedMarket",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

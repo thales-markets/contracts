@@ -90,7 +90,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     /// @notice add new speed market to pending - waiting for creation
     /// @param _params parameters for adding pending speed market
-    function addPendingSpeedMarket(SpeedMarketParams calldata _params) external payable nonReentrant notPaused {
+    function addPendingSpeedMarket(SpeedMarketParams calldata _params) external nonReentrant notPaused {
         PendingSpeedMarket memory pendingSpeedMarket = PendingSpeedMarket(
             msg.sender,
             _params.asset,
@@ -215,12 +215,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     /// @notice add new chained speed market to pending - waiting for creation
     /// @param _params parameters for adding pending chained speed market
-    function addPendingChainedSpeedMarket(ChainedSpeedMarketParams calldata _params)
-        external
-        payable
-        nonReentrant
-        notPaused
-    {
+    function addPendingChainedSpeedMarket(ChainedSpeedMarketParams calldata _params) external nonReentrant notPaused {
         PendingChainedSpeedMarket memory pendingChainedSpeedMarket = PendingChainedSpeedMarket(
             msg.sender,
             _params.asset,

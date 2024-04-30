@@ -73,8 +73,8 @@ async function main() {
 		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
-	const speedMarketsAMMDataAddress = getTargetAddress('SpeedMarketsAMMData', network);
-	const SpeedMarketsAMMData = await ethers.getContractFactory('SpeedMarketsAMMData');
+	const SpeedMarketsAMMCreatorAddress = getTargetAddress('SpeedMarketsAMMCreator', network);
+	const SpeedMarketsAMMCreator = await ethers.getContractFactory('SpeedMarketsAMMCreator');
 
 	if (
 		networkObj.chainId == 42 ||
@@ -82,25 +82,25 @@ async function main() {
 		networkObj.chainId == 420 ||
 		networkObj.chainId == 168587773
 	) {
-		await upgrades.upgradeProxy(speedMarketsAMMDataAddress, SpeedMarketsAMMData);
+		await upgrades.upgradeProxy(SpeedMarketsAMMCreatorAddress, SpeedMarketsAMMCreator);
 		await delay(15000);
 
-		const SpeedMarketsAMMDataImplementation = await getImplementationAddress(
+		const SpeedMarketsAMMCreatorImplementation = await getImplementationAddress(
 			ethers.provider,
-			speedMarketsAMMDataAddress
+			SpeedMarketsAMMCreatorAddress
 		);
-		console.log('SpeedMarketsAMMData upgraded');
+		console.log('SpeedMarketsAMMCreator upgraded');
 
-		console.log('Implementation SpeedMarketsAMMData: ', SpeedMarketsAMMDataImplementation);
+		console.log('Implementation SpeedMarketsAMMCreator: ', SpeedMarketsAMMCreatorImplementation);
 		setTargetAddress(
-			'SpeedMarketsAMMDataImplementation',
+			'SpeedMarketsAMMCreatorImplementation',
 			network,
-			SpeedMarketsAMMDataImplementation
+			SpeedMarketsAMMCreatorImplementation
 		);
 
 		try {
 			await hre.run('verify:verify', {
-				address: SpeedMarketsAMMDataImplementation,
+				address: SpeedMarketsAMMCreatorImplementation,
 			});
 		} catch (e) {
 			console.log(e);
@@ -115,15 +115,15 @@ async function main() {
 		networkObj.chainId == 8453
 	) {
 		const implementation = await upgrades.prepareUpgrade(
-			speedMarketsAMMDataAddress,
-			SpeedMarketsAMMData
+			SpeedMarketsAMMCreatorAddress,
+			SpeedMarketsAMMCreator
 		);
 		await delay(5000);
 
-		console.log('SpeedMarketsAMMData upgraded');
+		console.log('SpeedMarketsAMMCreator upgraded');
 
-		console.log('Implementation SpeedMarketsAMMData: ', implementation);
-		setTargetAddress('SpeedMarketsAMMDataImplementation', network, implementation);
+		console.log('Implementation SpeedMarketsAMMCreator: ', implementation);
+		setTargetAddress('SpeedMarketsAMMCreatorImplementation', network, implementation);
 		try {
 			await hre.run('verify:verify', {
 				address: implementation,

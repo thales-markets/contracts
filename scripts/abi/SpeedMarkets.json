@@ -599,7 +599,7 @@
     ],
     "name": "createNewMarket",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

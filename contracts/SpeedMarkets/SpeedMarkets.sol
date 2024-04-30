@@ -141,7 +141,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
     /// @notice create new market for a given delta/strike time
     /// @param _params parameters for creating market
-    function createNewMarket(CreateMarketParams calldata _params) external payable nonReentrant notPaused onlyCreator {
+    function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyCreator {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
 
         bool isDefaultCollateral = _params.collateral == address(0);

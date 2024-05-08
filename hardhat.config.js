@@ -77,6 +77,14 @@ module.exports = {
 					browserURL: 'https://testnet.blastscan.io/',
 				},
 			},
+			{
+				network: 'optimisticSepolia',
+				chainId: 11155420,
+				urls: {
+					apiURL: 'https://api-sepolia-optimistic.etherscan.io/api',
+					browserURL: 'https://sepolia-optimism.etherscan.io/',
+				},
+			},
 		],
 		// Your API key for Etherscan
 		// Obtain one at https://etherscan.io/
@@ -95,6 +103,7 @@ module.exports = {
 			baseGoerli: BASESCAN_API_KEY,
 			opbnbtest: OPBNBTEST_API_KEY,
 			blastSepolia: 'blast_sepolia',
+			optimisticSepolia: OP_ETHERSCAN_KEY,
 		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
@@ -253,7 +262,11 @@ module.exports = {
 		},
 		blastSepolia: {
 			url: 'https://sepolia.blast.io',
-			accounts: [process.env.PRIVATE_KEY],
+			accounts: [PRIVATE_KEY],
+		},
+		optimisticSepolia: {
+			url: `https://optimism-sepolia.infura.io/v3/${INFURA}`,
+			accounts: [PRIVATE_KEY],
 		},
 	},
 

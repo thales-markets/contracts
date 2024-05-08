@@ -513,6 +513,26 @@
 		"SpeedMarketsAMMCreator": "0xb85245212590C5c9017B1Ab5DEAE38085de5e60C",
 		"SpeedMarketsAMMCreatorImplementation": "0x842d8f21C3f0df45a61224a8b31572aAD561f033"
 	},
+	"optimisticSepolia": {
+		"SafeBox": "0xd866b2332d4383C1Bf719732177e2D9109c99DBc",
+		"Pyth": "0x0708325268dF9F66270F1401206434524814508b",
+		"ExoticUSD": "0xc4fa91b895fb66e8aafff9791f1018c2053db71f",
+		"SpeedMarketMastercopy": "0x1E6139037854951bd33829eeEF96C46F35ee88AA",
+		"SpeedMarketsAMMUtils": "0x696761B1fa26f88DB185eD51AeB6DaA97Ba096bd",
+		"SpeedMarketsAMM": "0xc3DF62752CeF27Cd449A196421e54d22C7BFadfa",
+		"SpeedMarketsAMMImplementation": "0x902d23A7ABc4D19a3B84B35999e4DB253609BaED",
+		"SpeedMarketsAMMData": "0xc5614017CC2d336a0B3EcC2C4A795FeeF063dbbc",
+		"SpeedMarketsAMMDataImplementation": "0x0DF9c3bD38Da0384f9e008Ee6B3d3c47030c8c65",
+		"SpeedMarketsAMMCreator": "0xE114677AaBf957d5EeE55f73C6b93fdEDfC849C3",
+		"SpeedMarketsAMMCreatorImplementation": "0x2CF6E476916500e4d476af808089288614f436aD",
+		"ChainedSpeedMarketMastercopy": "0xe816293DE883b10b24673BA95C9e55F61d4002A2",
+		"ChainedSpeedMarketsAMM": "0xc856372F3dD1cEb8bdbBB5f51e0de364A451Ba4c",
+		"ChainedSpeedMarketsAMMImplementation": "0x9c59E9a9947386D6EDDaFDeF2435f746E7530bd2",
+		"Referrals": "0xb009cfd69aA2682e42E9e2e7dbdA1f2C5c21b38F",
+		"ReferralsImplementation": "0xbEC297E1fb0BEACEe29829F162F7281D4B8Dcb7C",
+		"AddressManager": "0x796B1316f7e68B379AFCfDB63E374E3d5165b317",
+		"AddressManagerImplementation": "0x567b4eee851317c8E82AAdFDE5DFCe0eBF08832C"
+	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",
 		"L1StandardBridge": "0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1",

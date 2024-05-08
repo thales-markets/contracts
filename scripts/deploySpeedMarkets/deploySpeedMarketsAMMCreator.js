@@ -58,6 +58,12 @@ async function main() {
 		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
+		proxySUSD = getTargetAddress('ExoticUSD', network);
+	}
+
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 

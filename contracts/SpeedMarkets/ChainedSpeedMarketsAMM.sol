@@ -99,7 +99,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         sUSD = _sUSD;
     }
 
-    function createNewMarket(CreateMarketParams calldata _params) external payable nonReentrant notPaused onlyPending {
+    function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyPending {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
 
         bool isDefaultCollateral = _params.collateral == address(0);

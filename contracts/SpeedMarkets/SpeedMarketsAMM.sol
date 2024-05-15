@@ -286,7 +286,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     ) internal {
         require(supportedAsset[asset], "Asset is not supported");
         require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
-        require(strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not alloowed");
+        require(strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not allowed");
         require(strikeTime <= block.timestamp + maximalTimeToMaturity, "Time too far into the future");
 
         uint lpFeeWithSkew = _handleRiskAndGetFee(asset, direction, buyinAmount, strikeTime, skewImpact);

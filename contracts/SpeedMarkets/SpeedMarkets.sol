@@ -297,7 +297,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     function _createNewMarket(CreateMarketInternal memory _params) internal {
         require(supportedAsset[_params.asset], "Asset is not supported");
         require(_params.buyinAmount >= minBuyinAmount && _params.buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
-        require(_params.strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not alloowed");
+        require(_params.strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not allowed");
         require(_params.strikeTime <= block.timestamp + maximalTimeToMaturity, "Time too far into the future");
         require(2 * _params.buyinAmount <= _getAvailableAmount(), "Insuff. funds for collateralization");
 

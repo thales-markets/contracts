@@ -83,6 +83,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     IAddressManager public addressManager;
 
+    mapping(address => bool) public whitelistedAddresses;
+
     function initialize(address _owner, address _addressManager) external initializer {
         setOwner(_owner);
         addressManager = IAddressManager(_addressManager);
@@ -113,7 +115,13 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     /// @notice create all speed markets from pending using latest price feeds from param
     /// @param _priceUpdateData pyth priceUpdateData for all supported assets
-    function createFromPendingSpeedMarkets(bytes[] calldata _priceUpdateData) external payable nonReentrant notPaused {
+    function createFromPendingSpeedMarkets(bytes[] calldata _priceUpdateData)
+        external
+        payable
+        nonReentrant
+        notPaused
+        isAddressWhitelisted
+    {
         require(pendingSpeedMarkets.length > 0, "No pending markets");
         require(_priceUpdateData.length > 0, "Empty price update data");
 
@@ -179,6 +187,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         payable
         nonReentrant
         notPaused
+        isAddressWhitelisted
     {
         require(_priceUpdateData.length > 0, "Empty price update data");
 
@@ -241,6 +250,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         payable
         nonReentrant
         notPaused
+        isAddressWhitelisted
     {
         require(pendingChainedSpeedMarkets.length > 0, "No pending markets");
         require(_priceUpdateData.length > 0, "Empty price update data");
@@ -303,7 +313,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     function createChainedSpeedMarket(
         ChainedSpeedMarketParams calldata _chainedMarketParams,
         bytes[] calldata _priceUpdateData
-    ) external payable nonReentrant notPaused {
+    ) external payable nonReentrant notPaused isAddressWhitelisted {
         require(_priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
@@ -383,6 +393,22 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         emit SetMaxCreationDelay(_maxCreationDelay);
     }
 
+    /// @notice adding/removing whitelist address depending on a flag
+    /// @param _whitelistAddress address that needed to be whitelisted or removed from WL
+    /// @param _flag adding or removing from whitelist (true: add, false: remove)
+    function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
+        require(_whitelistAddress != address(0));
+        whitelistedAddresses[_whitelistAddress] = _flag;
+        emit AddedIntoWhitelist(_whitelistAddress, _flag);
+    }
+
+    //////////////////modifiers/////////////////
+
+    modifier isAddressWhitelisted() {
+        require(whitelistedAddresses[msg.sender], "Creator not whitelisted");
+        _;
+    }
+
     //////////////////events/////////////////
 
     event AddSpeedMarket(PendingSpeedMarket _pendingSpeedMarket);
@@ -391,6 +417,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     event SetAddressManager(address _addressManager);
     event SetMaxCreationDelay(uint64 _maxCreationDelay);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 
     event LogError(string _errorMessage, PendingSpeedMarket _pendingSpeedMarket);
     event LogErrorData(bytes _data, PendingSpeedMarket _pendingSpeedMarket);

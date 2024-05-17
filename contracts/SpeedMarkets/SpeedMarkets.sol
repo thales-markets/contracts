@@ -717,7 +717,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     /// @notice adding/removing whitelist address depending on a flag
-    /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
+    /// @param _whitelistAddress address that needed to be whitelisted or removed from WL
     /// @param _flag adding or removing from whitelist (true: add, false: remove)
     function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
         require(_whitelistAddress != address(0));

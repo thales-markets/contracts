@@ -73,6 +73,12 @@ async function main() {
 		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
+		proxySUSD = getTargetAddress('ExoticUSD', network);
+	}
+
 	const SpeedMarketsAMMCreatorAddress = getTargetAddress('SpeedMarketsAMMCreator', network);
 	const SpeedMarketsAMMCreator = await ethers.getContractFactory('SpeedMarketsAMMCreator');
 
@@ -80,7 +86,8 @@ async function main() {
 		networkObj.chainId == 42 ||
 		networkObj.chainId == 5 ||
 		networkObj.chainId == 420 ||
-		networkObj.chainId == 168587773
+		networkObj.chainId == 168587773 ||
+		networkObj.chainId == 11155420
 	) {
 		await upgrades.upgradeProxy(SpeedMarketsAMMCreatorAddress, SpeedMarketsAMMCreator);
 		await delay(15000);

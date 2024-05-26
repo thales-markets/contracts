@@ -52,7 +52,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     IPriceFeed public priceFeed;
 
-    // todo: should be lower case but left due to proxy compatibility
+    // should be lower case but left due to proxy compatibility
     address public WETH9;
     address public usdc;
     address public usdt;
@@ -114,8 +114,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     function onrampWithEth(uint amount) external payable nonReentrant notPaused returns (uint convertedAmount) {
         require(collateralSupported[address(WETH9)], "Unsupported collateral");
         require(ammsSupported[msg.sender], "Unsupported caller");
-        require(msg.value > 0 && amount > 0, "Can not exchange 0 ETH");
-        require(msg.value >= amount, "Amount ETH has to be larger than specified amount");
+        require(amount > 0, "Can not exchange 0 ETH");
+        require(msg.value == amount, "Amount ETH has to be equal to the specified amount");
 
         uint balanceBefore = IERC20Upgradeable(WETH9).balanceOf(address(this));
         WethLike(WETH9).deposit{value: amount}();
@@ -266,6 +266,22 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         return 0;
     }
 
+    function _reverseTransformCollateral(uint value) internal view returns (uint) {
+        if (IERC20Decimals(address(sUSD)).decimals() == 6) {
+            return value * 1e12;
+        } else {
+            return value;
+        }
+    }
+
+    function _transformCollateral(uint value) internal view returns (uint) {
+        if (IERC20Decimals(address(sUSD)).decimals() == 6) {
+            return value / 1e12;
+        } else {
+            return value;
+        }
+    }
+
     /////////// read methods
 
     /// @notice return the guaranteed payout for the given collateral and amount
@@ -323,12 +339,12 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
                     (ONE + _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
                 ONE;
         }
-        maxReceived = manager.transformCollateral(maxReceived);
+        maxReceived = _transformCollateral(maxReceived);
     }
 
     /// @notice return the minimum received amount in collateral for sUSD amount
     function getMinimumReceivedOfframp(address collateral, uint amount) public view returns (uint minReceivedOfframp) {
-        amount = manager.reverseTransformCollateral(amount);
+        amount = _reverseTransformCollateral(amount);
         if (_mapCollateralToCurveIndex(collateral) > 0) {
             minReceivedOfframp = (amount * (ONE - _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) / ONE;
             if (collateral == usdc || collateral == usdt) {
@@ -511,28 +527,6 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
         emit CurveSUSDSet(_curveSUSD, _dai, _usdc, _usdt, _curveOnrampEnabled, _maxAllowedPegSlippagePercentage);
-    }
-
-    /// @notice reverseTransformCollateral reverse collateral if needed
-    /// @param value value to be reversed
-    /// @return uint reversed value
-    function _reverseTransformCollateral(uint value) internal view returns (uint) {
-        if (IERC20Decimals(address(sUSD)).decimals() == 6) {
-            return value * 1e12;
-        } else {
-            return value;
-        }
-    }
-
-    /// @notice transformCollateral transforms collateral if needed
-    /// @param value to be transformed
-    /// @return uint transformed value
-    function _transformCollateral(uint value) internal view returns (uint) {
-        if (IERC20Decimals(address(sUSD)).decimals() == 6) {
-            return value / 1e12;
-        } else {
-            return value;
-        }
     }
 
     ////////////////events

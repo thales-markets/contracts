@@ -151,6 +151,31 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint216",
+        "name": "rate",
+        "type": "uint216"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetStaticPricePerAsset",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "int56",
         "name": "twapInterval",
         "type": "int56"
@@ -517,6 +542,24 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint216",
+        "name": "rate",
+        "type": "uint216"
+      }
+    ],
+    "name": "setStaticPricePerAsset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "int56",
         "name": "_twapInterval",
         "type": "int56"
@@ -538,6 +581,30 @@
     "name": "setWETH",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "staticPricePerAsset",
+    "outputs": [
+      {
+        "internalType": "uint216",
+        "name": "rate",
+        "type": "uint216"
+      },
+      {
+        "internalType": "uint40",
+        "name": "time",
+        "type": "uint40"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

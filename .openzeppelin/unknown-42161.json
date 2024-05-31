@@ -334,6 +334,11 @@
       "address": "0xEd31481E4B1ded06ee5ed48C0205fA479Ffeb866",
       "txHash": "0x8c0c071c6578f4f6890f4811e20a6ec8067813cd345822b68d1d9e18d134db83",
       "kind": "transparent"
+    },
+    {
+      "address": "0x18bD8BEF64285BF9ff6fC0c94607dDcF2eFaB182",
+      "txHash": "0xd2e276341443094ecdc4b6484e867b71dd5a2cf3b5a8c3a911828d3aacecd7a8",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -66532,6 +66537,170 @@
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "37bd77789d96e014d6b9d37908fa6211dbca6d1c1ebc645cdb0d882fb553bde7": {
+      "address": "0xF1E04Adc112AE0016C52a18518aA3400826aE20e",
+      "txHash": "0xca2e10c460b1bc04065ab7a04ce4a3d3894392cc4c3ee5d7923eaf33e9d66848",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "aggregators",
+            "type": "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)141)",
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:23"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "currencyKeyDecimals",
+            "type": "t_mapping(t_bytes32,t_uint8)",
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:25"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "aggregatorKeys",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:27"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "currencyKeys",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:30"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "pools",
+            "type": "t_mapping(t_bytes32,t_contract(IUniswapV3Pool)12445)",
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:31"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "twapInterval",
+            "type": "t_int56",
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:33"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "_ETH",
+            "type": "t_address",
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:40"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "_wETH",
+            "type": "t_address",
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:41"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "useLastTickForTWAP",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:43"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "staticPricePerAsset",
+            "type": "t_mapping(t_bytes32,t_struct(RateAndUpdatedTime)35487_storage)",
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:45"
+          }
+        ],
+        "types": {
+          "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)141)": {
+            "label": "mapping(bytes32 => contract AggregatorV2V3Interface)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_contract(AggregatorV2V3Interface)141": {
+            "label": "contract AggregatorV2V3Interface"
+          },
+          "t_mapping(t_bytes32,t_uint8)": {
+            "label": "mapping(bytes32 => uint8)"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_mapping(t_bytes32,t_contract(IUniswapV3Pool)12445)": {
+            "label": "mapping(bytes32 => contract IUniswapV3Pool)"
+          },
+          "t_contract(IUniswapV3Pool)12445": {
+            "label": "contract IUniswapV3Pool"
+          },
+          "t_int56": {
+            "label": "int56"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_bytes32,t_struct(RateAndUpdatedTime)35487_storage)": {
+            "label": "mapping(bytes32 => struct PriceFeed.RateAndUpdatedTime)"
+          },
+          "t_struct(RateAndUpdatedTime)35487_storage": {
+            "label": "struct PriceFeed.RateAndUpdatedTime",
+            "members": [
+              {
+                "label": "rate",
+                "type": "t_uint216"
+              },
+              {
+                "label": "time",
+                "type": "t_uint40"
+              }
+            ]
+          },
+          "t_uint216": {
+            "label": "uint216"
+          },
+          "t_uint40": {
+            "label": "uint40"
           }
         }
       }

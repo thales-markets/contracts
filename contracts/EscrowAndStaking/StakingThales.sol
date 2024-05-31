@@ -576,6 +576,29 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param account to update the protocol volume for
     /// @param amount to add to the existing protocol volume
     function updateVolume(address account, uint amount) external {
+        _updateVolume(account, amount);
+    }
+
+    /// @notice Update the protocol volume for the account
+    /// @param account to update the protocol volume for
+    /// @param amount to add to the existing protocol volume
+    /// @param decimals in which the amount is sent
+    function updateVolumeAtAmountDecimals(
+        address account,
+        uint amount,
+        uint decimals
+    ) external {
+        uint actualAmount = amount;
+        uint stakingCollateralDecimals = ICCIPCollector(address(feeToken)).decimals();
+        if (decimals < stakingCollateralDecimals) {
+            actualAmount = amount * 10**(18 - decimals);
+        } else if (decimals > stakingCollateralDecimals) {
+            actualAmount = amount / 10**(18 - stakingCollateralDecimals);
+        }
+        _updateVolume(account, actualAmount);
+    }
+
+    function _updateVolume(address account, uint amount) internal {
         require(account != address(0) && amount > 0, "Invalid params");
         if (delegatedVolume[account] != address(0)) {
             account = delegatedVolume[account];
@@ -655,7 +678,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(claimEnabled, "Claiming is not enabled.");
         require(startTimeStamp > 0, "Staking period has not started");
         require(_lastRewardsClaimedPeriod[account] < periodsOfStaking, "Already claimed");
-        
+
         //Calculate rewards
         if (distributeFeesEnabled) {
             uint availableFeesToClaim = _calculateAvailableFeesToClaim(account);

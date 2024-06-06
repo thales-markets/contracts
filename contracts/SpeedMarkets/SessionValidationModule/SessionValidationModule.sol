@@ -34,7 +34,7 @@ contract SessionValidationModule is Initializable {
         bytes32 _userOpHash,
         bytes calldata _sessionKeyData,
         bytes calldata _sessionKeySignature
-    ) external returns (bool) {
+    ) external view returns (bool) {
         bytes calldata callData = _op.callData;
         address sessionKey = address(bytes20(_sessionKeyData[0:20]));
         uint160 destContract;

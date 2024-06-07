@@ -504,7 +504,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         bool _curveOnrampEnabled,
         uint _maxAllowedPegSlippagePercentage
     ) external onlyOwner {
-        require(!curveOnrampEnabled || _curveSUSD != address(0), "Can not set a zero address!");
+        require(!_curveOnrampEnabled || _curveSUSD != address(0), "Can not set a zero address!");
         if (address(curveSUSD) != address(0)) {
             // clear previous approvals
             if (dai != address(0)) {

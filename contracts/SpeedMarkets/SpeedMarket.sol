@@ -15,6 +15,7 @@ contract SpeedMarket {
         bytes32 _asset;
         uint64 _strikeTime;
         int64 _strikePrice;
+        uint64 _strikePricePublishTime;
         Direction _direction;
         uint _buyinAmount;
         uint _safeBoxImpact;
@@ -30,6 +31,7 @@ contract SpeedMarket {
     bytes32 public asset;
     uint64 public strikeTime;
     int64 public strikePrice;
+    uint64 public strikePricePublishTime;
     Direction public direction;
     uint public buyinAmount;
 
@@ -56,6 +58,7 @@ contract SpeedMarket {
         asset = params._asset;
         strikeTime = params._strikeTime;
         strikePrice = params._strikePrice;
+        strikePricePublishTime = params._strikePricePublishTime;
         direction = params._direction;
         buyinAmount = params._buyinAmount;
         safeBoxImpact = params._safeBoxImpact;

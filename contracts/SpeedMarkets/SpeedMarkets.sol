@@ -37,6 +37,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         bytes32 asset;
         uint64 strikeTime;
         int64 strikePrice;
+        uint64 strikePricePublishTime;
         int64 finalPrice;
         Direction direction;
         Direction result;
@@ -349,6 +350,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             asset,
             strikeTime,
             tempData.pythPrice.price,
+            uint64(tempData.pythPrice.publishTime),
             0,
             direction,
             direction,
@@ -691,6 +693,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint _maxRiskPerAssetAndDirection
     ) external onlyOwner {
         maxRiskPerAsset[asset] = _maxRiskPerAsset;
+        currentRiskPerAsset[asset] = 0;
         maxRiskPerAssetAndDirection[asset][Direction.Up] = _maxRiskPerAssetAndDirection;
         maxRiskPerAssetAndDirection[asset][Direction.Down] = _maxRiskPerAssetAndDirection;
         emit SetMaxRisks(asset, _maxRiskPerAsset, _maxRiskPerAssetAndDirection);

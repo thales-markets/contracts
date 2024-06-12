@@ -166,6 +166,7 @@ contract('SpeedMarkets', (accounts) => {
 			let speedMarket = await speedMarketsAMM.speedMarket(market);
 			let strikeTime = speedMarket.strikeTime;
 			console.log('Strike time is ' + speedMarket.strikeTime);
+			console.log('Publish time is ' + speedMarket.strikePricePublishTime);
 
 			let marketData = await speedMarketsAMMData.getMarketsData([
 				markets[0],

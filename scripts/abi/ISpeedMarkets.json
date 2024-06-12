@@ -384,6 +384,11 @@
             "type": "int64"
           },
           {
+            "internalType": "uint64",
+            "name": "strikePricePublishTime",
+            "type": "uint64"
+          },
+          {
             "internalType": "int64",
             "name": "finalPrice",
             "type": "int64"

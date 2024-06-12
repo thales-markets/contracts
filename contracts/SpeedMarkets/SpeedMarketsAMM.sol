@@ -346,6 +346,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 asset,
                 strikeTime,
                 tempData.pythPrice.price,
+                uint64(tempData.pythPrice.publishTime),
                 direction,
                 buyinAmount,
                 safeBoxImpact,
@@ -637,7 +638,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint _maxRiskPerAssetAndDirection
     ) external onlyOwner {
         maxRiskPerAsset[asset] = _maxRiskPerAsset;
-        currentRiskPerAsset[asset] = 0; // TODO: this can be removed with next upgrade
+        currentRiskPerAsset[asset] = 0;
         maxRiskPerAssetAndDirection[asset][SpeedMarket.Direction.Up] = _maxRiskPerAssetAndDirection;
         maxRiskPerAssetAndDirection[asset][SpeedMarket.Direction.Down] = _maxRiskPerAssetAndDirection;
         emit SetMaxRisks(asset, _maxRiskPerAsset, _maxRiskPerAssetAndDirection);

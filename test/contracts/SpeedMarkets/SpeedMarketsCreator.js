@@ -197,6 +197,9 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			const additionalActiveMarketsSize =
 				(await speedMarketsAMM.activeMarkets(0, 10)).length - activeMarketsSize;
 			assert.equal(additionalActiveMarketsSize, 2, 'Should be created 2 speed markets!');
+
+			// when no pending markets just return
+			expect(creator.createFromPendingSpeedMarkets([], { from: user })).to.be.ok;
 		});
 
 		it('Should add speed markets to pending and skip creation as old market', async () => {
@@ -250,27 +253,17 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 			/*
 			 * Check validations:
-			 * 1. No pending markets
-			 * 2. Empty price update data
-			 * 3. Stale price
-			 * 4. Pyth price exceeds slippage
+			 * 1. Empty price update data
+			 * 2. Stale price
+			 * 3. Pyth price exceeds slippage
 			 */
-
-			// 1. No pending markets
-			console.log('1. Check no pending markets');
-			await expect(
-				creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('No pending markets');
 
 			// create new pending market
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
 			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
 
-			// 2. Empty price update data
-			console.log('2. Check empty price update data');
+			// 1. Empty price update data
+			console.log('1. Check empty price update data');
 			await expect(
 				creator.createFromPendingSpeedMarkets([], {
 					value: fee,
@@ -278,8 +271,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				})
 			).to.be.revertedWith('Empty price update data');
 
-			// 3. Stale price
-			console.log('4. Check stale price');
+			// 2. Stale price
+			console.log('2. Check stale price');
 			let maxPriceDelay = 1; // 1s
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
 			await expect(
@@ -289,8 +282,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				})
 			).to.be.revertedWith('Stale price');
 
-			// 4. Pyth price exceeds slippage
-			console.log('5. Check pyth price exceeds slippage');
+			// 3. Pyth price exceeds slippage
+			console.log('3. Check pyth price exceeds slippage');
 			maxPriceDelay = 60;
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
 
@@ -469,6 +462,9 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			const additionalActiveMarketsSize =
 				(await chainedSpeedMarketsAMM.activeMarkets(0, 10)).length - activeMarketsSize;
 			assert.equal(additionalActiveMarketsSize, 2, 'Should be created 2 chained speed markets!');
+
+			// when no pending markets just return
+			expect(creator.createFromPendingChainedSpeedMarkets([], { from: user })).to.be.ok;
 		});
 
 		it('Should add chained speed markets to pending and skip creation as old market', async () => {
@@ -522,27 +518,17 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 			/*
 			 * Check validations:
-			 * 1. No pending markets
-			 * 2. Empty price update data
-			 * 3. Stale price
-			 * 4. Pyth price exceeds slippage
+			 * 1. Empty price update data
+			 * 2. Stale price
+			 * 3. Pyth price exceeds slippage
 			 */
-
-			// 1. No pending markets
-			console.log('1. Check no pending markets');
-			await expect(
-				creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('No pending markets');
 
 			// create new pending market
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
 			await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, { from: user });
 
-			// 2. Empty price update data
-			console.log('2. Check empty price update data');
+			// 1. Empty price update data
+			console.log('1. Check empty price update data');
 			await expect(
 				creator.createFromPendingChainedSpeedMarkets([], {
 					value: fee,
@@ -550,8 +536,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				})
 			).to.be.revertedWith('Empty price update data');
 
-			// 4. Stale price
-			console.log('4. Check stale price');
+			// 2. Stale price
+			console.log('2. Check stale price');
 			let maxPriceDelay = 1; // 1s
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
 			await expect(
@@ -561,8 +547,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				})
 			).to.be.revertedWith('Stale price');
 
-			// 5. Pyth price exceeds slippage
-			console.log('5. Check pyth price exceeds slippage');
+			// 3. Pyth price exceeds slippage
+			console.log('3. Check pyth price exceeds slippage');
 			maxPriceDelay = 60;
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
 

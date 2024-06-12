@@ -94,7 +94,9 @@ contract SpeedMarketsCreator is Initializable, ProxyOwned, ProxyPausable, ProxyR
         notPaused
         isAddressWhitelisted
     {
-        require(pendingSpeedMarkets.length > 0, "No pending markets");
+        if (pendingSpeedMarkets.length == 0) {
+            return;
+        }
         require(_priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();

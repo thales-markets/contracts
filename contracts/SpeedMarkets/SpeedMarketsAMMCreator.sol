@@ -122,7 +122,9 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         notPaused
         isAddressWhitelisted
     {
-        require(pendingSpeedMarkets.length > 0, "No pending markets");
+        if (pendingSpeedMarkets.length == 0) {
+            return;
+        }
         require(_priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
@@ -252,7 +254,9 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         notPaused
         isAddressWhitelisted
     {
-        require(pendingChainedSpeedMarkets.length > 0, "No pending markets");
+        if (pendingChainedSpeedMarkets.length == 0) {
+            return;
+        }
         require(_priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();

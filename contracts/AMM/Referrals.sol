@@ -39,6 +39,8 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     mapping(address => bool) public silverAddresses;
     mapping(address => bool) public goldAddresses;
 
+    address public sportsAMMV2;
+
     function initialize(
         address _owner,
         address thalesAmm,
@@ -66,7 +68,7 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner set referrers"
         );
-        if (msg.sender == sportsAMM || msg.sender == parlayAMM) {
+        if (msg.sender == sportsAMM || msg.sender == parlayAMM || msg.sender == sportsAMMV2) {
             sportReferrals[referred] = referrer;
             sportReferralStarted[referred] = block.timestamp;
             emit SportReferralAdded(referrer, referred, block.timestamp);
@@ -135,6 +137,15 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             whitelistedAddresses[_parlayAMM] = true;
             parlayAMM = _parlayAMM;
             emit SetWhitelistedAddress(_parlayAMM, true);
+        }
+    }
+
+    function setSportsAMMV2(address _sportsAMMV2) external onlyOwner {
+        if (!whitelistedAddresses[_sportsAMMV2]) {
+            whitelistedAddresses[sportsAMMV2] = false;
+            whitelistedAddresses[_sportsAMMV2] = true;
+            sportsAMMV2 = _sportsAMMV2;
+            emit SetWhitelistedAddress(_sportsAMMV2, true);
         }
     }
 

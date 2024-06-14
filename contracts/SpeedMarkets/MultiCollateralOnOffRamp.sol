@@ -28,7 +28,11 @@ import "../interfaces/IPositionalMarketManagerTruncated.sol";
 interface WethLike {
     function deposit() external payable;
 
-    function withdraw(uint256) external;
+    function withdraw(uint) external;
+}
+
+interface IERC20Decimals {
+    function decimals() external view returns (uint);
 }
 
 /// @title MultiCollateralOnOffRamp to use different collateral than default
@@ -48,6 +52,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     IPriceFeed public priceFeed;
 
+    // should be lower case but left due to proxy compatibility
     address public WETH9;
     address public usdc;
     address public usdt;
@@ -63,6 +68,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     mapping(address => bytes32) public priceFeedKeyPerCollateral;
 
+    // deprecated, left due to proxy compatibility
     IPositionalMarketManagerTruncated public manager;
 
     mapping(address => bytes) public pathPerCollateralOfframp;
@@ -108,8 +114,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     function onrampWithEth(uint amount) external payable nonReentrant notPaused returns (uint convertedAmount) {
         require(collateralSupported[address(WETH9)], "Unsupported collateral");
         require(ammsSupported[msg.sender], "Unsupported caller");
-        require(msg.value > 0 && amount > 0, "Can not exchange 0 ETH");
-        require(msg.value >= amount, "Amount ETH has to be larger than specified amount");
+        require(amount > 0, "Can not exchange 0 ETH");
+        require(msg.value == amount, "Amount ETH has to be equal to the specified amount");
 
         uint balanceBefore = IERC20Upgradeable(WETH9).balanceOf(address(this));
         WethLike(WETH9).deposit{value: amount}();
@@ -159,7 +165,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     }
 
     ///////////////////////Curve related code///////////////////
-    function _swapViaCurve(address collateral, uint collateralQuote) internal returns (uint256 amountOut) {
+    function _swapViaCurve(address collateral, uint collateralQuote) internal returns (uint amountOut) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
@@ -174,7 +180,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         require(amountOut <= getMaximumReceived(collateral, collateralQuote), "Amount above max allowed peg slippage");
     }
 
-    function _swapViaCurveOfframp(address collateral, uint amount) internal returns (uint256 amountOut) {
+    function _swapViaCurveOfframp(address collateral, uint amount) internal returns (uint amountOut) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
@@ -197,7 +203,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     /// @param amountIn The exact amount of tokenIn that will be swapped for tokenOut.
     /// @param tokenIn Address of first token
     /// @return amountOut The amount of tokenOut received.
-    function _swapExactInput(uint256 amountIn, address tokenIn) internal returns (uint256 amountOut) {
+    function _swapExactInput(uint amountIn, address tokenIn) internal returns (uint amountOut) {
         IERC20Upgradeable(tokenIn).approve(address(swapRouter), amountIn);
 
         bytes memory pathToUse = pathPerCollateral[tokenIn];
@@ -222,7 +228,7 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         require(amountOut <= getMaximumReceived(tokenIn, amountIn), "Amount above max allowed peg slippage");
     }
 
-    function _swapExactInputOfframp(uint256 amountIn, address tokenOut) internal returns (uint256 amountOut) {
+    function _swapExactInputOfframp(uint amountIn, address tokenOut) internal returns (uint amountOut) {
         sUSD.approve(address(swapRouter), amountIn);
 
         bytes memory pathToUse = pathPerCollateralOfframp[tokenOut];
@@ -260,6 +266,22 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         return 0;
     }
 
+    function _reverseTransformCollateral(uint value) internal view returns (uint) {
+        if (IERC20Decimals(address(sUSD)).decimals() == 6) {
+            return value * 1e12;
+        } else {
+            return value;
+        }
+    }
+
+    function _transformCollateral(uint value) internal view returns (uint) {
+        if (IERC20Decimals(address(sUSD)).decimals() == 6) {
+            return value / 1e12;
+        } else {
+            return value;
+        }
+    }
+
     /////////// read methods
 
     /// @notice return the guaranteed payout for the given collateral and amount
@@ -279,16 +301,12 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
                     (ONE - _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
                 ONE;
         }
-        if (address(manager) != address(0)) {
-            minReceived = manager.transformCollateral(minReceived);
-        }
+        minReceived = _transformCollateral(minReceived);
     }
 
     // @notice return the minimum needed of collateral to receive amount of sUSD
     function getMinimumNeeded(address collateral, uint amount) public view returns (uint minNeeded) {
-        if (address(manager) != address(0)) {
-            amount = manager.reverseTransformCollateral(amount);
-        }
+        amount = _reverseTransformCollateral(amount);
         if (_mapCollateralToCurveIndex(collateral) > 0) {
             minNeeded = (amount * (ONE + _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) / ONE;
             if (collateral == usdc || collateral == usdt) {
@@ -321,16 +339,12 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
                     (ONE + _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) /
                 ONE;
         }
-        if (address(manager) != address(0)) {
-            maxReceived = manager.transformCollateral(maxReceived);
-        }
+        maxReceived = _transformCollateral(maxReceived);
     }
 
     /// @notice return the minimum received amount in collateral for sUSD amount
     function getMinimumReceivedOfframp(address collateral, uint amount) public view returns (uint minReceivedOfframp) {
-        if (address(manager) != address(0)) {
-            amount = manager.reverseTransformCollateral(amount);
-        }
+        amount = _reverseTransformCollateral(amount);
         if (_mapCollateralToCurveIndex(collateral) > 0) {
             minReceivedOfframp = (amount * (ONE - _getMaxAllowedPegSlippagePercentageForCollateral(collateral))) / ONE;
             if (collateral == usdc || collateral == usdt) {
@@ -368,7 +382,8 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
 
     function _getMaxAllowedPegSlippagePercentageForCollateral(address collateral) internal view returns (uint) {
         return
-            maxAllowedPegSlippagePercentagePerCollateral[collateral] > 0
+            (maxAllowedPegSlippagePercentagePerCollateral[collateral] > 0 &&
+                maxAllowedPegSlippagePercentagePerCollateral[collateral] < maxAllowedPegSlippagePercentage)
                 ? maxAllowedPegSlippagePercentagePerCollateral[collateral]
                 : maxAllowedPegSlippagePercentage;
     }
@@ -474,13 +489,6 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         emit SetMaxAllowedPegSlippagePercentage(_maxAllowedSlippage);
     }
 
-    /// @notice set manager to use collateral transformations as needed
-    function setManager(address _manager) external onlyOwner {
-        require(_manager != address(0), "Can not set a zero address!");
-        manager = IPositionalMarketManagerTruncated(_manager);
-        emit ManagerChanged(_manager);
-    }
-
     /// @notice Updates contract parametars
     /// @param _curveSUSD curve sUSD pool exchanger contract
     /// @param _dai DAI address
@@ -496,14 +504,26 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
         bool _curveOnrampEnabled,
         uint _maxAllowedPegSlippagePercentage
     ) external onlyOwner {
-        require(_curveSUSD != address(0), "Can not set a zero address!");
+        require(!_curveOnrampEnabled || _curveSUSD != address(0), "Can not set a zero address!");
+        if (address(curveSUSD) != address(0)) {
+            // clear previous approvals
+            if (dai != address(0)) {
+                IERC20Upgradeable(dai).approve(address(curveSUSD), 0);
+            }
+            if (usdc != address(0)) {
+                IERC20Upgradeable(usdc).approve(address(curveSUSD), 0);
+            }
+            if (usdt != address(0)) {
+                IERC20Upgradeable(usdt).approve(address(curveSUSD), 0);
+            }
+        }
         curveSUSD = ICurveSUSD(_curveSUSD);
         dai = _dai;
         usdc = _usdc;
         usdt = _usdt;
-        IERC20Upgradeable(dai).approve(_curveSUSD, type(uint256).max);
-        IERC20Upgradeable(usdc).approve(_curveSUSD, type(uint256).max);
-        IERC20Upgradeable(usdt).approve(_curveSUSD, type(uint256).max);
+        IERC20Upgradeable(dai).approve(_curveSUSD, type(uint).max);
+        IERC20Upgradeable(usdc).approve(_curveSUSD, type(uint).max);
+        IERC20Upgradeable(usdt).approve(_curveSUSD, type(uint).max);
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
         emit CurveSUSDSet(_curveSUSD, _dai, _usdc, _usdt, _curveOnrampEnabled, _maxAllowedPegSlippagePercentage);
@@ -529,7 +549,6 @@ contract MultiCollateralOnOffRamp is Initializable, ProxyOwned, ProxyPausable, P
     event OnrampedEth(uint amount);
     event Offramped(address collateral, uint amount);
     event OfframpedEth(uint amount);
-    event ManagerChanged(address manager);
     event SetPathPerCollateral(address asset, bytes path, bool doReset);
     event SetPathPerCollateralOfframp(address asset, bytes path, bool doReset);
     event SetMaxAllowedPegSlippagePercentagePerCollateral(address collateral, uint _maxAllowedSlippagePerCollateral);

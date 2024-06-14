@@ -60,8 +60,6 @@ contract('MultiCollateralOnOffRamp', (accounts) => {
 			let ManagerMock = artifacts.require('ManagerMock');
 			let managerMock = await ManagerMock.new();
 
-			await multiCollateralOnOffRamp.setManager(managerMock.address);
-
 			await multiCollateralOnOffRamp.setSwapRouter(swapRouterMock.address);
 			await swapRouterMock.setDefaults(exoticOP.address, exoticUSD.address);
 

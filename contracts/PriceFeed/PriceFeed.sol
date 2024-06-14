@@ -171,6 +171,16 @@ contract PriceFeed is Initializable, ProxyOwned {
     }
 
     function setStaticPricePerAsset(bytes32 currencyKey, uint216 rate) external onlyOwner {
+        bool hasCurrencyKey = false;
+        for (uint i = 0; i < currencyKeys.length; i++) {
+            if (currencyKeys[i] == currencyKey) {
+                hasCurrencyKey = true;
+                break;
+            }
+        }
+        if (!hasCurrencyKey) {
+            currencyKeys.push(currencyKey);
+        }
         staticPricePerAsset[currencyKey] = RateAndUpdatedTime({rate: rate, time: uint40(block.timestamp)});
         emit SetStaticPricePerAsset(currencyKey, rate, block.timestamp);
     }

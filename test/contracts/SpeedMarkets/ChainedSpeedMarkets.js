@@ -5,15 +5,16 @@ const { assert } = require('../../utils/common');
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
-
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const { ZERO_ADDRESS } = require('../../utils/helpers');
+const { getCreateChainedSpeedAMMParams } = require('../../utils/speedMarkets');
 
 contract('ChainedSpeedMarkets', (accounts) => {
-	const [owner, user, safeBox, referrerAddress, proxyUser] = accounts;
+	const [owner, user, safeBox, referrerAddress, proxyUser, creatorAccount] = accounts;
 	let exoticUSD, exoticOP;
 	let chainedSpeedMarketsAMM, speedMarketsAMMData, speedMarketsAMM, multiCollateralOnOffRamp;
 	let mockPyth, priceFeedUpdateData, fee;
 	let mockWeth, swapRouterMock, MockPriceFeedDeployed;
+	let now;
 
 	const PAYOUT_MULTIPLIERS = [toUnit(1.7), toUnit(1.78), toUnit(1.82), toUnit(1.84), toUnit(1.9)];
 	const DEFAULT_REFERRER_FEE = 0.005;
@@ -57,13 +58,13 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 3600, 86400, 60, 60);
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(500));
-		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05));
+		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05), toUnit(0.02));
 		await speedMarketsAMM.setAssetToPythID(
 			toBytes32('ETH'),
 			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace'
 		);
 
-		let now = await currentTime();
+		now = await currentTime();
 
 		let MockPyth = artifacts.require('MockPythCustom');
 		mockPyth = await MockPyth.new(60, 1e6);
@@ -152,6 +153,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			mockPyth.address,
 			speedMarketsAMM.address
 		);
+		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
 
 		// -------------------------- Chained Speed Markets --------------------------
 		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
@@ -196,38 +198,62 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			let buyinAmount = 10;
 			let timeFrame = 600; // 10 min
 
+			const defaultCreateChainedSpeedAMMParams = getCreateChainedSpeedAMMParams(
+				user,
+				'ETH',
+				timeFrame,
+				PYTH_ETH_PRICE,
+				now,
+				buyinAmount
+			);
+
+			await expect(
+				chainedSpeedMarketsAMM.createNewMarket(defaultCreateChainedSpeedAMMParams)
+			).to.be.revertedWith('only from Creator');
+
 			await expect(
 				chainedSpeedMarketsAMM.createNewMarket(
-					toBytes32('ETH'),
-					timeFrame,
-					[0, 1, 0, 0, 0, 0, 1], // 7 directions
-					toUnit(buyinAmount),
-					[priceFeedUpdateData],
-					ZERO_ADDRESS,
-					{ value: fee, from: user }
+					getCreateChainedSpeedAMMParams(
+						user,
+						'ETH',
+						timeFrame,
+						PYTH_ETH_PRICE,
+						now,
+						buyinAmount,
+						[0, 1, 0, 0, 0, 0, 1] // 7 directions
+					),
+					{ from: creatorAccount }
 				)
 			).to.be.revertedWith('Wrong number of directions');
 
 			await expect(
 				chainedSpeedMarketsAMM.createNewMarket(
-					toBytes32('ETH'),
-					timeFrame,
-					[0, 1, 0, 0, 0, 0], // 6 directions
-					toUnit(11),
-					[priceFeedUpdateData],
-					ZERO_ADDRESS,
-					{ value: fee, from: user }
+					getCreateChainedSpeedAMMParams(
+						user,
+						'ETH',
+						timeFrame,
+						PYTH_ETH_PRICE,
+						now,
+						11,
+						[0, 1, 0, 0, 0, 0] // 6 directions
+					),
+					{ from: creatorAccount }
 				)
 			).to.be.revertedWith('Profit too high');
 
 			await chainedSpeedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				timeFrame,
-				[0, 1, 0, 0, 0, 0], // UP, DOWN, UP, UP, UP, UP
-				toUnit(buyinAmount),
-				[priceFeedUpdateData],
-				referrerAddress,
-				{ value: fee, from: user }
+				getCreateChainedSpeedAMMParams(
+					user,
+					'ETH',
+					timeFrame,
+					PYTH_ETH_PRICE,
+					now,
+					buyinAmount,
+					[0, 1, 0, 0, 0, 0], // UP, DOWN, UP, UP, UP, UP
+					ZERO_ADDRESS,
+					referrerAddress
+				),
+				{ from: creatorAccount }
 			);
 
 			let markets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
@@ -271,15 +297,9 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				PAYOUT_MULTIPLIERS
 			);
 			await expect(
-				chainedSpeedMarketsAMM.createNewMarket(
-					toBytes32('ETH'),
-					timeFrame,
-					[0, 1, 0, 0, 0, 0],
-					toUnit(buyinAmount),
-					[priceFeedUpdateData],
-					ZERO_ADDRESS,
-					{ value: fee, from: user }
-				)
+				chainedSpeedMarketsAMM.createNewMarket(defaultCreateChainedSpeedAMMParams, {
+					from: creatorAccount,
+				})
 			).to.be.revertedWith('Out of liquidity');
 
 			await chainedSpeedMarketsAMM.setLimitParams(
@@ -293,44 +313,47 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				toUnit(2000), // maxRisk INCREASED
 				PAYOUT_MULTIPLIERS
 			);
+			await chainedSpeedMarketsAMM.createNewMarket(defaultCreateChainedSpeedAMMParams, {
+				from: creatorAccount,
+			});
+
 			await chainedSpeedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				timeFrame,
-				[0, 1, 0, 0, 0, 0], // 6 directions
-				toUnit(buyinAmount),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				{ value: fee, from: user }
+				getCreateChainedSpeedAMMParams(
+					user,
+					'ETH',
+					timeFrame,
+					PYTH_ETH_PRICE,
+					now,
+					buyinAmount,
+					[0, 1, 0] // 3 directions
+				),
+				{ from: creatorAccount }
 			);
 
 			await chainedSpeedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				timeFrame,
-				[0, 1, 0], // 3 directions
-				toUnit(buyinAmount),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				{ value: fee, from: user }
+				getCreateChainedSpeedAMMParams(
+					user,
+					'ETH',
+					timeFrame,
+					PYTH_ETH_PRICE,
+					now,
+					buyinAmount,
+					[0, 1] // 2 directions
+				),
+				{ from: creatorAccount }
 			);
 
 			await chainedSpeedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				timeFrame,
-				[0, 1], // 2 directions
-				toUnit(buyinAmount),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				{ value: fee, from: user }
-			);
-
-			await chainedSpeedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				timeFrame,
-				[0, 1], // 2 directions
-				toUnit(buyinAmount),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				{ value: fee, from: user }
+				getCreateChainedSpeedAMMParams(
+					user,
+					'ETH',
+					timeFrame,
+					PYTH_ETH_PRICE,
+					now,
+					buyinAmount,
+					[0, 1] // 2 directions
+				),
+				{ from: creatorAccount }
 			);
 
 			console.log('Check number of active markets');
@@ -380,43 +403,40 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			let buyinAmount = 10;
 			let timeFrame = 600; // 10 min
 
-			await chainedSpeedMarketsAMM.createNewMarketWithDifferentCollateral(
-				toBytes32('ETH'),
-				timeFrame,
-				[0, 1, 1, 1, 1, 0], // 6 directions
-				[priceFeedUpdateData],
-				exoticOP.address,
-				toUnit(buyinAmount),
-				false,
-				ZERO_ADDRESS,
-				{ value: fee, from: user }
+			await chainedSpeedMarketsAMM.createNewMarket(
+				getCreateChainedSpeedAMMParams(
+					user,
+					'ETH',
+					timeFrame,
+					PYTH_ETH_PRICE,
+					now,
+					buyinAmount,
+					[0, 1, 1, 1, 1, 0], // 6 directions
+					exoticOP.address
+				),
+				{
+					from: creatorAccount,
+				}
 			);
 
-			await swapRouterMock.setDefaults(mockWeth.address, exoticUSD.address);
-
-			await chainedSpeedMarketsAMM.createNewMarketWithDifferentCollateral(
-				toBytes32('ETH'),
+			const defaultCreateChainedSpeedAMMParams = getCreateChainedSpeedAMMParams(
+				user,
+				'ETH',
 				timeFrame,
+				PYTH_ETH_PRICE,
+				now,
+				buyinAmount,
 				[0, 1], // 2 directions
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				toUnit(buyinAmount),
-				true,
-				ZERO_ADDRESS,
-				{ value: toUnit(buyinAmount + fee / 1e18), from: user }
+				exoticOP.address
 			);
 
-			await chainedSpeedMarketsAMM.createNewMarketWithDifferentCollateral(
-				toBytes32('ETH'),
-				timeFrame,
-				[0, 1], // 2 directions
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				toUnit(buyinAmount),
-				true,
-				ZERO_ADDRESS,
-				{ value: toUnit(buyinAmount + fee / 1e18), from: user }
-			);
+			await chainedSpeedMarketsAMM.createNewMarket(defaultCreateChainedSpeedAMMParams, {
+				from: creatorAccount,
+			});
+
+			await chainedSpeedMarketsAMM.createNewMarket(defaultCreateChainedSpeedAMMParams, {
+				from: creatorAccount,
+			});
 		});
 
 		it('Should resolve chained speed markets', async () => {
@@ -606,12 +626,15 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				marketDataArray[indexWithTwoDirections].strikeTime
 			);
 
+			await mockWeth.deposit({ value: toUnit(1), from: user });
+			await mockWeth.transfer(swapRouterMock.address, toUnit(0.5), { from: user });
+
 			market = activeMarkets[indexWithTwoDirections];
 			await chainedSpeedMarketsAMM.resolveMarketWithOfframp(
 				market,
 				[[resolvePriceFeedUpdateDataWithUp], [resolvePriceFeedUpdateDataWithDown]],
 				ZERO_ADDRESS,
-				true,
+				true, // isETH
 				{ value: 2 * fee, from: user }
 			);
 			resolvedMarkets++;

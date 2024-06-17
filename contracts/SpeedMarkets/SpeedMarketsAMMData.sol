@@ -161,7 +161,9 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             for (uint j = 0; j < market.numOfDirections(); j++) {
                 marketDirections[j] = market.directions(j);
                 if (j < market.numOfPrices()) {
-                    marketStrikePrices[j] = market.strikePrices(j);
+                    try market.strikePrices(j) {
+                        marketStrikePrices[j] = market.strikePrices(j);
+                    } catch (bytes memory) {} // fix for old Chained markets where length of prices array is invalid
                     marketFinalPrices[j] = market.finalPrices(j);
                 }
             }

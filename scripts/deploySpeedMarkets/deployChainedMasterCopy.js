@@ -1,15 +1,11 @@
-const { ethers, upgrades } = require('hardhat');
-const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
-const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { ethers } = require('hardhat');
+const { setTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let priceFeedAddress, ProxyERC20sUSDaddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -42,6 +38,11 @@ async function main() {
 	if (networkObj.chainId == 8453) {
 		networkObj.name = 'baseMainnet';
 		network = 'baseMainnet';
+	}
+
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
 	}
 
 	console.log('Account is:' + owner.address);

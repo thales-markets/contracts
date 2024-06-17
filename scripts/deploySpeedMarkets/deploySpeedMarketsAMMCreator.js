@@ -1,11 +1,12 @@
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+
+	let proxySUSD;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -18,31 +19,37 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
+		proxySUSD = getTargetAddress('ProxysUSD', network);
 	}
 
 	if (networkObj.chainId == 420) {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
+		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
 	if (networkObj.chainId == 42161) {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
 
 	if (networkObj.chainId == 8453) {
 		networkObj.name = 'baseMainnet';
 		network = 'baseMainnet';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
 
 	if (networkObj.chainId == 56) {
 		networkObj.name = 'bsc';
 		network = 'bsc';
+		proxySUSD = getTargetAddress('BUSD', network);
 	}
 
 	if (networkObj.chainId == 137) {
 		networkObj.name = 'polygon';
 		network = 'polygon';
+		proxySUSD = getTargetAddress('ProxyUSDC', network);
 	}
 
 	if (networkObj.chainId == 168587773) {
@@ -64,35 +71,34 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	const SpeedMarketsAMMData = await ethers.getContractFactory('SpeedMarketsAMMData');
-	const SpeedAMMAddress = getTargetAddress('SpeedMarketsAMM', network);
-	console.log('SpeedMarketsAMM found at: ', SpeedAMMAddress);
-
-	await delay(2000);
-	const SpeedMarketsAMMDataDeployed = await upgrades.deployProxy(SpeedMarketsAMMData, [
+	const SpeedMarketsAMMCreator = await ethers.getContractFactory('SpeedMarketsAMMCreator');
+	let SpeedMarketsAMMCreatorDeployed = await upgrades.deployProxy(SpeedMarketsAMMCreator, [
 		owner.address,
-		SpeedAMMAddress,
+		proxySUSD,
 	]);
-	await delay(2000);
-	await SpeedMarketsAMMDataDeployed.deployed();
+	await SpeedMarketsAMMCreatorDeployed.deployed();
 
-	console.log('SpeedMarketsAMMData Deployed on', SpeedMarketsAMMDataDeployed.address);
-	setTargetAddress('SpeedMarketsAMMData', network, SpeedMarketsAMMDataDeployed.address);
+	console.log('SpeedMarketsAMMCreator proxy:', SpeedMarketsAMMCreatorDeployed.address);
 
-	await delay(65000);
-	const SpeedMarketsAMMDataImplementation = await getImplementationAddress(
+	const SpeedMarketsAMMCreatorImplementation = await getImplementationAddress(
 		ethers.provider,
-		SpeedMarketsAMMDataDeployed.address
+		SpeedMarketsAMMCreatorDeployed.address
 	);
 
-	console.log('Implementation SpeedMarketsAMMData: ', SpeedMarketsAMMDataImplementation);
-	setTargetAddress('SpeedMarketsAMMDataImplementation', network, SpeedMarketsAMMDataImplementation);
+	console.log('Implementation SpeedMarketsAMMCreator: ', SpeedMarketsAMMCreatorImplementation);
 
-	await delay(5000);
+	setTargetAddress('SpeedMarketsAMMCreator', network, SpeedMarketsAMMCreatorDeployed.address);
+	setTargetAddress(
+		'SpeedMarketsAMMCreatorImplementation',
+		network,
+		SpeedMarketsAMMCreatorImplementation
+	);
+
+	delay(5000);
 
 	try {
 		await hre.run('verify:verify', {
-			address: SpeedMarketsAMMDataImplementation,
+			address: SpeedMarketsAMMCreatorImplementation,
 		});
 	} catch (e) {
 		console.log(e);

@@ -49,6 +49,11 @@ async function main() {
 		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
+	}
+
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 

@@ -50,6 +50,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
     uint private constant ONE = 1e18;
     uint private constant MAX_APPROVAL = type(uint256).max;
+    uint public skewSlippage;
     uint private constant SECONDS_PER_MINUTE = 60;
     IERC20Upgradeable public sUSD;
 
@@ -91,7 +92,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     uint[] public timeThresholdsForFees;
     uint[] public lpFees;
     uint public totalCollateralizedAmount;
-    uint public skewSlippage;
 
     /// @param user user wallet address
     /// @param asset market asset

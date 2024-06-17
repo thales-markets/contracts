@@ -343,6 +343,12 @@
         "internalType": "uint256",
         "name": "_maxSkewImpact",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_skewSlippage",
+        "type": "uint256"
       }
     ],
     "name": "SafeBoxAndMaxSkewImpactChanged",
@@ -1429,6 +1435,11 @@
         "internalType": "uint256",
         "name": "_maxSkewImpact",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_skewSlippage",
+        "type": "uint256"
       }
     ],
     "name": "setSafeBoxAndMaxSkewImpact",
@@ -1452,6 +1463,19 @@
     "name": "setSupportedAsset",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "skewSlippage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

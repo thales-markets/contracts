@@ -50,7 +50,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
     uint private constant ONE = 1e18;
     uint private constant MAX_APPROVAL = type(uint256).max;
-    uint private constant SKEW_SLIPPAGE = 2e16;
     uint private constant SECONDS_PER_MINUTE = 60;
     IERC20Upgradeable public sUSD;
 
@@ -92,6 +91,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     uint[] public timeThresholdsForFees;
     uint[] public lpFees;
     uint public totalCollateralizedAmount;
+    uint public skewSlippage;
 
     /// @param user user wallet address
     /// @param asset market asset
@@ -218,14 +218,14 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint skewImpact
     ) internal returns (uint lpFeeWithSkew) {
         uint skew = _getSkewByAssetAndDirection(asset, direction);
-        require(skew <= skewImpact + SKEW_SLIPPAGE, "Skew slippage exceeded");
+        require(skew <= skewImpact + skewSlippage, "Skew slippage exceeded");
 
         Direction oppositeDirection = direction == Direction.Up ? Direction.Down : Direction.Up;
 
         // calculate discount as half of skew for opposite direction
         uint discount = skew == 0 ? _getSkewByAssetAndDirection(asset, oppositeDirection) / 2 : 0;
 
-        // decrease risk for opposite directionif there is, otherwise increase risk for current direction
+        // decrease risk for opposite direction if there is, otherwise increase risk for current direction
         if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
             currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
         } else {
@@ -671,13 +671,19 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         emit SetMaxRisks(asset, _maxRiskPerAsset, _maxRiskPerAssetAndDirection);
     }
 
-    /// @notice set SafeBox and max skew impact
-    /// @param _safeBoxImpact skew impact
+    /// @notice set SafeBox, max skew impact and skew slippage
+    /// @param _safeBoxImpact safebox impact
     /// @param _maxSkewImpact skew impact
-    function setSafeBoxAndMaxSkewImpact(uint _safeBoxImpact, uint _maxSkewImpact) external onlyOwner {
+    /// @param _skewSlippage skew slippage
+    function setSafeBoxAndMaxSkewImpact(
+        uint _safeBoxImpact,
+        uint _maxSkewImpact,
+        uint _skewSlippage
+    ) external onlyOwner {
         safeBoxImpact = _safeBoxImpact;
         maxSkewImpact = _maxSkewImpact;
-        emit SafeBoxAndMaxSkewImpactChanged(_safeBoxImpact, _maxSkewImpact);
+        skewSlippage = _skewSlippage;
+        emit SafeBoxAndMaxSkewImpactChanged(_safeBoxImpact, _maxSkewImpact, _skewSlippage);
     }
 
     /// @notice set LP fee params
@@ -765,7 +771,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     event AMMAddressesChanged(address _addressManager);
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event SetMaxRisks(bytes32 asset, uint _maxRiskPerAsset, uint _maxRiskPerAssetAndDirection);
-    event SafeBoxAndMaxSkewImpactChanged(uint _safeBoxImpact, uint _maxSkewImpact);
+    event SafeBoxAndMaxSkewImpactChanged(uint _safeBoxImpact, uint _maxSkewImpact, uint _skewSlippage);
     event SetLPFeeParams(uint[] _timeThresholds, uint[] _lpFees, uint _lpFee);
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);

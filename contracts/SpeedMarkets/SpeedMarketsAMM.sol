@@ -96,7 +96,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     IAddressManager public addressManager;
 
     uint public maxSkewImpact;
-    uint private constant SKEW_SLIPPAGE = 2e16;
+    uint public skewSlippage;
 
     /// @param user user wallet address
     /// @param asset market asset
@@ -205,7 +205,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint skewImpact
     ) internal returns (uint lpFeeWithSkew) {
         uint skew = _getSkewByAssetAndDirection(asset, direction);
-        require(skew <= skewImpact + SKEW_SLIPPAGE, "Skew slippage exceeded");
+        require(skew <= skewImpact + skewSlippage, "Skew slippage exceeded");
 
         SpeedMarket.Direction oppositeDirection = direction == SpeedMarket.Direction.Up
             ? SpeedMarket.Direction.Down
@@ -214,7 +214,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         // calculate discount as half of skew for opposite direction
         uint discount = skew == 0 ? _getSkewByAssetAndDirection(asset, oppositeDirection) / 2 : 0;
 
-        // decrease risk for opposite directionif there is, otherwise increase risk for current direction
+        // decrease risk for opposite direction if there is, otherwise increase risk for current direction
         if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
             currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
         } else {
@@ -600,13 +600,19 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetMaxRisks(asset, _maxRiskPerAsset, _maxRiskPerAssetAndDirection);
     }
 
-    /// @notice set SafeBox and max skew impact
-    /// @param _safeBoxImpact skew impact
+    /// @notice set SafeBox, max skew impact and skew slippage
+    /// @param _safeBoxImpact safebox impact
     /// @param _maxSkewImpact skew impact
-    function setSafeBoxAndMaxSkewImpact(uint _safeBoxImpact, uint _maxSkewImpact) external onlyOwner {
+    /// @param _skewSlippage skew slippage
+    function setSafeBoxAndMaxSkewImpact(
+        uint _safeBoxImpact,
+        uint _maxSkewImpact,
+        uint _skewSlippage
+    ) external onlyOwner {
         safeBoxImpact = _safeBoxImpact;
         maxSkewImpact = _maxSkewImpact;
-        emit SafeBoxAndMaxSkewImpactChanged(_safeBoxImpact, _maxSkewImpact);
+        skewSlippage = _skewSlippage;
+        emit SafeBoxAndMaxSkewImpactChanged(_safeBoxImpact, _maxSkewImpact, _skewSlippage);
     }
 
     /// @notice set LP fee params
@@ -708,7 +714,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint _maximumPriceDelayForResolving
     );
     event SetMaxRisks(bytes32 asset, uint _maxRiskPerAsset, uint _maxRiskPerAssetAndDirection);
-    event SafeBoxAndMaxSkewImpactChanged(uint _safeBoxImpact, uint _maxSkewImpact);
+    event SafeBoxAndMaxSkewImpactChanged(uint _safeBoxImpact, uint _maxSkewImpact, uint _skewSlippage);
     event SetLPFeeParams(uint[] _timeThresholds, uint[] _lpFees, uint _lpFee);
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);

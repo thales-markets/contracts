@@ -58,7 +58,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 3600, 86400, 60, 60);
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(500));
-		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05));
+		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05), toUnit(0.02));
 		await speedMarketsAMM.setAssetToPythID(
 			toBytes32('ETH'),
 			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace'

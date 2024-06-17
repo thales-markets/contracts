@@ -43,7 +43,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 		await speedMarkets.setLimitParams(toUnit(5), toUnit(500), 300, 86400, 60, 60);
 		await speedMarkets.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarkets.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(500));
-		await speedMarkets.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05));
+		await speedMarkets.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05), toUnit(0.02));
 		await speedMarkets.setAssetToPythID(
 			toBytes32('ETH'),
 			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace'

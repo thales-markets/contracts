@@ -46,7 +46,7 @@ module.exports = {
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(100));
 		await speedMarketsAMM.setMaxRisks(toBytes32('BTC'), toUnit(1000), toUnit(100));
-		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05));
+		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05), toUnit(0.02));
 		await speedMarketsAMM.setLPFeeParams(
 			[15, 30, 60, 120],
 			[toUnit(0.18), toUnit(0.13), toUnit(0.08), toUnit(0.05)],

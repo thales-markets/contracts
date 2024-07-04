@@ -21,6 +21,7 @@ contract('StakingThales', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy] = accounts;
 	let ThalesDeployed,
 		ThalesFeeDeployed,
+		ThalesFee2Deployed,
 		StakingThalesDeployed,
 		EscrowThalesDeployed,
 		SNXRewardsDeployed,
@@ -103,6 +104,7 @@ contract('StakingThales', (accounts) => {
 		let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 		ThalesDeployed = await Thales.new({ from: owner });
 		ThalesFeeDeployed = await Thales.new({ from: owner });
+		ThalesFee2Deployed = await Thales.new({ from: owner });
 		//Price feed setup
 		await PriceFeedInstance.connect(ownerSigner).addAggregator(SNX, aggregatorSNX.address);
 		timestamp = await currentTime();
@@ -183,6 +185,30 @@ contract('StakingThales', (accounts) => {
 			assert.equal(fromUnit(balanceOfOwner), '100000000');
 		});
 
+		it('Send token to Staking and withdraw it', async () => {
+			let balanceOfOwner = await ThalesFee2Deployed.balanceOf(owner);
+			assert.equal(fromUnit(balanceOfOwner), '100000000');
+
+			await ThalesFee2Deployed.transfer(StakingThalesDeployed.address, toUnit(2000), {
+				from: owner,
+			});
+
+			let balanceOfStakingContract = await ThalesFee2Deployed.balanceOf(
+				StakingThalesDeployed.address
+			);
+			assert.equal(fromUnit(balanceOfStakingContract), '2000');
+
+			await StakingThalesDeployed.withdrawCollateral(
+				ThalesFee2Deployed.address,
+				first,
+				toUnit(2000),
+				{ from: owner }
+			);
+
+			let balanceOfFirstAccount = await ThalesFee2Deployed.balanceOf(first);
+			assert.equal(fromUnit(balanceOfFirstAccount), '2000');
+		});
+
 		it('Stake with first account and claim reward (with fees available)', async () => {
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);
@@ -211,6 +237,18 @@ contract('StakingThales', (accounts) => {
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
 			await fastForward(WEEK + SECOND);
+
+			await expect(
+				StakingThalesDeployed.withdrawCollateral(ThalesDeployed.address, first, toUnit(100), {
+					from: owner,
+				})
+			).to.be.revertedWith('Can not withdraw staking token');
+			await expect(
+				StakingThalesDeployed.withdrawCollateral(ThalesFeeDeployed.address, first, toUnit(2001), {
+					from: owner,
+				})
+			).to.be.revertedWith('revert SafeERC20: low-level call failed');
+
 			let currentFees = await StakingThalesDeployed.currentPeriodFees();
 			await StakingThalesDeployed.closePeriod({ from: second });
 			currentFees = await StakingThalesDeployed.currentPeriodFees();

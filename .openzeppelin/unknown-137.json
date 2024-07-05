@@ -10887,6 +10887,121 @@
           }
         }
       }
+    },
+    "2ece03a1e6430e262b796620226a3d97c4f18153a5434d795b4e9ade4045ee51": {
+      "address": "0x652186dfb0733C9d6d504bCa2DB5405CC509ab61",
+      "txHash": "0x2f830aa059152cd63d16305ced32e1da12c06d68423389e612c82cf460a181d9",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:12"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "safeBox",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:15"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "referrals",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:17"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "stakingThales",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:19"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "multiCollateralOnOffRamp",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:21"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "pyth",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:23"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "speedMarketsAMM",
+            "type": "t_address",
+            "src": "contracts\\AddressManager\\AddressManager.sol:25"
+          },
+          {
+            "contract": "AddressManager",
+            "label": "addressBook",
+            "type": "t_mapping(t_string_memory_ptr,t_address)",
+            "src": "contracts\\AddressManager\\AddressManager.sol:27"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_string_memory_ptr,t_address)": {
+            "label": "mapping(string => address)"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
     }
   }
 }

@@ -17,7 +17,6 @@ interface ISpeedMarkets {
         bytes32 asset;
         uint64 strikeTime;
         int64 strikePrice;
-        uint64 strikePricePublishTime;
         int64 finalPrice;
         Direction direction;
         Direction result;
@@ -26,6 +25,7 @@ interface ISpeedMarkets {
         uint safeBoxImpact;
         uint lpFee;
         uint createdAt;
+        uint64 strikePricePublishTime;
     }
 
     function speedMarket(bytes32 _market) external view returns (SpeedMarketData memory);

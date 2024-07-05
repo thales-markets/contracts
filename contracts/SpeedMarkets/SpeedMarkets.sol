@@ -20,7 +20,6 @@ import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import {IReferrals} from "../interfaces/IReferrals.sol";
 
 import "../interfaces/IAddressManager.sol";
-import "../interfaces/ISpeedMarkets.sol";
 
 /// @title An AMM for Thales speed markets
 contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
@@ -37,7 +36,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         bytes32 asset;
         uint64 strikeTime;
         int64 strikePrice;
-        uint64 strikePricePublishTime;
         int64 finalPrice;
         Direction direction;
         Direction result;
@@ -46,11 +44,11 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint safeBoxImpact;
         uint lpFee;
         uint createdAt;
+        uint64 strikePricePublishTime;
     }
 
     uint private constant ONE = 1e18;
     uint private constant MAX_APPROVAL = type(uint256).max;
-    uint public skewSlippage;
     uint private constant SECONDS_PER_MINUTE = 60;
     IERC20Upgradeable public sUSD;
 
@@ -92,6 +90,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     uint[] public timeThresholdsForFees;
     uint[] public lpFees;
     uint public totalCollateralizedAmount;
+    uint public skewSlippage;
 
     /// @param user user wallet address
     /// @param asset market asset
@@ -329,7 +328,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             _params.asset,
             _params.strikeTime,
             _params.pythPrice.price,
-            uint64(_params.pythPrice.publishTime),
             0,
             _params.direction,
             _params.direction,
@@ -337,7 +335,8 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             false,
             safeBoxImpact,
             lpFeeWithSkew,
-            block.timestamp
+            block.timestamp,
+            uint64(_params.pythPrice.publishTime)
         );
 
         totalCollateralizedAmount += (2 * _params.buyinAmount);

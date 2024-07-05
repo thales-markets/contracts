@@ -15,6 +15,7 @@ interface ISpeedMarkets {
         bytes32 asset;
         uint64 strikeTime;
         int64 strikePrice;
+        uint64 strikePricePublishTime;
         int64 finalPrice;
         Direction direction;
         Direction result;

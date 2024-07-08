@@ -90,7 +90,7 @@ async function main() {
 	setTargetAddress('SpeedMarketsAMM', network, SpeedMarketsAMMDeployed.address);
 	setTargetAddress('SpeedMarketsAMMImplementation', network, SpeedMarketsAMMImplementation);
 
-	delay(5000);
+	await delay(5000);
 
 	try {
 		await hre.run('verify:verify', {

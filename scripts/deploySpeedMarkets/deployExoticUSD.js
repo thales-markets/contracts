@@ -66,7 +66,7 @@ async function main() {
 
 	setTargetAddress('ExoticUSD', network, ExoticUSDDeployed.address);
 
-	delay(5000);
+	await delay(5000);
 
 	try {
 		await hre.run('verify:verify', {

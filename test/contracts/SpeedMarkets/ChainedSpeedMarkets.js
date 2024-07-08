@@ -171,6 +171,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		let ChainedSpeedMarketMastercopy = artifacts.require('ChainedSpeedMarketMastercopy');
 		let chainedSpeedMarketMastercopy = await ChainedSpeedMarketMastercopy.new();
 
+		await chainedSpeedMarketsAMM.setSusdAddress(exoticUSD.address);
 		await chainedSpeedMarketsAMM.setMastercopy(chainedSpeedMarketMastercopy.address);
 		await chainedSpeedMarketsAMM.setAddressManager(addressManager.address);
 		await chainedSpeedMarketsAMM.setMultiCollateralOnOffRampEnabled(true);

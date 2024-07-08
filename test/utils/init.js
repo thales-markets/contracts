@@ -42,6 +42,7 @@ module.exports = {
 		await MockPriceFeedDeployed.setPricetoReturn(10000);
 
 		await speedMarketsAMM.initialize(owner, exoticUSD.address);
+		await speedMarketsAMM.setSusdAddress(exoticUSD.address);
 		await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(1000), 3600, 86400, 60, 30);
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(100));

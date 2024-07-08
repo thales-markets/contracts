@@ -45,7 +45,7 @@ async function main() {
 
 	const SpeedMarketsAMMCreatorAddress = getTargetAddress('SpeedMarketsAMMCreator', network);
 	const SpeedMarketsAMMAddress = getTargetAddress('SpeedMarketsAMM', network);
-	const ChainedSpeedMarketsAMM = getTargetAddress('SpeedMarketsAMMCreator', network);
+	const ChainedSpeedMarketsAMM = getTargetAddress('ChainedSpeedMarketsAMM', network);
 
 	const SessionValidationModule = await ethers.getContractFactory('SessionValidationModule');
 	const SessionValidationModuleDeployed = await SessionValidationModule.deploy();
@@ -59,6 +59,8 @@ async function main() {
 		SpeedMarketsAMMAddress,
 		ChainedSpeedMarketsAMM
 	);
+
+	await delay(5000);
 
 	try {
 		await hre.run('verify:verify', {

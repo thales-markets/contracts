@@ -517,6 +517,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         emit AddressManagerChanged(_addressManager);
     }
 
+    /// @notice set sUSD address (default collateral)
+    function setSusdAddress(address _sUSD) external onlyOwner {
+        sUSD = IERC20Upgradeable(_sUSD);
+        emit SusdAddressChanged(_sUSD);
+    }
+
     /// @notice set multicollateral enabled
     function setMultiCollateralOnOffRampEnabled(bool _enabled) external onlyOwner {
         address multiCollateralOnOffRamp = addressManager.multiCollateralOnOffRamp();
@@ -571,6 +577,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint[] _payoutMultipliers
     );
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
+    event SusdAddressChanged(address _sUSD);
     event MultiCollateralOnOffRampEnabled(bool _enabled);
     event AmountTransfered(address _destination, uint _amount);
     event AddressManagerChanged(address _addressManager);

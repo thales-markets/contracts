@@ -180,7 +180,7 @@
 		"SafeBoxBufferImplementation": "0x96e99c78f0fDf597BAD936DC33D79EB796aF55fC",
 		"SpeedMarketsAMMCreator": "0xd26EC8c2b9ae45F6753271183f95A1cE69D0E671",
 		"SpeedMarketsAMMCreatorImplementation": "0x3C7efFaaED0C706A9AcE373b2153cfE43dCF1e68",
-		"SessionValidationModule": "0x2Ef105720df33672120ecDD9CBaeE1D699C62085"
+		"SessionValidationModule": "0x78D089FCD2308011E87B9a5b85cD309d29e9cF1e"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -329,7 +329,7 @@
 		"PriceFeedWithTHALESImplementation": "0xF1E04Adc112AE0016C52a18518aA3400826aE20e",
 		"SpeedMarketsAMMCreator": "0x905D1732F7639a402B1E0Ffcc2CeD2270Fc16812",
 		"SpeedMarketsAMMCreatorImplementation": "0x4385f3d85E81f97A555E9327eB83ccd263E7EE45",
-		"SessionValidationModule": "0x56493d33dfe1e6604F028618AaAe729bacA21AbB"
+		"SessionValidationModule": "0x94d06B770D41D9b3A3bb2E636F3F93F69909099f"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
@@ -450,7 +450,7 @@
 		"SafeBoxBufferImplementation": "0xb8e8E6cF3AbD16070013B23c92601D0eeA83a02E",
 		"SpeedMarketsAMMCreator": "0x6B5FE966Ea9B05d8E628E772B0b745734D069983",
 		"SpeedMarketsAMMCreatorImplementation": "0x342D29603CE81cF3aC1B004A5e19C6Ff6d7fe516",
-		"SessionValidationModule": "0x0f4B636648E0071Afdb8E3c5f97e9F40F80479f9"
+		"SessionValidationModule": "0x1E82dbfb6BefF4b4799a1a688d09B259eb173F64"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -499,7 +499,7 @@
 		"ChainedSpeedMarketsAMMImplementation": "0xFFe600B2099c827b1377c7d507395133eae3dBF5",
 		"SpeedMarketsAMMCreator": "0xfC7105DA51017F2D990B9Fe68db343ae38060c3b",
 		"SpeedMarketsAMMCreatorImplementation": "0x62234d29a4E75939878903F1287BD23Ee1B80c8b",
-		"SessionValidationModule": "0x2aA3952b82848112638FF5797feC22d74898f75E"
+		"SessionValidationModule": "0x0Cfff1E16E8956439DD33d8350949ca669dBD371"
 	},
 	"zkSyncNetwork": {
 		"ProxyUSDC": "0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4",

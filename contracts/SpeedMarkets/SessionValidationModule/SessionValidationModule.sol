@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {UserOperation} from "./Biconomy/interfaces/UserOperation.sol";
 import {ECDSA} from "./OpenZepellin/ECDSA.sol";
 
 contract SessionValidationModule is Initializable {
@@ -63,12 +62,14 @@ contract SessionValidationModule is Initializable {
         bytes calldata _sessionKeySignature
     ) external view returns (bool) {
         bytes calldata callData = _op.callData;
-
-        address sessionKey = abi.decode(_sessionKeyData[:20], (address));
+        address sessionKey;
         uint160 destContract;
         uint160 destContract2;
 
         assembly {
+            // Load the first 20 bytes of _sessionKeyData into extractedAddress
+            sessionKey := shr(96, calldataload(_sessionKeyData.offset))
+
             // There are two types of calldata that is being sent for validation.
             // First one is without paymaster and second one is with paymaster.
             // When calldata does not contain paymaster the destination contract is after the selector and we need to skip 0x4 bytes.

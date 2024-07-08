@@ -20,7 +20,6 @@ import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import {IReferrals} from "../interfaces/IReferrals.sol";
 
 import "../interfaces/IAddressManager.sol";
-import "../interfaces/ISpeedMarkets.sol";
 
 /// @title An AMM for Thales speed markets
 contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
@@ -37,7 +36,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         bytes32 asset;
         uint64 strikeTime;
         int64 strikePrice;
-        uint64 strikePricePublishTime;
         int64 finalPrice;
         Direction direction;
         Direction result;
@@ -46,16 +44,11 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint safeBoxImpact;
         uint lpFee;
         uint createdAt;
-    }
-
-    struct TempData {
-        uint lpFeeWithSkew;
-        PythStructs.Price pythPrice;
+        uint64 strikePricePublishTime;
     }
 
     uint private constant ONE = 1e18;
     uint private constant MAX_APPROVAL = type(uint256).max;
-    uint private constant SKEW_SLIPPAGE = 1e16;
     uint private constant SECONDS_PER_MINUTE = 60;
     IERC20Upgradeable public sUSD;
 
@@ -97,6 +90,45 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     uint[] public timeThresholdsForFees;
     uint[] public lpFees;
     uint public totalCollateralizedAmount;
+    uint public skewSlippage;
+
+    /// @param user user wallet address
+    /// @param asset market asset
+    /// @param strikeTime strike time, if zero delta time is used
+    /// @param delta delta time, used if strike time is zero
+    /// @param pythPrice structure with pyth price and publish time
+    /// @param direction direction (UP/DOWN)
+    /// @param collateral collateral address, for default collateral use zero address
+    /// @param collateralAmount collateral amount, for non default includes fees
+    /// @param referrer referrer address
+    /// @param skewImpact skew impact, used to check skew slippage
+    struct CreateMarketParams {
+        address user;
+        bytes32 asset;
+        uint64 strikeTime;
+        uint64 delta;
+        PythStructs.Price pythPrice;
+        Direction direction;
+        address collateral;
+        uint collateralAmount;
+        address referrer;
+        uint skewImpact;
+        uint8 creatorID;
+    }
+
+    struct CreateMarketInternal {
+        address user;
+        bytes32 asset;
+        uint64 strikeTime;
+        PythStructs.Price pythPrice;
+        Direction direction;
+        uint buyinAmount;
+        bool transferSusd;
+        address referrer;
+        uint skewImpact;
+        IAddressManager.Addresses contractsAddresses;
+        uint8 creatorID;
+    }
 
     receive() external payable {}
 
@@ -106,61 +138,44 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         sUSD = _sUSD;
     }
 
-    /// @notice create new market for given strike time, in case it is zero delta time is used
-    function createNewMarket(
-        bytes32 asset,
-        uint64 strikeTime,
-        uint64 delta,
-        Direction direction,
-        uint buyinAmount,
-        bytes[] calldata priceUpdateData,
-        address referrer,
-        uint skewImpact
-    ) external payable nonReentrant notPaused {
+    /// @notice create new market for a given delta/strike time
+    /// @param _params parameters for creating market
+    function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyCreator {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        _createNewMarket(
-            asset,
-            strikeTime == 0 ? uint64(block.timestamp + delta) : strikeTime,
-            direction,
-            buyinAmount,
-            priceUpdateData,
-            true,
-            referrer,
-            skewImpact,
-            contractsAddresses
-        );
-    }
 
-    /// @notice create new market with different collateral (not sUSD) for a given strike time, in case it is zero delta time is used
-    function createNewMarketWithDifferentCollateral(
-        bytes32 asset,
-        uint64 strikeTime,
-        uint64 delta,
-        Direction direction,
-        bytes[] calldata priceUpdateData,
-        address collateral,
-        uint collateralAmount,
-        bool isEth,
-        address referrer,
-        uint skewImpact
-    ) external payable nonReentrant notPaused {
-        _createNewMarketWithDifferentCollateral(
-            asset,
-            strikeTime == 0 ? uint64(block.timestamp + delta) : strikeTime,
-            direction,
-            priceUpdateData,
-            collateral,
-            collateralAmount,
-            isEth,
-            referrer,
-            skewImpact
+        bool isDefaultCollateral = _params.collateral == address(0);
+        uint64 strikeTime = _params.strikeTime == 0 ? uint64(block.timestamp + _params.delta) : _params.strikeTime;
+        uint buyinAmount = isDefaultCollateral
+            ? _params.collateralAmount
+            : _getBuyinWithConversion(
+                _params.user,
+                _params.collateral,
+                _params.collateralAmount,
+                strikeTime,
+                contractsAddresses
+            );
+
+        _createNewMarket(
+            CreateMarketInternal(
+                _params.user,
+                _params.asset,
+                strikeTime,
+                _params.pythPrice,
+                _params.direction,
+                buyinAmount,
+                isDefaultCollateral,
+                _params.referrer,
+                _params.skewImpact,
+                contractsAddresses,
+                _params.creatorID
+            )
         );
     }
 
     function _getBuyinWithConversion(
+        address user,
         address collateral,
         uint collateralAmount,
-        bool isEth,
         uint64 strikeTime,
         IAddressManager.Addresses memory contractsAddresses
     ) internal returns (uint buyinAmount) {
@@ -171,14 +186,9 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             contractsAddresses.multiCollateralOnOffRamp
         );
 
-        uint convertedAmount;
-        if (isEth) {
-            convertedAmount = iMultiCollateralOnOffRamp.onrampWithEth{value: collateralAmount}(collateralAmount);
-        } else {
-            IERC20Upgradeable(collateral).safeTransferFrom(msg.sender, address(this), collateralAmount);
-            IERC20Upgradeable(collateral).approve(address(iMultiCollateralOnOffRamp), collateralAmount);
-            convertedAmount = iMultiCollateralOnOffRamp.onramp(collateral, collateralAmount);
-        }
+        IERC20Upgradeable(collateral).safeTransferFrom(user, address(this), collateralAmount);
+        IERC20Upgradeable(collateral).approve(address(iMultiCollateralOnOffRamp), collateralAmount);
+        uint convertedAmount = iMultiCollateralOnOffRamp.onramp(collateral, collateralAmount);
 
         uint lpFeeForDeltaTime = _getFeeByTimeThreshold(
             uint64(strikeTime - block.timestamp),
@@ -191,32 +201,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
         uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
         require(amountDiff >= buyinAmount, "not enough received via onramp");
-    }
-
-    function _createNewMarketWithDifferentCollateral(
-        bytes32 asset,
-        uint64 strikeTime,
-        Direction direction,
-        bytes[] calldata priceUpdateData,
-        address collateral,
-        uint collateralAmount,
-        bool isEth,
-        address referrer,
-        uint skewImpact
-    ) internal {
-        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        uint buyinAmount = _getBuyinWithConversion(collateral, collateralAmount, isEth, strikeTime, contractsAddresses);
-        _createNewMarket(
-            asset,
-            strikeTime,
-            direction,
-            buyinAmount,
-            priceUpdateData,
-            false,
-            referrer,
-            skewImpact,
-            contractsAddresses
-        );
     }
 
     function _getSkewByAssetAndDirection(bytes32 _asset, Direction _direction) internal view returns (uint) {
@@ -233,14 +217,14 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint skewImpact
     ) internal returns (uint lpFeeWithSkew) {
         uint skew = _getSkewByAssetAndDirection(asset, direction);
-        require(skew <= skewImpact + SKEW_SLIPPAGE, "Skew slippage exceeded");
+        require(skew <= skewImpact + skewSlippage, "Skew slippage exceeded");
 
         Direction oppositeDirection = direction == Direction.Up ? Direction.Down : Direction.Up;
 
         // calculate discount as half of skew for opposite direction
         uint discount = skew == 0 ? _getSkewByAssetAndDirection(asset, oppositeDirection) / 2 : 0;
 
-        // decrease risk for opposite directionif there is, otherwise increase risk for current direction
+        // decrease risk for opposite direction if there is, otherwise increase risk for current direction
         if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
             currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
         } else {
@@ -253,7 +237,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
                 "Risk per direction exceeded"
             );
         }
-        // LP fee by delta time + skew impact based on risk per direction and asset - discount as half of opposite skew
+        // (LP fee by delta time) + (skew impact based on risk per direction and asset) - (discount as half of opposite skew)
         lpFeeWithSkew =
             _getFeeByTimeThreshold(uint64(strikeTime - block.timestamp), timeThresholdsForFees, lpFees, lpFee) +
             skew -
@@ -281,6 +265,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     function _handleReferrerAndSafeBox(
+        address user,
         address referrer,
         uint buyinAmount,
         IAddressManager.Addresses memory contractsAddresses
@@ -289,10 +274,10 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         if (address(iReferrals) != address(0)) {
             address newOrExistingReferrer;
             if (referrer != address(0)) {
-                iReferrals.setReferrer(referrer, msg.sender);
+                iReferrals.setReferrer(referrer, user);
                 newOrExistingReferrer = referrer;
             } else {
-                newOrExistingReferrer = iReferrals.referrals(msg.sender);
+                newOrExistingReferrer = iReferrals.referrals(user);
             }
 
             if (newOrExistingReferrer != address(0)) {
@@ -300,7 +285,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
                 if (referrerFeeByTier > 0) {
                     referrerShare = (buyinAmount * referrerFeeByTier) / ONE;
                     sUSD.safeTransfer(newOrExistingReferrer, referrerShare);
-                    emit ReferrerPaid(newOrExistingReferrer, msg.sender, referrerShare, buyinAmount);
+                    emit ReferrerPaid(newOrExistingReferrer, user, referrerShare, buyinAmount);
                 }
             }
         }
@@ -308,76 +293,69 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         sUSD.safeTransfer(contractsAddresses.safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
     }
 
-    function _createNewMarket(
-        bytes32 asset,
-        uint64 strikeTime,
-        Direction direction,
-        uint buyinAmount,
-        bytes[] memory priceUpdateData,
-        bool transferSusd,
-        address referrer,
-        uint skewImpact,
-        IAddressManager.Addresses memory contractsAddresses
-    ) internal {
-        require(supportedAsset[asset], "Asset is not supported");
-        require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
-        require(strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not alloowed");
-        require(strikeTime <= block.timestamp + maximalTimeToMaturity, "Time too far into the future");
-        require(2 * buyinAmount <= _getAvailableAmount(), "Insuff. funds for collateralization");
+    function _createNewMarket(CreateMarketInternal memory _params) internal {
+        require(supportedAsset[_params.asset], "Asset is not supported");
+        require(_params.buyinAmount >= minBuyinAmount && _params.buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
+        require(_params.strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not allowed");
+        require(_params.strikeTime <= block.timestamp + maximalTimeToMaturity, "Time too far into the future");
+        require(2 * _params.buyinAmount <= _getAvailableAmount(), "Insuff. funds for collateralization");
 
-        TempData memory tempData;
-        tempData.lpFeeWithSkew = _handleRiskAndGetFee(asset, direction, buyinAmount, strikeTime, skewImpact);
-
-        IPyth iPyth = IPyth(contractsAddresses.pyth);
-        iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(priceUpdateData)}(priceUpdateData);
-
-        tempData.pythPrice = iPyth.getPriceUnsafe(assetToPythId[asset]);
-
-        require(
-            (tempData.pythPrice.publishTime + maximumPriceDelay) > block.timestamp && tempData.pythPrice.price > 0,
-            "Stale price"
+        uint lpFeeWithSkew = _handleRiskAndGetFee(
+            _params.asset,
+            _params.direction,
+            _params.buyinAmount,
+            _params.strikeTime,
+            _params.skewImpact
         );
 
-        if (transferSusd) {
-            uint totalAmountToTransfer = (buyinAmount * (ONE + safeBoxImpact + tempData.lpFeeWithSkew)) / ONE;
-            sUSD.safeTransferFrom(msg.sender, address(this), totalAmountToTransfer);
+        if (_params.transferSusd) {
+            uint totalAmountToTransfer = (_params.buyinAmount * (ONE + safeBoxImpact + lpFeeWithSkew)) / ONE;
+            sUSD.safeTransferFrom(_params.user, address(this), totalAmountToTransfer);
         }
 
-        bytes32 market = _generateSpeedMarketUUID(msg.sender, asset, strikeTime, direction, buyinAmount, block.timestamp);
-
-        speedMarket[market] = SpeedMarketData(
-            msg.sender,
-            asset,
-            strikeTime,
-            tempData.pythPrice.price,
-            uint64(tempData.pythPrice.publishTime),
-            0,
-            direction,
-            direction,
-            buyinAmount,
-            false,
-            safeBoxImpact,
-            tempData.lpFeeWithSkew,
-            block.timestamp
+        bytes32 market = _generateSpeedMarketUUID(
+            _params.user,
+            _params.asset,
+            _params.strikeTime,
+            _params.direction,
+            _params.buyinAmount,
+            block.timestamp,
+            _params.creatorID
         );
 
-        totalCollateralizedAmount += (2 * buyinAmount);
+        speedMarket[market] = SpeedMarketData(
+            _params.user,
+            _params.asset,
+            _params.strikeTime,
+            _params.pythPrice.price,
+            0,
+            _params.direction,
+            _params.direction,
+            _params.buyinAmount,
+            false,
+            safeBoxImpact,
+            lpFeeWithSkew,
+            block.timestamp,
+            uint64(_params.pythPrice.publishTime)
+        );
 
-        _handleReferrerAndSafeBox(referrer, buyinAmount, contractsAddresses);
+        totalCollateralizedAmount += (2 * _params.buyinAmount);
+
+        _handleReferrerAndSafeBox(_params.user, _params.referrer, _params.buyinAmount, _params.contractsAddresses);
 
         _activeMarkets.add(market);
-        _activeMarketsPerUser[msg.sender].add(market);
+        _activeMarketsPerUser[_params.user].add(market);
 
         emit MarketCreatedWithFees(
             market,
-            msg.sender,
-            asset,
-            strikeTime,
-            tempData.pythPrice.price,
-            direction,
-            buyinAmount,
+            _params.user,
+            _params.asset,
+            _params.strikeTime,
+            _params.pythPrice.price,
+            _params.direction,
+            _params.buyinAmount,
             safeBoxImpact,
-            tempData.lpFeeWithSkew
+            lpFeeWithSkew
         );
     }
 
@@ -387,9 +365,12 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint64 _strikeTime,
         Direction _direction,
         uint _buyInAmount,
-        uint _timestamp
+        uint _timestamp,
+        uint8 _creatorID
     ) internal pure returns (bytes32 speedMarketUUID) {
-        speedMarketUUID = keccak256(abi.encodePacked(_sender, _asset, _strikeTime, _direction, _buyInAmount, _timestamp));
+        speedMarketUUID = keccak256(
+            abi.encodePacked(_sender, _asset, _strikeTime, _direction, _buyInAmount, _timestamp, _creatorID)
+        );
     }
 
     /// @notice resolveMarket resolves an active market
@@ -626,16 +607,6 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         ];
     }
 
-    /// @notice get parmas for create market
-    function getParams(bytes32 asset) external view returns (ISpeedMarkets.Params memory) {
-        ISpeedMarkets.Params memory params;
-        params.supportedAsset = supportedAsset[asset];
-        params.pythId = assetToPythId[asset];
-        params.safeBoxImpact = safeBoxImpact;
-        params.maximumPriceDelay = maximumPriceDelay;
-        return params;
-    }
-
     /// @notice get if user is winner for market
     function isUserWinnerForMarket(bytes32 market) external view returns (bool isWinner) {
         isWinner = speedMarket[market].resolved && (speedMarket[market].direction == speedMarket[market].result);
@@ -699,13 +670,19 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         emit SetMaxRisks(asset, _maxRiskPerAsset, _maxRiskPerAssetAndDirection);
     }
 
-    /// @notice set SafeBox and max skew impact
-    /// @param _safeBoxImpact skew impact
+    /// @notice set SafeBox, max skew impact and skew slippage
+    /// @param _safeBoxImpact safebox impact
     /// @param _maxSkewImpact skew impact
-    function setSafeBoxAndMaxSkewImpact(uint _safeBoxImpact, uint _maxSkewImpact) external onlyOwner {
+    /// @param _skewSlippage skew slippage
+    function setSafeBoxAndMaxSkewImpact(
+        uint _safeBoxImpact,
+        uint _maxSkewImpact,
+        uint _skewSlippage
+    ) external onlyOwner {
         safeBoxImpact = _safeBoxImpact;
         maxSkewImpact = _maxSkewImpact;
-        emit SafeBoxAndMaxSkewImpactChanged(_safeBoxImpact, _maxSkewImpact);
+        skewSlippage = _skewSlippage;
+        emit SafeBoxAndMaxSkewImpactChanged(_safeBoxImpact, _maxSkewImpact, _skewSlippage);
     }
 
     /// @notice set LP fee params
@@ -745,7 +722,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     /// @notice adding/removing whitelist address depending on a flag
-    /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
+    /// @param _whitelistAddress address that needed to be whitelisted or removed from WL
     /// @param _flag adding or removing from whitelist (true: add, false: remove)
     function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
         require(_whitelistAddress != address(0));
@@ -757,6 +734,12 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
     modifier isAddressWhitelisted() {
         require(whitelistedAddresses[msg.sender], "Resolver not whitelisted");
+        _;
+    }
+
+    modifier onlyCreator() {
+        address speedMarketsCreator = addressManager.getAddress("SpeedMarketsCreator");
+        require(msg.sender == speedMarketsCreator, "only from Creator");
         _;
     }
 
@@ -787,7 +770,7 @@ contract SpeedMarkets is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     event AMMAddressesChanged(address _addressManager);
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event SetMaxRisks(bytes32 asset, uint _maxRiskPerAsset, uint _maxRiskPerAssetAndDirection);
-    event SafeBoxAndMaxSkewImpactChanged(uint _safeBoxImpact, uint _maxSkewImpact);
+    event SafeBoxAndMaxSkewImpactChanged(uint _safeBoxImpact, uint _maxSkewImpact, uint _skewSlippage);
     event SetLPFeeParams(uint[] _timeThresholds, uint[] _lpFees, uint _lpFee);
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);

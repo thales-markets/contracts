@@ -1,14 +1,12 @@
 'use strict';
 
-const { artifacts, contract } = require('hardhat');
+const { contract } = require('hardhat');
 const { assert } = require('../../utils/common');
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/zksync_init');
-const { getSkewImpact } = require('../../utils/speedMarkets');
-
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const { getCreateSpeedAMMParamsZkSync, getSkewImpact } = require('../../utils/speedMarkets');
 
 contract('SpeedMarkets', (accounts) => {
 	const [owner, user, safeBox] = accounts;
@@ -16,10 +14,10 @@ contract('SpeedMarkets', (accounts) => {
 	describe('Test Speed markets ', () => {
 		it('deploy and test', async () => {
 			let {
+				creatorAccount,
 				speedMarketsAMM,
 				speedMarketsAMMData,
 				balanceOfSpeedMarketAMMBefore,
-				priceFeedUpdateData,
 				fee,
 				mockPyth,
 				pythId,
@@ -27,51 +25,37 @@ contract('SpeedMarkets', (accounts) => {
 				now,
 			} = await speedMarketsInit(accounts);
 
+			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
+			const buyinAmountParam = 10;
+			const defaultCreateSpeedAMMParams = getCreateSpeedAMMParamsZkSync(
+				user,
+				'ETH',
+				strikeTimeParam,
+				now,
+				buyinAmountParam
+			);
+
+			await expect(speedMarketsAMM.createNewMarket(defaultCreateSpeedAMMParams)).to.be.revertedWith(
+				'only from Creator'
+			);
+
 			await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), false);
-
-			await expect(
-				speedMarketsAMM.createNewMarket(
-					toBytes32('BTC'),
-					now + 36000,
-					0,
-					0,
-					toUnit(10),
-					[priceFeedUpdateData],
-					ZERO_ADDRESS,
-					0,
-					{ value: fee }
-				)
-			).to.be.revertedWith('revert');
-
 			await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(10), toUnit(100));
 
 			await expect(
-				speedMarketsAMM.createNewMarket(
-					toBytes32('ETH'),
-					now + 36000,
-					0,
-					0,
-					toUnit(10),
-					[priceFeedUpdateData],
-					ZERO_ADDRESS,
-					0,
-					{ value: fee }
-				)
+				speedMarketsAMM.createNewMarket(defaultCreateSpeedAMMParams, {
+					from: creatorAccount,
+				})
 			).to.be.revertedWith('Asset is not supported');
 
 			await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 
 			await expect(
 				speedMarketsAMM.createNewMarket(
-					toBytes32('ETH'),
-					now + 36000,
-					0,
-					0,
-					toUnit(11),
-					[priceFeedUpdateData],
-					ZERO_ADDRESS,
-					0,
-					{ value: fee }
+					getCreateSpeedAMMParamsZkSync(user, 'ETH', strikeTimeParam, now, 11),
+					{
+						from: creatorAccount,
+					}
 				)
 			).to.be.revertedWith('Risk per asset exceeded');
 
@@ -79,15 +63,10 @@ contract('SpeedMarkets', (accounts) => {
 
 			await expect(
 				speedMarketsAMM.createNewMarket(
-					toBytes32('ETH'),
-					now + 36000,
-					0,
-					0,
-					toUnit(6),
-					[priceFeedUpdateData],
-					ZERO_ADDRESS,
-					0,
-					{ value: fee }
+					getCreateSpeedAMMParamsZkSync(user, 'ETH', strikeTimeParam, now, 6),
+					{
+						from: creatorAccount,
+					}
 				)
 			).to.be.revertedWith('Risk per direction exceeded');
 
@@ -104,16 +83,18 @@ contract('SpeedMarkets', (accounts) => {
 			let availableAmount = await speedMarketsAMM.getAvailableAmountForNewMarkets();
 			console.log('availableAmount: ', availableAmount / 1e18);
 
+			// buy UP for 10
 			await speedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				now + 36000,
-				0,
-				0,
-				toUnit(10),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				skewImapct,
-				{ value: fee }
+				getCreateSpeedAMMParamsZkSync(
+					user,
+					'ETH',
+					strikeTimeParam,
+					now,
+					buyinAmountParam,
+					0,
+					skewImapct
+				),
+				{ from: creatorAccount }
 			);
 
 			collateralizedAmount = await speedMarketsAMM.totalCollateralizedAmount();
@@ -141,18 +122,20 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			console.log('riskPerAssetAndDirectionData: ', riskPerAssetAndDirectionData);
 			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
+			console.log('skewImapct ' + skewImapct / 1e18);
 
-			console.log('buy UP for the same amount as previous DOWN');
+			console.log('buy DOWN for the same amount as previous UP');
 			await speedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				now + 36000,
-				0,
-				1,
-				toUnit(10),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				skewImapct,
-				{ value: fee }
+				getCreateSpeedAMMParamsZkSync(
+					user,
+					'ETH',
+					strikeTimeParam,
+					now,
+					buyinAmountParam,
+					1,
+					skewImapct
+				),
+				{ from: creatorAccount }
 			);
 
 			let riskPerAssetData = await speedMarketsAMMData.getRiskPerAsset(toBytes32('ETH'));
@@ -163,12 +146,12 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			console.log('riskPerAssetAndDirectionData', riskPerAssetAndDirectionData);
 
-			let price = await mockPyth.getPrice(pythId);
-			console.log('price of pyth Id is ' + price);
+			let pythPrice = await mockPyth.getPrice(pythId);
+			console.log('price of pyth Id is ' + pythPrice.price);
 
 			console.log('market created');
 
-			let ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
+			let ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
 			console.log('AMM Data ' + ammData);
 			console.log('numActiveMarkets ' + ammData.numActiveMarkets);
 			console.log('numActiveMarketsPerUser ' + ammData.numActiveMarketsPerUser);
@@ -178,28 +161,20 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			skewImapct = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact);
 
-			await speedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				now + 36000,
-				0,
-				0,
-				toUnit(10),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				skewImapct,
-				{ value: fee }
-			);
+			await speedMarketsAMM.createNewMarket(defaultCreateSpeedAMMParams, {
+				from: creatorAccount,
+			});
 
 			let balanceOfSpeedMarketAMMAfterCreation = await exoticUSD.balanceOf(speedMarketsAMM.address);
 
-			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
+			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
 			console.log('numActiveMarkets ' + ammData.numActiveMarkets);
 
 			let markets = await speedMarketsAMM.activeMarkets(0, 1);
 			let market = markets[0];
 			console.log('market is ' + market);
 
-			let marketsPerUser = await speedMarketsAMM.activeMarketsPerUser(0, 1, owner);
+			let marketsPerUser = await speedMarketsAMM.activeMarketsPerUser(0, 1, user);
 			console.log('allMarketsPerUser: ', marketsPerUser);
 			let marketPerUser = marketsPerUser[0];
 			console.log('marketPerUser is ' + marketPerUser);
@@ -263,39 +238,42 @@ contract('SpeedMarkets', (accounts) => {
 				strikeTime
 			);
 
-			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
+			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
 			console.log('numActiveMarkets before resolve ' + ammData.numActiveMarkets);
 
 			let balanceOfMarketBefore = speedMarket.buyinAmount * 2;
-			let balanceOfUserBefore = await exoticUSD.balanceOf(owner);
+			let balanceOfUserBefore = await exoticUSD.balanceOf(user);
 
+			// User won
 			await speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee });
 			speedMarket = await speedMarketsAMM.speedMarket(market);
+
 			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
 			console.log('numActiveMarkets after resolve ' + ammData.numActiveMarkets);
 
 			let resolved = speedMarket.resolved;
-			console.log('resolved  is ' + resolved);
+			console.log('resolved is ' + resolved);
 
 			let result = speedMarket.result;
-			console.log('result  is ' + result);
+			console.log('result is ' + result);
 
 			let direction = speedMarket.direction;
-			console.log('direction  is ' + direction);
+			console.log('direction is ' + direction);
 
 			let buyinAmount = speedMarket.buyinAmount;
-			console.log('buyinAmount  is ' + buyinAmount / 1e18);
+			console.log('buyinAmount is ' + buyinAmount / 1e18);
 
 			let isUserWinner = await speedMarketsAMM.isUserWinnerForMarket(market);
-			console.log('isUserWinner  is ' + isUserWinner);
+			console.log('isUserWinner is ' + isUserWinner);
 
 			let balanceOfMarketAfter = 0;
 			console.log('balanceOfMarketBefore ' + balanceOfMarketBefore / 1e18);
 			console.log('balanceOfMarketAfter ' + balanceOfMarketAfter / 1e18);
 
-			let balanceOfUserAfter = await exoticUSD.balanceOf(owner);
+			let balanceOfUserAfter = await exoticUSD.balanceOf(user);
 			console.log('balanceOfUserBefore ' + balanceOfUserBefore / 1e18);
 			console.log('balanceOfUserAfter ' + balanceOfUserAfter / 1e18);
+			assert.bnEqual(balanceOfUserBefore.add(toUnit(2 * buyinAmountParam)), balanceOfUserAfter);
 
 			let balanceOfSpeedMarketAMMAfterResolve = await exoticUSD.balanceOf(speedMarketsAMM.address);
 			console.log('balanceOfSpeedMarketAMMBefore ' + balanceOfSpeedMarketAMMBefore / 1e18);
@@ -303,7 +281,11 @@ contract('SpeedMarkets', (accounts) => {
 				'balanceOfSpeedMarketAMMAfterCreation ' + balanceOfSpeedMarketAMMAfterCreation / 1e18
 			);
 			console.log(
-				'balanceOfSpeedMarketAMMAfterResolve ' + balanceOfSpeedMarketAMMAfterResolve / 1e18
+				'balanceOfSpeedMarketAMMAfterFirstResolve ' + balanceOfSpeedMarketAMMAfterResolve / 1e18
+			);
+			assert.bnEqual(
+				balanceOfSpeedMarketAMMAfterResolve.add(toUnit(2 * buyinAmountParam)),
+				balanceOfSpeedMarketAMMAfterCreation
 			);
 
 			let balanceSafeBox = await exoticUSD.balanceOf(safeBox);
@@ -320,14 +302,19 @@ contract('SpeedMarkets', (accounts) => {
 				}
 			);
 
-			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(owner);
+			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
 			console.log('numActiveMarkets after batch resolve ' + ammData.numActiveMarkets);
 			console.log('numMaturedMarkets after batch resolve ' + ammData.numMaturedMarkets);
 			console.log('numMaturedMarketsPerUser ' + ammData.numMaturedMarketsPerUser);
 
 			let ammBalance = await exoticUSD.balanceOf(speedMarketsAMM.address);
 			console.log('Balance of AMM', ammBalance / 1e18);
-			await speedMarketsAMM.transferAmount(owner, toUnit(1));
+			assert.bnEqual(
+				ammBalance,
+				balanceOfSpeedMarketAMMAfterCreation.sub(toUnit(2 * 2 * buyinAmountParam)) // 2 loss markets
+			);
+
+			await speedMarketsAMM.transferAmount(user, toUnit(1));
 			ammBalance = await exoticUSD.balanceOf(speedMarketsAMM.address);
 			console.log('Balance of AMM after transfer', ammBalance / 1e18);
 		});

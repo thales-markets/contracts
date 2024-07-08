@@ -48,19 +48,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "manager",
-        "type": "address"
-      }
-    ],
-    "name": "ManagerChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "collateral",
         "type": "address"
       },
@@ -949,19 +936,6 @@
       }
     ],
     "name": "setCurveSUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_manager",
-        "type": "address"
-      }
-    ],
-    "name": "setManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

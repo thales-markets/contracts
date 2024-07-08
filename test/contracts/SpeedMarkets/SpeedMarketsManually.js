@@ -5,11 +5,9 @@ const { assert } = require('../../utils/common');
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
-
 const { fastForward, toUnit } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/init');
-const { getSkewImpact } = require('../../utils/speedMarkets');
+const { getCreateSpeedAMMParams, getSkewImpact } = require('../../utils/speedMarkets');
 
 contract('SpeedMarkets', (accounts) => {
 	const [owner, user] = accounts;
@@ -17,25 +15,20 @@ contract('SpeedMarkets', (accounts) => {
 	describe('Test Speed markets ', () => {
 		it('resolve markets manually', async () => {
 			let {
+				creatorAccount,
 				speedMarketsAMM,
 				speedMarketsAMMData,
-				priceFeedUpdateData,
-				fee,
 				mockPyth,
 				pythId,
 				initialSkewImapct,
+				now,
 			} = await speedMarketsInit(accounts);
 
+			const deltaTimeParam = 10 * 60 * 60; // 10 hours
+
 			await speedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				0,
-				36000,
-				0,
-				toUnit(10),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				initialSkewImapct,
-				{ value: fee }
+				getCreateSpeedAMMParams(user, 'ETH', 0, now, 10, 0, initialSkewImapct, deltaTimeParam),
+				{ from: creatorAccount }
 			);
 
 			let currestRiskPerAssetAndDirection = await speedMarketsAMM.currentRiskPerAssetAndDirection(
@@ -51,15 +44,8 @@ contract('SpeedMarkets', (accounts) => {
 			let skewImapct = getSkewImpact(riskPerAssetAndDirectionData, toUnit(10), maxSkewImpact);
 
 			await speedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				0,
-				36000,
-				0,
-				toUnit(10),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				skewImapct,
-				{ value: fee }
+				getCreateSpeedAMMParams(user, 'ETH', 0, now, 10, 0, skewImapct, deltaTimeParam),
+				{ from: creatorAccount }
 			);
 
 			let price = await mockPyth.getPrice(pythId);
@@ -93,20 +79,15 @@ contract('SpeedMarkets', (accounts) => {
 		});
 
 		it('resolve market as owner', async () => {
-			let { speedMarketsAMM, priceFeedUpdateData, fee, initialSkewImapct } = await speedMarketsInit(
+			let { creatorAccount, speedMarketsAMM, initialSkewImapct, now } = await speedMarketsInit(
 				accounts
 			);
 
+			const deltaTimeParam = 10 * 60 * 60; // 10 hours
+
 			await speedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				0,
-				36000,
-				0,
-				toUnit(10),
-				[priceFeedUpdateData],
-				ZERO_ADDRESS,
-				initialSkewImapct,
-				{ value: fee }
+				getCreateSpeedAMMParams(user, 'ETH', 0, now, 10, 0, initialSkewImapct, deltaTimeParam),
+				{ from: creatorAccount }
 			);
 
 			await fastForward(86400);

@@ -647,6 +647,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetAssetToPythID(asset, pythId);
     }
 
+    /// @notice set sUSD address (default collateral)
+    function setSusdAddress(address _sUSD) external onlyOwner {
+        sUSD = IERC20Upgradeable(_sUSD);
+        emit SusdAddressChanged(_sUSD);
+    }
+
     /// @notice set multi-collateral enabled
     function setMultiCollateralOnOffRampEnabled(bool _enabled) external onlyOwner {
         address multiCollateralAddress = addressManager.multiCollateralOnOffRamp();
@@ -719,6 +725,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
+    event SusdAddressChanged(address _sUSD);
     event MultiCollateralOnOffRampEnabled(bool _enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event AmountTransfered(address _destination, uint _amount);

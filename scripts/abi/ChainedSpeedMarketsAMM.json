@@ -281,6 +281,19 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_sUSD",
+        "type": "address"
+      }
+    ],
+    "name": "SusdAddressChanged",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -1018,6 +1031,19 @@
       }
     ],
     "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sUSD",
+        "type": "address"
+      }
+    ],
+    "name": "setSusdAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

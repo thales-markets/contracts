@@ -497,6 +497,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         maxBuyinAmount = _maxBuyinAmount;
         maxProfitPerIndividualMarket = _maxProfitPerIndividualMarket;
         maxRisk = _maxRisk;
+        currentRisk = 0;
         payoutMultipliers = _payoutMultipliers;
         emit LimitParamsChanged(
             _minTimeFrame,

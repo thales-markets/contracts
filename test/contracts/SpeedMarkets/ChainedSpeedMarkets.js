@@ -183,7 +183,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			toUnit(5), // minBuyinAmount
 			toUnit(20), // maxBuyinAmount
 			toUnit(500), // maxProfitPerIndividualMarket
-			toUnit(1000), // maxRisk
+			toUnit(1100), // maxRisk
 			PAYOUT_MULTIPLIERS
 		);
 
@@ -285,35 +285,6 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			let referrerBalance = await exoticUSD.balanceOf(referrerAddress);
 			assert.bnEqual(referrerBalance, toUnit(buyinAmount * DEFAULT_REFERRER_FEE)); // 0.5% from 10
 
-			console.log('Check liquidity validation');
-			await chainedSpeedMarketsAMM.setLimitParams(
-				600, // minTimeFrame
-				600, // maxTimeFrame
-				2, // minChainedMarkets
-				6, // maxChainedMarkets
-				toUnit(5), // minBuyinAmount
-				toUnit(20), // maxBuyinAmount
-				toUnit(500), // maxProfitPerIndividualMarket
-				toUnit(900), // maxRisk DECREASED
-				PAYOUT_MULTIPLIERS
-			);
-			await expect(
-				chainedSpeedMarketsAMM.createNewMarket(defaultCreateChainedSpeedAMMParams, {
-					from: creatorAccount,
-				})
-			).to.be.revertedWith('Out of liquidity');
-
-			await chainedSpeedMarketsAMM.setLimitParams(
-				600, // minTimeFrame
-				600, // maxTimeFrame
-				2, // minChainedMarkets
-				6, // maxChainedMarkets
-				toUnit(5), // minBuyinAmount
-				toUnit(20), // maxBuyinAmount
-				toUnit(500), // maxProfitPerIndividualMarket
-				toUnit(2000), // maxRisk INCREASED
-				PAYOUT_MULTIPLIERS
-			);
 			await chainedSpeedMarketsAMM.createNewMarket(defaultCreateChainedSpeedAMMParams, {
 				from: creatorAccount,
 			});
@@ -372,6 +343,13 @@ contract('ChainedSpeedMarkets', (accounts) => {
 					buyinAmount * payoutMultiplier ** marketData.directions.length - buyinAmount;
 			}
 			assert.equal((chainedAmmData.risk.current / 1e18).toFixed(5), expectedCurrentRisk.toFixed(5));
+
+			console.log('Check liquidity validation');
+			await expect(
+				chainedSpeedMarketsAMM.createNewMarket(defaultCreateChainedSpeedAMMParams, {
+					from: creatorAccount,
+				})
+			).to.be.revertedWith('Out of liquidity');
 
 			console.log('Check AMM balance after transfer');
 			let ammBalanceBefore = await exoticUSD.balanceOf(chainedSpeedMarketsAMM.address);

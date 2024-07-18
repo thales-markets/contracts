@@ -79,7 +79,7 @@ async function main() {
 		MultiCollateralOnOffRampImplementation
 	);
 
-	delay(5000);
+	await delay(5000);
 
 	try {
 		await hre.run('verify:verify', {

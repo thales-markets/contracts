@@ -135,6 +135,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     bool public sendCCIPMessage;
 
+    address public stakingThalesBettingProxy;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -620,6 +622,40 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit AMMVolumeUpdated(account, amount, msg.sender);
     }
 
+    function decreaseStakingBalanceFor(address account, uint amount) external notPaused onlyStakingProxy{
+        _modifyStakingBalance(account, amount, true, stakingThalesBettingProxy);
+    }
+    function increaseStakingBalanceFor(address account, uint amount) external notPaused onlyStakingProxy{
+        _modifyStakingBalance(account, amount, false, stakingThalesBettingProxy);
+    }
+
+    function _modifyStakingBalance(address _account, uint _amount, bool isDecreasing, address _proxyAccount) internal {
+        if (_calculateAvailableRewardsToClaim(_account) > 0) {
+            _claimReward(_account);
+        }
+        if(_lastStakingPeriod[_account] > periodsOfStaking) {
+            _lastStakingPeriod[_account] = periodsOfStaking;
+            // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
+            _subtractTotalEscrowBalanceNotIncludedInStaking(_account);
+        }
+
+        if(isDecreasing) {
+            require(_stakedBalances[_account] >= _amount, "Insufficient staked amount");
+            _totalStakedAmount = _totalStakedAmount.sub(_amount);
+            _stakedBalances[_account] = _stakedBalances[_account].sub(_amount);
+            stakingToken.safeTransfer(_proxyAccount, _amount);
+        } else {
+            _totalStakedAmount = _totalStakedAmount.add(_amount);
+            _stakedBalances[_account] = _stakedBalances[_account].add(_amount);
+            stakingToken.safeTransferFrom(_proxyAccount, address(this), _amount);
+        }
+    }
+
+    modifier onlyStakingProxy() {
+        require(msg.sender == stakingThalesBettingProxy, "Unsupported staking proxy");
+        _;
+    }
+
     /// @notice Merge account to transfer all staking amounts to another account
     /// @param destAccount to merge into
     function mergeAccount(address destAccount) external notPaused {
@@ -711,19 +747,20 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(startTimeStamp > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
         require(!unstaking[staker], "The staker is paused from staking due to unstaking");
-        // Check if there are not claimable rewards from last period.
-        // Claim them, and add new stake
-        if (_calculateAvailableRewardsToClaim(staker) > 0) {
-            _claimReward(staker);
-        }
-        _lastStakingPeriod[staker] = periodsOfStaking;
+        _modifyStakingBalance(staker, amount, false, sender);
+        // // Check if there are not claimable rewards from last period.
+        // // Claim them, and add new stake
+        // if (_calculateAvailableRewardsToClaim(staker) > 0) {
+        //     _claimReward(staker);
+        // }
+        // _lastStakingPeriod[staker] = periodsOfStaking;
 
-        // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
-        _subtractTotalEscrowBalanceNotIncludedInStaking(staker);
+        // // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
+        // _subtractTotalEscrowBalanceNotIncludedInStaking(staker);
 
-        _totalStakedAmount = _totalStakedAmount.add(amount);
-        _stakedBalances[staker] = _stakedBalances[staker].add(amount);
-        stakingToken.safeTransferFrom(sender, address(this), amount);
+        // _totalStakedAmount = _totalStakedAmount.add(amount);
+        // _stakedBalances[staker] = _stakedBalances[staker].add(amount);
+        // stakingToken.safeTransferFrom(sender, address(this), amount);
     }
 
     function _subtractTotalEscrowBalanceNotIncludedInStaking(address account) internal {

@@ -429,91 +429,91 @@
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
           },
           {
             "contract": "ProxyOwned",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
           },
           {
             "contract": "ProxyOwned",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
           },
           {
             "contract": "ProxyOwned",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
           },
           {
             "contract": "ProxyOwned",
             "label": "_transferredAtInit",
             "type": "t_bool",
-            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
           },
           {
             "contract": "PriceFeed",
             "label": "aggregators",
             "type": "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)141)",
-            "src": "contracts/PriceFeed/PriceFeed.sol:23"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:23"
           },
           {
             "contract": "PriceFeed",
             "label": "currencyKeyDecimals",
             "type": "t_mapping(t_bytes32,t_uint8)",
-            "src": "contracts/PriceFeed/PriceFeed.sol:25"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:25"
           },
           {
             "contract": "PriceFeed",
             "label": "aggregatorKeys",
             "type": "t_array(t_bytes32)dyn_storage",
-            "src": "contracts/PriceFeed/PriceFeed.sol:27"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:27"
           },
           {
             "contract": "PriceFeed",
             "label": "currencyKeys",
             "type": "t_array(t_bytes32)dyn_storage",
-            "src": "contracts/PriceFeed/PriceFeed.sol:30"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:30"
           },
           {
             "contract": "PriceFeed",
             "label": "pools",
             "type": "t_mapping(t_bytes32,t_contract(IUniswapV3Pool)12445)",
-            "src": "contracts/PriceFeed/PriceFeed.sol:31"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:31"
           },
           {
             "contract": "PriceFeed",
             "label": "twapInterval",
             "type": "t_int56",
-            "src": "contracts/PriceFeed/PriceFeed.sol:33"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:33"
           },
           {
             "contract": "PriceFeed",
             "label": "_ETH",
             "type": "t_address",
-            "src": "contracts/PriceFeed/PriceFeed.sol:40"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:40"
           },
           {
             "contract": "PriceFeed",
             "label": "_wETH",
             "type": "t_address",
-            "src": "contracts/PriceFeed/PriceFeed.sol:41"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:41"
           },
           {
             "contract": "PriceFeed",
             "label": "useLastTickForTWAP",
             "type": "t_mapping(t_bytes32,t_bool)",
-            "src": "contracts/PriceFeed/PriceFeed.sol:43"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:43"
           }
         ],
         "types": {

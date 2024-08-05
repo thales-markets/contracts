@@ -24,6 +24,11 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	if (networkObj.chainId == 80001) {
 		networkObj.name = 'polygonMumbai';
 		network = 'polygonMumbai';

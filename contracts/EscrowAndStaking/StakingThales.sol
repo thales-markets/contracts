@@ -672,6 +672,19 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit DelegatedVolume(account);
     }
 
+    /// @notice withdraw collateral amount from the contract
+    /// @param _collateral collateral to withdraw
+    /// @param _recipient address to send the withdrawing funds to
+    /// @param _amount to withdraw
+    function withdrawCollateral(
+        address _collateral,
+        address _recipient,
+        uint _amount
+    ) external onlyOwner {
+        require(_collateral != address(stakingToken), "Can not withdraw staking token");
+        IERC20(_collateral).safeTransfer(_recipient, _amount);
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _claimReward(address account) internal notPaused {

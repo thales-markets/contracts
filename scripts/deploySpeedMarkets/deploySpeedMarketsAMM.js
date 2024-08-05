@@ -1,15 +1,10 @@
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
-const { toBytes32 } = require('../../index');
-const w3utils = require('web3-utils');
 
 async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let thalesAddress, ProxyERC20sUSDaddress;
 
 	let proxySUSD;
 
@@ -63,6 +58,12 @@ async function main() {
 		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
+		proxySUSD = getTargetAddress('ExoticUSD', network);
+	}
+
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 
@@ -89,7 +90,7 @@ async function main() {
 	setTargetAddress('SpeedMarketsAMM', network, SpeedMarketsAMMDeployed.address);
 	setTargetAddress('SpeedMarketsAMMImplementation', network, SpeedMarketsAMMImplementation);
 
-	delay(5000);
+	await delay(5000);
 
 	try {
 		await hre.run('verify:verify', {

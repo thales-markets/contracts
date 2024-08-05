@@ -1,31 +1,36 @@
 'use strict';
 
-const { artifacts, contract } = require('hardhat');
+const { contract } = require('hardhat');
 const { assert } = require('../../utils/common');
-const { toBytes32 } = require('../../../index');
 const { toUnit } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/zksync_init');
+const { getCreateSpeedAMMParamsZkSync } = require('../../utils/speedMarkets');
+const { ZERO_ADDRESS } = require('../../utils/helpers');
 
 contract('SpeedMarketsReferrals', (accounts) => {
 	const [owner, user, safeBox, referrerAddress] = accounts;
 
 	describe('Speed markets referrals ', () => {
 		it('Should referrer receive default fee', async () => {
-			let { speedMarketsAMM, exoticUSD, priceFeedUpdateData, fee, initialSkewImapct, now } =
+			let { creatorAccount, speedMarketsAMM, exoticUSD, initialSkewImapct, now } =
 				await speedMarketsInit(accounts);
 
-			console.log('Create Speed Market with 10 amount and referrer default fee');
-			await speedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				now + 36000,
+			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
+			const createSpeedAMMParams = getCreateSpeedAMMParamsZkSync(
+				user,
+				'ETH',
+				strikeTimeParam,
+				now,
+				10,
 				0,
-				0,
-				toUnit(10),
-				[priceFeedUpdateData],
-				referrerAddress,
 				initialSkewImapct,
-				{ value: fee }
+				0,
+				ZERO_ADDRESS,
+				referrerAddress
 			);
+
+			console.log('Create Speed Market with 10 amount and referrer default fee');
+			await speedMarketsAMM.createNewMarket(createSpeedAMMParams, { from: creatorAccount });
 
 			console.log('Check referrer fee 0.5%');
 			let referrerBalance = await exoticUSD.balanceOf(referrerAddress);
@@ -37,30 +42,27 @@ contract('SpeedMarketsReferrals', (accounts) => {
 		});
 
 		it('Should referrer receive silver fee', async () => {
-			let {
-				speedMarketsAMM,
-				exoticUSD,
-				priceFeedUpdateData,
-				fee,
-				referrals,
-				initialSkewImapct,
-				now,
-			} = await speedMarketsInit(accounts);
+			let { creatorAccount, speedMarketsAMM, exoticUSD, referrals, initialSkewImapct, now } =
+				await speedMarketsInit(accounts);
 
 			await referrals.setSilverAddress(referrerAddress, true);
 
-			console.log('Create Speed Market with 10 amount and referrer silver fee');
-			await speedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				now + 36000,
+			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
+			const createSpeedAMMParams = getCreateSpeedAMMParamsZkSync(
+				user,
+				'ETH',
+				strikeTimeParam,
+				now,
+				10,
 				0,
-				0,
-				toUnit(10),
-				[priceFeedUpdateData],
-				referrerAddress,
 				initialSkewImapct,
-				{ value: fee }
+				0,
+				ZERO_ADDRESS,
+				referrerAddress
 			);
+
+			console.log('Create Speed Market with 10 amount and referrer silver fee');
+			await speedMarketsAMM.createNewMarket(createSpeedAMMParams, { from: creatorAccount });
 
 			console.log('Check referrer silver fee 0.75%');
 			let referrerBalance = await exoticUSD.balanceOf(referrerAddress);
@@ -72,30 +74,27 @@ contract('SpeedMarketsReferrals', (accounts) => {
 		});
 
 		it('Should referrer receive gold fee', async () => {
-			let {
-				speedMarketsAMM,
-				exoticUSD,
-				priceFeedUpdateData,
-				fee,
-				referrals,
-				initialSkewImapct,
-				now,
-			} = await speedMarketsInit(accounts);
+			let { creatorAccount, speedMarketsAMM, exoticUSD, referrals, initialSkewImapct, now } =
+				await speedMarketsInit(accounts);
 
 			await referrals.setGoldAddress(referrerAddress, true);
 
-			console.log('Create Speed Market with 10 amount and referrer gold fee');
-			await speedMarketsAMM.createNewMarket(
-				toBytes32('ETH'),
-				now + 36000,
+			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
+			const createSpeedAMMParams = getCreateSpeedAMMParamsZkSync(
+				user,
+				'ETH',
+				strikeTimeParam,
+				now,
+				10,
 				0,
-				0,
-				toUnit(10),
-				[priceFeedUpdateData],
-				referrerAddress,
 				initialSkewImapct,
-				{ value: fee }
+				0,
+				ZERO_ADDRESS,
+				referrerAddress
 			);
+
+			console.log('Create Speed Market with 10 amount and referrer gold fee');
+			await speedMarketsAMM.createNewMarket(createSpeedAMMParams, { from: creatorAccount });
 
 			console.log('Check referrer gold fee 1%');
 			let referrerBalance = await exoticUSD.balanceOf(referrerAddress);

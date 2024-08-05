@@ -16,10 +16,14 @@ interface IMultiCollateralOnOffRamp {
     function offrampIntoEth(uint amount) external returns (uint);
 
     function offramp(address collateral, uint amount) external returns (uint);
-    
+
     function offrampFromIntoEth(address collateralFrom, uint amount) external returns (uint);
 
-    function offrampFrom(address collateralFrom, address collateralTo, uint amount) external returns (uint);
+    function offrampFrom(
+        address collateralFrom,
+        address collateralTo,
+        uint amount
+    ) external returns (uint);
 
     function priceFeed() external view returns (address);
 }

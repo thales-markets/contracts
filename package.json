@@ -1,6 +1,6 @@
 {
 	"name": "@thales-dao/contracts",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"license": "MIT",
 	"author": "Thales",
 	"description": "The smart contracts which make up the Thales system.",

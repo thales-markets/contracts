@@ -302,6 +302,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         );
     }
 
+    function setStakingThalesBettingProxy(address _stakingThalesBettingProxy) external onlyOwner {
+        stakingThalesBettingProxy = _stakingThalesBettingProxy;
+        emit SetStakingThalesBettingProxy(_stakingThalesBettingProxy);
+    }
+
     /// @notice Set address of Escrow Thales contract
     /// @param _escrowThalesContract address of Escrow Thales contract
     function setEscrow(address _escrowThalesContract) external onlyOwner {
@@ -622,24 +627,30 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit AMMVolumeUpdated(account, amount, msg.sender);
     }
 
-    function decreaseStakingBalanceFor(address account, uint amount) external notPaused onlyStakingProxy{
+    function decreaseStakingBalanceFor(address account, uint amount) external notPaused onlyStakingProxy {
         _modifyStakingBalance(account, amount, true, stakingThalesBettingProxy);
     }
-    function increaseStakingBalanceFor(address account, uint amount) external notPaused onlyStakingProxy{
+
+    function increaseStakingBalanceFor(address account, uint amount) external notPaused onlyStakingProxy {
         _modifyStakingBalance(account, amount, false, stakingThalesBettingProxy);
     }
 
-    function _modifyStakingBalance(address _account, uint _amount, bool isDecreasing, address _proxyAccount) internal {
+    function _modifyStakingBalance(
+        address _account,
+        uint _amount,
+        bool isDecreasing,
+        address _proxyAccount
+    ) internal {
         if (_calculateAvailableRewardsToClaim(_account) > 0) {
             _claimReward(_account);
         }
-        if(_lastStakingPeriod[_account] > periodsOfStaking) {
+        if (_lastStakingPeriod[_account] > periodsOfStaking) {
             _lastStakingPeriod[_account] = periodsOfStaking;
             // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
             _subtractTotalEscrowBalanceNotIncludedInStaking(_account);
         }
 
-        if(isDecreasing) {
+        if (isDecreasing) {
             require(_stakedBalances[_account] >= _amount, "Insufficient staked amount");
             _totalStakedAmount = _totalStakedAmount.sub(_amount);
             _stakedBalances[_account] = _stakedBalances[_account].sub(_amount);
@@ -838,6 +849,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     );
     event ReceivedStakingRewardsUpdate(uint _currentPeriodRewards, uint _extraRewards, uint _revShare);
     event EscrowChanged(address newEscrow);
+    event SetStakingThalesBettingProxy(address stakingThalesBettingProxy);
     event StakingPeriodStarted();
     event AMMVolumeUpdated(address account, uint amount, address source);
     event AccountMerged(address srcAccount, address destAccount);

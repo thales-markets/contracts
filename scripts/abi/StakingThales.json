@@ -321,6 +321,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "stakingThalesBettingProxy",
+        "type": "address"
+      }
+    ],
+    "name": "SetStakingThalesBettingProxy",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "user",
         "type": "address"
       },
@@ -1515,6 +1528,21 @@
       }
     ],
     "name": "setStakingRewardsParameters",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_stakingThalesBettingProxy",
+        "type": "address"
+      }
+    ],
+    "name": "setStakingThalesBettingProxy",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

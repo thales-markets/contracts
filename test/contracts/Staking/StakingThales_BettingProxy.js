@@ -368,156 +368,125 @@ contract('StakingThales', (accounts) => {
 		});
 	});
 
-	// describe('Vesting:', () => {
-	// 	it('Staking & vesting with 2 users ', async () => {
-	// 		let deposit = toUnit(100000);
-	// 		let stake = [toUnit(1500), toUnit(1500)];
-	// 		let users = [first, second];
-	// 		let weeks = 11;
+	describe('StakingThales - Extended Tests:', () => {
+		it('should increase staking balance for a user and validate total staking amount', async () => {
+			let initialStake = toUnit(1500);
+			let additionalStake = toUnit(500);
 
-	// 		await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
-	// 			from: owner,
-	// 		});
-	// 		await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
-	// 			from: owner,
-	// 		});
-	// 		await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, deposit, { from: owner });
-	// 		await ThalesDeployed.transfer(
-	// 			ThalesStakingRewardsPoolDeployed.address,
-	// 			deposit.mul(toBN(weeks)),
-	// 			{
-	// 				from: owner,
-	// 			}
-	// 		);
-	// 		await StakingThalesDeployed.startStakingPeriod({ from: owner });
-	// 		for (let i = 0; i < users.length; i++) {
-	// 			await ThalesDeployed.transfer(users[i], stake[i], { from: owner });
-	// 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake[i], { from: users[i] });
-	// 			await StakingThalesDeployed.stake(stake[i], { from: users[i] });
-	// 		}
-	// 		let period = 0;
-	// 		let balanceBefore = 0;
-	// 		let balanceAfter = 0;
-	// 		while (period < weeks) {
-	// 			await fastForward(WEEK + SECOND);
-	// 			await StakingThalesDeployed.closePeriod({ from: second });
-	// 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, deposit, { from: owner });
-	// 			for (let i = 0; i < users.length; i++) {
-	// 				balanceBefore = await ThalesFeeDeployed.balanceOf(users[i]);
-	// 				await StakingThalesDeployed.claimReward({ from: users[i] });
-	// 				balanceAfter = await ThalesFeeDeployed.balanceOf(users[i]);
-	// 				assert.equal(fromUnit(balanceAfter.sub(balanceBefore)), fromUnit(deposit) / users.length);
-	// 			}
-	// 			period++;
-	// 		}
-	// 		await fastForward(WEEK + SECOND);
-	// 		await StakingThalesDeployed.closePeriod({ from: second });
-	// 		await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, deposit, { from: owner });
-	// 		for (let i = 0; i < users.length; i++) {
-	// 			let answer = await EscrowThalesDeployed.claimable(users[i]);
-	// 			assert.bnEqual(answer, deposit);
-	// 			await EscrowThalesDeployed.vest(deposit.div(toBN(users.length)), { from: users[i] });
-	// 			answer = await ThalesDeployed.balanceOf(users[i]);
-	// 			assert.bnEqual(answer, deposit.div(toBN(users.length)));
-	// 		}
-	// 	});
+			await ThalesDeployed.transfer(first, initialStake, { from: owner });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, initialStake, { from: first });
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await StakingThalesDeployed.stake(initialStake, { from: first });
+			let initialStakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			let initialTotalStaked = await StakingThalesDeployed.totalStakedAmount();
 
-	// 	it('Staking & vesting with 3 users ', async () => {
-	// 		let deposit = toUnit(100000);
-	// 		let stake = [toUnit(1500), toUnit(1500), toUnit(1500)];
-	// 		let users = [first, second, third];
-	// 		let weeks = 11;
+			// Increase staking balance for the first user using the staking proxy
+			await StakingThalesDeployed.increaseStakingBalanceFor(first, additionalStake, {
+				from: stakingBettingProxy,
+			});
+			let afterStakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			let afterTotalStaked = await StakingThalesDeployed.totalStakedAmount();
 
-	// 		await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
-	// 			from: owner,
-	// 		});
-	// 		await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
-	// 			from: owner,
-	// 		});
-	// 		await sUSDSynth.issue(initialCreator, deposit.mul(toBN(weeks)));
-	// 		await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
-	// 			from: initialCreator,
-	// 		});
-	// 		await ThalesDeployed.transfer(
-	// 			ThalesStakingRewardsPoolDeployed.address,
-	// 			deposit.mul(toBN(weeks)),
-	// 			{
-	// 				from: owner,
-	// 			}
-	// 		);
-	// 		await StakingThalesDeployed.startStakingPeriod({ from: owner });
-	// 		for (let i = 0; i < users.length; i++) {
-	// 			await ThalesDeployed.transfer(users[i], stake[i], { from: owner });
-	// 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake[i], { from: users[i] });
-	// 			await StakingThalesDeployed.stake(stake[i], { from: users[i] });
-	// 		}
-	// 		let period = 0;
-	// 		let balanceBefore = 0;
-	// 		let balanceAfter = 0;
-	// 		while (period < weeks) {
-	// 			await fastForward(WEEK + SECOND);
-	// 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, deposit, { from: owner });
-	// 			await StakingThalesDeployed.closePeriod({ from: second });
-	// 			for (let i = 0; i < users.length; i++) {
-	// 				balanceBefore = await ThalesFeeDeployed.balanceOf(users[i]);
-	// 				await StakingThalesDeployed.claimReward({ from: users[i] });
-	// 				balanceAfter = await ThalesFeeDeployed.balanceOf(users[i]);
-	// 				assert.equal(fromUnit(balanceAfter.sub(balanceBefore)), fromUnit(deposit) / users.length);
-	// 			}
-	// 			period++;
-	// 		}
-	// 		await fastForward(WEEK + SECOND);
-	// 		await StakingThalesDeployed.closePeriod({ from: second });
-	// 		for (let i = 0; i < users.length; i++) {
-	// 			let answer = await EscrowThalesDeployed.claimable(users[i]);
-	// 			assert.bnEqual(answer, deposit.mul(toBN(2)).div(toBN(users.length)));
-	// 			await EscrowThalesDeployed.vest(deposit.div(toBN(users.length)), { from: users[i] });
-	// 			answer = await ThalesDeployed.balanceOf(users[i]);
-	// 			assert.bnEqual(answer, deposit.div(toBN(users.length)));
-	// 		}
-	// 	});
+			// Validate the staking balance and total staked amount after increase
+			assert.bnEqual(afterStakedBalance, initialStakedBalance.add(additionalStake));
+			assert.bnEqual(afterTotalStaked, initialTotalStaked.add(additionalStake));
+		});
 
-	// 	it('Vesting at 19th week, after claiming first user in weeks: 5, 9, 13 ', async () => {
-	// 		let periods = [5, 9, 13];
-	// 		let deposit = toUnit(100000);
-	// 		let stake = toUnit(1500);
-	// 		let weeks = 20;
-	// 		await ThalesDeployed.transfer(first, stake, { from: owner });
-	// 		await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
-	// 			from: owner,
-	// 		});
-	// 		await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
-	// 			from: owner,
-	// 		});
-	// 		await sUSDSynth.issue(initialCreator, deposit.mul(toBN(weeks)));
-	// 		await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
-	// 			from: initialCreator,
-	// 		});
-	// 		await ThalesDeployed.transfer(
-	// 			ThalesStakingRewardsPoolDeployed.address,
-	// 			deposit.mul(toBN(weeks)),
-	// 			{
-	// 				from: owner,
-	// 			}
-	// 		);
-	// 		await StakingThalesDeployed.startStakingPeriod({ from: owner });
-	// 		await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
-	// 		await StakingThalesDeployed.stake(stake, { from: first });
-	// 		let period = 0;
-	// 		let answer = await EscrowThalesDeployed.claimable(first);
-	// 		while (period < weeks) {
-	// 			await fastForward(WEEK + SECOND);
-	// 			await StakingThalesDeployed.closePeriod({ from: second });
-	// 			if (periods.includes(period)) {
-	// 				await StakingThalesDeployed.claimReward({ from: first });
-	// 			}
-	// 			period++;
-	// 		}
-	// 		answer = await EscrowThalesDeployed.claimable(first);
-	// 		assert.bnEqual(answer, deposit.mul(toBN(2)));
-	// 		await EscrowThalesDeployed.vest(deposit, { from: first });
-	// 		answer = await ThalesDeployed.balanceOf(first);
-	// 		assert.bnEqual(answer, deposit);
-	// 	});
-	// });
+		it('should decrease staking balance for a user and validate total staking amount', async () => {
+			let initialStake = toUnit(1500);
+			let reductionStake = toUnit(500);
+
+			await ThalesDeployed.transfer(first, initialStake, { from: owner });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, initialStake, { from: first });
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await StakingThalesDeployed.stake(initialStake, { from: first });
+			let initialStakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			let initialTotalStaked = await StakingThalesDeployed.totalStakedAmount();
+
+			// Decrease staking balance for the first user using the staking proxy
+			await StakingThalesDeployed.decreaseStakingBalanceFor(first, reductionStake, {
+				from: stakingBettingProxy,
+			});
+			let afterStakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			let afterTotalStaked = await StakingThalesDeployed.totalStakedAmount();
+
+			// Validate the staking balance and total staked amount after decrease
+			assert.bnEqual(afterStakedBalance, initialStakedBalance.sub(reductionStake));
+			assert.bnEqual(afterTotalStaked, initialTotalStaked.sub(reductionStake));
+		});
+
+		it('should revert when trying to increase staking balance with an unauthorized account', async () => {
+			let additionalStake = toUnit(500);
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await expect(
+				StakingThalesDeployed.increaseStakingBalanceFor(first, additionalStake, { from: second })
+			).to.be.revertedWith('Unsupported staking proxy');
+		});
+
+		it('should revert when trying to decrease staking balance with an unauthorized account', async () => {
+			let reductionStake = toUnit(500);
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await expect(
+				StakingThalesDeployed.decreaseStakingBalanceFor(first, reductionStake, { from: second })
+			).to.be.revertedWith('Unsupported staking proxy');
+		});
+
+		it('should revert when trying to decrease staking balance below current balance', async () => {
+			let initialStake = toUnit(1500);
+			let reductionStake = toUnit(2000); // More than the staked amount
+
+			// Transfer tokens to the first user and approve the staking contract to spend them
+			await ThalesDeployed.transfer(first, initialStake, { from: owner });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, initialStake, { from: first });
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			// Stake initial amount
+			await StakingThalesDeployed.stake(initialStake, { from: first });
+
+			// Try to decrease staking balance for the first user using the staking proxy
+			await expect(
+				StakingThalesDeployed.decreaseStakingBalanceFor(first, reductionStake, {
+					from: stakingBettingProxy,
+				})
+			).to.be.revertedWith('Insufficient staked amount');
+		});
+
+		it('should properly handle multiple increases and decreases in staking balance', async () => {
+			let initialStake = toUnit(1000);
+			let firstIncrease = toUnit(500);
+			let secondIncrease = toUnit(300);
+			let firstDecrease = toUnit(400);
+			let secondDecrease = toUnit(200);
+
+			await ThalesDeployed.transfer(first, initialStake, { from: owner });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, initialStake, { from: first });
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await StakingThalesDeployed.stake(initialStake, { from: first });
+
+			// Multiple staking balance modifications
+			await StakingThalesDeployed.increaseStakingBalanceFor(first, firstIncrease, {
+				from: stakingBettingProxy,
+			});
+			await StakingThalesDeployed.decreaseStakingBalanceFor(first, firstDecrease, {
+				from: stakingBettingProxy,
+			});
+			await StakingThalesDeployed.increaseStakingBalanceFor(first, secondIncrease, {
+				from: stakingBettingProxy,
+			});
+			await StakingThalesDeployed.decreaseStakingBalanceFor(first, secondDecrease, {
+				from: stakingBettingProxy,
+			});
+
+			let finalStakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			let finalTotalStaked = await StakingThalesDeployed.totalStakedAmount();
+
+			// Validate final balances
+			let expectedBalance = initialStake
+				.add(firstIncrease)
+				.add(secondIncrease)
+				.sub(firstDecrease)
+				.sub(secondDecrease);
+			assert.bnEqual(finalStakedBalance, expectedBalance);
+			assert.bnEqual(finalTotalStaked, expectedBalance);
+		});
+	});
 });

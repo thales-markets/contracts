@@ -652,6 +652,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
         if (isDecreasing) {
             require(_stakedBalances[_account] >= _amount, "Insufficient staked amount");
+            require(!unstaking[_account], "Account is unstaking");
             _totalStakedAmount = _totalStakedAmount.sub(_amount);
             _stakedBalances[_account] = _stakedBalances[_account].sub(_amount);
             stakingToken.safeTransfer(_proxyAccount, _amount);

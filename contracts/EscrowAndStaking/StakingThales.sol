@@ -759,19 +759,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(amount > 0, "Cannot stake 0");
         require(!unstaking[staker], "The staker is paused from staking due to unstaking");
         _modifyStakingBalance(staker, amount, false, sender);
-        // // Check if there are not claimable rewards from last period.
-        // // Claim them, and add new stake
-        // if (_calculateAvailableRewardsToClaim(staker) > 0) {
-        //     _claimReward(staker);
-        // }
-        // _lastStakingPeriod[staker] = periodsOfStaking;
-
-        // // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
-        // _subtractTotalEscrowBalanceNotIncludedInStaking(staker);
-
-        // _totalStakedAmount = _totalStakedAmount.add(amount);
-        // _stakedBalances[staker] = _stakedBalances[staker].add(amount);
-        // stakingToken.safeTransferFrom(sender, address(this), amount);
     }
 
     function _subtractTotalEscrowBalanceNotIncludedInStaking(address account) internal {

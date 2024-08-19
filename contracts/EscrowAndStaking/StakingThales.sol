@@ -644,14 +644,14 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         if (_calculateAvailableRewardsToClaim(_account) > 0) {
             _claimReward(_account);
         }
-        if (!isTrade && _stakedBalances[_account] == 0) {
+        if (!isTrade && _stakedBalances[_account] == 0 && _amount > 0) {
             //effectively becoming a new staker
             _lastStakingPeriod[_account] = periodsOfStaking;
             _subtractTotalEscrowBalanceNotIncludedInStaking(_account);
         }
 
         if (isTrade) {
-            require(_stakedBalances[_account].add(ONE) >= _amount, "Insufficient staked amount");
+            require(_stakedBalances[_account] >= _amount.add(ONE), "Insufficient staked amount");
             _totalStakedAmount = _totalStakedAmount.sub(_amount);
             _stakedBalances[_account] = _stakedBalances[_account].sub(_amount);
             stakingToken.safeTransfer(_proxyAccount, _amount);

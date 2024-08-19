@@ -24,6 +24,7 @@ import "../interfaces/IThalesAMM.sol";
 import "../interfaces/IPositionalMarketManager.sol";
 import "../interfaces/IStakingThalesBonusRewardsManager.sol";
 import "../interfaces/ICCIPCollector.sol";
+import "../interfaces/IStakingThalesBettingProxy.sol";
 
 /// @title A Staking contract that provides logic for staking and claiming rewards
 contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
@@ -559,6 +560,12 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Cannot unstake yet, cooldown not expired."
         );
+        if (stakingThalesBettingProxy != address(0)) {
+            require(
+                IStakingThalesBettingProxy(stakingThalesBettingProxy).numOfActiveTicketsPerUser(msg.sender) == 0,
+                "Cannot unstake, active tickets"
+            );
+        }
         unstaking[msg.sender] = false;
         uint unstakeAmount = unstakingAmount[msg.sender];
         stakingToken.safeTransfer(msg.sender, unstakeAmount);
@@ -680,6 +687,12 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             !unstaking[msg.sender] && !unstaking[destAccount],
             "Cannot merge, cancel unstaking on both accounts before merging"
         );
+        if (stakingThalesBettingProxy != address(0)) {
+            require(
+                IStakingThalesBettingProxy(stakingThalesBettingProxy).numOfActiveTicketsPerUser(msg.sender) == 0,
+                "Cannot merge, active tickets"
+            );
+        }
 
         iEscrowThales.mergeAccount(msg.sender, destAccount);
 

@@ -634,11 +634,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit AMMVolumeUpdated(account, amount, msg.sender);
     }
 
-    function decreaseStakingBalanceFor(address account, uint amount) external notPaused onlyStakingProxy {
+    function decreaseAndTransferStakedThales(address account, uint amount) external notPaused onlyStakingProxy {
         _modifyStakingBalance(account, amount, true, stakingThalesBettingProxy);
     }
 
-    function increaseStakingBalanceFor(address account, uint amount) external notPaused onlyStakingProxy {
+    function increaseAndTransferStakedThales(address account, uint amount) external notPaused onlyStakingProxy {
         _modifyStakingBalance(account, amount, false, stakingThalesBettingProxy);
     }
 

@@ -214,7 +214,7 @@ contract('StakingThales', (accounts) => {
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
 			let initialStakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
-			await StakingThalesDeployed.increaseStakingBalanceFor(first, toUnit(100), {
+			await StakingThalesDeployed.increaseAndTransferStakedThales(first, toUnit(100), {
 				from: stakingBettingProxy,
 			});
 			let afterStakingBalance = await StakingThalesDeployed.stakedBalanceOf(first);
@@ -222,7 +222,7 @@ contract('StakingThales', (accounts) => {
 				parseInt(afterStakingBalance),
 				parseInt(initialStakedBalance) + parseInt(toUnit(100))
 			);
-			await StakingThalesDeployed.decreaseStakingBalanceFor(first, toUnit(100), {
+			await StakingThalesDeployed.decreaseAndTransferStakedThales(first, toUnit(100), {
 				from: stakingBettingProxy,
 			});
 
@@ -237,13 +237,13 @@ contract('StakingThales', (accounts) => {
 			let feesAvailable = await StakingThalesDeployed.getRewardFeesAvailable(first);
 
 			initialStakedBalance = afterStakingBalance;
-			await StakingThalesDeployed.increaseStakingBalanceFor(first, toUnit(100), {
+			await StakingThalesDeployed.increaseAndTransferStakedThales(first, toUnit(100), {
 				from: stakingBettingProxy,
 			});
 			afterStakingBalance = await StakingThalesDeployed.stakedBalanceOf(first);
 
 			// assert.bnEqual(parseInt(afterStakingBalance), parseInt(initialStakedBalance) + parseInt(toUnit(100)));
-			await StakingThalesDeployed.decreaseStakingBalanceFor(first, toUnit(100), {
+			await StakingThalesDeployed.decreaseAndTransferStakedThales(first, toUnit(100), {
 				from: stakingBettingProxy,
 			});
 			assert.bnEqual(parseInt(afterStakingBalance), parseInt(initialStakedBalance));
@@ -381,7 +381,7 @@ contract('StakingThales', (accounts) => {
 			let initialTotalStaked = await StakingThalesDeployed.totalStakedAmount();
 
 			// Increase staking balance for the first user using the staking proxy
-			await StakingThalesDeployed.increaseStakingBalanceFor(first, additionalStake, {
+			await StakingThalesDeployed.increaseAndTransferStakedThales(first, additionalStake, {
 				from: stakingBettingProxy,
 			});
 			let afterStakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
@@ -404,7 +404,7 @@ contract('StakingThales', (accounts) => {
 			let initialTotalStaked = await StakingThalesDeployed.totalStakedAmount();
 
 			// Decrease staking balance for the first user using the staking proxy
-			await StakingThalesDeployed.decreaseStakingBalanceFor(first, reductionStake, {
+			await StakingThalesDeployed.decreaseAndTransferStakedThales(first, reductionStake, {
 				from: stakingBettingProxy,
 			});
 			let afterStakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
@@ -419,7 +419,9 @@ contract('StakingThales', (accounts) => {
 			let additionalStake = toUnit(500);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await expect(
-				StakingThalesDeployed.increaseStakingBalanceFor(first, additionalStake, { from: second })
+				StakingThalesDeployed.increaseAndTransferStakedThales(first, additionalStake, {
+					from: second,
+				})
 			).to.be.revertedWith('Unsupported staking proxy');
 		});
 
@@ -427,7 +429,9 @@ contract('StakingThales', (accounts) => {
 			let reductionStake = toUnit(500);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await expect(
-				StakingThalesDeployed.decreaseStakingBalanceFor(first, reductionStake, { from: second })
+				StakingThalesDeployed.decreaseAndTransferStakedThales(first, reductionStake, {
+					from: second,
+				})
 			).to.be.revertedWith('Unsupported staking proxy');
 		});
 
@@ -444,7 +448,7 @@ contract('StakingThales', (accounts) => {
 
 			// Try to decrease staking balance for the first user using the staking proxy
 			await expect(
-				StakingThalesDeployed.decreaseStakingBalanceFor(first, reductionStake, {
+				StakingThalesDeployed.decreaseAndTransferStakedThales(first, reductionStake, {
 					from: stakingBettingProxy,
 				})
 			).to.be.revertedWith('Insufficient staked amount');
@@ -463,16 +467,16 @@ contract('StakingThales', (accounts) => {
 			await StakingThalesDeployed.stake(initialStake, { from: first });
 
 			// Multiple staking balance modifications
-			await StakingThalesDeployed.increaseStakingBalanceFor(first, firstIncrease, {
+			await StakingThalesDeployed.increaseAndTransferStakedThales(first, firstIncrease, {
 				from: stakingBettingProxy,
 			});
-			await StakingThalesDeployed.decreaseStakingBalanceFor(first, firstDecrease, {
+			await StakingThalesDeployed.decreaseAndTransferStakedThales(first, firstDecrease, {
 				from: stakingBettingProxy,
 			});
-			await StakingThalesDeployed.increaseStakingBalanceFor(first, secondIncrease, {
+			await StakingThalesDeployed.increaseAndTransferStakedThales(first, secondIncrease, {
 				from: stakingBettingProxy,
 			});
-			await StakingThalesDeployed.decreaseStakingBalanceFor(first, secondDecrease, {
+			await StakingThalesDeployed.decreaseAndTransferStakedThales(first, secondDecrease, {
 				from: stakingBettingProxy,
 			});
 

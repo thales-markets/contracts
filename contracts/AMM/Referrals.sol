@@ -54,8 +54,7 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
     /// @notice returns the referrer fee for the given referrer
     function getReferrerFee(address referrer) external view returns (uint) {
-        return
-            goldAddresses[referrer] ? referrerFeeGold : silverAddresses[referrer] ? referrerFeeSilver : referrerFeeDefault;
+        return goldAddresses[referrer] ? referrerFeeGold : silverAddresses[referrer] ? referrerFeeSilver : 0;
     }
 
     /// @notice set Referrer for the given addresser

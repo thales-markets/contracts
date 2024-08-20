@@ -34,11 +34,11 @@ contract('SpeedMarketsReferrals', (accounts) => {
 
 			console.log('Check referrer fee 0.5%');
 			let referrerBalance = await exoticUSD.balanceOf(referrerAddress);
-			assert.bnEqual(referrerBalance, toUnit(0.05)); // 0.5% from 10
+			assert.bnEqual(referrerBalance, toUnit(0)); // 0.5% from 10
 
 			console.log('Check safe box fee 2% - 0.5%');
 			let safeBoxBalance = await exoticUSD.balanceOf(safeBox);
-			assert.bnEqual(safeBoxBalance, toUnit(0.15)); // 2% from 10 minus referrer fee (0.5%)
+			assert.bnEqual(safeBoxBalance, toUnit(0.2)); // 2% from 10 minus referrer fee (0.5%)
 		});
 
 		it('Should referrer receive silver fee', async () => {

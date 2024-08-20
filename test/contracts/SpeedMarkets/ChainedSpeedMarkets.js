@@ -17,7 +17,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 	let now;
 
 	const PAYOUT_MULTIPLIERS = [toUnit(1.7), toUnit(1.78), toUnit(1.82), toUnit(1.84), toUnit(1.9)];
-	const DEFAULT_REFERRER_FEE = 0.005;
+	const DEFAULT_REFERRER_FEE = 0;
 	const SILVER_REFERRER_FEE = 0.0075;
 	const GOLD_REFERRER_FEE = 0.01;
 	const PYTH_ETH_PRICE = 186342931000;

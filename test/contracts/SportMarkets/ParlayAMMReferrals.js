@@ -263,6 +263,7 @@ contract('ParlayAMM', (accounts) => {
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 		await Referrals.setReferrerFees(toUnit(0.005), toUnit(0.0075), toUnit(0.01), { from: owner });
+		await Referrals.setGoldAddress(second, true, { from: owner });
 
 		await SportsAMM.initialize(owner, Thales.address, toUnit('0.02'), toUnit('0.2'), DAY, {
 			from: owner,
@@ -948,7 +949,7 @@ contract('ParlayAMM', (accounts) => {
 			let referrerFeeForSecond = await Referrals.getReferrerFee(second);
 			console.log('referrerFeeForSecond : ' + referrerFeeForSecond / 1e18);
 
-			assert.bnEqual(referrerFeeForSecond, toUnit('0.005'));
+			assert.bnEqual(referrerFeeForSecond, toUnit('0.01'));
 
 			let referrerForFirst = await Referrals.sportReferrals(first);
 			console.log('referrerForFirst : ' + referrerForFirst);
@@ -958,11 +959,11 @@ contract('ParlayAMM', (accounts) => {
 			let balanceOfSecondReferrerAfter = await Thales.balanceOf(second);
 			console.log('balanceOfSecondReferrerAfter : ' + balanceOfSecondReferrerAfter / 1e18);
 
-			assert.bnEqual(balanceOfSecondReferrerAfter, toUnit('1000.05'));
+			assert.bnEqual(balanceOfSecondReferrerAfter, toUnit('1000.1'));
 
 			let safeBoxBalanceAfter = await Thales.balanceOf(safeBox);
 			console.log('safeBoxBalanceAfter : ' + safeBoxBalanceAfter / 1e18);
-			assert.bnEqual(safeBoxBalanceAfter, toUnit('0.15'));
+			assert.bnEqual(safeBoxBalanceAfter, toUnit('0.1'));
 
 			let firstAnswer = await Thales.balanceOf(second);
 			console.log(
@@ -1021,15 +1022,7 @@ contract('ParlayAMM', (accounts) => {
 				fromUnit(firstAnswer)
 			);
 
-			secondAnswer = await Thales.balanceOf(third);
-			assert.bnGt(secondAnswer, balanceOfSecondReferrer);
-			console.log(
-				'Second referrer change: ',
-				fromUnit(balanceOfSecondReferrer),
-				fromUnit(secondAnswer)
-			);
-
-			assert.eventEqual(buyParlayTX.logs[3], 'ParlayMarketCreated', {
+			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 			});
@@ -1130,15 +1123,7 @@ contract('ParlayAMM', (accounts) => {
 				fromUnit(firstAnswer)
 			);
 
-			secondAnswer = await Thales.balanceOf(third);
-			assert.bnGt(secondAnswer, balanceOfSecondReferrer);
-			console.log(
-				'Second referrer change: ',
-				fromUnit(balanceOfSecondReferrer),
-				fromUnit(secondAnswer)
-			);
-
-			assert.eventEqual(buyParlayTX.logs[3], 'ParlayMarketCreated', {
+			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 				amount: result[2],

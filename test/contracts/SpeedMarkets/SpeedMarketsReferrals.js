@@ -104,5 +104,37 @@ contract('SpeedMarketsReferrals', (accounts) => {
 			let safeBoxBalance = await exoticUSD.balanceOf(safeBox);
 			assert.bnEqual(safeBoxBalance, toUnit(0.1)); // 2% from 10 minus referrer fee (1%)
 		});
+
+		it('Default fee set to 0', async () => {
+			let { creatorAccount, speedMarketsAMM, exoticUSD, initialSkewImapct, now, referrals } =
+				await speedMarketsInit(accounts);
+
+			await referrals.setReferrerFees(toUnit(0), toUnit(0.0075), toUnit(0.01));
+
+			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
+			const createSpeedAMMParams = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTimeParam,
+				now,
+				10,
+				0,
+				initialSkewImapct,
+				0,
+				ZERO_ADDRESS,
+				referrerAddress
+			);
+
+			console.log('Create Speed Market with 10 amount and referrer default fee');
+			await speedMarketsAMM.createNewMarket(createSpeedAMMParams, { from: creatorAccount });
+
+			console.log('Check referrer fee 0%');
+			let referrerBalance = await exoticUSD.balanceOf(referrerAddress);
+			assert.bnEqual(referrerBalance, toUnit(0));
+
+			console.log('Check safe box fee 2% - 0%');
+			let safeBoxBalance = await exoticUSD.balanceOf(safeBox);
+			assert.bnEqual(safeBoxBalance, toUnit(0.2));
+		});
 	});
 });

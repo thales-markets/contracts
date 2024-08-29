@@ -303,6 +303,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         );
     }
 
+    /// @notice sets the stakingThalesBettingProxy address, required for handling ticket claiming via StakingThalesBettingProxy
     function setStakingThalesBettingProxy(address _stakingThalesBettingProxy) external onlyOwner {
         stakingThalesBettingProxy = _stakingThalesBettingProxy;
         emit SetStakingThalesBettingProxy(_stakingThalesBettingProxy);
@@ -502,7 +503,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @notice Stake the amount of staking token to get weekly rewards
     /// @param amount to stake
     function stake(uint amount) external nonReentrant notPaused {
-        _stake(amount, msg.sender, msg.sender);
+        _stake(amount);
         emit Staked(msg.sender, amount);
     }
 
@@ -560,12 +561,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Cannot unstake yet, cooldown not expired."
         );
-        if (stakingThalesBettingProxy != address(0)) {
-            require(
-                IStakingThalesBettingProxy(stakingThalesBettingProxy).numOfActiveTicketsPerUser(msg.sender) == 0,
-                "Cannot unstake, active tickets"
-            );
-        }
         unstaking[msg.sender] = false;
         uint unstakeAmount = unstakingAmount[msg.sender];
         stakingToken.safeTransfer(msg.sender, unstakeAmount);
@@ -634,10 +629,16 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit AMMVolumeUpdated(account, amount, msg.sender);
     }
 
+    /// @notice Used by stakingThalesBettingProxy to make a bet with StakedTHALES
+    /// @param account the staker
+    /// @param amount to be used for betting
     function decreaseAndTransferStakedThales(address account, uint amount) external notPaused onlyStakingProxy {
         _modifyStakingBalance(account, amount, true, stakingThalesBettingProxy);
     }
 
+    /// @notice Used by stakingThalesBettingProxy to claim a winning bet made with StakedTHALES
+    /// @param account the staker
+    /// @param amount that was won
     function increaseAndTransferStakedThales(address account, uint amount) external notPaused onlyStakingProxy {
         _modifyStakingBalance(account, amount, false, stakingThalesBettingProxy);
     }
@@ -687,12 +688,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             !unstaking[msg.sender] && !unstaking[destAccount],
             "Cannot merge, cancel unstaking on both accounts before merging"
         );
-        if (stakingThalesBettingProxy != address(0)) {
-            require(
-                IStakingThalesBettingProxy(stakingThalesBettingProxy).numOfActiveTicketsPerUser(msg.sender) == 0,
-                "Cannot merge, active tickets"
-            );
-        }
 
         iEscrowThales.mergeAccount(msg.sender, destAccount);
 
@@ -763,15 +758,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         _lastRewardsClaimedPeriod[account] = periodsOfStaking;
     }
 
-    function _stake(
-        uint amount,
-        address staker,
-        address sender
-    ) internal {
+    function _stake(uint amount) internal {
         require(startTimeStamp > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
-        require(!unstaking[staker], "The staker is paused from staking due to unstaking");
-        _modifyStakingBalance(staker, amount, false, sender);
+        require(!unstaking[msg.sender], "The staker is paused from staking due to unstaking");
+        _modifyStakingBalance(msg.sender, amount, false, msg.sender);
     }
 
     function _subtractTotalEscrowBalanceNotIncludedInStaking(address account) internal {

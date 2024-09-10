@@ -509,7 +509,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @notice Start unstaking cooldown for the amount of staking token
     /// @param amount to unstake
     function startUnstake(uint amount) external notPaused {
-        require(amount >= ONE, "Cannot unstake less than 1");
+        require(amount > 0, "Cannot unstake 0");
         require(_stakedBalances[msg.sender] >= amount, "Account doesnt have that much staked");
         require(!unstaking[msg.sender], "Account has already triggered unstake cooldown");
 
@@ -769,7 +769,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address sender
     ) internal {
         require(startTimeStamp > 0, "Staking period has not started");
-        require(amount >= ONE, "Cannot stake less than 1");
+        require(amount > 0, "Cannot stake 0");
         require(!unstaking[staker], "The staker is paused from staking due to unstaking");
         _modifyStakingBalance(staker, amount, false, sender);
     }

@@ -316,7 +316,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             stakingToken.approve(address(iEscrowThales), 0);
         }
         iEscrowThales = IEscrowThales(_escrowThalesContract);
-        stakingToken.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         emit EscrowChanged(_escrowThalesContract);
     }
 
@@ -649,7 +648,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         bool isTrade,
         address _proxyAccount
     ) internal {
-        if (_calculateAvailableRewardsToClaim(_account) > 0) {
+        if (_stakedBalances[_account] > 0 && _lastRewardsClaimedPeriod[_account] != periodsOfStaking) {
             _claimReward(_account);
         }
         if (!isTrade && _stakedBalances[_account] == 0 && _amount > 0) {

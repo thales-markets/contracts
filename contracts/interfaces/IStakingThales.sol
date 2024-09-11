@@ -34,6 +34,10 @@ interface IStakingThales {
 
     function getAMMVolume(address account) external view returns (uint);
 
+    function decreaseAndTransferStakedThales(address account, uint amount) external;
+
+    function increaseAndTransferStakedThales(address account, uint amount) external;
+
     function updateVolumeAtAmountDecimals(
         address account,
         uint amount,

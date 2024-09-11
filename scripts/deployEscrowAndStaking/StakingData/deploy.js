@@ -25,6 +25,10 @@ async function main() {
 		networkObj.name = 'baseMainnet';
 		network = 'baseMainnet';
 	}
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
+	}
 
 	const StakingData = await ethers.getContractFactory('StakingData');
 	const StakingThalesAddress = getTargetAddress('StakingThales', network);

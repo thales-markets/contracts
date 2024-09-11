@@ -24,6 +24,10 @@ async function main() {
 		networkObj.name = 'baseMainnet';
 		network = 'baseMainnet';
 	}
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
+	}
 
 	const owner = new ethers.Wallet(user_key1, ethers.provider);
 
@@ -45,7 +49,7 @@ async function main() {
 	const StakingContract = await ethers.getContractFactory('StakingThales');
 	console.log('Address of staking: ', StakingAddress);
 
-	if (networkObj.chainId == 69 || networkObj.chainId == 420) {
+	if (networkObj.chainId == 69 || networkObj.chainId == 420 || networkObj.chainId == 11155420) {
 		await upgrades.upgradeProxy(StakingAddress, StakingContract);
 		await delay(5000);
 

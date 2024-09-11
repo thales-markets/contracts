@@ -24,6 +24,7 @@ import "../interfaces/IThalesAMM.sol";
 import "../interfaces/IPositionalMarketManager.sol";
 import "../interfaces/IStakingThalesBonusRewardsManager.sol";
 import "../interfaces/ICCIPCollector.sol";
+import "../interfaces/IStakingThalesBettingProxy.sol";
 
 /// @title A Staking contract that provides logic for staking and claiming rewards
 contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
@@ -134,6 +135,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     uint public closingPeriodPauseTime;
 
     bool public sendCCIPMessage;
+
+    address public stakingThalesBettingProxy;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -300,6 +303,12 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         );
     }
 
+    /// @notice sets the stakingThalesBettingProxy address, required for handling ticket claiming via StakingThalesBettingProxy
+    function setStakingThalesBettingProxy(address _stakingThalesBettingProxy) external onlyOwner {
+        stakingThalesBettingProxy = _stakingThalesBettingProxy;
+        emit SetStakingThalesBettingProxy(_stakingThalesBettingProxy);
+    }
+
     /// @notice Set address of Escrow Thales contract
     /// @param _escrowThalesContract address of Escrow Thales contract
     function setEscrow(address _escrowThalesContract) external onlyOwner {
@@ -307,7 +316,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             stakingToken.approve(address(iEscrowThales), 0);
         }
         iEscrowThales = IEscrowThales(_escrowThalesContract);
-        stakingToken.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         emit EscrowChanged(_escrowThalesContract);
     }
 
@@ -494,7 +502,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @notice Stake the amount of staking token to get weekly rewards
     /// @param amount to stake
     function stake(uint amount) external nonReentrant notPaused {
-        _stake(amount, msg.sender, msg.sender);
+        _stake(amount);
         emit Staked(msg.sender, amount);
     }
 
@@ -620,6 +628,52 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit AMMVolumeUpdated(account, amount, msg.sender);
     }
 
+    /// @notice Used by stakingThalesBettingProxy to make a bet with StakedTHALES
+    /// @param account the staker
+    /// @param amount to be used for betting
+    function decreaseAndTransferStakedThales(address account, uint amount) external notPaused onlyStakingProxy {
+        _modifyStakingBalance(account, amount, true, stakingThalesBettingProxy);
+    }
+
+    /// @notice Used by stakingThalesBettingProxy to claim a winning bet made with StakedTHALES
+    /// @param account the staker
+    /// @param amount that was won
+    function increaseAndTransferStakedThales(address account, uint amount) external notPaused onlyStakingProxy {
+        _modifyStakingBalance(account, amount, false, stakingThalesBettingProxy);
+    }
+
+    function _modifyStakingBalance(
+        address _account,
+        uint _amount,
+        bool isTrade,
+        address _proxyAccount
+    ) internal {
+        if (_stakedBalances[_account] > 0 && _lastRewardsClaimedPeriod[_account] != periodsOfStaking) {
+            _claimReward(_account);
+        }
+        if (!isTrade && _stakedBalances[_account] == 0 && _amount > 0) {
+            //effectively becoming a new staker
+            _lastStakingPeriod[_account] = periodsOfStaking;
+            _subtractTotalEscrowBalanceNotIncludedInStaking(_account);
+        }
+
+        if (isTrade) {
+            require(_stakedBalances[_account] >= _amount.add(ONE), "Insufficient staked amount");
+            _totalStakedAmount = _totalStakedAmount.sub(_amount);
+            _stakedBalances[_account] = _stakedBalances[_account].sub(_amount);
+            stakingToken.safeTransfer(_proxyAccount, _amount);
+        } else {
+            _totalStakedAmount = _totalStakedAmount.add(_amount);
+            _stakedBalances[_account] = _stakedBalances[_account].add(_amount);
+            stakingToken.safeTransferFrom(_proxyAccount, address(this), _amount);
+        }
+    }
+
+    modifier onlyStakingProxy() {
+        require(msg.sender == stakingThalesBettingProxy, "Unsupported staking proxy");
+        _;
+    }
+
     /// @notice Merge account to transfer all staking amounts to another account
     /// @param destAccount to merge into
     function mergeAccount(address destAccount) external notPaused {
@@ -716,27 +770,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         _lastRewardsClaimedPeriod[account] = periodsOfStaking;
     }
 
-    function _stake(
-        uint amount,
-        address staker,
-        address sender
-    ) internal {
+    function _stake(uint amount) internal {
         require(startTimeStamp > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
-        require(!unstaking[staker], "The staker is paused from staking due to unstaking");
-        // Check if there are not claimable rewards from last period.
-        // Claim them, and add new stake
-        if (_calculateAvailableRewardsToClaim(staker) > 0) {
-            _claimReward(staker);
-        }
-        _lastStakingPeriod[staker] = periodsOfStaking;
-
-        // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
-        _subtractTotalEscrowBalanceNotIncludedInStaking(staker);
-
-        _totalStakedAmount = _totalStakedAmount.add(amount);
-        _stakedBalances[staker] = _stakedBalances[staker].add(amount);
-        stakingToken.safeTransferFrom(sender, address(this), amount);
+        require(!unstaking[msg.sender], "The staker is paused from staking due to unstaking");
+        _modifyStakingBalance(msg.sender, amount, false, msg.sender);
     }
 
     function _subtractTotalEscrowBalanceNotIncludedInStaking(address account) internal {
@@ -814,6 +852,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     );
     event ReceivedStakingRewardsUpdate(uint _currentPeriodRewards, uint _extraRewards, uint _revShare);
     event EscrowChanged(address newEscrow);
+    event SetStakingThalesBettingProxy(address stakingThalesBettingProxy);
     event StakingPeriodStarted();
     event AMMVolumeUpdated(address account, uint amount, address source);
     event AccountMerged(address srcAccount, address destAccount);

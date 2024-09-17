@@ -633,6 +633,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param amount to be used for betting
     function decreaseAndTransferStakedThales(address account, uint amount) external notPaused onlyStakingProxy {
         _modifyStakingBalance(account, amount, true, stakingThalesBettingProxy);
+        emit StakedThalesDecreased(account, amount);
     }
 
     /// @notice Used by stakingThalesBettingProxy to claim a winning bet made with StakedTHALES
@@ -640,6 +641,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param amount that was won
     function increaseAndTransferStakedThales(address account, uint amount) external notPaused onlyStakingProxy {
         _modifyStakingBalance(account, amount, false, stakingThalesBettingProxy);
+        emit StakedThalesIncreased(account, amount);
     }
 
     function _modifyStakingBalance(
@@ -861,4 +863,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event SupportedAMMVaultSet(address vault, bool value);
     event SupportedSportVaultSet(address vault, bool value);
     event LastPeriodTimestampSet(uint lastPeriodTimestamp);
+    event StakedThalesIncreased(address account, uint amount);
+    event StakedThalesDecreased(address account, uint amount);
 }

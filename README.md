@@ -35,6 +35,7 @@ Everything about the [THALES token](https://thalesmarket.io/article/token)
 - https://www.certik.com/projects/thales
 - https://iosiro.com/audits/thales-airdrop-and-staking-smart-contract-audit
 - https://iosiro.com/audits/thales-binary-option-market-smart-contract-audit
+- https://iosiro.com/audits/staked-thales-betting-proxy-smart-contract-audit
 
 ### Contracts
 

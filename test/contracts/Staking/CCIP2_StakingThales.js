@@ -1193,6 +1193,9 @@ contract('StakingThales', (accounts) => {
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			// Check if feeToken is equal to sUSDSynth address
+			const feeToken = await StakingThalesDeployed.feeToken();
+			assert.equal(feeToken, sUSDSynth.address);
 			await StakingThalesDeployed.claimReward({ from: first });
 
 			// Pause the StakingThales contract

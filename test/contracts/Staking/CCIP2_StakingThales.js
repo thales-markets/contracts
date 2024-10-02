@@ -1166,6 +1166,78 @@ contract('StakingThales', (accounts) => {
 			await StakingThalesDeployed.claimReward({ from: first });
 		});
 
+		it('Pause contract, change fee token to USDC, add USDC, unpause and close period', async () => {
+			// Deploy USDC token (6 decimals)
+
+			// Initial setup
+			let deposit = toUnit(100000);
+			let stake = toUnit(1500);
+			await ThalesDeployed.transfer(first, stake, { from: owner });
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			let answer = await StakingThalesDeployed.getContractFeeFunds();
+			assert.bnEqual(answer, 0);
+			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
+				'Staking period has not started'
+			);
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, toUnit(200000), {
+				from: owner,
+			});
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
+			await StakingThalesDeployed.stake(stake, { from: first });
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			await StakingThalesDeployed.claimReward({ from: first });
+
+			// Pause the StakingThales contract
+			await StakingThalesDeployed.setPaused(true, { from: owner });
+
+			// Add USDC to the staking contract (let's say 1000 USDC)
+			const amountSixDecimal = 1000 * 1e6; // 1000 USDC with 6 decimals
+			await ThalesSixDecimal.transfer(StakingThalesDeployed.address, amountSixDecimal, {
+				from: owner,
+			});
+			// Change fee token to USDC
+			await StakingThalesDeployed.setFeeToken(ThalesSixDecimal.address, { from: owner });
+
+			// Unpause the contract
+			await StakingThalesDeployed.setPaused(false, { from: owner });
+			await fastForward(WEEK + SECOND);
+			// Close the period
+			await StakingThalesDeployed.closePeriod({ from: owner });
+
+			// Check if the distribution is correct
+			const totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
+			const totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
+			const totalStakedAndEscrowed = totalStaked.add(totalEscrowed);
+
+			console.log(fromUnit(totalStaked), fromUnit(totalEscrowed), fromUnit(totalStakedAndEscrowed));
+			const stakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			const escrowedBalance = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);
+			const totalBalance = stakedBalance.add(escrowedBalance);
+
+			const actualReward = await StakingThalesDeployed.getRewardFeesAvailable(first);
+
+			// Only Staker should be able to claim the full amount
+			assert.equal(fromUnit(actualReward), fromUnit(amountSixDecimal.toString()));
+
+			// Claim rewards and verify
+			const balanceBeforeClaim = await ThalesSixDecimal.balanceOf(first);
+			await StakingThalesDeployed.claimReward({ from: first });
+			const balanceAfterClaim = await ThalesSixDecimal.balanceOf(first);
+			const claimedAmount = balanceAfterClaim.sub(balanceBeforeClaim);
+			console.log('actualReward', fromUnit(actualReward));
+			console.log('claimedAmount', fromUnit(claimedAmount));
+
+			assert.equal(fromUnit(actualReward), fromUnit(claimedAmount));
+		});
+
 		it('Stake with first account and claim reward', async () => {
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);

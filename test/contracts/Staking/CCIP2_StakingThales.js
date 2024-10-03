@@ -1241,6 +1241,165 @@ contract('StakingThales', (accounts) => {
 			assert.equal(fromUnit(actualReward), fromUnit(claimedAmount));
 		});
 
+		it('Stake with first, claim reward, activate CCIP, close period, change fee token to USDC, add USDC, unpause and close period, claim Rewards', async () => {
+			let deposit = toUnit(100000);
+			let stake = toUnit(1500);
+			await ThalesDeployed.transfer(first, stake, { from: owner });
+			await StakingThalesDeployed.setStakingRewardsParameters(deposit, 100000, false, {
+				from: owner,
+			});
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			let answer = await StakingThalesDeployed.getContractFeeFunds();
+			assert.bnEqual(answer, 0);
+			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
+				'Staking period has not started'
+			);
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, toUnit(200000), {
+				from: owner,
+			});
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
+			await StakingThalesDeployed.stake(stake, { from: first });
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			await StakingThalesDeployed.claimReward({ from: first });
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);
+			assert.bnEqual(answer, answer2);
+			await AddressManager.setAddressInAddressBook('CrossChainCollector', CCIPCollector.address, {
+				from: owner,
+			});
+			await AddressManager.setAddressInAddressBook('SafeBoxBuffer', SafeBoxBuffer.address, {
+				from: owner,
+			});
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			await sUSDSynth.transfer(StakingThalesDeployed.address, 1001, { from: initialCreator });
+			let closingPeriodInProgress = await StakingThalesDeployed.closingPeriodInProgress();
+			assert.equal(closingPeriodInProgress, true);
+			assert.equal(await StakingThalesDeployed.paused(), true);
+			await expect(StakingThalesDeployed.claimReward({ from: first })).to.be.revertedWith(
+				'This action cannot be performed while the contract is paused'
+			);
+			await AddressManager.setAddressInAddressBook('CrossChainCollector', second, {
+				from: owner,
+			});
+			await AddressManager.setAddressInAddressBook('StakingThales', StakingThalesDeployed.address, {
+				from: owner,
+			});
+			// await StakingThalesDeployed.setCrossChainCollector(second, SafeBoxBuffer.address, {
+			// 	from: owner,
+			// });
+			let paused = await StakingThalesDeployed.paused();
+			assert.equal(paused, true);
+			let totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
+			let totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
+			await StakingThalesDeployed.setStakingRewardsParameters(toUnit(1000000), 100000, false, {
+				from: owner,
+			});
+			await StakingThalesDeployed.updateStakingRewards(toUnit(1000000), 1000000, 1000, {
+				from: second,
+			});
+			let availableRewards = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(fromUnit(availableRewards), 1000000);
+			await expect(StakingThalesDeployed.claimReward({ from: first })).to.be.revertedWith(
+				'revert SafeERC20: low-level call failed'
+			);
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, toUnit(1000000), {
+				from: owner,
+			});
+
+			const feeToken = await StakingThalesDeployed.feeToken();
+			assert.equal(feeToken, sUSDSynth.address);
+			await StakingThalesDeployed.claimReward({ from: first });
+
+			// Pause the StakingThales contract
+			await StakingThalesDeployed.setPaused(true, { from: owner });
+
+			// Add USDC to the staking contract (let's say 1000 USDC)
+			const amountSixDecimal = 1000 * 1e6; // 1000 USDC with 6 decimals
+			const amountSixDecimalToBuffer = 2000 * 1e6; // 1000 USDC with 6 decimals
+			await ThalesSixDecimal.transfer(StakingThalesDeployed.address, amountSixDecimal, {
+				from: owner,
+			});
+			await ThalesSixDecimal.transfer(SafeBoxBuffer.address, amountSixDecimalToBuffer, {
+				from: owner,
+			});
+			// Change fee token to USDC
+			await StakingThalesDeployed.setFeeToken(ThalesSixDecimal.address, { from: owner });
+			await SafeBoxBuffer.setAddressManager(AddressManager.address, { from: owner });
+			await SafeBoxBuffer.setSUSD(ThalesSixDecimal.address, { from: owner });
+			let sUSDAddress = await SafeBoxBuffer.sUSD();
+			assert.equal(sUSDAddress, ThalesSixDecimal.address);
+			await AddressManager.setAddressInAddressBook('CrossChainCollector', CCIPCollector.address, {
+				from: owner,
+			});
+
+			let newFeeToken = await StakingThalesDeployed.feeToken();
+			assert.equal(newFeeToken, ThalesSixDecimal.address);
+			// Unpause the contract
+			await StakingThalesDeployed.setPaused(false, { from: owner });
+			await fastForward(WEEK + 5 * SECOND);
+			closingPeriodInProgress = await StakingThalesDeployed.closingPeriodInProgress();
+			assert.equal(closingPeriodInProgress, false);
+			let balance = await ThalesSixDecimal.balanceOf(StakingThalesDeployed.address);
+			assert.equal(balance.toString(), amountSixDecimal.toString());
+
+			let canClosePeriod = await StakingThalesDeployed.canClosePeriod();
+			assert.equal(canClosePeriod, true);
+			// Close the period
+			await fastForward(2 * SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+			await AddressManager.setAddressInAddressBook('CrossChainCollector', second, {
+				from: owner,
+			});
+			let newAmount = 1500 * 1e6;
+			let newAmountTransformed = toUnit(1500);
+			console.log('newAmountTransformed', newAmountTransformed);
+			await StakingThalesDeployed.updateStakingRewards(
+				toUnit(1000000),
+				1000000,
+				newAmountTransformed,
+				{
+					from: second,
+				}
+			);
+			// Check if the distribution is correct
+			totalStaked = await StakingThalesDeployed.totalStakedLastPeriodEnd();
+			totalEscrowed = await StakingThalesDeployed.totalEscrowedLastPeriodEnd();
+			const totalStakedAndEscrowed = totalStaked.add(totalEscrowed);
+
+			console.log(fromUnit(totalStaked), fromUnit(totalEscrowed), fromUnit(totalStakedAndEscrowed));
+			const stakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			const escrowedBalance = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);
+			const totalBalance = stakedBalance.add(escrowedBalance);
+
+			const actualReward = await StakingThalesDeployed.getRewardFeesAvailable(first);
+
+			// Only Staker should be able to claim the full amount
+			assert.equal(fromUnit(actualReward), fromUnit(newAmount.toString()));
+
+			// Claim rewards and verify
+			const balanceBeforeClaim = await ThalesSixDecimal.balanceOf(first);
+			await expect(StakingThalesDeployed.claimReward({ from: first })).to.be.revertedWith(
+				'revert SafeERC20: low-level call failed'
+			);
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, toUnit(1000000), {
+				from: owner,
+			});
+			await StakingThalesDeployed.claimReward({ from: first });
+			const balanceAfterClaim = await ThalesSixDecimal.balanceOf(first);
+			const claimedAmount = balanceAfterClaim.sub(balanceBeforeClaim);
+			console.log('actualReward', fromUnit(actualReward));
+			console.log('claimedAmount', fromUnit(claimedAmount));
+
+			assert.equal(fromUnit(actualReward), fromUnit(claimedAmount));
+		});
+
 		it('Stake with first account and claim reward', async () => {
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);

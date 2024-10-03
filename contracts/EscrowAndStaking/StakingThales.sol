@@ -268,6 +268,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit StakingRewardsParametersChanged(_fixedReward, _extraReward, _extraRewardsActive);
     }
 
+    function setFeeToken(address _feeToken) external onlyOwner {
+        require(paused, "Contract must be paused");
+        feeToken = IERC20(_feeToken);
+    }
+
     /// @notice Set contract addresses
     /// @param _thalesAMM address of Thales AMM contract
     /// @param _thalesRangedAMM address of Thales ranged AMM contract

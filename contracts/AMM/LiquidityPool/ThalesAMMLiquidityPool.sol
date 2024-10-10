@@ -488,12 +488,11 @@ contract ThalesAMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeabl
             uint stakedThalesForUser
         )
     {
-        uint nextRound = round + 1;
-        stakedThalesForUser = stakingThales.stakedBalanceOf(user);
-        maxDepositForUser = _transformCollateral((stakedThalesForUser * stakedThalesMultiplier) / ONE);
-        availableToDepositForUser = maxDepositForUser > (balancesPerRound[round][user] + balancesPerRound[nextRound][user])
-            ? (maxDepositForUser - balancesPerRound[round][user] - balancesPerRound[nextRound][user])
-            : 0;
+        maxDepositForUser = maxAllowedDeposit - totalDeposited;
+        availableToDepositForUser = maxDepositForUser;
+        if (address(stakingThales) != address(0)) {
+            stakedThalesForUser = stakingThales.stakedBalanceOf(user);
+        }
     }
 
     /// @notice get the pool address for the market

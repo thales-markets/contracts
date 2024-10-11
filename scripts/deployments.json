@@ -191,7 +191,9 @@
 		"ThalesAMMLiquidityPoolUSDC": "0x47Da40be6B617d0199ADF1Ec3550f3875b246124",
 		"ThalesAMMLiquidityPoolImplementationUSDC": "0x95E8C849FA22012d88f40180A1524Ef31BE11a14",
 		"ThalesAMMDefaultLiquidityProviderUSDC": "0xE7f346cEB3765B664c7896701fF1BC42b936f596",
-		"ThalesAMMDefaultLiquidityProviderImplementationUSDC": "0xB47fb03FFaCEFa464AA0B1e575dDD42760A2d6FE"
+		"ThalesAMMDefaultLiquidityProviderImplementationUSDC": "0xB47fb03FFaCEFa464AA0B1e575dDD42760A2d6FE",
+		"PositionalMarketDataUSDC": "0xE69AF31bBB306d45577746861C75912bc66C3700",
+		"PositionalMarketDataImplementationUSDC": "0xDb36A40e866c2ef7ba30385AbFD6335580631eaf"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",

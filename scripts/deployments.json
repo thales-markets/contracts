@@ -24,7 +24,7 @@
 		"PositionalMarketMastercopy": "0x470A69AfEc851c1c4022b4a1b9D3a729389564FF",
 		"ThalesAMMImplementation": "0xf3B63B29A2813959a4273e920c6c5dF06bfc369A",
 		"SafeBoxImplementation": "0x4063BFaC9b1215C55452b961D428D98BCE55CD49",
-		"SafeBoxBuybackImplementation": "0x955F1032678be2D76d9Eb4D1A73931D6Cb59114d",
+		"SafeBoxBuybackImplementation": "0x5dd816aE6192b545BC7370A7dFBCd87790E90F6E",
 		"SNXIssuer": "0xA2412e0654CdD40F5677Aaad1a0c572e75dF246C",
 		"StakingThales": "0xC392133eEa695603B51a5d5de73655d571c2CE51",
 		"EscrowThales": "0xa25816b9605009aa446d4d597F0AA46FD828f056",
@@ -317,7 +317,7 @@
 		"MultiCollateralOnOffRampImplementation": "0xd6C3Ca569280C66090bf8827a6F7e3C25306AfB9",
 		"SpeedMarketMastercopy": "0x590b4Fc494BaDdF06BB65430650De36D7E228E31",
 		"SafeBoxBuyback": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203",
-		"SafeBoxBuybackImplementation": "0xd406adCC2ef2fA7f7c33c0be1a9fDD5E473aa6E2",
+		"SafeBoxBuybackImplementation": "0x32b026359b149F7a08fc24c7E71f88C1099aAA0C",
 		"SportAMMRiskManager": "0x4d0192E2fE94687838Eaa3BcbC3B891964B38a9D",
 		"SportAMMRiskManagerImplementation": "0x0C80A1b01dcE90901e3F6017C2c287620cEF5230",
 		"GamesPlayerProps": "0xda835388e4f17701e352390778f9b4e2f96ad049",
@@ -347,8 +347,7 @@
 		"MultiCollateralOnOffRampImplementationUSDC": "0xE450074D5F3D7590389A33499fd65B5B6A2FFc5A",
 		"SpeedMarketsAMMCreator": "0x905D1732F7639a402B1E0Ffcc2CeD2270Fc16812",
 		"SpeedMarketsAMMCreatorImplementation": "0x4385f3d85E81f97A555E9327eB83ccd263E7EE45",
-		"SessionValidationModule": "0x94d06B770D41D9b3A3bb2E636F3F93F69909099f",
-		"SafeBoxImplementationBuyback": "0x32b026359b149F7a08fc24c7E71f88C1099aAA0C"
+		"SessionValidationModule": "0x94d06B770D41D9b3A3bb2E636F3F93F69909099f"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
@@ -441,7 +440,7 @@
 		"OvertimeVoucherEscrow": "0x9e244C353145018DA0885E5405f680f27F8eB0Fa",
 		"OvertimeVoucherEscrowImplementation": "0x31EAeCc94e837f05615510e7b9D2f056401A8bCE",
 		"SafeBoxBuyback": "0x860C4DD827DdDd98755e0843b89d909f5A0347Ff",
-		"SafeBoxBuybackImplementation": "0xE9F5E7579931a46e4beaC08Ca9ab52961AD66203",
+		"SafeBoxBuybackImplementation": "0xA2d2f7a4D4fD502E824951365BC11df191Be789A",
 		"GamesPlayerProps": "0xE1A9ed7922b78Bcb2b0df66371CCb93bb70dC08d",
 		"GamesPlayerPropsImplementation": "0x0Adf65a2Ae54b479e66AFA7490A125867183f1e0",
 		"GamesPlayerPropsReceiver": "0x3daFD49175AA9e1D71FD94Ec194da813a2cD5741",
@@ -469,8 +468,7 @@
 		"SafeBoxBufferImplementation": "0xb8e8E6cF3AbD16070013B23c92601D0eeA83a02E",
 		"SpeedMarketsAMMCreator": "0x6B5FE966Ea9B05d8E628E772B0b745734D069983",
 		"SpeedMarketsAMMCreatorImplementation": "0x342D29603CE81cF3aC1B004A5e19C6Ff6d7fe516",
-		"SessionValidationModule": "0x1E82dbfb6BefF4b4799a1a688d09B259eb173F64",
-		"SafeBoxImplementationBuyback": "0xA2d2f7a4D4fD502E824951365BC11df191Be789A"
+		"SessionValidationModule": "0x1E82dbfb6BefF4b4799a1a688d09B259eb173F64"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

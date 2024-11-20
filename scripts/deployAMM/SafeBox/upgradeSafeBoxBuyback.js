@@ -59,7 +59,7 @@ async function main() {
 	const implementation = await upgrades.prepareUpgrade(safeBoxAddress, SafeBox);
 	console.log('SafeBox upgrade prepared');
 
-	setTargetAddress('SafeBoxImplementationBuyback', network, implementation);
+	setTargetAddress('SafeBoxBuybackImplementation', network, implementation);
 
 	try {
 		await hre.run('verify:verify', {

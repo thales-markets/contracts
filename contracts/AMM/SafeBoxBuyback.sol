@@ -214,6 +214,13 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
         thalesToken.transfer(account, amount);
     }
 
+    /// @notice retrieveWETHAmount retrieves WETH from this contract
+    /// @param account where to send the tokens
+    /// @param amount how much to retrieve
+    function retrieveWETHAmount(address payable account, uint amount) external onlyOwner {
+        IERC20Upgradeable(WETH9).transfer(account, amount);
+    }
+
     /// @notice sets path
     function setPath(bytes calldata path) external onlyOwner {
         pathToUse = path;

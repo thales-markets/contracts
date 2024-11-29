@@ -39,6 +39,16 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
@@ -49,7 +59,7 @@ async function main() {
 	const implementation = await upgrades.prepareUpgrade(safeBoxAddress, SafeBox);
 	console.log('SafeBox upgrade prepared');
 
-	setTargetAddress('SafeBoxImplementationBuyback', network, implementation);
+	setTargetAddress('SafeBoxBuybackImplementation', network, implementation);
 
 	try {
 		await hre.run('verify:verify', {

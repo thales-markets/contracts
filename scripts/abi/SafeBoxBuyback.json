@@ -68,6 +68,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_tokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "SUSDTokenAddressChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bool",
         "name": "_buybacksEnabled",
         "type": "bool"
@@ -438,6 +451,19 @@
       }
     ],
     "name": "setPath",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_tokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setSUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

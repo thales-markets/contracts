@@ -169,6 +169,14 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
         emit WETHTokenAddressChanged(_tokenAddress);
     }
 
+    /// @notice setSUSD sets address for sUSD  token
+    /// @param _tokenAddress New address of the token
+    function setSUSD(address _tokenAddress) external onlyOwner {
+        require(_tokenAddress != address(0), "Invalid address");
+        sUSD = IERC20Upgradeable(_tokenAddress);
+        emit SUSDTokenAddressChanged(_tokenAddress);
+    }
+
     /// @notice setSwapRouter sets address for Uniswap V3 ISwapRouter
     /// @param _swapRouter New address of the router
     function setSwapRouter(address _swapRouter) external onlyOwner {
@@ -230,6 +238,7 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
     event MinAcceptedChanged(uint256 _minAccepted);
     event TickLengthChanged(uint256 _tickLength);
     event ThalesTokenAddressChanged(address _tokenAddress);
+    event SUSDTokenAddressChanged(address _tokenAddress);
     event WETHTokenAddressChanged(address _tokenAddress);
     event SwapRouterAddressChanged(address _swapRouter);
     event UniswapV3FactoryAddressChanged(address _uniswapFactory);

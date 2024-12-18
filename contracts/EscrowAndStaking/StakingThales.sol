@@ -542,7 +542,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         _subtractTotalEscrowBalanceNotIncludedInStaking(msg.sender);
 
         if (_calculateAvailableRewardsToClaim(msg.sender) > 0) {
-            _claimReward(msg.sender);
+            // Update last claiming period
+            // This is to ensure that the rewards are not claimed for this period, they were not calculated in the fee distribution
+            _lastRewardsClaimedPeriod[msg.sender] = periodsOfStaking;
         }
 
         unstaking[msg.sender] = false;

@@ -81,6 +81,11 @@ async function main() {
 
 	await delay(5000);
 
+	const priceFeedAddress = getTargetAddress('PriceFeed', network);
+	console.log('PriceFeed address:', priceFeedAddress);
+	await MultiCollateralOnOffRampDeployed.setPriceFeed(priceFeedAddress);
+	console.log('PriceFeed set');
+
 	try {
 		await hre.run('verify:verify', {
 			address: MultiCollateralOnOffRampImplementation,

@@ -8,7 +8,7 @@ const w3utils = require('web3-utils');
 
 const DAY = 24 * 60 * 60;
 const MINUTE = 60;
-const rate = w3utils.toWei('1');
+const rate = '300000000';
 
 async function main() {
 	let networkObj = await ethers.provider.getNetwork();
@@ -42,22 +42,11 @@ async function main() {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
 	}
-
-	if (networkObj.chainId == 10) {
-		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-		thalesAddress = getTargetAddress('OpThales_L2', network);
-	} else if (networkObj.chainId == 69) {
-		networkObj.name = 'optimisticKovan';
-		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	} else if (
-		networkObj.chainId == 80001 ||
-		networkObj.chainId == 137 ||
-		networkObj.chainId == 42161
-	) {
-		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
-	} else {
-		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+		ProxyERC20sUSDaddress = getTargetAddress('USDC', network);
+		thalesAddress = getTargetAddress('OVER', network);
 	}
 
 	let accounts = await ethers.getSigners();
@@ -97,7 +86,7 @@ async function main() {
 	delay(5000);
 	delay(5000);
 
-	tx = await SafeBoxDeployed.setTickLength(5 * MINUTE);
+	tx = await SafeBoxDeployed.setTickLength('14400');
 	await tx.wait().then((e) => {
 		console.log('SafeBoxBuyback: setTickLength');
 	});
@@ -123,7 +112,7 @@ async function main() {
 
 	delay(5000);
 
-	tx = await SafeBoxDeployed.setBuybacksEnabled(true);
+	tx = await SafeBoxDeployed.setBuybacksEnabled(false);
 	await tx.wait().then((e) => {
 		console.log('SafeBoxBuyback: setBuybacksEnabled');
 	});

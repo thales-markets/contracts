@@ -363,6 +363,7 @@
 		"ParlayDefaultLiquidityProvider": "0x77636296bCb47a730aAfA9f9F12706943721A787",
 		"sUSD": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"USDC": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+		"OVER": "0x1527d463cC46686f815551314BD0E5Af253d58C0",
 		"ProxyUSDC": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
 		"Pyth": "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a",
 		"SpeedMarketsAMMImplementation": "0x5d7e21B2D18bc536C35B96e9e840bEC4017aF153",
@@ -440,8 +441,8 @@
 		"OvertimeVoucher": "0x58050F0c63ad9ecaeEbbB002F305aF1dF0C92333",
 		"OvertimeVoucherEscrow": "0x9e244C353145018DA0885E5405f680f27F8eB0Fa",
 		"OvertimeVoucherEscrowImplementation": "0x31EAeCc94e837f05615510e7b9D2f056401A8bCE",
-		"SafeBoxBuyback": "0x860C4DD827DdDd98755e0843b89d909f5A0347Ff",
-		"SafeBoxBuybackImplementation": "0xA2d2f7a4D4fD502E824951365BC11df191Be789A",
+		"SafeBoxBuyback": "0xd5679539c29eEBe69347acE5DEef867b19dba7b7",
+		"SafeBoxBuybackImplementation": "0xC6Aa8963179Fb1F6a9276919e75AfDAFDFe80Afa",
 		"GamesPlayerProps": "0xE1A9ed7922b78Bcb2b0df66371CCb93bb70dC08d",
 		"GamesPlayerPropsImplementation": "0x0Adf65a2Ae54b479e66AFA7490A125867183f1e0",
 		"GamesPlayerPropsReceiver": "0x3daFD49175AA9e1D71FD94Ec194da813a2cD5741",
@@ -471,7 +472,8 @@
 		"SpeedMarketsAMMCreatorImplementation": "0x342D29603CE81cF3aC1B004A5e19C6Ff6d7fe516",
 		"SessionValidationModule": "0x1E82dbfb6BefF4b4799a1a688d09B259eb173F64",
 		"MultiCollateralOnOffRampUSDC": "0x9e8dDCcd5AF4A25712Cd7Bd3De24e931AeC1CE16",
-		"MultiCollateralOnOffRampImplementationUSDC": "0xe52340277315CF227C53284E91A942469FA7484d"
+		"MultiCollateralOnOffRampImplementationUSDC": "0xe52340277315CF227C53284E91A942469FA7484d",
+		"UniswapV3Factory": "0x33128a8fC17869897dcE68Ed026d694621f6FDfD"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

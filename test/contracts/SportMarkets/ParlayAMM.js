@@ -1245,6 +1245,99 @@ contract('ParlayAMM', (accounts) => {
 			assert.approximately(parseFloat(fromUnit(parlayAmount)), calculatedAmount, 0.00000000001);
 		});
 
+		it('Withdraw multiple parlays', async () => {
+			// Create first parlay
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '11');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '0', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			let buyParlayTX = await ParlayAMM.buyFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				{ from: first }
+			);
+			// console.log("event: \n", buyParlayTX.logs[0]);
+
+			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+				account: first,
+				sUSDPaid: totalSUSDToPay,
+			});
+			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
+			assert.equal(activeParlays.length, 1, 'Should have 1 active parlays');
+			await fastForward(fightTime - (await currentTime()) + 3 * DAY);
+
+			let resolveMatrix = ['2', '1', '2', '2'];
+			// parlayPositions = ['0', '0', '0', '0'];
+			let gameId;
+			let homeResult = '0';
+			let awayResult = '0';
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				homeResult = '0';
+				awayResult = '0';
+				gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
+				if (resolveMatrix[i] == '1') {
+					homeResult = '1';
+				} else if (resolveMatrix[i] == '2') {
+					awayResult = '1';
+				} else if (resolveMatrix[i] == '3') {
+					homeResult = '1';
+					awayResult = '1';
+				}
+				const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+					parlayMarkets[i].address,
+					resolveMatrix[i],
+					homeResult,
+					awayResult,
+					false,
+					{ from: owner }
+				);
+			}
+			let resolved;
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				deployedMarket = await SportPositionalMarketContract.at(parlayMarkets[i].address);
+				resolved = await deployedMarket.resolved();
+				assert.equal(true, resolved);
+			}
+
+			// Try to withdraw as non-owner (should fail)
+			await expect(ParlayAMM.withdrawParlays(activeParlays, { from: first })).to.be.revertedWith(
+				'Only the contract owner may perform this action'
+			);
+
+			// Initial balances
+			const initialOwnerBalance = await Thales.balanceOf(owner);
+			// Withdraw parlays as owner
+			await ParlayAMM.withdrawParlays(activeParlays, { from: owner });
+
+			// Verify parlays were processed
+			for (let i = 0; i < activeParlays.length; i++) {
+				const parlayMarket = await ParlayMarketContract.at(activeParlays[i]);
+				const phase = await parlayMarket.phase();
+				assert.equal(
+					phase.toString(),
+					'1',
+					'Parlay market phase should remain unchanged if not resolved'
+				);
+			}
+			assert.equal((await Thales.balanceOf(owner)) > initialOwnerBalance, true);
+		});
+
 		it('Mint voucher', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			//for the voucher to be twice used

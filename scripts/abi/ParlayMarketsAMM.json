@@ -892,45 +892,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tag1",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tag2_1",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tag2_2",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "position1",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "position2",
-        "type": "uint256"
-      }
-    ],
-    "name": "getSgpFeePerCombination",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "sgpFee",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "initNonReentrant",
     "outputs": [],
@@ -1754,44 +1715,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256[]",
-        "name": "tag1",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tag2_1",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tag2_2",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "position_1",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "position_2",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "fee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setSGPFeePerPosition",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_address",
         "type": "address"
@@ -1803,34 +1726,6 @@
       }
     ],
     "name": "setSafeBoxFeePerAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tag1",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tag2_1",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tag2_2",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "fee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setSgpFeePerCombination",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1919,6 +1814,19 @@
       }
     ],
     "name": "triggerResolvedEvent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_parlayMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "withdrawParlays",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -142,27 +142,27 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         return _knownMarkets.elements.length;
     }
 
-    function getSgpFeePerCombination(
-        uint tag1,
-        uint tag2_1,
-        uint tag2_2,
-        uint position1,
-        uint position2
-    ) external view returns (uint sgpFee) {
-        if (position1 > 2 || position2 > 2) {
-            sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
-        } else {
-            uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position1));
-            uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position2));
-            if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] > 0) {
-                if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] < ONE) {
-                    sgpFee = SGPFeePerCombination[tag1][posTag2_1][posTag2_2];
-                }
-            } else {
-                sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
-            }
-        }
-    }
+    // function getSgpFeePerCombination(
+    //     uint tag1,
+    //     uint tag2_1,
+    //     uint tag2_2,
+    //     uint position1,
+    //     uint position2
+    // ) external view returns (uint sgpFee) {
+    //     if (position1 > 2 || position2 > 2) {
+    //         sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
+    //     } else {
+    //         uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position1));
+    //         uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position2));
+    //         if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] > 0) {
+    //             if (SGPFeePerCombination[tag1][posTag2_1][posTag2_2] < ONE) {
+    //                 sgpFee = SGPFeePerCombination[tag1][posTag2_1][posTag2_2];
+    //             }
+    //         } else {
+    //             sgpFee = SGPFeePerCombination[tag1][tag2_1][tag2_2];
+    //         }
+    //     }
+    // }
 
     function buyQuoteFromParlay(
         address[] calldata _sportMarkets,
@@ -392,6 +392,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused onlyKnownMarkets(_parlayMarket) {
         _exerciseParlay(_parlayMarket);
+    }
+
+    function withdrawParlays(address[] memory _parlayMarkets) external onlyOwner {
+        for (uint i = 0; i < _parlayMarkets.length; i++) {
+            ParlayMarket parlayMarket = ParlayMarket(_parlayMarkets[i]);
+            parlayMarket.withdrawCollateral(msg.sender);
+            parlayMarket.exerciseWiningSportMarkets();
+        }
     }
 
     function exerciseParlayWithOfframp(
@@ -646,33 +654,33 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit NewParametersSet(_parlaySize);
     }
 
-    function setSgpFeePerCombination(
-        uint tag1,
-        uint tag2_1,
-        uint tag2_2,
-        uint fee
-    ) external onlyOwner {
-        SGPFeePerCombination[tag1][tag2_1][tag2_2] = fee;
-        SGPFeePerCombination[tag1][tag2_2][tag2_1] = fee;
-    }
+    // function setSgpFeePerCombination(
+    //     uint tag1,
+    //     uint tag2_1,
+    //     uint tag2_2,
+    //     uint fee
+    // ) external onlyOwner {
+    //     SGPFeePerCombination[tag1][tag2_1][tag2_2] = fee;
+    //     SGPFeePerCombination[tag1][tag2_2][tag2_1] = fee;
+    // }
 
-    function setSGPFeePerPosition(
-        uint[] calldata tag1,
-        uint tag2_1,
-        uint tag2_2,
-        uint position_1,
-        uint position_2,
-        uint fee
-    ) external onlyOwner {
-        for (uint i = 0; i < tag1.length; i++) {
-            require(SGPFeePerCombination[tag1[i]][tag2_1][tag2_2] > 0, "SGP not set for tags");
-            uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_1));
-            uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_2));
-            SGPFeePerCombination[tag1[i]][posTag2_1][posTag2_2] = fee;
-            SGPFeePerCombination[tag1[i]][posTag2_2][posTag2_1] = fee;
-            emit SetSGPFeePerPosition(tag1[i], posTag2_2, posTag2_1, fee);
-        }
-    }
+    // function setSGPFeePerPosition(
+    //     uint[] calldata tag1,
+    //     uint tag2_1,
+    //     uint tag2_2,
+    //     uint position_1,
+    //     uint position_2,
+    //     uint fee
+    // ) external onlyOwner {
+    //     for (uint i = 0; i < tag1.length; i++) {
+    //         require(SGPFeePerCombination[tag1[i]][tag2_1][tag2_2] > 0, "SGP not set for tags");
+    //         uint posTag2_1 = tag2_1 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_1));
+    //         uint posTag2_2 = tag2_2 + (POSITION_TAG_CONSTANT + ((POSITION_TAG_CONSTANT / 10) * position_2));
+    //         SGPFeePerCombination[tag1[i]][posTag2_1][posTag2_2] = fee;
+    //         SGPFeePerCombination[tag1[i]][posTag2_2][posTag2_1] = fee;
+    //         emit SetSGPFeePerPosition(tag1[i], posTag2_2, posTag2_1, fee);
+    //     }
+    // }
 
     /// @notice Updates contract parametars
     /// @param _address which has a specific safe box fee

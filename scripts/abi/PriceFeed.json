@@ -186,6 +186,32 @@
   },
   {
     "inputs": [],
+    "name": "FIFTY_PERCENT",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ONE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "_ETH",
     "outputs": [
       {
@@ -586,6 +612,24 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "_whitelistedAddresses",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_areWhitelisted",
+        "type": "bool"
+      }
+    ],
+    "name": "setWhitelistedAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
@@ -644,11 +688,48 @@
     "inputs": [
       {
         "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint216",
+        "name": "rate",
+        "type": "uint216"
+      }
+    ],
+    "name": "updateStaticPricePerAsset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
       }
     ],
     "name": "useLastTickForTWAP",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "whitelistedAddresses",
     "outputs": [
       {
         "internalType": "bool",

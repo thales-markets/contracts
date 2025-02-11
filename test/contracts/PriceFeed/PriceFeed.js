@@ -1,6 +1,6 @@
 'use strict';
 
-const { artifacts, contract, web3 } = require('hardhat');
+const { artifacts, contract, web3, ethers } = require('hardhat');
 const { BigNumber } = require('ethers');
 
 const { assert } = require('../../utils/common');
@@ -464,6 +464,86 @@ contract('Price Feed', async (accounts) => {
 				await aggregatorJPY.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
 				const resultJPY = await instance.connect(accountOneSigner).rateForCurrency(JPY);
 				assert.bnEqual(resultJPY, toUnit(newRate.toString()));
+			});
+		});
+
+		// -----------------------------------------------
+		// New tests for updateStaticPricePerAsset and setWhitelistedAddresses
+		// -----------------------------------------------
+		describe('updateStaticPricePerAsset and setWhitelistedAddresses', () => {
+			it('should update the whitelist mapping correctly', async () => {
+				// Whitelist accountOne and then remove it to check mapping update.
+				await instance
+					.connect(ownerSigner)
+					.setWhitelistedAddresses([accountOneSigner.address], true);
+				let whitelisted = await instance.whitelistedAddresses(accountOneSigner.address);
+				assert.equal(whitelisted, true);
+				await instance
+					.connect(ownerSigner)
+					.setWhitelistedAddresses([accountOneSigner.address], false);
+				whitelisted = await instance.whitelistedAddresses(accountOneSigner.address);
+				assert.equal(whitelisted, false);
+			});
+
+			it('should revert updateStaticPricePerAsset if caller is not whitelisted or owner', async () => {
+				// Set initial static price for THALES via owner.
+				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
+				// Fast forward more than 1 day to allow update.
+				await fastForward(86400 + 1); // 1 day + 1 second
+				// Attempt update by accountOne (not whitelisted) should revert.
+				await assert.revert(
+					instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1200),
+					'Only whitelisted can set static price'
+				);
+			});
+
+			it('should allow a whitelisted address to update the static price after one day', async () => {
+				// Set initial static price for THALES via owner.
+				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
+				// Whitelist accountOne.
+				await instance
+					.connect(ownerSigner)
+					.setWhitelistedAddresses([accountOneSigner.address], true);
+				// Fast forward more than 1 day.
+				await fastForward(86400 + 1);
+				// Update static price using accountOne.
+				await instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1200);
+				const updatedRate = await instance.rateForCurrency(THALES);
+				assert.bnEqual(updatedRate, 1200);
+			});
+
+			it('should revert updateStaticPricePerAsset if called too frequently', async () => {
+				// Set initial static price for THALES via owner.
+				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
+				// Whitelist accountOne.
+				await instance
+					.connect(ownerSigner)
+					.setWhitelistedAddresses([accountOneSigner.address], true);
+				// Fast forward more than 1 day.
+				await fastForward(86400 + 1);
+				// First update by accountOne.
+				await instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1100);
+				// Attempt an immediate second update should revert with frequency error.
+				await assert.revert(
+					instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1150),
+					'Rate update too frequent'
+				);
+			});
+
+			it('should revert updateStaticPricePerAsset if the new rate is too high', async () => {
+				// Set initial static price for THALES via owner.
+				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
+				// Whitelist accountOne.
+				await instance
+					.connect(ownerSigner)
+					.setWhitelistedAddresses([accountOneSigner.address], true);
+				// Fast forward more than 1 day.
+				await fastForward(86400 + 1);
+				// Attempt to update with a rate that is >= 150% of the initial price (i.e. 1500) should revert.
+				await assert.revert(
+					instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1500),
+					'Rate update too high'
+				);
 			});
 		});
 	});

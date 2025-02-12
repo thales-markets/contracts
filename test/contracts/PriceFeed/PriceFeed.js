@@ -547,4 +547,39 @@ contract('Price Feed', async (accounts) => {
 			});
 		});
 	});
+
+	describe('Other functions', () => {
+		it('should return all currency keys from getCurrencies', async () => {
+			// Add an aggregator with a unique key so we can check for it.
+			const TEST_KEY = toBytes32('TEST');
+			await instance.connect(ownerSigner).addAggregator(TEST_KEY, aggregatorJPY.address);
+
+			// Retrieve the list of currency keys
+			const currencies = await instance.getCurrencies();
+			// Convert each bytes32 value to a string for easier checking
+			const currencyStrings = currencies.map((c) => bytesToString(c));
+
+			// Should contain the "TEST" key (and possibly others added in earlier tests)
+			assert.isTrue(currencyStrings.includes('TEST'), 'Currency keys should include TEST');
+		});
+
+		it('should return correct rates from getRates', async () => {
+			// Set a static price for THALES so we can verify its rate.
+			await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 500);
+
+			// Retrieve both the currency keys and rates arrays.
+			const currencies = await instance.getCurrencies();
+			const rates = await instance.getRates();
+
+			// Find the THALES key and verify its rate.
+			let found = false;
+			for (let i = 0; i < currencies.length; i++) {
+				if (bytesToString(currencies[i]) === 'THALES') {
+					assert.bnEqual(rates[i], 500, 'Rate for THALES should be 500');
+					found = true;
+				}
+			}
+			assert.isTrue(found, 'THALES key should be present in getCurrencies array');
+		});
+	});
 });

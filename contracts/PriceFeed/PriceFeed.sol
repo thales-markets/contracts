@@ -262,8 +262,8 @@ contract PriceFeed is Initializable, ProxyOwned {
         require(uint40(block.timestamp) - currentUpdateTime > rateUpdateInterval, "Rate update too frequent");
         require(
             currentRate > 0 &&
-                (rate < ((currentRate * (ONE + allowedRateUpdatePercentage)) / ONE) ||
-                    rate > ((currentRate * (ONE - allowedRateUpdatePercentage)) / ONE)),
+                ((rate > currentRate && rate < ((currentRate * (ONE + allowedRateUpdatePercentage)) / ONE)) ||
+                    (rate < currentRate && rate > ((currentRate * (ONE - allowedRateUpdatePercentage)) / ONE))),
             "Rate update too high"
         );
         _updateStaticPricePerAsset(currencyKey, rate);

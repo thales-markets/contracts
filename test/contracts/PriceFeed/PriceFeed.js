@@ -498,6 +498,9 @@ contract('Price Feed', async (accounts) => {
 			});
 
 			it('should allow a whitelisted address to update the static price after one day', async () => {
+				await instance
+					.connect(ownerSigner)
+					.setRateUpdateIntervalAndAllowedRateUpdatePercentage(86400, (5 * 1e17).toString());
 				// Set initial static price for THALES via owner.
 				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
 				// Whitelist accountOne.
@@ -513,6 +516,9 @@ contract('Price Feed', async (accounts) => {
 			});
 
 			it('should revert updateStaticPricePerAsset if called too frequently', async () => {
+				await instance
+					.connect(ownerSigner)
+					.setRateUpdateIntervalAndAllowedRateUpdatePercentage(86400, (5 * 1e17).toString());
 				// Set initial static price for THALES via owner.
 				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
 				// Whitelist accountOne.
@@ -531,6 +537,9 @@ contract('Price Feed', async (accounts) => {
 			});
 
 			it('should revert updateStaticPricePerAsset if the new rate is too high', async () => {
+				await instance
+					.connect(ownerSigner)
+					.setRateUpdateIntervalAndAllowedRateUpdatePercentage(86400, (1e17).toString());
 				// Set initial static price for THALES via owner.
 				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
 				// Whitelist accountOne.
@@ -543,6 +552,54 @@ contract('Price Feed', async (accounts) => {
 				await assert.revert(
 					instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1500),
 					'Rate update too high'
+				);
+			});
+		});
+
+		// Additional tests for setRateUpdateIntervalAndAllowedRateUpdatePercentage
+
+		describe('setRateUpdateIntervalAndAllowedRateUpdatePercentage', () => {
+			it('should allow the owner to update rateUpdateInterval and allowedRateUpdatePercentage', async () => {
+				// Set new parameters: update interval to 86400 (1 day) and allowed rate update percentage to 10%
+				const newInterval = 86400;
+				const newAllowedPercentage = 1e17; // 10% expressed in 1e18 units
+				await instance
+					.connect(ownerSigner)
+					.setRateUpdateIntervalAndAllowedRateUpdatePercentage(
+						newInterval,
+						newAllowedPercentage.toString()
+					);
+
+				// Retrieve the state variables to check if they were updated correctly.
+				const interval = await instance.rateUpdateInterval();
+				const allowedPercentage = await instance.allowedRateUpdatePercentage();
+
+				// Check using string equality for the interval (a regular number) and bnEqual for the BigNumber percentage.
+				assert.equal(
+					interval.toString(),
+					newInterval.toString(),
+					'Rate update interval should match the new value'
+				);
+				assert.bnEqual(
+					allowedPercentage,
+					newAllowedPercentage,
+					'Allowed rate update percentage should match the new value'
+				);
+			});
+
+			it('should revert when non-owner attempts to update rate parameters', async () => {
+				const newInterval = 86400;
+				const newAllowedPercentage = 1e17;
+
+				// Attempt to update from a non-owner account should revert with an access control error.
+				await assert.revert(
+					instance
+						.connect(accountOneSigner)
+						.setRateUpdateIntervalAndAllowedRateUpdatePercentage(
+							newInterval,
+							newAllowedPercentage.toString()
+						),
+					'Only the contract owner may perform this action'
 				);
 			});
 		});

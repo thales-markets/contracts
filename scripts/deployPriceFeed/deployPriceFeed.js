@@ -26,6 +26,11 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
+	}
+
 	if (networkObj.chainId == 80001) {
 		networkObj.name = 'polygonMumbai';
 		network = 'polygonMumbai';

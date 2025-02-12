@@ -24,6 +24,11 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
+	}
+
 	if (networkObj.chainId == 42161) {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';

@@ -581,7 +581,9 @@
 		"ThalesStakingRewardsPool": "0x7B4e53DFA265cdF4782caf407f5ACF394a06951e",
 		"ThalesStakingRewardsPoolImplementation": "0xfB835Bcf4ADe96007805Db3873B67a30f2b38653",
 		"StakingData": "0x0FecC86FE9A5e88eA8220e981b45f0645e2F6973",
-		"StakingDataImplementation": "0xce05F7481Fe2F6668189D941563b560772068f13"
+		"StakingDataImplementation": "0xce05F7481Fe2F6668189D941563b560772068f13",
+		"PriceFeedNew": "0x00892Daa2fc47ADc0d74Ebb6634cDa9f0d966e6E",
+		"PriceFeedNewImplementation": "0x7d920CCfc93386fb23dC73641a039fb29D32D89C"
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",

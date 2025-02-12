@@ -48,7 +48,9 @@ contract PriceFeed is Initializable, ProxyOwned {
 
     uint public constant ONE = 1e18;
 
-    uint public constant FIFTY_PERCENT = (5 * ONE) / 10;
+    uint public allowedRateUpdatePercentage;
+
+    uint public rateUpdateInterval;
 
     function initialize(address _owner) external initializer {
         setOwner(_owner);
@@ -257,8 +259,13 @@ contract PriceFeed is Initializable, ProxyOwned {
         require(whitelistedAddresses[msg.sender] || msg.sender == owner, "Only whitelisted can set static price");
         uint40 currentUpdateTime = staticPricePerAsset[currencyKey].time;
         uint216 currentRate = staticPricePerAsset[currencyKey].rate;
-        require(uint40(block.timestamp) - currentUpdateTime > 1 days, "Rate update too frequent");
-        require(currentRate > 0 && rate < ((currentRate * (ONE + FIFTY_PERCENT)) / ONE), "Rate update too high");
+        require(uint40(block.timestamp) - currentUpdateTime > rateUpdateInterval, "Rate update too frequent");
+        require(
+            currentRate > 0 &&
+                (rate < ((currentRate * (ONE + allowedRateUpdatePercentage)) / ONE) ||
+                    rate > ((currentRate * (ONE - allowedRateUpdatePercentage)) / ONE)),
+            "Rate update too high"
+        );
         _updateStaticPricePerAsset(currencyKey, rate);
     }
 
@@ -272,6 +279,14 @@ contract PriceFeed is Initializable, ProxyOwned {
         for (uint i = 0; i < _whitelistedAddresses.length; i++) {
             whitelistedAddresses[_whitelistedAddresses[i]] = _areWhitelisted;
         }
+    }
+
+    function setRateUpdateIntervalAndAllowedRateUpdatePercentage(uint _rateUpdateInterval, uint _allowedRateUpdatePercentage)
+        external
+        onlyOwner
+    {
+        rateUpdateInterval = _rateUpdateInterval;
+        allowedRateUpdatePercentage = _allowedRateUpdatePercentage;
     }
 
     /**

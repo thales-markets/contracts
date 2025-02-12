@@ -186,19 +186,6 @@
   },
   {
     "inputs": [],
-    "name": "FIFTY_PERCENT",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "ONE",
     "outputs": [
       {
@@ -317,6 +304,19 @@
         "internalType": "contract AggregatorV2V3Interface",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "allowedRateUpdatePercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -501,6 +501,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "rateUpdateInterval",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -561,6 +574,24 @@
       }
     ],
     "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_rateUpdateInterval",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_allowedRateUpdatePercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setRateUpdateIntervalAndAllowedRateUpdatePercentage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

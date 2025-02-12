@@ -52,7 +52,7 @@ async function main() {
 
 	const PriceFeed = await ethers.getContractFactory('PriceFeed');
 	const implementation = await upgrades.prepareUpgrade(priceFeedAddress, PriceFeed);
-	if (networkObj.chainId == 69) {
+	if (networkObj.chainId == 69 || networkObj.chainId == 11155420) {
 		await upgrades.upgradeProxy(priceFeedAddress, PriceFeed);
 		console.log('PriceFeed upgraded');
 	}

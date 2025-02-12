@@ -581,5 +581,96 @@ contract('Price Feed', async (accounts) => {
 			}
 			assert.isTrue(found, 'THALES key should be present in getCurrencies array');
 		});
+
+		// Additional tests for transferCurrencyKeys()
+
+		describe('transferCurrencyKeys', () => {
+			it('should revert if currencyKeys is not empty', async () => {
+				// Add an aggregator normally so that currencyKeys becomes non-empty.
+				await instance.connect(ownerSigner).addAggregator(JPY, aggregatorJPY.address);
+				// Calling transferCurrencyKeys() now should revert.
+				await assert.revert(
+					instance.connect(ownerSigner).transferCurrencyKeys(),
+					'Currency keys is not empty'
+				);
+			});
+
+			it('should succeed if currencyKeys is empty and aggregatorKeys is empty', async () => {
+				// Deploy a fresh instance.
+				const PriceFeed = await ethers.getContractFactory('PriceFeed');
+				let freshInstance = await PriceFeed.deploy();
+				await freshInstance.initialize(ownerSigner.address);
+
+				// currencyKeys should be empty initially.
+				let currKeysBefore = await freshInstance.getCurrencies();
+				assert.equal(currKeysBefore.length, 0, 'currencyKeys should be empty initially');
+
+				// When aggregatorKeys is empty, calling transferCurrencyKeys should succeed and leave currencyKeys empty.
+				await freshInstance.connect(ownerSigner).transferCurrencyKeys();
+				let currKeysAfter = await freshInstance.getCurrencies();
+				assert.equal(currKeysAfter.length, 0, 'currencyKeys should remain empty after transfer');
+			});
+
+			it('should succeed and transfer aggregatorKeys to currencyKeys when aggregatorKeys is non-empty', async () => {
+				// Deploy a fresh instance.
+				const PriceFeed = await ethers.getContractFactory('PriceFeed');
+				let freshInstance = await PriceFeed.deploy();
+				await freshInstance.initialize(ownerSigner.address);
+
+				// We simulate a non-empty aggregatorKeys array using storage manipulation.
+				// Note: aggregatorKeys is a dynamic array; here we assume its length is stored at slot 2.
+				// This slot number may change if the storage layout is altered.
+				const aggregatorKeysSlot = 2;
+				const testKey = toBytes32('TESTKEY');
+
+				// Set the length of aggregatorKeys to 1.
+				await web3.currentProvider.send(
+					{
+						jsonrpc: '2.0',
+						method: 'evm_setStorageAt',
+						params: [
+							freshInstance.address,
+							web3.utils.numberToHex(aggregatorKeysSlot),
+							web3.utils.padLeft(web3.utils.numberToHex(1), 64),
+						],
+						id: new Date().getTime(),
+					},
+					() => {}
+				);
+
+				// For a dynamic array, the elements start at keccak256(slot).
+				// Set aggregatorKeys[0] to testKey.
+				const slotHash = web3.utils.soliditySha3({ t: 'uint256', v: aggregatorKeysSlot });
+				await web3.currentProvider.send(
+					{
+						jsonrpc: '2.0',
+						method: 'evm_setStorageAt',
+						params: [freshInstance.address, slotHash, testKey],
+						id: new Date().getTime(),
+					},
+					() => {}
+				);
+
+				// Ensure currencyKeys is still empty.
+				let currKeysBefore = await freshInstance.getCurrencies();
+				assert.equal(currKeysBefore.length, 0, 'currencyKeys should be empty before transfer');
+
+				// Now call transferCurrencyKeys. It should copy aggregatorKeys into currencyKeys.
+				await freshInstance.connect(ownerSigner).transferCurrencyKeys();
+				let currKeysAfter = await freshInstance.getCurrencies();
+			});
+
+			it('should revert transferCurrencyKeys if called by a non-owner', async () => {
+				// Deploy a fresh instance.
+				const PriceFeed = await ethers.getContractFactory('PriceFeed');
+				let freshInstance = await PriceFeed.deploy();
+				await freshInstance.initialize(owner);
+
+				await assert.revert(
+					freshInstance.connect(accountOneSigner).transferCurrencyKeys(),
+					'Only the contract owner may perform this action'
+				);
+			});
+		});
 	});
 });

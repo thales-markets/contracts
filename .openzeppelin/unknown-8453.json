@@ -4535,101 +4535,101 @@
             "contract": "Initializable",
             "label": "initialized",
             "type": "t_bool",
-            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:23"
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
           },
           {
             "contract": "Initializable",
             "label": "initializing",
             "type": "t_bool",
-            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:28"
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
           },
           {
             "contract": "Initializable",
             "label": "______gap",
             "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:63"
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
           },
           {
             "contract": "ProxyOwned",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:7"
+            "src": "contracts/utils/proxy/ProxyOwned.sol:7"
           },
           {
             "contract": "ProxyOwned",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:8"
+            "src": "contracts/utils/proxy/ProxyOwned.sol:8"
           },
           {
             "contract": "ProxyOwned",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:9"
+            "src": "contracts/utils/proxy/ProxyOwned.sol:9"
           },
           {
             "contract": "ProxyOwned",
             "label": "_transferredAtInit",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:10"
+            "src": "contracts/utils/proxy/ProxyOwned.sol:10"
           },
           {
             "contract": "ProxyReentrancyGuard",
             "label": "_guardCounter",
             "type": "t_uint256",
-            "src": "contracts\\utils\\proxy\\ProxyReentrancyGuard.sol:19"
+            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:19"
           },
           {
             "contract": "ProxyReentrancyGuard",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\ProxyReentrancyGuard.sol:20"
+            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:20"
           },
           {
             "contract": "ProxyPausable",
             "label": "lastPauseTime",
             "type": "t_uint256",
-            "src": "contracts\\utils\\proxy\\ProxyPausable.sol:11"
+            "src": "contracts/utils/proxy/ProxyPausable.sol:11"
           },
           {
             "contract": "ProxyPausable",
             "label": "paused",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\ProxyPausable.sol:12"
+            "src": "contracts/utils/proxy/ProxyPausable.sol:12"
           },
           {
             "contract": "ThalesStakingRewardsPool",
             "label": "iStakingThales",
-            "type": "t_contract(IStakingThales)7589",
-            "src": "contracts\\EscrowAndStaking\\ThalesStakingRewardsPool.sol:28"
+            "type": "t_contract(IStakingThales)6917",
+            "src": "contracts/EscrowAndStaking/ThalesStakingRewardsPool.sol:28"
           },
           {
             "contract": "ThalesStakingRewardsPool",
             "label": "iEscrowThales",
-            "type": "t_contract(IEscrowThales)7094",
-            "src": "contracts\\EscrowAndStaking\\ThalesStakingRewardsPool.sol:29"
+            "type": "t_contract(IEscrowThales)6390",
+            "src": "contracts/EscrowAndStaking/ThalesStakingRewardsPool.sol:29"
           },
           {
             "contract": "ThalesStakingRewardsPool",
             "label": "rewardToken",
-            "type": "t_contract(IERC20)10198",
-            "src": "contracts\\EscrowAndStaking\\ThalesStakingRewardsPool.sol:30"
+            "type": "t_contract(IERC20)9679",
+            "src": "contracts/EscrowAndStaking/ThalesStakingRewardsPool.sol:30"
           },
           {
             "contract": "ThalesStakingRewardsPool",
             "label": "lifetimeClaimedRewards",
             "type": "t_uint256",
-            "src": "contracts\\EscrowAndStaking\\ThalesStakingRewardsPool.sol:32"
+            "src": "contracts/EscrowAndStaking/ThalesStakingRewardsPool.sol:32"
           }
         ],
         "types": {
-          "t_contract(IStakingThales)7589": {
+          "t_contract(IStakingThales)6917": {
             "label": "contract IStakingThales"
           },
-          "t_contract(IEscrowThales)7094": {
+          "t_contract(IEscrowThales)6390": {
             "label": "contract IEscrowThales"
           },
-          "t_contract(IERC20)10198": {
+          "t_contract(IERC20)9679": {
             "label": "contract IERC20"
           },
           "t_uint256": {
@@ -36943,6 +36943,127 @@
           },
           "t_contract(IMultiCollateralOnOffRamp)15982": {
             "label": "contract IMultiCollateralOnOffRamp"
+          }
+        }
+      }
+    },
+    "0673421a3320b0aae0ffbba91de09d6bc61ff9232158ef20212d233c81b5689c": {
+      "address": "0xe0253d6781710c63E537586704E74A366FCAf39E",
+      "txHash": "0x5b5a14aed412cf2ab6efeadb525ce6437ad682ed213b31cd601a242c8a597974",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ThalesStakingRewardsPool",
+            "label": "iStakingThales",
+            "type": "t_contract(IStakingThales)561",
+            "src": "contracts/EscrowAndStaking/ThalesStakingRewardsPool.sol:28"
+          },
+          {
+            "contract": "ThalesStakingRewardsPool",
+            "label": "iEscrowThales",
+            "type": "t_contract(IEscrowThales)452",
+            "src": "contracts/EscrowAndStaking/ThalesStakingRewardsPool.sol:29"
+          },
+          {
+            "contract": "ThalesStakingRewardsPool",
+            "label": "rewardToken",
+            "type": "t_contract(IERC20)1026",
+            "src": "contracts/EscrowAndStaking/ThalesStakingRewardsPool.sol:30"
+          },
+          {
+            "contract": "ThalesStakingRewardsPool",
+            "label": "lifetimeClaimedRewards",
+            "type": "t_uint256",
+            "src": "contracts/EscrowAndStaking/ThalesStakingRewardsPool.sol:32"
+          }
+        ],
+        "types": {
+          "t_contract(IStakingThales)561": {
+            "label": "contract IStakingThales"
+          },
+          "t_contract(IEscrowThales)452": {
+            "label": "contract IEscrowThales"
+          },
+          "t_contract(IERC20)1026": {
+            "label": "contract IERC20"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
           }
         }
       }

@@ -82,6 +82,10 @@ contract ThalesStakingRewardsPool is
         lifetimeClaimedRewards = lifetimeClaimedRewards.add(amount);
     }
 
+    function withdrawCollateral(address _collateralToken, address _recipient) external onlyOwner {
+        IERC20(_collateralToken).safeTransfer(_recipient, IERC20(_collateralToken).balanceOf(address(this)));
+    }
+
     event StakingThalesChanged(address stakingThales);
     event EscrowThalesChanged(address escrowThalesContract);
     event RewardTokenChanged(address rewardToken);

@@ -19,6 +19,7 @@ import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 contract PriceFeed is Initializable, ProxyOwned {
     using SafeMath for uint;
 
+    uint public constant ONE = 1e18;
     // Decentralized oracle networks that feed into pricing aggregators
     mapping(bytes32 => AggregatorV2V3Interface) public aggregators;
 
@@ -45,8 +46,6 @@ contract PriceFeed is Initializable, ProxyOwned {
     mapping(bytes32 => RateAndUpdatedTime) public staticPricePerAsset;
 
     mapping(address => bool) public whitelistedAddresses;
-
-    uint public constant ONE = 1e18;
 
     uint public allowedRateUpdatePercentage;
 
@@ -231,11 +230,12 @@ contract PriceFeed is Initializable, ProxyOwned {
 
     /**
      * @notice Set a static price for a given asset.
-     * @dev Only the owner can call this function. If the currency key does not exist in the list, it will be added.
+     * @dev Only the owner or whitelisted addresses can call this function. If the currency key does not exist in the list, it will be added.
      * @param currencyKey The identifier of the asset.
      * @param rate The static price to be set.
      */
-    function setStaticPricePerAsset(bytes32 currencyKey, uint216 rate) external onlyOwner {
+    function setStaticPricePerAsset(bytes32 currencyKey, uint216 rate) external {
+        require(whitelistedAddresses[msg.sender] || msg.sender == owner, "Only whitelisted can set static price");
         bool hasCurrencyKey = false;
         for (uint i = 0; i < currencyKeys.length; i++) {
             if (currencyKeys[i] == currencyKey) {
@@ -259,6 +259,7 @@ contract PriceFeed is Initializable, ProxyOwned {
         require(whitelistedAddresses[msg.sender] || msg.sender == owner, "Only whitelisted can set static price");
         uint40 currentUpdateTime = staticPricePerAsset[currencyKey].time;
         uint216 currentRate = staticPricePerAsset[currencyKey].rate;
+        require(currentRate > 0, "Rate for currencyKey is not set");
         require(uint40(block.timestamp) - currentUpdateTime > rateUpdateInterval, "Rate update too frequent");
         require(
             currentRate > 0 &&

@@ -234,8 +234,7 @@ contract PriceFeed is Initializable, ProxyOwned {
      * @param currencyKey The identifier of the asset.
      * @param rate The static price to be set.
      */
-    function setStaticPricePerAsset(bytes32 currencyKey, uint216 rate) external {
-        require(whitelistedAddresses[msg.sender] || msg.sender == owner, "Only whitelisted can set static price");
+    function setStaticPricePerAsset(bytes32 currencyKey, uint216 rate) external onlyOwner {
         bool hasCurrencyKey = false;
         for (uint i = 0; i < currencyKeys.length; i++) {
             if (currencyKeys[i] == currencyKey) {

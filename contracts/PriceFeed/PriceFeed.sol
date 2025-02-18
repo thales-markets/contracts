@@ -259,7 +259,7 @@ contract PriceFeed is Initializable, ProxyOwned {
         uint40 currentUpdateTime = staticPricePerAsset[currencyKey].time;
         uint216 currentRate = staticPricePerAsset[currencyKey].rate;
         require(currentRate > 0, "Rate for currencyKey is not set");
-        require(uint40(block.timestamp) - currentUpdateTime > rateUpdateInterval, "Rate update too frequent");
+        require(uint40(block.timestamp) - currentUpdateTime >= rateUpdateInterval, "Rate update too frequent");
         require(
             currentRate > 0 &&
                 ((rate > currentRate && rate < ((currentRate * (ONE + allowedRateUpdatePercentage)) / ONE)) ||
@@ -281,10 +281,18 @@ contract PriceFeed is Initializable, ProxyOwned {
         }
     }
 
+    /**
+     * @notice Set the rate update interval and allowed rate update percentage.
+     * @dev Only the owner can call this function.
+     * @param _rateUpdateInterval The new rate update interval.
+     * @param _allowedRateUpdatePercentage The new allowed rate update percentage.
+     */
     function setRateUpdateIntervalAndAllowedRateUpdatePercentage(uint _rateUpdateInterval, uint _allowedRateUpdatePercentage)
         external
         onlyOwner
     {
+        require(_rateUpdateInterval > 0, "Rate update interval == 0");
+        require(_allowedRateUpdatePercentage > 0, "Allowed rate update percentage == 0");
         rateUpdateInterval = _rateUpdateInterval;
         allowedRateUpdatePercentage = _allowedRateUpdatePercentage;
     }

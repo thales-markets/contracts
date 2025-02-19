@@ -16,6 +16,14 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
+	if (networkObj.chainId == 42161) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 		durationPeriod = WEEK;

@@ -1199,4 +1199,54 @@ contract('StakingThales', (accounts) => {
 			assert.bnEqual(answer, answer2);
 		});
 	});
+	describe('withdrawCollateral', () => {
+		// Test that the owner can successfully withdraw collateral tokens from the pool
+		it('should allow the owner to withdraw collateral tokens from the pool', async () => {
+			// For this test, we assume that ThalesDeployed is the ERC20 reward token used as collateral.
+			// Transfer collateral tokens to the ThalesStakingRewardsPool contract.
+			const collateralAmount = toUnit(1000);
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, collateralAmount, {
+				from: owner,
+			});
+
+			// Record the initial balance of the recipient (using the "first" account as recipient).
+			const initialRecipientBalance = await ThalesDeployed.balanceOf(first);
+
+			// Owner calls withdrawCollateral to transfer the entire collateral balance to the recipient.
+			await ThalesStakingRewardsPoolDeployed.withdrawCollateral(ThalesDeployed.address, first, {
+				from: owner,
+			});
+
+			// Verify the recipient's balance has increased by the transferred amount.
+			const finalRecipientBalance = await ThalesDeployed.balanceOf(first);
+			assert.bnEqual(
+				finalRecipientBalance,
+				initialRecipientBalance.add(collateralAmount),
+				'Recipient should receive the collateral amount'
+			);
+
+			// Verify that the pool's collateral balance is now zero.
+			const poolFinalBalance = await ThalesDeployed.balanceOf(
+				ThalesStakingRewardsPoolDeployed.address
+			);
+			assert.bnEqual(poolFinalBalance, toUnit(0), 'Pool balance should be zero after withdrawal');
+		});
+
+		// Test that a non-owner attempting to withdraw collateral causes a revert.
+		it('should revert when a non-owner tries to call withdrawCollateral', async () => {
+			// Transfer collateral tokens to the pool.
+			const collateralAmount = toUnit(500);
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, collateralAmount, {
+				from: owner,
+			});
+
+			// Attempt to withdraw collateral using a non-owner account (using "second" in this case).
+			await assert.revert(
+				ThalesStakingRewardsPoolDeployed.withdrawCollateral(ThalesDeployed.address, second, {
+					from: second,
+				}),
+				'Only the contract owner may perform this action'
+			);
+		});
+	});
 });

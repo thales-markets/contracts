@@ -24,6 +24,11 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
+	}
+
 	if (networkObj.chainId == 42161) {
 		networkObj.name = 'arbitrumOne';
 		network = 'arbitrumOne';
@@ -39,6 +44,11 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
@@ -47,7 +57,7 @@ async function main() {
 
 	const PriceFeed = await ethers.getContractFactory('PriceFeed');
 	const implementation = await upgrades.prepareUpgrade(priceFeedAddress, PriceFeed);
-	if (networkObj.chainId == 69) {
+	if (networkObj.chainId == 69 || networkObj.chainId == 11155420) {
 		await upgrades.upgradeProxy(priceFeedAddress, PriceFeed);
 		console.log('PriceFeed upgraded');
 	}

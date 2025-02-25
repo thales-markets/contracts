@@ -1,6 +1,6 @@
 'use strict';
 
-const { artifacts, contract, web3 } = require('hardhat');
+const { artifacts, contract, web3, ethers } = require('hardhat');
 const { BigNumber } = require('ethers');
 
 const { assert } = require('../../utils/common');
@@ -464,6 +464,269 @@ contract('Price Feed', async (accounts) => {
 				await aggregatorJPY.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
 				const resultJPY = await instance.connect(accountOneSigner).rateForCurrency(JPY);
 				assert.bnEqual(resultJPY, toUnit(newRate.toString()));
+			});
+		});
+
+		// -----------------------------------------------
+		// New tests for updateStaticPricePerAsset and setWhitelistedAddresses
+		// -----------------------------------------------
+		describe('updateStaticPricePerAsset and setWhitelistedAddresses', () => {
+			it('should update the whitelist mapping correctly', async () => {
+				// Whitelist accountOne and then remove it to check mapping update.
+				await instance
+					.connect(ownerSigner)
+					.setWhitelistedAddresses([accountOneSigner.address], true);
+				let whitelisted = await instance.whitelistedAddresses(accountOneSigner.address);
+				assert.equal(whitelisted, true);
+				await instance
+					.connect(ownerSigner)
+					.setWhitelistedAddresses([accountOneSigner.address], false);
+				whitelisted = await instance.whitelistedAddresses(accountOneSigner.address);
+				assert.equal(whitelisted, false);
+			});
+
+			it('should revert updateStaticPricePerAsset if caller is not whitelisted or owner', async () => {
+				// Set initial static price for THALES via owner.
+				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
+				// Fast forward more than 1 day to allow update.
+				await fastForward(86400 + 1); // 1 day + 1 second
+				// Attempt update by accountOne (not whitelisted) should revert.
+				await assert.revert(
+					instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1200),
+					'Only whitelisted can set static price'
+				);
+			});
+
+			it('should allow a whitelisted address to update the static price after one day', async () => {
+				await instance
+					.connect(ownerSigner)
+					.setRateUpdateIntervalAndAllowedRateUpdatePercentage(86400, (5 * 1e17).toString());
+				// Set initial static price for THALES via owner.
+				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
+				// Whitelist accountOne.
+				await instance
+					.connect(ownerSigner)
+					.setWhitelistedAddresses([accountOneSigner.address], true);
+				// Fast forward more than 1 day.
+				await fastForward(86400 + 1);
+				// Update static price using accountOne.
+				await instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1200);
+				const updatedRate = await instance.rateForCurrency(THALES);
+				assert.bnEqual(updatedRate, 1200);
+			});
+
+			it('should revert updateStaticPricePerAsset if called too frequently', async () => {
+				await instance
+					.connect(ownerSigner)
+					.setRateUpdateIntervalAndAllowedRateUpdatePercentage(86400, (5 * 1e17).toString());
+				// Set initial static price for THALES via owner.
+				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
+				// Whitelist accountOne.
+				await instance
+					.connect(ownerSigner)
+					.setWhitelistedAddresses([accountOneSigner.address], true);
+				// Fast forward more than 1 day.
+				await fastForward(86400 + 1);
+				// First update by accountOne.
+				await instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1100);
+				// Attempt an immediate second update should revert with frequency error.
+				await assert.revert(
+					instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1150),
+					'Rate update too frequent'
+				);
+			});
+
+			it('should revert updateStaticPricePerAsset if the new rate is too high', async () => {
+				await instance
+					.connect(ownerSigner)
+					.setRateUpdateIntervalAndAllowedRateUpdatePercentage(86400, (1e17).toString());
+				// Set initial static price for THALES via owner.
+				await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 1000);
+				// Whitelist accountOne.
+				await instance
+					.connect(ownerSigner)
+					.setWhitelistedAddresses([accountOneSigner.address], true);
+				// Fast forward more than 1 day.
+				await fastForward(86400 + 1);
+				// Attempt to update with a rate that is >= 150% of the initial price (i.e. 1500) should revert.
+				await assert.revert(
+					instance.connect(accountOneSigner).updateStaticPricePerAsset(THALES, 1500),
+					'Rate update too high'
+				);
+			});
+		});
+
+		// Additional tests for setRateUpdateIntervalAndAllowedRateUpdatePercentage
+
+		describe('setRateUpdateIntervalAndAllowedRateUpdatePercentage', () => {
+			it('should allow the owner to update rateUpdateInterval and allowedRateUpdatePercentage', async () => {
+				// Set new parameters: update interval to 86400 (1 day) and allowed rate update percentage to 10%
+				const newInterval = 86400;
+				const newAllowedPercentage = 1e17; // 10% expressed in 1e18 units
+				await instance
+					.connect(ownerSigner)
+					.setRateUpdateIntervalAndAllowedRateUpdatePercentage(
+						newInterval,
+						newAllowedPercentage.toString()
+					);
+
+				// Retrieve the state variables to check if they were updated correctly.
+				const interval = await instance.rateUpdateInterval();
+				const allowedPercentage = await instance.allowedRateUpdatePercentage();
+
+				// Check using string equality for the interval (a regular number) and bnEqual for the BigNumber percentage.
+				assert.equal(
+					interval.toString(),
+					newInterval.toString(),
+					'Rate update interval should match the new value'
+				);
+				assert.bnEqual(
+					allowedPercentage,
+					newAllowedPercentage,
+					'Allowed rate update percentage should match the new value'
+				);
+			});
+
+			it('should revert when non-owner attempts to update rate parameters', async () => {
+				const newInterval = 86400;
+				const newAllowedPercentage = 1e17;
+
+				// Attempt to update from a non-owner account should revert with an access control error.
+				await assert.revert(
+					instance
+						.connect(accountOneSigner)
+						.setRateUpdateIntervalAndAllowedRateUpdatePercentage(
+							newInterval,
+							newAllowedPercentage.toString()
+						),
+					'Only the contract owner may perform this action'
+				);
+			});
+		});
+	});
+
+	describe('Other functions', () => {
+		it('should return all currency keys from getCurrencies', async () => {
+			// Add an aggregator with a unique key so we can check for it.
+			const TEST_KEY = toBytes32('TEST');
+			await instance.connect(ownerSigner).addAggregator(TEST_KEY, aggregatorJPY.address);
+
+			// Retrieve the list of currency keys
+			const currencies = await instance.getCurrencies();
+			// Convert each bytes32 value to a string for easier checking
+			const currencyStrings = currencies.map((c) => bytesToString(c));
+
+			// Should contain the "TEST" key (and possibly others added in earlier tests)
+			assert.isTrue(currencyStrings.includes('TEST'), 'Currency keys should include TEST');
+		});
+
+		it('should return correct rates from getRates', async () => {
+			// Set a static price for THALES so we can verify its rate.
+			await instance.connect(ownerSigner).setStaticPricePerAsset(THALES, 500);
+
+			// Retrieve both the currency keys and rates arrays.
+			const currencies = await instance.getCurrencies();
+			const rates = await instance.getRates();
+
+			// Find the THALES key and verify its rate.
+			let found = false;
+			for (let i = 0; i < currencies.length; i++) {
+				if (bytesToString(currencies[i]) === 'THALES') {
+					assert.bnEqual(rates[i], 500, 'Rate for THALES should be 500');
+					found = true;
+				}
+			}
+			assert.isTrue(found, 'THALES key should be present in getCurrencies array');
+		});
+
+		// Additional tests for transferCurrencyKeys()
+
+		describe('transferCurrencyKeys', () => {
+			it('should revert if currencyKeys is not empty', async () => {
+				// Add an aggregator normally so that currencyKeys becomes non-empty.
+				await instance.connect(ownerSigner).addAggregator(JPY, aggregatorJPY.address);
+				// Calling transferCurrencyKeys() now should revert.
+				await assert.revert(
+					instance.connect(ownerSigner).transferCurrencyKeys(),
+					'Currency keys is not empty'
+				);
+			});
+
+			it('should succeed if currencyKeys is empty and aggregatorKeys is empty', async () => {
+				// Deploy a fresh instance.
+				const PriceFeed = await ethers.getContractFactory('PriceFeed');
+				let freshInstance = await PriceFeed.deploy();
+				await freshInstance.initialize(ownerSigner.address);
+
+				// currencyKeys should be empty initially.
+				let currKeysBefore = await freshInstance.getCurrencies();
+				assert.equal(currKeysBefore.length, 0, 'currencyKeys should be empty initially');
+
+				// When aggregatorKeys is empty, calling transferCurrencyKeys should succeed and leave currencyKeys empty.
+				await freshInstance.connect(ownerSigner).transferCurrencyKeys();
+				let currKeysAfter = await freshInstance.getCurrencies();
+				assert.equal(currKeysAfter.length, 0, 'currencyKeys should remain empty after transfer');
+			});
+
+			it('should succeed and transfer aggregatorKeys to currencyKeys when aggregatorKeys is non-empty', async () => {
+				// Deploy a fresh instance.
+				const PriceFeed = await ethers.getContractFactory('PriceFeed');
+				let freshInstance = await PriceFeed.deploy();
+				await freshInstance.initialize(ownerSigner.address);
+
+				// We simulate a non-empty aggregatorKeys array using storage manipulation.
+				// Note: aggregatorKeys is a dynamic array; here we assume its length is stored at slot 2.
+				// This slot number may change if the storage layout is altered.
+				const aggregatorKeysSlot = 2;
+				const testKey = toBytes32('TESTKEY');
+
+				// Set the length of aggregatorKeys to 1.
+				await web3.currentProvider.send(
+					{
+						jsonrpc: '2.0',
+						method: 'evm_setStorageAt',
+						params: [
+							freshInstance.address,
+							web3.utils.numberToHex(aggregatorKeysSlot),
+							web3.utils.padLeft(web3.utils.numberToHex(1), 64),
+						],
+						id: new Date().getTime(),
+					},
+					() => {}
+				);
+
+				// For a dynamic array, the elements start at keccak256(slot).
+				// Set aggregatorKeys[0] to testKey.
+				const slotHash = web3.utils.soliditySha3({ t: 'uint256', v: aggregatorKeysSlot });
+				await web3.currentProvider.send(
+					{
+						jsonrpc: '2.0',
+						method: 'evm_setStorageAt',
+						params: [freshInstance.address, slotHash, testKey],
+						id: new Date().getTime(),
+					},
+					() => {}
+				);
+
+				// Ensure currencyKeys is still empty.
+				let currKeysBefore = await freshInstance.getCurrencies();
+				assert.equal(currKeysBefore.length, 0, 'currencyKeys should be empty before transfer');
+
+				// Now call transferCurrencyKeys. It should copy aggregatorKeys into currencyKeys.
+				await freshInstance.connect(ownerSigner).transferCurrencyKeys();
+				let currKeysAfter = await freshInstance.getCurrencies();
+			});
+
+			it('should revert transferCurrencyKeys if called by a non-owner', async () => {
+				// Deploy a fresh instance.
+				const PriceFeed = await ethers.getContractFactory('PriceFeed');
+				let freshInstance = await PriceFeed.deploy();
+				await freshInstance.initialize(owner);
+
+				await assert.revert(
+					freshInstance.connect(accountOneSigner).transferCurrencyKeys(),
+					'Only the contract owner may perform this action'
+				);
 			});
 		});
 	});

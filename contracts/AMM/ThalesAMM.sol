@@ -23,6 +23,7 @@ import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ICurveSUSD.sol";
+import "../interfaces/IMultiCollateralOnOffRamp.sol";
 
 import "./LiquidityPool/ThalesAMMLiquidityPool.sol";
 
@@ -42,6 +43,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
+    uint private constant MAX_APPROVAL = type(uint256).max;
 
     IPriceFeed public priceFeed;
     IERC20Upgradeable public sUSD;
@@ -72,15 +74,13 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     address public referrals;
     uint public referrerFee;
 
-    ICurveSUSD public curveSUSD;
+    ICurveSUSD public curveSUSD; // deprecated see MultiCollateralOnOffRamp.sol
 
-    address public usdc;
-    address public usdt;
-    address public dai;
-
-    bool public curveOnrampEnabled;
-
-    uint public maxAllowedPegSlippagePercentage;
+    address private usdc; // deprecated see MultiCollateralOnOffRamp.sol
+    address private usdt; // deprecated see MultiCollateralOnOffRamp.sol
+    address private dai; // deprecated see MultiCollateralOnOffRamp.sol
+    bool private curveOnrampEnabled; // deprecated see MultiCollateralOnOffRamp.sol
+    uint private maxAllowedPegSlippagePercentage; // deprecated see MultiCollateralOnOffRamp.sol
 
     IThalesAMMUtils ammUtils;
 
@@ -89,6 +89,9 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
     mapping(address => uint) public safeBoxFeePerAddress;
     mapping(address => uint) public min_spreadPerAddress;
+
+    IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
+    bool public multicollateralEnabled;
 
     ThalesAMMLiquidityPool public liquidityPool;
 
@@ -159,13 +162,8 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         uint amount,
         address collateral
     ) public view returns (uint collateralQuote, uint sUSDToPay) {
-        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        if (curveIndex > 0 && curveOnrampEnabled) {
-            sUSDToPay = buyFromAmmQuote(market, position, amount);
-            //cant get a quote on how much collateral is needed from curve for sUSD,
-            //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-            collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay) * (ONE + (ONE_PERCENT / 5))) / ONE;
-        }
+        sUSDToPay = buyFromAmmQuote(market, position, amount);
+        collateralQuote = multiCollateralOnOffRamp.getMinimumNeeded(collateral, sUSDToPay);
     }
 
     /// @notice get the skew impact applied to that side of the market on buy
@@ -259,22 +257,8 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     function price(address market, IThalesAMM.Position position) public view returns (uint priceToReturn) {
         if (isMarketInAMMTrading(market)) {
             // add price calculation
-            IPositionalMarket marketContract = IPositionalMarket(market);
-            (uint maturity, ) = marketContract.times();
-
-            uint timeLeftToMaturity = maturity - block.timestamp;
-            uint timeLeftToMaturityInDays = (timeLeftToMaturity * ONE) / 86400;
-            uint oraclePrice = marketContract.oraclePrice();
-
-            (bytes32 key, uint strikePrice, ) = marketContract.getOracleDetails();
-
-            priceToReturn =
-                ammUtils.calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]) /
-                1e2;
-
-            if (position == IThalesAMM.Position.Down) {
-                priceToReturn = ONE - priceToReturn;
-            }
+            (bytes32 key, , ) = IPositionalMarket(market).getOracleDetails();
+            priceToReturn = ammUtils.price(market, position, impliedVolatilityPerAsset[key]);
         }
     }
 
@@ -288,8 +272,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             (uint maturity, ) = marketContract.times();
 
             if (!(impliedVolatilityPerAsset[key] == 0 || maturity < block.timestamp)) {
-                uint timeLeftToMaturity = maturity - block.timestamp;
-                isTrading = timeLeftToMaturity > minimalTimeLeftToMaturity;
+                isTrading = (maturity - block.timestamp) > minimalTimeLeftToMaturity;
             }
         }
     }
@@ -327,52 +310,116 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     /// @notice buy positions of the defined type of a given market from the AMM with USDC, USDT or DAI
-    /// @param market a Positional Market known to Market Manager
-    /// @param position UP or DOWN
-    /// @param amount how many positions
-    /// @param expectedPayout how much does the buyer expect to pay (retrieved via quote)
-    /// @param collateral USDC, USDT or DAI
-    /// @param additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the buyer expect to pay (retrieved via quote)
+    /// @param _collateral USDC, USDT or DAI
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
     /// @param _referrer who referred the buyer to Thales
     function buyFromAMMWithDifferentCollateralAndReferrer(
-        address market,
-        IThalesAMM.Position position,
-        uint amount,
-        uint expectedPayout,
-        uint additionalSlippage,
-        address collateral,
+        address _market,
+        IThalesAMM.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage,
+        address _collateral,
         address _referrer
-    ) public nonReentrant notPaused returns (uint) {
+    ) external nonReentrant notPaused returns (uint) {
+        _buyFromAMMWithDifferentCollateralAndReferrer(
+            _market,
+            _position,
+            _amount,
+            _expectedPayout,
+            _additionalSlippage,
+            _collateral,
+            _referrer,
+            false
+        );
+    }
+
+    /// @notice buy positions of the defined type of a given market from the AMM with USDC, USDT or DAI
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the buyer expect to pay (retrieved via quote)
+    /// @param _collateral USDC, USDT or DAI
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
+    /// @param _referrer who referred the buyer to Thales
+    function buyFromAMMWithEth(
+        address _market,
+        IThalesAMM.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage,
+        address _collateral,
+        address _referrer
+    ) external payable nonReentrant notPaused returns (uint) {
+        _buyFromAMMWithDifferentCollateralAndReferrer(
+            _market,
+            _position,
+            _amount,
+            _expectedPayout,
+            _additionalSlippage,
+            _collateral,
+            _referrer,
+            true
+        );
+    }
+
+    /// @notice buy positions of the defined type of a given market from the AMM with USDC, USDT or DAI
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the buyer expect to pay (retrieved via quote)
+    /// @param _collateral USDC, USDT or DAI
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
+    /// @param _referrer who referred the buyer to Thales
+    /// @param _isEth who referred the buyer to Thales
+    function _buyFromAMMWithDifferentCollateralAndReferrer(
+        address _market,
+        IThalesAMM.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage,
+        address _collateral,
+        address _referrer,
+        bool _isEth
+    ) internal returns (uint) {
+        require(multicollateralEnabled, "Multicollateral onramp not enabled");
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
 
-        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
-
         (uint collateralQuote, uint susdQuote) = buyFromAmmQuoteWithDifferentCollateral(
-            market,
-            position,
-            amount,
-            collateral
+            _market,
+            _position,
+            _amount,
+            _collateral
         );
 
-        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
-            ? collateralQuote * (1e12)
-            : collateralQuote;
-        require(
-            maxAllowedPegSlippagePercentage > 0 &&
-                transformedCollateralForPegCheck >= (susdQuote * (ONE - (maxAllowedPegSlippagePercentage))) / ONE,
-            "Amount below max allowed peg slippage"
-        );
+        require((collateralQuote * ONE) / _expectedPayout <= (ONE + _additionalSlippage), "Slippage too high!");
 
-        require((collateralQuote * ONE) / (expectedPayout) <= (ONE + additionalSlippage), "Slippage too high!");
+        uint exactReceived;
 
-        IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
-        collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
-        curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, susdQuote);
+        if (_isEth) {
+            require(_collateral == multiCollateralOnOffRamp.WETH9(), "Wrong collateral sent");
+            require(msg.value >= collateralQuote, "not enough ETH sent");
+            exactReceived = multiCollateralOnOffRamp.onrampWithEth{value: msg.value}(msg.value);
+        } else {
+            IERC20Upgradeable(_collateral).safeTransferFrom(msg.sender, address(this), collateralQuote);
+            IERC20Upgradeable(_collateral).approve(address(multiCollateralOnOffRamp), collateralQuote);
+            exactReceived = multiCollateralOnOffRamp.onramp(_collateral, collateralQuote);
+        }
 
-        return _buyFromAMM(market, position, amount, susdQuote, additionalSlippage, false, susdQuote);
+        require(exactReceived >= susdQuote, "Not enough sUSD received");
+
+        //send the surplus to SB
+        if (exactReceived > susdQuote) {
+            sUSD.safeTransfer(safeBox, exactReceived - susdQuote);
+        }
+
+        return _buyFromAMM(_market, _position, _amount, susdQuote, _additionalSlippage, false, susdQuote);
     }
 
     /// @notice buy positions of the defined type of a given market from the AMM
@@ -392,64 +439,155 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     /// @notice sell positions of the defined type of a given market to the AMM
-    /// @param market a Positional Market known to Market Manager
-    /// @param position UP or DOWN
-    /// @param amount how many positions
-    /// @param expectedPayout how much does the seller to receive(retrieved via quote)
-    /// @param additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the seller to receive(retrieved via quote)
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
     function sellToAMM(
-        address market,
-        IThalesAMM.Position position,
-        uint amount,
-        uint expectedPayout,
-        uint additionalSlippage
+        address _market,
+        IThalesAMM.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage
     ) public nonReentrant notPaused returns (uint) {
-        require(isMarketInAMMTrading(market), "Market is not in Trading phase");
+        return _sellToAMM(_market, _position, _amount, _expectedPayout, _additionalSlippage);
+    }
 
-        uint basePrice = price(market, position);
+    /// @notice sell positions of the defined type of a given market to the AMM
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the seller to receive(retrieved via quote)
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
+    /// @param _collateral address of collateral to offramp into and send to user
+    /// @param _isEth flag that indicated should the offramp be performed in ETH
+    function sellToAMMWithDifferentCollateral(
+        address _market,
+        IThalesAMM.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage,
+        address _collateral,
+        bool _isEth
+    ) public nonReentrant notPaused returns (uint) {
+        uint pricePaid = _sellToAMM(_market, _position, _amount, _expectedPayout, _additionalSlippage);
+        sUSD.safeTransferFrom(msg.sender, address(this), pricePaid);
+
+        if (_isEth) {
+            uint offramped = multiCollateralOnOffRamp.offrampIntoEth(pricePaid);
+            address payable _to = payable(msg.sender);
+            bool sent = _to.send(offramped);
+            require(sent, "Failed to send Ether");
+        } else {
+            uint offramped = multiCollateralOnOffRamp.offramp(_collateral, pricePaid);
+            IERC20Upgradeable(_collateral).safeTransfer(msg.sender, offramped);
+        }
+    }
+
+    /// @notice sell positions of the defined type of a given market to the AMM
+    /// @param _market a Positional Market known to Market Manager
+    /// @param _position UP or DOWN
+    /// @param _amount how many positions
+    /// @param _expectedPayout how much does the seller to receive(retrieved via quote)
+    /// @param _additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
+    function _sellToAMM(
+        address _market,
+        IThalesAMM.Position _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage
+    ) internal returns (uint) {
+        require(isMarketInAMMTrading(_market), "Market is not in Trading phase");
+
+        uint basePrice = price(_market, _position);
         basePrice = basePrice > maxSupportedPrice ? maxSupportedPrice : basePrice;
-        uint availableToSellToAMMATM = _availableToSellToAMM(market, position, basePrice);
-        require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
+        uint availableToSellToAMMATM = _availableToSellToAMM(_market, _position, basePrice);
+        require(availableToSellToAMMATM > 0 && _amount <= availableToSellToAMMATM, "Not enough liquidity.");
 
-        uint pricePaid = _sellToAmmQuote(market, position, amount, basePrice, availableToSellToAMMATM);
-        require((expectedPayout * ONE) / (pricePaid) <= (ONE + (additionalSlippage)), "Slippage too high");
+        uint pricePaid = _sellToAmmQuote(_market, _position, _amount, basePrice, availableToSellToAMMATM);
+        require((_expectedPayout * ONE) / (pricePaid) <= (ONE + (_additionalSlippage)), "Slippage too high");
 
-        address target = _getTarget(market, position);
+        address target = _getTarget(_market, _position);
 
-        _transferPositions(market);
+        _transferPositions(_market);
 
         //transfer options first to have max burn available
-        IERC20Upgradeable(target).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20Upgradeable(target).safeTransferFrom(msg.sender, address(this), _amount);
 
         uint sUSDFromBurning = IPositionalMarketManager(manager).transformCollateral(
-            IPositionalMarket(market).getMaximumBurnable(address(this))
+            IPositionalMarket(_market).getMaximumBurnable(address(this))
         );
         if (sUSDFromBurning > 0) {
-            IPositionalMarket(market).burnOptionsMaximum();
+            IPositionalMarket(_market).burnOptionsMaximum();
         }
 
-        uint safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - pricePaid;
+        uint safeBoxShare;
         uint referrerShare = (pricePaid * ONE) / (ONE - (referrerFee)) - pricePaid;
-        if (safeBoxImpact == 0) {
-            safeBoxShare = 0;
+        if (safeBoxImpact > 0) {
+            safeBoxShare = (pricePaid * ONE) / (ONE - (safeBoxImpact)) - pricePaid;
         }
 
         liquidityPool.commitTrade(
-            market,
+            _market,
             IPositionalMarketManager(manager).reverseTransformCollateral(pricePaid + safeBoxShare + referrerShare)
         );
+
         sUSD.safeTransfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, pricePaid);
         }
 
-        _updateSpentOnMarketOnSell(market, pricePaid, sUSDFromBurning, msg.sender, safeBoxShare);
+        _updateSpentOnMarketOnSell(_market, pricePaid, sUSDFromBurning, msg.sender, safeBoxShare);
 
-        _sendMintedPositionsAndUSDToLiquidityPool(market);
+        _sendMintedPositionsAndUSDToLiquidityPool(_market);
 
-        emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), target);
+        emit SoldToAMM(msg.sender, _market, _position, _amount, pricePaid, address(sUSD), target);
         return pricePaid;
+    }
+
+    function exerciseWithOfframp(
+        address _market,
+        address _collateral,
+        bool _toEth
+    ) external nonReentrant notPaused {
+        require(IPositionalMarketManager(manager).isKnownMarket(_market), "unknown market");
+
+        (IPosition up, IPosition down) = IPositionalMarket(_market).getOptions();
+        require((address(up) != address(0)) && (address(down) != address(0)), "0A");
+        (uint upBalance, uint downBalance) = IPositionalMarket(_market).balancesOf(msg.sender);
+
+        _sendFromIfNotZero(msg.sender, address(up), address(this), upBalance);
+        _sendFromIfNotZero(msg.sender, address(down), address(this), downBalance);
+
+        uint amountBefore = sUSD.balanceOf(address(this));
+        IPositionalMarket(_market).exerciseOptions();
+        uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
+        uint offramped;
+
+        if (amountDiff > 0) {
+            if (_toEth) {
+                offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
+                bool sent = payable(msg.sender).send(offramped);
+                require(sent, "Failed to send Ether");
+            } else {
+                offramped = multiCollateralOnOffRamp.offramp(_collateral, amountDiff);
+                IERC20Upgradeable(_collateral).safeTransfer(msg.sender, offramped);
+            }
+        }
+        emit ExercisedWithOfframp(msg.sender, _market, _collateral, _toEth, amountDiff, offramped);
+    }
+
+    function _sendFromIfNotZero(
+        address from,
+        address source,
+        address target,
+        uint balance
+    ) internal {
+        if (balance > 0) {
+            IERC20Upgradeable(source).safeTransferFrom(from, target, balance);
+        }
     }
 
     function _transferPositions(address market) internal {
@@ -462,13 +600,6 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         liquidityPool.getOptionsForBuy(market, downBalance, IThalesAMM.Position.Down);
     }
 
-    /// @notice Retrieve sUSD from the contract
-    /// @param account whom to send the sUSD
-    /// @param amount how much sUSD to retrieve
-    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
-        sUSD.safeTransfer(account, amount);
-    }
-
     // Internal
 
     function _availableToSellToAMM(
@@ -476,22 +607,20 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         IThalesAMM.Position position,
         uint basePrice
     ) internal view returns (uint _available) {
-        uint sell_max_price = _getSellMaxPrice(basePrice);
-        if (sell_max_price > 0) {
-            (, uint balanceOfTheOtherSide) = ammUtils.balanceOfPositionsOnMarket(
+        uint sell_max_price;
+        if (basePrice > minSupportedPrice) {
+            sell_max_price = ((basePrice - min_spread) * (ONE - (max_spread / (2)))) / ONE;
+        }
+        return
+            ammUtils.availableToSellToAMM(
                 market,
                 position,
-                liquidityPool.getMarketPool(market)
+                basePrice,
+                liquidityPool.getMarketPool(market),
+                _capOnMarket(market),
+                spentOnMarket[market],
+                sell_max_price
             );
-
-            // any balanceOfTheOtherSide will be burned to get sUSD back (1 to 1) at the `willPay` cost
-            uint willPay = (balanceOfTheOtherSide * (sell_max_price)) / ONE;
-            uint capWithBalance = _capOnMarket(market) + (balanceOfTheOtherSide);
-            if (capWithBalance >= (spentOnMarket[market] + willPay)) {
-                uint usdAvailable = capWithBalance - (spentOnMarket[market]) - (willPay);
-                _available = (usdAvailable / (sell_max_price)) * ONE + (balanceOfTheOtherSide);
-            }
-        }
     }
 
     function _sellToAmmQuote(
@@ -519,26 +648,16 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         bool skipCheck
     ) internal view returns (uint availableAmount) {
         if (skipCheck || basePrice < maxSupportedPrice) {
-            basePrice = basePrice + min_spread;
-            if (basePrice < ONE) {
-                uint discountedPrice = (basePrice * (ONE - max_spread / 2)) / ONE;
-                uint balance = ammUtils.balanceOfPositionOnMarket(market, position, liquidityPool.getMarketPool(market));
-                uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
-
-                if ((_capOnMarket(market) + additionalBufferFromSelling) > spentOnMarket[market]) {
-                    uint availableUntilCapSUSD = _capOnMarket(market) + additionalBufferFromSelling - spentOnMarket[market];
-                    if (availableUntilCapSUSD > _capOnMarket(market)) {
-                        availableUntilCapSUSD = _capOnMarket(market);
-                    }
-
-                    uint midImpactPriceIncrease = ((ONE - basePrice) * (max_spread / 2)) / ONE;
-                    if ((basePrice + midImpactPriceIncrease) < ONE) {
-                        uint divider_price = ONE - (basePrice + midImpactPriceIncrease);
-
-                        availableAmount = balance + ((availableUntilCapSUSD * ONE) / divider_price);
-                    }
-                }
-            }
+            availableAmount = ammUtils.availableToBuyFromAMMWithBasePrice(
+                market,
+                position,
+                basePrice,
+                liquidityPool.getMarketPool(market),
+                _capOnMarket(market),
+                spentOnMarket[market],
+                max_spread,
+                min_spread
+            );
         }
     }
 
@@ -574,12 +693,6 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             }
             tempQuote = (tempQuote * (ONE_INT + (int(safeBoxImpactForCaller)))) / ONE_INT;
             returnQuote = IPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
-        }
-    }
-
-    function _getSellMaxPrice(uint basePrice) internal view returns (uint sell_max_price) {
-        if (basePrice > minSupportedPrice) {
-            sell_max_price = ((basePrice - min_spread) * (ONE - (max_spread / (2)))) / ONE;
         }
     }
 
@@ -679,12 +792,11 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         spentOnMarket[market] =
             spentOnMarket[market] +
             (IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid + (safeBoxShare)));
-        if (spentOnMarket[market] <= IPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning)) {
+        uint toSubtract = IPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning);
+        if (spentOnMarket[market] <= toSubtract) {
             spentOnMarket[market] = 0;
         } else {
-            spentOnMarket[market] =
-                spentOnMarket[market] -
-                (IPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning));
+            spentOnMarket[market] -= toSubtract;
         }
 
         if (referrerFee > 0 && referrals != address(0)) {
@@ -706,14 +818,11 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             sUSD.safeTransfer(safeBox, safeBoxShare);
         }
 
-        if (
-            spentOnMarket[market] <= IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid - (safeBoxShare))
-        ) {
+        uint toSubtract = IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid - (safeBoxShare));
+        if (spentOnMarket[market] <= toSubtract) {
             spentOnMarket[market] = 0;
         } else {
-            spentOnMarket[market] =
-                spentOnMarket[market] -
-                (IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid - (safeBoxShare)));
+            spentOnMarket[market] -= toSubtract;
         }
 
         if (referrerFee > 0 && referrals != address(0)) {
@@ -724,83 +833,20 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
     function _buyPriceImpact(BuyPriceImpactParams memory params) internal view returns (int priceImpact) {
         if (params.basePrice >= minSupportedPrice && params.basePrice <= maxSupportedPrice) {
-            (uint balancePosition, uint balanceOtherSide) = ammUtils.balanceOfPositionsOnMarket(
-                params.market,
-                params.position,
-                params.liquidityPool.getMarketPool(params.market)
+            (bytes32 key, , ) = IPositionalMarket(params.market).getOracleDetails();
+            priceImpact = ammUtils.buyPriceImpact(
+                IThalesAMMUtils.BuyUtilsPriceImpactParams(
+                    params.market,
+                    params.position,
+                    params.amount,
+                    params._availableToBuyFromAMM,
+                    params._availableToBuyFromAMMOtherSide,
+                    params.liquidityPool.getMarketPool(params.market),
+                    params.basePrice,
+                    max_spread,
+                    impliedVolatilityPerAsset[key]
+                )
             );
-
-            uint balancePositionAfter = balancePosition > params.amount ? balancePosition - params.amount : 0;
-            uint balanceOtherSideAfter = balanceOtherSide +
-                (balancePosition > params.amount ? 0 : (params.amount - balancePosition));
-            if (balancePositionAfter >= balanceOtherSideAfter) {
-                priceImpact = ammUtils.calculateDiscount(
-                    IThalesAMMUtils.DiscountParams(
-                        balancePosition,
-                        balanceOtherSide,
-                        params.amount,
-                        params._availableToBuyFromAMMOtherSide,
-                        max_spread
-                    )
-                );
-            } else {
-                if (params.amount > balancePosition && balancePosition > 0) {
-                    uint amountToBeMinted = params.amount - balancePosition;
-                    uint positiveSkew = ammUtils.buyPriceImpactImbalancedSkew(
-                        IThalesAMMUtils.PriceImpactParams(
-                            amountToBeMinted,
-                            balanceOtherSide + balancePosition,
-                            0,
-                            balanceOtherSide + amountToBeMinted,
-                            0,
-                            params._availableToBuyFromAMM - balancePosition,
-                            max_spread
-                        )
-                    );
-
-                    uint pricePosition = price(params.market, params.position);
-                    uint priceOtherPosition = price(
-                        params.market,
-                        params.position == IThalesAMM.Position.Up ? IThalesAMM.Position.Down : IThalesAMM.Position.Up
-                    );
-                    uint skew = (priceOtherPosition * positiveSkew) / pricePosition;
-
-                    int discount = ammUtils.calculateDiscount(
-                        IThalesAMMUtils.DiscountParams(
-                            balancePosition,
-                            balanceOtherSide,
-                            balancePosition,
-                            params._availableToBuyFromAMMOtherSide,
-                            max_spread
-                        )
-                    );
-
-                    int discountBalance = int(balancePosition) * discount;
-                    int discountMinted = int(amountToBeMinted * skew);
-                    int amountInt = int(balancePosition + amountToBeMinted);
-
-                    priceImpact = (discountBalance + discountMinted) / amountInt;
-
-                    if (priceImpact > 0) {
-                        int numerator = int(pricePosition) * priceImpact;
-                        priceImpact = numerator / int(priceOtherPosition);
-                    }
-                } else {
-                    priceImpact = int(
-                        ammUtils.buyPriceImpactImbalancedSkew(
-                            IThalesAMMUtils.PriceImpactParams(
-                                params.amount,
-                                balanceOtherSide,
-                                balancePosition,
-                                balanceOtherSideAfter,
-                                balancePositionAfter,
-                                params._availableToBuyFromAMM,
-                                max_spread
-                            )
-                        )
-                    );
-                }
-            }
         }
     }
 
@@ -822,26 +868,14 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         uint amount,
         uint available
     ) internal view returns (uint _sellImpact) {
-        (uint _balancePosition, uint balanceOtherSide) = ammUtils.balanceOfPositionsOnMarket(
+        _sellImpact = ammUtils.sellPriceImpact(
             market,
             position,
-            liquidityPool.getMarketPool(market)
+            amount,
+            available,
+            liquidityPool.getMarketPool(market),
+            max_spread
         );
-        uint balancePositionAfter = _balancePosition > 0 ? _balancePosition + (amount) : balanceOtherSide > amount
-            ? 0
-            : amount - (balanceOtherSide);
-        uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide - (amount) : 0;
-        if (!(balancePositionAfter < balanceOtherSideAfter)) {
-            _sellImpact = ammUtils.sellPriceImpactImbalancedSkew(
-                amount,
-                balanceOtherSide,
-                _balancePosition,
-                balanceOtherSideAfter,
-                balancePositionAfter,
-                available,
-                max_spread
-            );
-        }
     }
 
     function _getMintableAmount(
@@ -858,19 +892,6 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     function _capOnMarket(address market) internal view returns (uint) {
         (bytes32 key, , ) = IPositionalMarket(market).getOracleDetails();
         return getCapPerAsset(key);
-    }
-
-    function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
-        if (collateral == dai) {
-            return 1;
-        }
-        if (collateral == usdc) {
-            return 2;
-        }
-        if (collateral == usdt) {
-            return 3;
-        }
-        return 0;
     }
 
     function _sendMintedPositionsAndUSDToLiquidityPool(address market) internal {
@@ -924,16 +945,6 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     /// @notice Updates contract parametars
-    /// @param _minspread minimum spread applied to base price
-    /// @param _maxspread maximum skew impact, e.g. if all UP positions are drained, skewImpact on that side = _maxspread
-    function setMinMaxSpread(uint _minspread, uint _maxspread) external onlyOwner {
-        min_spread = _minspread;
-        max_spread = _maxspread;
-        emit SetMinSpread(_minspread);
-        emit SetMaxSpread(_maxspread);
-    }
-
-    /// @notice Updates contract parametars
     /// @param _safeBox where to send a fee reserved for protocol from each trade
     /// @param _safeBoxImpact how much is the SafeBoxFee
     function setSafeBoxData(address _safeBox, uint _safeBoxImpact) external onlyOwner {
@@ -946,15 +957,27 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     /// @param _minSupportedPrice whats the max price AMM supports, e.g. 10 cents
     /// @param _maxSupportedPrice whats the max price AMM supports, e.g. 90 cents
     /// @param _capPerMarket default amount the AMM will risk on markets, overrided by capPerAsset if existing
-    function setMinMaxSupportedPriceAndCap(
+    /// @param _minspread minimum spread applied to base price
+    /// @param _maxspread maximum skew impact, e.g. if all UP positions are drained, skewImpact on that side = _maxspread
+    function setMinMaxSpreadsAndSupportedPriceAndCap(
         uint _minSupportedPrice,
         uint _maxSupportedPrice,
-        uint _capPerMarket
+        uint _capPerMarket,
+        uint _minspread,
+        uint _maxspread
     ) external onlyOwner {
         minSupportedPrice = _minSupportedPrice;
         maxSupportedPrice = _maxSupportedPrice;
         capPerMarket = _capPerMarket;
-        emit SetMinMaxSupportedPriceCapPerMarket(_minSupportedPrice, _maxSupportedPrice, _capPerMarket);
+        min_spread = _minspread;
+        max_spread = _maxspread;
+        emit SetMinMaxSpreadsAndSupportedPriceAndCap(
+            _minSupportedPrice,
+            _maxSupportedPrice,
+            _capPerMarket,
+            _minspread,
+            _maxspread
+        );
     }
 
     /// @notice Updates contract parametars. Can be set by owner or whitelisted addresses. In the future try to get it as a feed from Chainlink.
@@ -966,7 +989,6 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             "Only whitelisted addresses or owner can change IV!"
         );
         require(_impliedVolatility > ONE * 10 && _impliedVolatility < ONE * 300, "IV outside min/max range!");
-        require(priceFeed.rateForCurrency(asset) != 0, "Asset has no price!");
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
         emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);
     }
@@ -1019,32 +1041,15 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         liquidityPool = _liquidityPool;
     }
 
-    /// @notice Updates contract parametars
-    /// @param _curveSUSD curve sUSD pool exchanger contract
-    /// @param _dai DAI address
-    /// @param _usdc USDC address
-    /// @param _usdt USDT addresss
-    /// @param _curveOnrampEnabled whether AMM supports curve onramp
-    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
-    function setCurveSUSD(
-        address _curveSUSD,
-        address _dai,
-        address _usdc,
-        address _usdt,
-        bool _curveOnrampEnabled,
-        uint _maxAllowedPegSlippagePercentage
-    ) external onlyOwner {
-        curveSUSD = ICurveSUSD(_curveSUSD);
-        dai = _dai;
-        usdc = _usdc;
-        usdt = _usdt;
-        IERC20Upgradeable(dai).approve(_curveSUSD, type(uint256).max);
-        IERC20Upgradeable(usdc).approve(_curveSUSD, type(uint256).max);
-        IERC20Upgradeable(usdt).approve(_curveSUSD, type(uint256).max);
-        // not needed unless selling into different collateral is enabled
-        //sUSD.approve(_curveSUSD, type(uint256).max);
-        curveOnrampEnabled = _curveOnrampEnabled;
-        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
+    /// @notice set multicollateral onramp contract
+    function setMultiCollateralOnOffRamp(address _onramper, bool enabled) external onlyOwner {
+        if (address(multiCollateralOnOffRamp) != address(0)) {
+            sUSD.approve(address(multiCollateralOnOffRamp), 0);
+        }
+        multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(_onramper);
+        multicollateralEnabled = enabled;
+        sUSD.approve(_onramper, MAX_APPROVAL);
+        emit SetMultiCollateralOnOffRamp(_onramper, enabled);
     }
 
     /// @notice Updates contract parametars
@@ -1053,30 +1058,6 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     function setCapPerAsset(bytes32 asset, uint _cap) external onlyOwner {
         _capPerAsset[asset] = _cap;
         emit SetCapPerAsset(asset, _cap);
-    }
-
-    /// @notice Send tokens from this contract to the destination address
-    /// @param tokens to iterate and transfer
-    /// @param account Address where to send the tokens
-    /// @param amount Amount of tokens to be sent
-    /// @param all ignore amount and send whole balance
-    function transferTokens(
-        address[] calldata tokens,
-        address payable account,
-        uint amount,
-        bool all
-    ) external onlyOwner {
-        require(tokens.length > 0, "tokens array cant be empty");
-        for (uint256 index = 0; index < tokens.length; index++) {
-            if (all) {
-                IERC20Upgradeable(tokens[index]).safeTransfer(
-                    account,
-                    IERC20Upgradeable(tokens[index]).balanceOf(address(this))
-                );
-            } else {
-                IERC20Upgradeable(tokens[index]).safeTransfer(account, amount);
-            }
-        }
     }
 
     // events
@@ -1106,11 +1087,25 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     event SetPriceFeed(address _priceFeed);
     event SetImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility);
     event SetCapPerAsset(bytes32 asset, uint _cap);
-    event SetMaxSpread(uint _spread);
-    event SetMinSpread(uint _spread);
     event SetSafeBoxImpact(uint _safeBoxImpact);
     event SetSafeBox(address _safeBox);
     event SetMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity);
-    event SetMinMaxSupportedPriceCapPerMarket(uint minPrice, uint maxPrice, uint capPerMarket);
+    event SetMinMaxSpreadsAndSupportedPriceAndCap(
+        uint minPrice,
+        uint maxPrice,
+        uint capPerMarket,
+        uint minSpread,
+        uint maxSpread
+    );
+    event SetMultiCollateralOnOffRamp(address _onramper, bool enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
+    // check if needed.
+    event ExercisedWithOfframp(
+        address user,
+        address market,
+        address collateral,
+        bool toEth,
+        uint payout,
+        uint payoutInCollateral
+    );
 }

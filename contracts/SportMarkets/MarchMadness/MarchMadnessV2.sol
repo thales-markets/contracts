@@ -23,7 +23,7 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
 
     Counters.Counter private _tokenIds;
 
-    string public _name = "Overtime March Madness 2024";
+    string public _name = "Overtime March Madness 2025";
     string public _symbol = "OTMM";
 
     uint public canNotMintOrUpdateAfter;

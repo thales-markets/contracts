@@ -41,7 +41,7 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
 
     string public urlToUse;
 
-    uint public mintingPrice = 50 * 1e6;
+    uint public mintingPrice = 20 * 1e6;
 
     IERC20Upgradeable public sUSD;
     IMultiCollateralOnOffRamp public multiCollateralOnOffRamp;
@@ -120,7 +120,9 @@ contract MarchMadnessV2 is ERC721URIStorage, Pausable, Ownable {
 
         _setTokenURI(newItemId, urlToUse);
 
-        IERC20Upgradeable(sUSD).safeTransfer(safeBox, (mintingPrice * sbFee) / 1e18);
+        if (sbFee > 0) {
+            IERC20Upgradeable(sUSD).safeTransfer(safeBox, (mintingPrice * sbFee) / 1e18);
+        }
 
         emit Mint(msg.sender, newItemId, _brackets);
     }

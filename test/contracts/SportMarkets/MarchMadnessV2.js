@@ -55,7 +55,7 @@ contract('MarchMadness', (accounts) => {
 
 	describe('Contract managment', () => {
 		it('Init checking', async () => {
-			assert.bnEqual('Overtime March Madness 2024', await marchMadness.name());
+			assert.bnEqual('Overtime March Madness 2025', await marchMadness.name());
 			assert.bnEqual('OTMM', await marchMadness.symbol());
 		});
 

@@ -195,7 +195,8 @@
 		"PositionalMarketDataUSDC": "0xE69AF31bBB306d45577746861C75912bc66C3700",
 		"PositionalMarketDataImplementationUSDC": "0xDb36A40e866c2ef7ba30385AbFD6335580631eaf",
 		"RangedPositionMastercopyUSDC": "0xB79bb051a80a8c4330ce3875d56061712ea8d88b",
-		"RangedMarketMastercopyUSDC": "0x13DC6B44f6604695704ED3892ea0D5BA86becffd"
+		"RangedMarketMastercopyUSDC": "0x13DC6B44f6604695704ED3892ea0D5BA86becffd",
+		"MarchMadnessV2": "0x74A498769a6B9E5c6C89bd28a4720c52C904b81f"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -340,7 +341,7 @@
 		"CrossChainCollectorImplementation": "0x8b186D1C759e4d37471A89821c7f0a68E10C5F5F",
 		"SafeBoxBuffer": "0xEd31481E4B1ded06ee5ed48C0205fA479Ffeb866",
 		"SafeBoxBufferImplementation": "0x38a50ebB6b299361D4492D488F95e13bE0A6b693",
-		"MarchMadnessV2": "0x6e598eebF9Aba224c59F0C9Aa2AFe38d51933B51",
+		"MarchMadnessV2": "0xb3b8F1d9525A5128F2A4C6Da657c08ecd210ad79",
 		"MarchMadnessV2Data": "0x9A978c08e1874b24E391E7772707CcB39bd8fB7C",
 		"PriceFeedWithTHALES": "0x18bD8BEF64285BF9ff6fC0c94607dDcF2eFaB182",
 		"PriceFeedWithTHALESImplementation": "0xdD462615884E70C80037cCf8Aa0f82cb06056D81",
@@ -468,7 +469,8 @@
 		"SafeBoxBufferImplementation": "0xb8e8E6cF3AbD16070013B23c92601D0eeA83a02E",
 		"SpeedMarketsAMMCreator": "0x6B5FE966Ea9B05d8E628E772B0b745734D069983",
 		"SpeedMarketsAMMCreatorImplementation": "0x342D29603CE81cF3aC1B004A5e19C6Ff6d7fe516",
-		"SessionValidationModule": "0x1E82dbfb6BefF4b4799a1a688d09B259eb173F64"
+		"SessionValidationModule": "0x1E82dbfb6BefF4b4799a1a688d09B259eb173F64",
+		"MarchMadnessV2": "0xd56e477a63C5b20959E1B93bB436cBF0179e2F19"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

@@ -75,27 +75,21 @@ async function main() {
 
 		const marchMadness = MarchMadness.attach(marchMadnessAddress);
 
-		const gameIdsPerRound = [
-			Array.from({ length: 32 }, (_, k) => k),
-			Array.from({ length: 16 }, (_, k) => k + 32),
-			Array.from({ length: 8 }, (_, k) => k + 48),
-			Array.from({ length: 4 }, (_, k) => k + 56),
-			[60, 61],
-			[62],
+		const resultArray = [
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0,
 		];
 
-		for (let i = 0; i < gameIdsPerRound.length; i++) {
-			console.log('Adding gameIds to round');
-			console.log('Round -> ', i);
-			console.log('GameIds -> ', gameIdsPerRound[i]);
-			const tx = await marchMadness.assignGameIdsToRound(i, gameIdsPerRound[i], {
-				from: owner.address,
-			});
-			await tx.wait().then((e) => {
-				txLog(tx, 'Tx log');
-			});
-			await delay(1500);
-		}
+		console.log('Setting result array');
+		console.log('ResultArray -> ', resultArray);
+		const tx = await marchMadness.setResultArray(resultArray, {
+			from: owner.address,
+		});
+		await tx.wait().then((e) => {
+			txLog(tx, 'Tx log');
+		});
+		await delay(1500);
 
 		console.log('Script has finished.');
 	} catch (e) {

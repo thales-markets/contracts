@@ -48,6 +48,16 @@ async function main() {
 		network = 'arbitrumOne';
 	}
 
+	if (networkObj.chainId == 8453) {
+		networkObj.name = 'baseMainnet';
+		network = 'baseMainnet';
+	}
+
+	if (networkObj.chainId == 11155420) {
+		networkObj.name = 'optimisticSepolia';
+		network = 'optimisticSepolia';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 

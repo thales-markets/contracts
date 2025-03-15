@@ -45,6 +45,114 @@
         "type": "uint8"
       },
       {
+        "internalType": "uint256",
+        "name": "basePrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "skipCheck",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "liquidityPoolAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "capOnMarket",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "spentOnMarket",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max_spread",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "min_spread",
+        "type": "uint256"
+      }
+    ],
+    "name": "availableToBuyFromAMMWithBasePrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "availableAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum IThalesAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "basePrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "liquidityPoolAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "capOnMarket",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "spentOnMarket",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sellMaxPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "availableToSellToAMM",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_available",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum IThalesAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
         "internalType": "address",
         "name": "addressToCheck",
         "type": "address"
@@ -90,6 +198,72 @@
         "internalType": "uint256",
         "name": "balanceOtherSide",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "enum IThalesAMM.Position",
+            "name": "position",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_availableToBuyFromAMM",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_availableToBuyFromAMMOtherSide",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "roundPool",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "basePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "max_spread",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "impliedVolPerAsset",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ThalesAMMUtils.BuyUtilsPriceImpactParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "buyPriceImpact",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "priceImpact",
+        "type": "int256"
       }
     ],
     "stateMutability": "view",
@@ -254,6 +428,79 @@
       {
         "internalType": "uint256",
         "name": "downBalance",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum IThalesAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "impliedVolPerAsset",
+        "type": "uint256"
+      }
+    ],
+    "name": "price",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "priceToReturn",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum IThalesAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "available",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "liquidityPoolAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max_spread",
+        "type": "uint256"
+      }
+    ],
+    "name": "sellPriceImpact",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sellImpact",
         "type": "uint256"
       }
     ],

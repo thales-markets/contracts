@@ -98,6 +98,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     uint public maxSkewImpact;
     uint public skewSlippage;
 
+    /// @notice Bonus percentage per collateral token (e.g., 0.02e18 for 2%)
+    mapping(address => uint) public bonusPerCollateral;
+
     /// @param user user wallet address
     /// @param asset market asset
     /// @param strikeTime strike time, if zero delta time is used
@@ -119,6 +122,19 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint collateralAmount;
         address referrer;
         uint skewImpact;
+    }
+
+    struct InternalCreateParams {
+        address user;
+        bytes32 asset;
+        uint64 strikeTime;
+        PythStructs.Price pythPrice;
+        SpeedMarket.Direction direction;
+        uint buyinAmount;
+        bool transferSusd;
+        address referrer;
+        uint skewImpact;
+        address collateral;
     }
 
     receive() external payable {}
@@ -146,18 +162,20 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 contractsAddresses
             );
 
-        _createNewMarket(
-            _params.user,
-            _params.asset,
-            strikeTime,
-            _params.pythPrice,
-            _params.direction,
-            buyinAmount,
-            isDefaultCollateral,
-            _params.referrer,
-            _params.skewImpact,
-            contractsAddresses
-        );
+        InternalCreateParams memory internalParams = InternalCreateParams({
+            user: _params.user,
+            asset: _params.asset,
+            strikeTime: strikeTime,
+            pythPrice: _params.pythPrice,
+            direction: _params.direction,
+            buyinAmount: buyinAmount,
+            transferSusd: isDefaultCollateral,
+            referrer: _params.referrer,
+            skewImpact: _params.skewImpact,
+            collateral: _params.collateral
+        });
+
+        _createNewMarket(internalParams, contractsAddresses);
     }
 
     function _getBuyinWithConversion(
@@ -272,67 +290,76 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         sUSD.safeTransfer(contractsAddresses.safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
     }
 
-    function _createNewMarket(
-        address user,
-        bytes32 asset,
-        uint64 strikeTime,
-        PythStructs.Price calldata pythPrice,
-        SpeedMarket.Direction direction,
-        uint buyinAmount,
-        bool transferSusd,
-        address referrer,
-        uint skewImpact,
-        IAddressManager.Addresses memory contractsAddresses
-    ) internal {
-        require(supportedAsset[asset], "Asset is not supported");
-        require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
-        require(strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not allowed");
-        require(strikeTime <= block.timestamp + maximalTimeToMaturity, "Time too far into the future");
+    function _createNewMarket(InternalCreateParams memory params, IAddressManager.Addresses memory contractsAddresses)
+        internal
+    {
+        require(supportedAsset[params.asset], "Asset is not supported");
+        require(params.buyinAmount >= minBuyinAmount && params.buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
+        require(params.strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not allowed");
+        require(params.strikeTime <= block.timestamp + maximalTimeToMaturity, "Time too far into the future");
 
-        uint lpFeeWithSkew = _handleRiskAndGetFee(asset, direction, buyinAmount, strikeTime, skewImpact);
+        uint lpFeeWithSkew = _handleRiskAndGetFee(
+            params.asset,
+            params.direction,
+            params.buyinAmount,
+            params.strikeTime,
+            params.skewImpact
+        );
 
-        if (transferSusd) {
-            uint totalAmountToTransfer = (buyinAmount * (ONE + safeBoxImpact + lpFeeWithSkew)) / ONE;
-            sUSD.safeTransferFrom(user, address(this), totalAmountToTransfer);
+        if (params.transferSusd) {
+            uint totalAmountToTransfer = (params.buyinAmount * (ONE + safeBoxImpact + lpFeeWithSkew)) / ONE;
+            sUSD.safeTransferFrom(params.user, address(this), totalAmountToTransfer);
         }
         SpeedMarket srm = SpeedMarket(Clones.clone(speedMarketMastercopy));
         srm.initialize(
             SpeedMarket.InitParams(
                 address(this),
-                user,
-                asset,
-                strikeTime,
-                pythPrice.price,
-                uint64(pythPrice.publishTime),
-                direction,
-                buyinAmount,
+                params.user,
+                params.asset,
+                params.strikeTime,
+                params.pythPrice.price,
+                uint64(params.pythPrice.publishTime),
+                params.direction,
+                params.buyinAmount,
                 safeBoxImpact,
                 lpFeeWithSkew
             )
         );
 
-        sUSD.safeTransfer(address(srm), buyinAmount * 2);
+        // Apply bonus if using non-default collateral
+        uint bonus = params.transferSusd ? 0 : bonusPerCollateral[params.collateral];
+        // payout = totalPayout + totalPayout * bonus, bonus = 0.02e18 for 2%
+        uint payout = params.buyinAmount * 2 + (params.buyinAmount * 2 * bonus) / ONE;
+        sUSD.safeTransfer(address(srm), payout);
 
-        _handleReferrerAndSafeBox(user, referrer, buyinAmount, contractsAddresses);
+        _handleReferrerAndSafeBox(params.user, params.referrer, params.buyinAmount, contractsAddresses);
 
         _activeMarkets.add(address(srm));
-        _activeMarketsPerUser[user].add(address(srm));
+        _activeMarketsPerUser[params.user].add(address(srm));
 
         if (contractsAddresses.stakingThales != address(0)) {
-            IStakingThales(contractsAddresses.stakingThales).updateVolume(user, buyinAmount);
+            IStakingThales(contractsAddresses.stakingThales).updateVolume(params.user, params.buyinAmount);
         }
 
         marketHasCreatedAtAttribute[address(srm)] = true;
         marketHasFeeAttribute[address(srm)] = true;
-        emit MarketCreated(address(srm), user, asset, strikeTime, pythPrice.price, direction, buyinAmount);
+        emit MarketCreated(
+            address(srm),
+            params.user,
+            params.asset,
+            params.strikeTime,
+            params.pythPrice.price,
+            params.direction,
+            params.buyinAmount
+        );
         emit MarketCreatedWithFees(
             address(srm),
-            user,
-            asset,
-            strikeTime,
-            pythPrice.price,
-            direction,
-            buyinAmount,
+            params.user,
+            params.asset,
+            params.strikeTime,
+            params.pythPrice.price,
+            params.direction,
+            params.buyinAmount,
             safeBoxImpact,
             lpFeeWithSkew
         );
@@ -672,6 +699,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit AddedIntoWhitelist(_whitelistAddress, _flag);
     }
 
+    /// @notice Set bonus percentage for a collateral
+    /// @param _collateral collateral address
+    /// @param _bonus bonus percentage (e.g., 0.02e18 for 2%)
+    function setCollateralBonus(address _collateral, uint _bonus) external onlyOwner {
+        require(_bonus <= 0.1e18, "Bonus too high");
+        bonusPerCollateral[_collateral] = _bonus;
+        emit CollateralBonusSet(_collateral, _bonus);
+    }
+
     //////////////////modifiers/////////////////
 
     modifier isAddressWhitelisted() {
@@ -729,4 +765,5 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event MultiCollateralOnOffRampEnabled(bool _enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event AmountTransfered(address _destination, uint _amount);
+    event CollateralBonusSet(address indexed collateral, uint bonus);
 }

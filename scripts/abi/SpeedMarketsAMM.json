@@ -16,6 +16,11 @@
   },
   {
     "inputs": [],
+    "name": "CollateralNotSupported",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "EtherTransferFailed",
     "type": "error"
   },
@@ -1445,24 +1450,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_collateral",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_bonus",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCollateralBonus",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256[]",
         "name": "_timeThresholds",
         "type": "uint256[]"
@@ -1628,6 +1615,29 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_supported",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_bonus",
+        "type": "uint256"
+      }
+    ],
+    "name": "setSupportedCollateralAndItsBonus",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_sUSD",
         "type": "address"
       }
@@ -1672,6 +1682,25 @@
       }
     ],
     "name": "supportedAsset",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "supportedCollateral",
     "outputs": [
       {
         "internalType": "bool",

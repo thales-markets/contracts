@@ -167,10 +167,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param _params parameters for creating market
     function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyCreator {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        bool isSupportedCollateral = supportedCollateral[_params.collateral];
-        if (!isSupportedCollateral || _params.collateral != address(0)) {
-            revert CollateralNotSupported();
-        }
+        bool isSupportedCollateral = supportedCollateral[_params.collateral] || _params.collateral == address(0);
         uint64 strikeTime = _params.strikeTime == 0 ? uint64(block.timestamp + _params.delta) : _params.strikeTime;
         uint buyinAmount = isSupportedCollateral
             ? _params.collateralAmount
@@ -329,7 +326,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         if (params.strikeTime > block.timestamp + maximalTimeToMaturity) {
             revert TimeTooFarIntoFuture();
         }
-
         (uint lpFeeWithSkew, uint payout) = _handleRiskAndGetFee(
             params.createMarketParams.asset,
             params.createMarketParams.direction,
@@ -338,7 +334,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             params.createMarketParams.skewImpact,
             params.transferCollateral ? bonusPerCollateral[params.createMarketParams.collateral] : 0
         );
-
         if (params.transferCollateral) {
             uint totalAmountToTransfer = (params.buyinAmount * (ONE + safeBoxImpact + lpFeeWithSkew)) / ONE;
             IERC20Upgradeable(params.createMarketParams.collateral).safeTransferFrom(
@@ -363,20 +358,20 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 lpFeeWithSkew
             )
         );
-
-        IERC20Upgradeable(params.createMarketParams.collateral).safeTransfer(address(srm), payout);
-
+        if (params.transferCollateral) {
+            IERC20Upgradeable(params.createMarketParams.collateral).safeTransfer(address(srm), payout);
+        } else {
+            sUSD.safeTransfer(address(srm), payout);
+        }
         _handleReferrerAndSafeBox(
             params.createMarketParams.user,
             params.createMarketParams.referrer,
             params.buyinAmount,
-            IERC20Upgradeable(params.createMarketParams.collateral),
+            params.transferCollateral ? IERC20Upgradeable(params.createMarketParams.collateral) : sUSD,
             contractsAddresses
         );
-
         _activeMarkets.add(address(srm));
         _activeMarketsPerUser[params.createMarketParams.user].add(address(srm));
-
         marketHasCreatedAtAttribute[address(srm)] = true;
         marketHasFeeAttribute[address(srm)] = true;
         emit MarketCreated(

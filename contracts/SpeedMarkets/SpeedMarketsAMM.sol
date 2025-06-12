@@ -41,6 +41,26 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     uint private constant ONE = 1e18;
     uint private constant MAX_APPROVAL = type(uint256).max;
 
+    /// ========== Custom Errors ==========
+    error MulticollateralOnrampDisabled();
+    error NotEnoughReceivedViaOnramp();
+    error SkewSlippageExceeded();
+    error RiskPerDirectionExceeded();
+    error RiskPerAssetExceeded();
+    error AssetNotSupported();
+    error InvalidBuyinAmount();
+    error InvalidStrikeTime();
+    error TimeTooFarIntoFuture();
+    error CanNotResolve();
+    error InvalidPrice();
+    error ResolverNotWhitelisted();
+    error OnlyCreatorAllowed();
+    error BonusTooHigh();
+    error InvalidWhitelistAddress();
+    error OnlyMarketOwner();
+    error EtherTransferFailed();
+    error MismatchedLengths();
+
     IERC20Upgradeable public sUSD;
 
     address public speedMarketMastercopy;
@@ -185,7 +205,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint64 strikeTime,
         IAddressManager.Addresses memory contractsAddresses
     ) internal returns (uint buyinAmount) {
-        require(multicollateralEnabled, "Multicollateral onramp not enabled");
+        if (!multicollateralEnabled) revert MulticollateralOnrampDisabled();
+
         uint amountBefore = sUSD.balanceOf(address(this));
 
         IMultiCollateralOnOffRamp iMultiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
@@ -206,7 +227,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         buyinAmount = (convertedAmount * ONE) / (ONE + safeBoxImpact + lpFeeForDeltaTime);
 
         uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
-        require(amountDiff >= buyinAmount, "not enough received via onramp");
+        if (amountDiff < buyinAmount) revert NotEnoughReceivedViaOnramp();
     }
 
     function _getSkewByAssetAndDirection(bytes32 _asset, SpeedMarket.Direction _direction) internal view returns (uint) {
@@ -223,7 +244,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint skewImpact
     ) internal returns (uint lpFeeWithSkew) {
         uint skew = _getSkewByAssetAndDirection(asset, direction);
-        require(skew <= skewImpact + skewSlippage, "Skew slippage exceeded");
+        if (skew > skewImpact + skewSlippage) revert SkewSlippageExceeded();
 
         SpeedMarket.Direction oppositeDirection = direction == SpeedMarket.Direction.Up
             ? SpeedMarket.Direction.Down
@@ -240,10 +261,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 buyinAmount -
                 currentRiskPerAssetAndDirection[asset][oppositeDirection];
             currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
-            require(
-                currentRiskPerAssetAndDirection[asset][direction] <= maxRiskPerAssetAndDirection[asset][direction],
-                "Risk per direction exceeded"
-            );
+            if (currentRiskPerAssetAndDirection[asset][direction] > maxRiskPerAssetAndDirection[asset][direction]) {
+                revert RiskPerDirectionExceeded();
+            }
         }
 
         // (LP fee by delta time) + (skew impact based on risk per direction and asset) - (discount as half of opposite skew)
@@ -258,7 +278,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             discount;
 
         currentRiskPerAsset[asset] += (buyinAmount * 2 - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE);
-        require(currentRiskPerAsset[asset] <= maxRiskPerAsset[asset], "Risk per asset exceeded");
+        if (currentRiskPerAsset[asset] > maxRiskPerAsset[asset]) {
+            revert RiskPerAssetExceeded();
+        }
     }
 
     function _handleReferrerAndSafeBox(
@@ -293,10 +315,19 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     function _createNewMarket(InternalCreateParams memory params, IAddressManager.Addresses memory contractsAddresses)
         internal
     {
-        require(supportedAsset[params.asset], "Asset is not supported");
-        require(params.buyinAmount >= minBuyinAmount && params.buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
-        require(params.strikeTime >= (block.timestamp + minimalTimeToMaturity), "Strike time not allowed");
-        require(params.strikeTime <= block.timestamp + maximalTimeToMaturity, "Time too far into the future");
+        if (!supportedAsset[params.asset]) revert AssetNotSupported();
+
+        if (params.buyinAmount < minBuyinAmount || params.buyinAmount > maxBuyinAmount) {
+            revert InvalidBuyinAmount();
+        }
+
+        if (params.strikeTime < block.timestamp + minimalTimeToMaturity) {
+            revert InvalidStrikeTime();
+        }
+
+        if (params.strikeTime > block.timestamp + maximalTimeToMaturity) {
+            revert TimeTooFarIntoFuture();
+        }
 
         uint lpFeeWithSkew = _handleRiskAndGetFee(
             params.asset,
@@ -379,9 +410,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         address collateral,
         bool toEth
     ) external payable nonReentrant notPaused {
-        require(multicollateralEnabled, "Multicollateral offramp not enabled");
+        if (!multicollateralEnabled) revert MulticollateralOnrampDisabled();
+
         address user = SpeedMarket(market).user();
-        require(msg.sender == user, "Only allowed from market owner");
+        if (msg.sender != user) revert OnlyMarketOwner();
+
         uint amountBefore = sUSD.balanceOf(user);
         _resolveMarket(market, priceUpdateData);
         uint amountDiff = sUSD.balanceOf(user) - amountBefore;
@@ -394,7 +427,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 uint offramped = iMultiCollateralOnOffRamp.offrampIntoEth(amountDiff);
                 address payable _to = payable(user);
                 bool sent = _to.send(offramped);
-                require(sent, "Failed to send Ether");
+                if (!sent) revert EtherTransferFailed();
             } else {
                 uint offramped = iMultiCollateralOnOffRamp.offramp(collateral, amountDiff);
                 IERC20Upgradeable(collateral).safeTransfer(user, offramped);
@@ -419,7 +452,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     function _resolveMarket(address market, bytes[] memory priceUpdateData) internal {
-        require(canResolveMarket(market), "Can not resolve");
+        if (!canResolveMarket(market)) revert CanNotResolve();
 
         IPyth iPyth = IPyth(addressManager.pyth());
         bytes32[] memory priceIds = new bytes32[](1);
@@ -433,7 +466,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         PythStructs.Price memory price = prices[0].price;
 
-        require(price.price > 0, "Invalid price");
+        if (price.price <= 0) revert InvalidPrice();
 
         _resolveMarketWithPrice(market, price.price);
     }
@@ -448,16 +481,19 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         external
         isAddressWhitelisted
     {
-        for (uint i = 0; i < markets.length; i++) {
-            if (canResolveMarket(markets[i])) {
-                _resolveMarketManually(markets[i], finalPrices[i]);
+        uint len = markets.length;
+        for (uint i; i < len; ++i) {
+            address market = markets[i];
+            if (canResolveMarket(market)) {
+                _resolveMarketManually(market, finalPrices[i]);
             }
         }
     }
 
     /// @notice owner can resolve market for a given market address with finalPrice
     function resolveMarketAsOwner(address _market, int64 _finalPrice) external onlyOwner {
-        require(canResolveMarket(_market), "Can not resolve");
+        if (!canResolveMarket(_market)) revert CanNotResolve();
+
         _resolveMarketWithPrice(_market, _finalPrice);
     }
 
@@ -466,7 +502,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         int64 strikePrice = SpeedMarket(_market).strikePrice();
         bool isUserWinner = (_finalPrice < strikePrice && direction == SpeedMarket.Direction.Down) ||
             (_finalPrice > strikePrice && direction == SpeedMarket.Direction.Up);
-        require(canResolveMarket(_market) && !isUserWinner, "Can not resolve manually");
+        if (!canResolveMarket(_market) || isUserWinner) revert CanNotResolve();
+
         _resolveMarketWithPrice(_market, _finalPrice);
     }
 
@@ -651,7 +688,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint[] calldata _lpFees,
         uint _lpFee
     ) external onlyOwner {
-        require(_timeThresholds.length == _lpFees.length, "Times and fees must have the same length");
+        if (_timeThresholds.length != _lpFees.length) revert MismatchedLengths();
+
         delete timeThresholdsForFees;
         delete lpFees;
         for (uint i = 0; i < _timeThresholds.length; i++) {
@@ -694,7 +732,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param _whitelistAddress address that needed to be whitelisted or removed from WL
     /// @param _flag adding or removing from whitelist (true: add, false: remove)
     function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
-        require(_whitelistAddress != address(0));
+        if (_whitelistAddress == address(0)) revert InvalidWhitelistAddress();
+
         whitelistedAddresses[_whitelistAddress] = _flag;
         emit AddedIntoWhitelist(_whitelistAddress, _flag);
     }
@@ -703,7 +742,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param _collateral collateral address
     /// @param _bonus bonus percentage (e.g., 0.02e18 for 2%)
     function setCollateralBonus(address _collateral, uint _bonus) external onlyOwner {
-        require(_bonus <= 0.1e18, "Bonus too high");
+        if (_bonus > 0.1e18) revert BonusTooHigh();
+
         bonusPerCollateral[_collateral] = _bonus;
         emit CollateralBonusSet(_collateral, _bonus);
     }
@@ -711,13 +751,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     //////////////////modifiers/////////////////
 
     modifier isAddressWhitelisted() {
-        require(whitelistedAddresses[msg.sender], "Resolver not whitelisted");
+        if (!whitelistedAddresses[msg.sender]) revert ResolverNotWhitelisted();
+
         _;
     }
 
     modifier onlyCreator() {
         address speedMarketsCreator = addressManager.getAddress("SpeedMarketsAMMCreator");
-        require(msg.sender == speedMarketsCreator, "only from Creator");
+        if (msg.sender != speedMarketsCreator) revert OnlyCreatorAllowed();
+
         _;
     }
 

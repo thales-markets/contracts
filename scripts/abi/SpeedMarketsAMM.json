@@ -1,5 +1,95 @@
 [
   {
+    "inputs": [],
+    "name": "AssetNotSupported",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "BonusTooHigh",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CanNotResolve",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EtherTransferFailed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidBuyinAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidPrice",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidStrikeTime",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidWhitelistAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MismatchedLengths",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MulticollateralOnrampDisabled",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotEnoughReceivedViaOnramp",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyCreatorAllowed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyMarketOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ResolverNotWhitelisted",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "RiskPerAssetExceeded",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "RiskPerDirectionExceeded",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SkewSlippageExceeded",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TimeTooFarIntoFuture",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {

@@ -91,6 +91,14 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         address referrer;
     }
 
+    struct InternalCreateMarketParams {
+        CreateMarketParams createMarketParams;
+        uint buyinAmount;
+        bool transferCollateral;
+    }
+
+    error CollateralUnsupported();
+
     receive() external payable {}
 
     function initialize(address _owner, IERC20Upgradeable _sUSD) external initializer {
@@ -101,23 +109,24 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyPending {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
+        address useCollateral = _params.collateral == address(0) ? address(sUSD) : _params.collateral;
+        bool isSupportedNativeCollateral = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).supportedNativeCollateral(
+            useCollateral
+        );
 
-        bool isDefaultCollateral = _params.collateral == address(0);
-        uint buyinAmount = isDefaultCollateral
+        uint buyinAmount = isSupportedNativeCollateral
             ? _params.collateralAmount
             : _getBuyinWithConversion(_params.user, _params.collateral, _params.collateralAmount, contractsAddresses);
-
-        _createNewMarket(
-            _params.user,
-            _params.asset,
-            _params.timeFrame,
-            _params.pythPrice,
-            _params.directions,
-            buyinAmount,
-            isDefaultCollateral,
-            _params.referrer,
-            contractsAddresses
-        );
+        if (!isSupportedNativeCollateral || buyinAmount == 0) {
+            revert CollateralUnsupported();
+        }
+        InternalCreateMarketParams memory internalParams = InternalCreateMarketParams({
+            createMarketParams: _params,
+            buyinAmount: buyinAmount,
+            transferCollateral: isSupportedNativeCollateral
+        });
+        internalParams.createMarketParams.collateral = useCollateral;
+        _createNewMarket(internalParams, contractsAddresses);
     }
 
     function _getBuyinWithConversion(
@@ -160,6 +169,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         address referrer,
         uint buyinAmount,
         uint safeBoxImpact,
+        address collateral,
         IAddressManager.Addresses memory contractsAddresses
     ) internal returns (uint referrerShare) {
         IReferrals referrals = IReferrals(contractsAddresses.referrals);
@@ -176,85 +186,123 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 uint referrerFeeByTier = referrals.getReferrerFee(newOrExistingReferrer);
                 if (referrerFeeByTier > 0) {
                     referrerShare = (buyinAmount * referrerFeeByTier) / ONE;
-                    sUSD.safeTransfer(newOrExistingReferrer, referrerShare);
+                    IERC20Upgradeable(collateral).safeTransfer(newOrExistingReferrer, referrerShare);
                     emit ReferrerPaid(newOrExistingReferrer, user, referrerShare, buyinAmount);
                 }
             }
         }
 
-        sUSD.safeTransfer(contractsAddresses.safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
+        IERC20Upgradeable(collateral).safeTransfer(
+            contractsAddresses.safeBox,
+            (buyinAmount * safeBoxImpact) / ONE - referrerShare
+        );
     }
 
     function _createNewMarket(
-        address user,
-        bytes32 asset,
-        uint64 timeFrame,
-        PythStructs.Price calldata pythPrice,
-        SpeedMarket.Direction[] calldata directions,
-        uint buyinAmount,
-        bool transferSusd,
-        address referrer,
+        InternalCreateMarketParams memory internalParams,
         IAddressManager.Addresses memory contractsAddresses
     ) internal {
         TempData memory tempData;
-        tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(asset);
+        tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(
+            internalParams.createMarketParams.asset
+        );
         require(tempData.speedAMMParams.supportedAsset, "Asset is not supported");
-        require(buyinAmount >= minBuyinAmount && buyinAmount <= maxBuyinAmount, "Wrong buy in amount");
-        require(timeFrame >= minTimeFrame && timeFrame <= maxTimeFrame, "Wrong time frame");
         require(
-            directions.length >= minChainedMarkets && directions.length <= maxChainedMarkets,
+            internalParams.buyinAmount >= minBuyinAmount && internalParams.buyinAmount <= maxBuyinAmount,
+            "Wrong buy in amount"
+        );
+        require(
+            internalParams.createMarketParams.timeFrame >= minTimeFrame &&
+                internalParams.createMarketParams.timeFrame <= maxTimeFrame,
+            "Wrong time frame"
+        );
+        require(
+            internalParams.createMarketParams.directions.length >= minChainedMarkets &&
+                internalParams.createMarketParams.directions.length <= maxChainedMarkets,
             "Wrong number of directions"
         );
 
-        tempData.payoutMultiplier = payoutMultipliers[uint8(directions.length) - minChainedMarkets];
-        tempData.payout = _getPayout(buyinAmount, uint8(directions.length), tempData.payoutMultiplier);
+        tempData.payoutMultiplier = payoutMultipliers[
+            uint8(internalParams.createMarketParams.directions.length) - minChainedMarkets
+        ];
+        tempData.payout = _getPayout(
+            internalParams.buyinAmount,
+            uint8(internalParams.createMarketParams.directions.length),
+            tempData.payoutMultiplier
+        );
         require(tempData.payout <= maxProfitPerIndividualMarket, "Profit too high");
 
-        currentRisk += (tempData.payout - buyinAmount);
+        currentRisk += (tempData.payout - internalParams.buyinAmount);
         require(currentRisk <= maxRisk, "Out of liquidity");
 
-        if (transferSusd) {
-            uint totalAmountToTransfer = (buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;
-            sUSD.safeTransferFrom(user, address(this), totalAmountToTransfer);
+        if (internalParams.transferCollateral) {
+            uint totalAmountToTransfer = (internalParams.buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;
+            IERC20Upgradeable(internalParams.createMarketParams.collateral).safeTransferFrom(
+                internalParams.createMarketParams.user,
+                address(this),
+                totalAmountToTransfer
+            );
         }
 
         ChainedSpeedMarket csm = ChainedSpeedMarket(Clones.clone(chainedSpeedMarketMastercopy));
         csm.initialize(
             ChainedSpeedMarket.InitParams(
                 address(this),
-                user,
-                asset,
-                timeFrame,
-                uint64(block.timestamp + timeFrame),
-                uint64(block.timestamp + timeFrame * directions.length), // strike time
-                pythPrice.price,
-                directions,
-                buyinAmount,
+                internalParams.createMarketParams.user,
+                internalParams.createMarketParams.asset,
+                internalParams.createMarketParams.timeFrame,
+                uint64(block.timestamp + internalParams.createMarketParams.timeFrame),
+                uint64(
+                    block.timestamp +
+                        internalParams.createMarketParams.timeFrame *
+                        internalParams.createMarketParams.directions.length
+                ), // strike time
+                internalParams.createMarketParams.pythPrice.price,
+                internalParams.createMarketParams.directions,
+                internalParams.buyinAmount,
                 tempData.speedAMMParams.safeBoxImpact,
-                tempData.payoutMultiplier
+                tempData.payoutMultiplier,
+                internalParams.createMarketParams.collateral
             )
         );
+        if (internalParams.transferCollateral) {
+            IERC20Upgradeable(internalParams.createMarketParams.collateral).safeTransfer(address(csm), tempData.payout);
+        } else {
+            sUSD.safeTransfer(address(csm), tempData.payout);
+        }
 
-        sUSD.safeTransfer(address(csm), tempData.payout);
-
-        _handleReferrerAndSafeBox(user, referrer, buyinAmount, tempData.speedAMMParams.safeBoxImpact, contractsAddresses);
+        _handleReferrerAndSafeBox(
+            internalParams.createMarketParams.user,
+            internalParams.createMarketParams.referrer,
+            internalParams.buyinAmount,
+            tempData.speedAMMParams.safeBoxImpact,
+            internalParams.transferCollateral ? internalParams.createMarketParams.collateral : address(sUSD),
+            contractsAddresses
+        );
 
         _activeMarkets.add(address(csm));
-        _activeMarketsPerUser[user].add(address(csm));
+        _activeMarketsPerUser[internalParams.createMarketParams.user].add(address(csm));
 
         if (contractsAddresses.stakingThales != address(0)) {
-            IStakingThales(contractsAddresses.stakingThales).updateVolume(user, buyinAmount);
+            IStakingThales(contractsAddresses.stakingThales).updateVolume(
+                internalParams.createMarketParams.user,
+                internalParams.buyinAmount
+            );
         }
 
         emit MarketCreated(
             address(csm),
-            user,
-            asset,
-            timeFrame,
-            uint64(block.timestamp + timeFrame * directions.length), // strike time
-            pythPrice.price,
-            directions,
-            buyinAmount,
+            internalParams.createMarketParams.user,
+            internalParams.createMarketParams.asset,
+            internalParams.createMarketParams.timeFrame,
+            uint64(
+                block.timestamp +
+                    internalParams.createMarketParams.timeFrame *
+                    internalParams.createMarketParams.directions.length
+            ), // strike time
+            internalParams.createMarketParams.pythPrice.price,
+            internalParams.createMarketParams.directions,
+            internalParams.buyinAmount,
             tempData.payoutMultiplier,
             tempData.speedAMMParams.safeBoxImpact
         );

@@ -63,4 +63,6 @@ interface ISpeedMarketsAMM {
     function getLengths(address _user) external view returns (uint[5] memory);
 
     function getParams(bytes32 _asset) external view returns (Params memory);
+
+    function supportedNativeCollateral(address _collateral) external view returns (bool);
 }

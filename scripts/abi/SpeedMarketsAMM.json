@@ -1629,7 +1629,7 @@
         "type": "uint256"
       }
     ],
-    "name": "setSupportedCollateralAndItsBonus",
+    "name": "setSupportedNativeCollateralAndItsBonus",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1700,7 +1700,7 @@
         "type": "address"
       }
     ],
-    "name": "supportedCollateral",
+    "name": "supportedNativeCollateral",
     "outputs": [
       {
         "internalType": "bool",

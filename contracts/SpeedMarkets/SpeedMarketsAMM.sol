@@ -113,7 +113,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     mapping(address => bool) public marketHasFeeAttribute;
 
-    mapping(address => bool) public supportedCollateral;
+    mapping(address => bool) public supportedNativeCollateral;
 
     /// @return The address of the address manager contract
     IAddressManager public addressManager;
@@ -160,16 +160,16 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         setOwner(_owner);
         initNonReentrant();
         sUSD = _sUSD;
-        supportedCollateral[address(_sUSD)] = true;
+        supportedNativeCollateral[address(_sUSD)] = true;
     }
 
     /// @notice create new market for a given delta/strike time
     /// @param _params parameters for creating market
     function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyCreator {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        bool isSupportedCollateral = supportedCollateral[_params.collateral] || _params.collateral == address(0);
+        bool isSupportedNativeCollateral = supportedNativeCollateral[_params.collateral] || _params.collateral == address(0);
         uint64 strikeTime = _params.strikeTime == 0 ? uint64(block.timestamp + _params.delta) : _params.strikeTime;
-        uint buyinAmount = isSupportedCollateral
+        uint buyinAmount = isSupportedNativeCollateral
             ? _params.collateralAmount
             : _getBuyinWithConversion(
                 _params.user,
@@ -183,7 +183,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             createMarketParams: _params,
             strikeTime: strikeTime,
             buyinAmount: buyinAmount,
-            transferCollateral: isSupportedCollateral
+            transferCollateral: isSupportedNativeCollateral
         });
         if (_params.collateral == address(0)) {
             internalParams.createMarketParams.collateral = address(sUSD);
@@ -741,7 +741,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice Set bonus percentage for a collateral
     /// @param _collateral collateral address
     /// @param _bonus bonus percentage (e.g., 0.02e18 for 2%)
-    function setSupportedCollateralAndItsBonus(
+    function setSupportedNativeCollateralAndItsBonus(
         address _collateral,
         bool _supported,
         uint _bonus
@@ -749,7 +749,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         if (_bonus > 0.1e18) revert BonusTooHigh();
 
         bonusPerCollateral[_collateral] = _bonus;
-        supportedCollateral[_collateral] = _supported;
+        supportedNativeCollateral[_collateral] = _supported;
         emit CollateralBonusSet(_collateral, _bonus);
     }
 

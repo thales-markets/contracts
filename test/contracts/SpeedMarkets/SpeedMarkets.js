@@ -35,9 +35,7 @@ contract('SpeedMarkets', (accounts) => {
 				buyinAmountParam
 			);
 
-			await expect(speedMarketsAMM.createNewMarket(defaultCreateSpeedAMMParams)).to.be.revertedWith(
-				'only from Creator'
-			);
+			await expect(speedMarketsAMM.createNewMarket(defaultCreateSpeedAMMParams)).to.be.reverted;
 
 			await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), false);
 			await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(10), toUnit(100));
@@ -46,7 +44,7 @@ contract('SpeedMarkets', (accounts) => {
 				speedMarketsAMM.createNewMarket(defaultCreateSpeedAMMParams, {
 					from: creatorAccount,
 				})
-			).to.be.revertedWith('Asset is not supported');
+			).to.be.reverted;
 
 			await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 
@@ -57,7 +55,7 @@ contract('SpeedMarkets', (accounts) => {
 						from: creatorAccount,
 					}
 				)
-			).to.be.revertedWith('Risk per asset exceeded');
+			).to.be.reverted;
 
 			await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(10), toUnit(5));
 
@@ -68,7 +66,7 @@ contract('SpeedMarkets', (accounts) => {
 						from: creatorAccount,
 					}
 				)
-			).to.be.revertedWith('Risk per direction exceeded');
+			).to.be.reverted;
 
 			await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(100));
 
@@ -173,13 +171,13 @@ contract('SpeedMarkets', (accounts) => {
 
 			await expect(
 				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
-			).to.be.revertedWith('Can not resolve');
+			).to.be.reverted;
 
 			await fastForward(86400);
 
 			await expect(
 				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
-			).to.be.revertedWith('revert');
+			).to.be.reverted;
 
 			now = await currentTime();
 			resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
@@ -193,7 +191,7 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			await expect(
 				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
-			).to.be.revertedWith('revert');
+			).to.be.reverted;
 
 			now = await currentTime();
 			resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(

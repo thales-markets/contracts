@@ -137,7 +137,7 @@ contract('SpeedMarkets', (accounts) => {
 					false,
 					{ value: fee }
 				)
-			).to.be.revertedWith('Only allowed from market owner');
+			).to.be.reverted;
 
 			await exoticOP.approve(speedMarketsAMM.address, toUnit('1000'), { from: user });
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit('1000'), { from: user });

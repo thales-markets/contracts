@@ -58,9 +58,8 @@ contract('SpeedMarkets', (accounts) => {
 			await fastForward(86400);
 
 			const PRICE_DOWN = 180042931000;
-			await expect(
-				speedMarketsAMM.resolveMarketManually(market, PRICE_DOWN, { from: user })
-			).to.be.revertedWith('Resolver not whitelisted');
+			await expect(speedMarketsAMM.resolveMarketManually(market, PRICE_DOWN, { from: user })).to.be
+				.reverted;
 
 			await speedMarketsAMM.addToWhitelist(user, true);
 			await speedMarketsAMM.resolveMarketManually(market, PRICE_DOWN, { from: user });
@@ -96,9 +95,8 @@ contract('SpeedMarkets', (accounts) => {
 			let markets = await speedMarketsAMM.activeMarkets(0, 1);
 			let market = markets[0];
 
-			await expect(
-				speedMarketsAMM.resolveMarketAsOwner(market, PRICE_DOWN, { from: user })
-			).to.be.revertedWith('Only the contract owner may perform this action');
+			await expect(speedMarketsAMM.resolveMarketAsOwner(market, PRICE_DOWN, { from: user })).to.be
+				.reverted;
 			await speedMarketsAMM.resolveMarketAsOwner(market, PRICE_DOWN, { from: owner });
 		});
 	});

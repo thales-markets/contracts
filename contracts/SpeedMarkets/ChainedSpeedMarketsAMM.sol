@@ -113,11 +113,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         bool isSupportedNativeCollateral = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).supportedNativeCollateral(
             useCollateral
         );
-
         uint buyinAmount = isSupportedNativeCollateral
             ? _params.collateralAmount
             : _getBuyinWithConversion(_params.user, _params.collateral, _params.collateralAmount, contractsAddresses);
-        if (!isSupportedNativeCollateral || buyinAmount == 0) {
+        if (buyinAmount == 0) {
             revert CollateralUnsupported();
         }
         InternalCreateMarketParams memory internalParams = InternalCreateMarketParams({
@@ -137,7 +136,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     ) internal returns (uint buyinAmount) {
         require(multicollateralEnabled, "Multicollateral onramp not enabled");
         uint amountBefore = sUSD.balanceOf(address(this));
-
         IMultiCollateralOnOffRamp multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
             contractsAddresses.multiCollateralOnOffRamp
         );
@@ -148,7 +146,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
         ISpeedMarketsAMM speedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
         buyinAmount = (convertedAmount * (ONE - speedMarketsAMM.safeBoxImpact())) / ONE;
-
         uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
         require(amountDiff >= buyinAmount, "not enough received via onramp");
     }
@@ -234,7 +231,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
         currentRisk += (tempData.payout - internalParams.buyinAmount);
         require(currentRisk <= maxRisk, "Out of liquidity");
-
         if (internalParams.transferCollateral) {
             uint totalAmountToTransfer = (internalParams.buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;
             IERC20Upgradeable(internalParams.createMarketParams.collateral).safeTransferFrom(

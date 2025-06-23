@@ -20,8 +20,6 @@ import "./SpeedMarket.sol";
 import "./SpeedMarketsAMM.sol";
 import "./ChainedSpeedMarketsAMM.sol";
 
-import "hardhat/console.sol";
-
 /// @title speed/chained markets prepared for creation with latest Pyth price
 contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     uint private constant ONE = 1e18;
@@ -168,7 +166,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                     )
                 )
             {
-                console.log("creator: createdMarket");
                 createdSize++;
             } catch Error(string memory reason) {
                 emit LogError(reason, pendingSpeedMarket);

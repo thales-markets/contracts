@@ -61,6 +61,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     error EtherTransferFailed();
     error MismatchedLengths();
     error CollateralNotSupported();
+    error InvalidOffRampCollateral();
 
     IERC20Upgradeable public sUSD;
 
@@ -152,6 +153,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         bool transferCollateral;
         uint64 strikeTime;
         uint buyinAmount;
+        address defaultCollateral;
     }
 
     receive() external payable {}
@@ -167,29 +169,68 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param _params parameters for creating market
     function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyCreator {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        bool isSupportedNativeCollateral = supportedNativeCollateral[_params.collateral] || _params.collateral == address(0);
+
+        // Calculate strike time: use provided strikeTime or current timestamp + delta
         uint64 strikeTime = _params.strikeTime == 0 ? uint64(block.timestamp + _params.delta) : _params.strikeTime;
-        uint buyinAmount = isSupportedNativeCollateral
-            ? _params.collateralAmount
-            : _getBuyinWithConversion(
+
+        // Determine collateral configuration
+        (bool isNativeCollateral, address defaultCollateral, uint buyinAmount) = _determineCollateralConfig(
+            _params,
+            strikeTime,
+            contractsAddresses
+        );
+
+        // Create internal parameters struct
+        InternalCreateParams memory internalParams = InternalCreateParams({
+            createMarketParams: _params,
+            strikeTime: strikeTime,
+            buyinAmount: buyinAmount,
+            transferCollateral: isNativeCollateral,
+            defaultCollateral: defaultCollateral
+        });
+
+        _createNewMarket(internalParams, contractsAddresses);
+    }
+
+    /// @notice Determines collateral configuration and calculates buyin amount
+    /// @param _params Market creation parameters
+    /// @param strikeTime Calculated strike time
+    /// @param contractsAddresses Contract addresses from address manager
+    /// @return isNativeCollateral Whether the collateral is natively supported
+    /// @return defaultCollateral The default collateral address to use
+    /// @return buyinAmount The calculated buyin amount
+    function _determineCollateralConfig(
+        CreateMarketParams calldata _params,
+        uint64 strikeTime,
+        IAddressManager.Addresses memory contractsAddresses
+    )
+        internal
+        returns (
+            bool isNativeCollateral,
+            address defaultCollateral,
+            uint buyinAmount
+        )
+    {
+        isNativeCollateral = supportedNativeCollateral[_params.collateral] || _params.collateral == address(0);
+        if (supportedNativeCollateral[_params.collateral] && _params.collateral != address(0)) {
+            defaultCollateral = _params.collateral;
+        } else {
+            defaultCollateral = address(sUSD);
+        }
+
+        // Calculate buyin amount based on collateral type
+        if (isNativeCollateral) {
+            buyinAmount = _params.collateralAmount;
+        } else {
+            // For external collaterals, convert through onramp
+            buyinAmount = _getBuyinWithConversion(
                 _params.user,
                 _params.collateral,
                 _params.collateralAmount,
                 strikeTime,
                 contractsAddresses
             );
-
-        InternalCreateParams memory internalParams = InternalCreateParams({
-            createMarketParams: _params,
-            strikeTime: strikeTime,
-            buyinAmount: buyinAmount,
-            transferCollateral: isSupportedNativeCollateral
-        });
-        if (_params.collateral == address(0)) {
-            internalParams.createMarketParams.collateral = address(sUSD);
         }
-
-        _createNewMarket(internalParams, contractsAddresses);
     }
 
     function _getBuyinWithConversion(
@@ -202,7 +243,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         if (!multicollateralEnabled) revert MulticollateralOnrampDisabled();
 
         uint amountBefore = sUSD.balanceOf(address(this));
-
         IMultiCollateralOnOffRamp iMultiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
             contractsAddresses.multiCollateralOnOffRamp
         );
@@ -272,8 +312,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             skew -
             discount;
 
-        payout = buyinAmount * 2;
-        // payout = buyinAmount * 2 + (buyinAmount * 2 * payoutBonus) / ONE;
+        // payout = buyinAmount * 2;
+        payout = buyinAmount * 2 + (buyinAmount * 2 * payoutBonus) / ONE;
         currentRiskPerAsset[asset] += (payout - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE);
         if (currentRiskPerAsset[asset] > maxRiskPerAsset[asset]) {
             revert RiskPerAssetExceeded();
@@ -306,7 +346,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 }
             }
         }
-
         collateral.safeTransfer(contractsAddresses.safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
     }
 
@@ -332,11 +371,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             params.buyinAmount,
             params.strikeTime,
             params.createMarketParams.skewImpact,
-            params.transferCollateral ? bonusPerCollateral[params.createMarketParams.collateral] : 0
+            params.transferCollateral ? bonusPerCollateral[params.defaultCollateral] : 0
         );
         if (params.transferCollateral) {
             uint totalAmountToTransfer = (params.buyinAmount * (ONE + safeBoxImpact + lpFeeWithSkew)) / ONE;
-            IERC20Upgradeable(params.createMarketParams.collateral).safeTransferFrom(
+            IERC20Upgradeable(params.defaultCollateral).safeTransferFrom(
                 params.createMarketParams.user,
                 address(this),
                 totalAmountToTransfer
@@ -353,13 +392,14 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 uint64(params.createMarketParams.pythPrice.publishTime),
                 params.createMarketParams.direction,
                 params.createMarketParams.collateral,
+                params.defaultCollateral,
                 params.buyinAmount,
                 safeBoxImpact,
                 lpFeeWithSkew
             )
         );
         if (params.transferCollateral) {
-            IERC20Upgradeable(params.createMarketParams.collateral).safeTransfer(address(srm), payout);
+            IERC20Upgradeable(params.defaultCollateral).safeTransfer(address(srm), payout);
         } else {
             sUSD.safeTransfer(address(srm), payout);
         }
@@ -367,7 +407,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             params.createMarketParams.user,
             params.createMarketParams.referrer,
             params.buyinAmount,
-            params.transferCollateral ? IERC20Upgradeable(params.createMarketParams.collateral) : sUSD,
+            IERC20Upgradeable(params.defaultCollateral),
             contractsAddresses
         );
         _activeMarkets.add(address(srm));
@@ -414,11 +454,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         address user = SpeedMarket(market).user();
         if (msg.sender != user) revert OnlyMarketOwner();
-
-        uint amountBefore = sUSD.balanceOf(user);
+        IERC20Upgradeable defaultCollateral = IERC20Upgradeable(SpeedMarket(market).defaultCollateral());
+        if (address(defaultCollateral) == address(0)) revert InvalidOffRampCollateral();
+        uint amountBefore = defaultCollateral.balanceOf(user);
         _resolveMarket(market, priceUpdateData);
-        uint amountDiff = sUSD.balanceOf(user) - amountBefore;
-        sUSD.safeTransferFrom(user, address(this), amountDiff);
+        uint amountDiff = defaultCollateral.balanceOf(user) - amountBefore;
+        defaultCollateral.safeTransferFrom(user, address(this), amountDiff);
         if (amountDiff > 0) {
             IMultiCollateralOnOffRamp iMultiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
                 addressManager.multiCollateralOnOffRamp()

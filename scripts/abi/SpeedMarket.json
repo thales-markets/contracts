@@ -78,6 +78,19 @@
   },
   {
     "inputs": [],
+    "name": "defaultCollateral",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "direction",
     "outputs": [
       {
@@ -144,6 +157,11 @@
           {
             "internalType": "address",
             "name": "_collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_defaultCollateral",
             "type": "address"
           },
           {

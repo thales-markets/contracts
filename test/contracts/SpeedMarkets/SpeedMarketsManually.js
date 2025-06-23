@@ -22,6 +22,7 @@ contract('SpeedMarkets', (accounts) => {
 				pythId,
 				initialSkewImapct,
 				now,
+				exoticUSD,
 			} = await speedMarketsInit(accounts);
 
 			const deltaTimeParam = 10 * 60 * 60; // 10 hours
@@ -78,10 +79,9 @@ contract('SpeedMarkets', (accounts) => {
 		});
 
 		it('resolve market as owner', async () => {
-			let { creatorAccount, speedMarketsAMM, initialSkewImapct, now } = await speedMarketsInit(
-				accounts
-			);
-
+			let { creatorAccount, speedMarketsAMM, initialSkewImapct, now, exoticUSD } =
+				await speedMarketsInit(accounts);
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticUSD.address, true, 0);
 			const deltaTimeParam = 10 * 60 * 60; // 10 hours
 
 			await speedMarketsAMM.createNewMarket(

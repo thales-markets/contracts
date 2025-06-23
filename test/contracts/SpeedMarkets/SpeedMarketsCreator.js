@@ -51,6 +51,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			speedMarketsAMMUtils.address,
 			ZERO_ADDRESS
 		);
+		// await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticUSD.address, true, 0);
 		await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, 60, 60);
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(500));
@@ -369,20 +370,21 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			);
 
 			const pendingSizeBefore = Number(await creator.getPendingSpeedMarketsSize());
-
+			await exoticUSD.approve(speedMarketsAMM.address, toUnit(0), { from: user });
+			console.log('exoticUSD address', exoticUSD.address);
 			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
 
 			let pendingSize = Number(await creator.getPendingSpeedMarketsSize());
 			assert.equal(pendingSize, pendingSizeBefore + 1, 'Should add 1 pending speed market!');
 
 			const activeMarketsSizeBefore = (await speedMarketsAMM.activeMarkets(0, 10)).length;
-
+			console.log('activeMarketsSizeBefore', activeMarketsSizeBefore);
 			// no approval
 			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
-
+			console.log('activeMarketsSizeAfter', (await speedMarketsAMM.activeMarkets(0, 10)).length);
 			pendingSize = await creator.getPendingSpeedMarketsSize();
 			assert.equal(pendingSize, 0, 'Should remove 1 pending speed market!');
 			let activeMarketsSize = (await speedMarketsAMM.activeMarkets(0, 10)).length;

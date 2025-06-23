@@ -31,6 +31,11 @@
   },
   {
     "inputs": [],
+    "name": "InvalidOffRampCollateral",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidPrice",
     "type": "error"
   },

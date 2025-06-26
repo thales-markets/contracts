@@ -605,5 +605,859 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const expectedPayout = toUnit(buyinAmount).mul(toBN(2));
 			assert.bnEqual(userBalanceAfter.sub(userBalanceBefore), expectedPayout);
 		});
+
+		it('Should handle explicit zero bonus setting correctly', async () => {
+			// First set a non-zero bonus
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0.05), // 5% bonus
+				{ from: owner }
+			);
+
+			// Verify bonus is set
+			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(exoticUSD.address), toUnit(0.05));
+
+			// Now explicitly set bonus to 0%
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0), // 0% bonus
+				{ from: owner }
+			);
+
+			// Verify bonus is now 0
+			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(exoticUSD.address), toUnit(0));
+
+			// Create and resolve a winning market to ensure 0% bonus is applied
+			const now = await currentTime();
+			const strikeTime = now + 2 * 60 * 60;
+			const buyinAmount = 10;
+
+			const skewImpact = 0;
+			const createParams = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				skewImpact,
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			const tx = await speedMarketsAMM.createNewMarket(createParams, { from: creatorAccount });
+			const marketAddress = tx.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			await fastForward(3 * 60 * 60);
+
+			const finalPrice = 1900; // Price goes up, user wins
+			const resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				ETH_PYTH_ID,
+				toBN(finalPrice * 1e8),
+				74093100,
+				-8,
+				toBN(finalPrice * 1e8),
+				74093100,
+				strikeTime
+			);
+
+			const userBalanceBefore = await exoticUSD.balanceOf(user);
+
+			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
+			await speedMarketsAMM.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+				from: owner,
+				value: fee,
+			});
+
+			const userBalanceAfter = await exoticUSD.balanceOf(user);
+
+			// With explicitly set 0% bonus, payout should be exactly 2x
+			const expectedPayout = toUnit(buyinAmount).mul(toBN(2));
+			assert.bnEqual(userBalanceAfter.sub(userBalanceBefore), expectedPayout);
+		});
+
+		it('Should correctly apply bonus with non-zero skew impact', async () => {
+			// Set 4% bonus for exoticUSD
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0.04), // 4% bonus
+				{ from: owner }
+			);
+
+			const now = await currentTime();
+			const strikeTime = now + 2 * 60 * 60;
+			const buyinAmount = 10;
+
+			// First create a few UP markets to create directional risk and skew
+			for (let i = 0; i < 3; i++) {
+				const createParams = getCreateSpeedAMMParams(
+					user,
+					'ETH',
+					strikeTime + i * 60, // Slightly different strike times
+					now,
+					buyinAmount,
+					0, // UP
+					0, // Initial markets with 0 skew
+					0,
+					exoticUSD.address,
+					ZERO_ADDRESS
+				);
+				await speedMarketsAMM.createNewMarket(createParams, { from: creatorAccount });
+			}
+
+			// Check current risk to calculate skew impact
+			const currentRiskUp = await speedMarketsAMM.currentRiskPerAssetAndDirection(ETH, 0);
+			const maxRiskUp = await speedMarketsAMM.maxRiskPerAssetAndDirection(ETH, 0);
+
+			// Calculate expected skew impact (should be non-zero due to existing UP markets)
+			// Skew impact = (currentRisk / maxRisk) * maxSkewImpact
+			const maxSkewImpact = await speedMarketsAMM.maxSkewImpact();
+			const expectedSkewImpact = currentRiskUp.mul(maxSkewImpact).div(maxRiskUp);
+
+			// Verify we have non-zero skew
+			assert.isTrue(expectedSkewImpact.gt(toBN(0)), 'Skew impact should be non-zero');
+
+			// Create market with the calculated skew impact
+			const createParams = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP direction (same as existing markets to maintain skew)
+				expectedSkewImpact, // Non-zero skew impact
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			const tx = await speedMarketsAMM.createNewMarket(createParams, { from: creatorAccount });
+			const marketAddress = tx.logs.find((log) => log.event === 'MarketCreated').args._market;
+			const SpeedMarket = artifacts.require('SpeedMarket');
+			const market = await SpeedMarket.at(marketAddress);
+
+			// Verify the market has skew impact in its LP fee
+			const lpFee = await market.lpFee();
+			const baseLpFee = await speedMarketsAMM.lpFee();
+			assert.isTrue(lpFee.gt(baseLpFee), 'LP fee should include skew impact');
+
+			// Fast forward and resolve as winner
+			await fastForward(3 * 60 * 60);
+
+			const finalPrice = 1900; // Price goes up, user wins
+			const resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				ETH_PYTH_ID,
+				toBN(finalPrice * 1e8),
+				74093100,
+				-8,
+				toBN(finalPrice * 1e8),
+				74093100,
+				strikeTime
+			);
+
+			const userBalanceBefore = await exoticUSD.balanceOf(user);
+
+			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
+			await speedMarketsAMM.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+				from: owner,
+				value: fee,
+			});
+
+			const userBalanceAfter = await exoticUSD.balanceOf(user);
+
+			// Bonus should still be applied correctly regardless of skew impact
+			// Payout = buyinAmount * 2 + (buyinAmount * 2 * 0.04) = 20.8
+			const expectedPayout = toUnit(buyinAmount)
+				.mul(toBN(2))
+				.add(toUnit(buyinAmount).mul(toBN(2)).mul(toUnit(0.04)).div(toUnit(1)));
+
+			assert.bnEqual(userBalanceAfter.sub(userBalanceBefore), expectedPayout);
+
+			// Verify user won and market is resolved
+			assert.equal(await market.resolved(), true);
+			assert.equal(await market.isUserWinner(), true);
+		});
+
+		it('Should correctly handle batch resolution with markets having different bonuses', async () => {
+			const now = await currentTime();
+			const strikeTime = now + 2 * 60 * 60;
+			const buyinAmount = 10;
+
+			// We'll track balances after market creation
+			let userBalanceBefore;
+			let user2BalanceBefore;
+
+			// Market 1: user with 5% bonus
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0.05), // 5% bonus
+				{ from: owner }
+			);
+
+			const createParams1 = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			const tx1 = await speedMarketsAMM.createNewMarket(createParams1, { from: creatorAccount });
+			const marketAddress1 = tx1.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			// Market 2: user with 3% bonus (change bonus)
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0.03), // 3% bonus
+				{ from: owner }
+			);
+
+			const createParams2 = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime, // Same strike time
+				now,
+				buyinAmount,
+				1, // DOWN
+				0,
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			const tx2 = await speedMarketsAMM.createNewMarket(createParams2, { from: creatorAccount });
+			const marketAddress2 = tx2.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			// Market 3: user2 with 0% bonus
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0), // 0% bonus
+				{ from: owner }
+			);
+
+			const createParams3 = getCreateSpeedAMMParams(
+				user2,
+				'ETH',
+				strikeTime, // Same strike time
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			const tx3 = await speedMarketsAMM.createNewMarket(createParams3, { from: creatorAccount });
+			const marketAddress3 = tx3.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			// Market 4: user2 with BTC and 7% bonus
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0.07), // 7% bonus
+				{ from: owner }
+			);
+
+			// Update BTC price feed before creating the market
+			const btcStrikePrice = 45000;
+			const btcPriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				BTC_PYTH_ID,
+				toBN(btcStrikePrice * 1e8),
+				74093100,
+				-8,
+				toBN(btcStrikePrice * 1e8),
+				74093100,
+				now
+			);
+
+			const btcFee = await mockPyth.getUpdateFee([btcPriceFeedUpdateData]);
+			await mockPyth.updatePriceFeeds([btcPriceFeedUpdateData], { value: btcFee });
+
+			const createParams4 = [
+				user2,
+				BTC,
+				strikeTime,
+				0, // deltaTime
+				{
+					price: btcStrikePrice * 1e8,
+					conf: 1742265769,
+					expo: -8,
+					publishTime: now,
+				},
+				1, // DOWN
+				exoticUSD.address,
+				toUnit(buyinAmount),
+				ZERO_ADDRESS,
+				0, // skewImpact
+			];
+
+			const tx4 = await speedMarketsAMM.createNewMarket(createParams4, { from: creatorAccount });
+			const marketAddress4 = tx4.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			// Track balances after all markets are created
+			userBalanceBefore = await exoticUSD.balanceOf(user);
+			user2BalanceBefore = await exoticUSD.balanceOf(user2);
+
+			// Fast forward to resolve
+			await fastForward(3 * 60 * 60);
+
+			// Create price feeds - all markets will win
+			const finalPriceETH = 1900; // ETH goes up (UP wins, DOWN loses)
+			const finalPriceBTC = 44000; // BTC goes down (DOWN wins)
+
+			const resolvePriceFeedUpdateDataETH = await mockPyth.createPriceFeedUpdateData(
+				ETH_PYTH_ID,
+				toBN(finalPriceETH * 1e8),
+				74093100,
+				-8,
+				toBN(finalPriceETH * 1e8),
+				74093100,
+				strikeTime // Use the same strike time for all
+			);
+
+			const resolvePriceFeedUpdateDataBTC = await mockPyth.createPriceFeedUpdateData(
+				BTC_PYTH_ID,
+				toBN(finalPriceBTC * 1e8),
+				74093100,
+				-8,
+				toBN(finalPriceBTC * 1e8),
+				74093100,
+				strikeTime
+			);
+
+			// Batch resolve all markets
+			const markets = [marketAddress1, marketAddress2, marketAddress3, marketAddress4];
+			const priceFeeds = [
+				resolvePriceFeedUpdateDataETH,
+				resolvePriceFeedUpdateDataETH,
+				resolvePriceFeedUpdateDataETH,
+				resolvePriceFeedUpdateDataBTC,
+			];
+
+			const fee = await mockPyth.getUpdateFee(priceFeeds);
+			await speedMarketsAMM.resolveMarketsBatch(markets, priceFeeds, {
+				from: owner,
+				value: fee,
+			});
+
+			// Check balances after batch resolution
+			const userBalanceAfter = await exoticUSD.balanceOf(user);
+			const user2BalanceAfter = await exoticUSD.balanceOf(user2);
+
+			// The bonus is determined at market creation time, not resolution time
+			// Market 1 was created with 5% bonus
+			// Market 2 was created with 3% bonus
+			// Market 3 was created with 0% bonus
+			// Market 4 was created with 7% bonus
+
+			// Calculate expected payouts
+			// Market 1: user wins with 5% bonus = 10 * 2 * 1.05 = 21
+			// Market 2: user loses (DOWN bet, price went UP) = 0
+			// Market 3: user2 wins with 0% bonus = 10 * 2 * 1.00 = 20
+			// Market 4: user2 wins with 7% bonus = 10 * 2 * 1.07 = 21.4
+
+			// Only market 1 wins for user
+			const expectedUserPayout = toUnit(21); // 10 * 2 * 1.05
+
+			// Markets 3 and 4 win for user2
+			const expectedUser2Payout = toUnit(20).add(toUnit(21.4)); // 20 + 21.4 = 41.4
+
+			assert.bnEqual(userBalanceAfter.sub(userBalanceBefore), expectedUserPayout);
+			assert.bnEqual(user2BalanceAfter.sub(user2BalanceBefore), expectedUser2Payout);
+
+			// Verify all markets are resolved
+			const SpeedMarket = artifacts.require('SpeedMarket');
+			for (let i = 0; i < markets.length; i++) {
+				const market = await SpeedMarket.at(markets[i]);
+				assert.equal(await market.resolved(), true, `Market ${i} should be resolved`);
+			}
+		});
+
+		it('Should handle invalid collateral address when setting bonus', async () => {
+			// Test with zero address - the contract allows this
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				ZERO_ADDRESS,
+				true,
+				toUnit(0.05), // 5% bonus
+				{ from: owner }
+			);
+
+			// Verify the bonus was set even for zero address
+			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(ZERO_ADDRESS), toUnit(0.05));
+			assert.equal(await speedMarketsAMM.supportedNativeCollateral(ZERO_ADDRESS), true);
+
+			// Test with non-contract address (random address)
+			const randomAddress = '0x1234567890123456789012345678901234567890';
+
+			// This should succeed but the collateral won't be functional
+			// The contract doesn't validate if the address is a valid ERC20 token
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				randomAddress,
+				true,
+				toUnit(0.05), // 5% bonus
+				{ from: owner }
+			);
+
+			// Verify the bonus was set
+			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(randomAddress), toUnit(0.05));
+			assert.equal(await speedMarketsAMM.supportedNativeCollateral(randomAddress), true);
+
+			// However, trying to create a market with this invalid collateral should fail
+			const now = await currentTime();
+			const strikeTime = now + 2 * 60 * 60;
+			const buyinAmount = 10;
+
+			const createParams = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				randomAddress, // Invalid collateral
+				ZERO_ADDRESS
+			);
+
+			// This should revert when trying to transfer from the invalid collateral
+			await expect(speedMarketsAMM.createNewMarket(createParams, { from: creatorAccount })).to.be
+				.reverted;
+
+			// When using ZERO_ADDRESS as collateral, it uses the default collateral path
+			// So it won't fail, but won't get bonus either
+			const createParamsZero = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				ZERO_ADDRESS, // Uses default collateral path
+				ZERO_ADDRESS
+			);
+
+			// This actually succeeds because ZERO_ADDRESS triggers the default collateral path
+			await speedMarketsAMM.createNewMarket(createParamsZero, { from: creatorAccount });
+		});
+
+		it('Should correctly handle changing bonus percentage for already configured collateral', async () => {
+			// Initially set 3% bonus for exoticUSD
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0.03), // 3% bonus
+				{ from: owner }
+			);
+
+			// Verify initial bonus
+			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(exoticUSD.address), toUnit(0.03));
+			assert.equal(await speedMarketsAMM.supportedNativeCollateral(exoticUSD.address), true);
+
+			// Create first market with 3% bonus
+			const now = await currentTime();
+			const strikeTime = now + 2 * 60 * 60;
+			const buyinAmount = 10;
+
+			const createParams1 = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			const tx1 = await speedMarketsAMM.createNewMarket(createParams1, { from: creatorAccount });
+			const market1Address = tx1.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			// Change bonus to 7% for the same collateral
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0.07), // 7% bonus
+				{ from: owner }
+			);
+
+			// Verify bonus was updated
+			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(exoticUSD.address), toUnit(0.07));
+			assert.equal(await speedMarketsAMM.supportedNativeCollateral(exoticUSD.address), true);
+
+			// Create second market with new 7% bonus
+			const createParams2 = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			const tx2 = await speedMarketsAMM.createNewMarket(createParams2, { from: creatorAccount });
+			const market2Address = tx2.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			// Change bonus again to 0%
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0), // 0% bonus
+				{ from: owner }
+			);
+
+			// Create third market with 0% bonus
+			const createParams3 = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			const tx3 = await speedMarketsAMM.createNewMarket(createParams3, { from: creatorAccount });
+			const market3Address = tx3.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			// Track balance before resolutions
+			const userBalanceBefore = await exoticUSD.balanceOf(user);
+
+			// Fast forward and resolve all markets
+			await fastForward(3 * 60 * 60);
+
+			const finalPrice = 1900; // Price goes up, all UP markets win
+			const resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				ETH_PYTH_ID,
+				toBN(finalPrice * 1e8),
+				74093100,
+				-8,
+				toBN(finalPrice * 1e8),
+				74093100,
+				strikeTime
+			);
+
+			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
+
+			// Resolve all markets
+			await speedMarketsAMM.resolveMarket(market1Address, [resolvePriceFeedUpdateData], {
+				from: owner,
+				value: fee,
+			});
+
+			await speedMarketsAMM.resolveMarket(market2Address, [resolvePriceFeedUpdateData], {
+				from: owner,
+				value: fee,
+			});
+
+			await speedMarketsAMM.resolveMarket(market3Address, [resolvePriceFeedUpdateData], {
+				from: owner,
+				value: fee,
+			});
+
+			const userBalanceAfter = await exoticUSD.balanceOf(user);
+
+			// Calculate expected payouts:
+			// Market 1: 10 * 2 * 1.03 = 20.6 (3% bonus)
+			// Market 2: 10 * 2 * 1.07 = 21.4 (7% bonus)
+			// Market 3: 10 * 2 * 1.00 = 20.0 (0% bonus)
+			// Total: 62.0
+			const expectedTotalPayout = toUnit(20.6).add(toUnit(21.4)).add(toUnit(20));
+
+			assert.bnEqual(userBalanceAfter.sub(userBalanceBefore), expectedTotalPayout);
+
+			// Also test disabling collateral support
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				false, // Disable support
+				toUnit(0.05), // Bonus is irrelevant when disabled
+				{ from: owner }
+			);
+
+			// Verify collateral is disabled but bonus value is still stored
+			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(exoticUSD.address), toUnit(0.05));
+			assert.equal(await speedMarketsAMM.supportedNativeCollateral(exoticUSD.address), false);
+
+			// Attempting to create market with disabled collateral should fail
+			const createParams4 = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime + 3600, // Different strike time
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			await expect(speedMarketsAMM.createNewMarket(createParams4, { from: creatorAccount })).to.be
+				.reverted;
+		});
+
+		it('Should handle multiple users creating simultaneous markets with different collaterals', async () => {
+			// Ensure users have enough of each collateral
+			// collateral2 and collateral3 are minted in beforeEach but we need to mint more
+			for (let i = 0; i < 5; i++) {
+				await collateral2.mintForUser(user);
+				await collateral3.mintForUser(user2);
+			}
+
+			// Fund the AMM with collateral2 and collateral3 for payouts
+			await collateral2.mintForUser(owner);
+			await collateral3.mintForUser(owner);
+			await collateral2.transfer(speedMarketsAMM.address, toUnit(1000), { from: owner });
+			await collateral3.transfer(speedMarketsAMM.address, toUnit(1000), { from: owner });
+
+			// Set up different bonuses for each collateral
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				exoticUSD.address,
+				true,
+				toUnit(0.03), // 3% bonus
+				{ from: owner }
+			);
+
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				collateral2.address,
+				true,
+				toUnit(0.05), // 5% bonus
+				{ from: owner }
+			);
+
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				collateral3.address,
+				true,
+				toUnit(0.08), // 8% bonus
+				{ from: owner }
+			);
+
+			const now = await currentTime();
+			const strikeTime = now + 2 * 60 * 60;
+			const buyinAmount = 10;
+
+			// Create multiple markets simultaneously with different users and collaterals
+
+			// User1 creates 2 markets with exoticUSD (3% bonus)
+			const createParams1a = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			const createParams1b = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				1, // DOWN
+				0,
+				0,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			// User2 (using user account) creates market with collateral2 (5% bonus)
+			const createParams2 = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				collateral2.address,
+				ZERO_ADDRESS
+			);
+
+			// User3 (using user2 account) creates 2 markets with collateral3 (8% bonus)
+			const createParams3a = getCreateSpeedAMMParams(
+				user2,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				0,
+				0,
+				collateral3.address,
+				ZERO_ADDRESS
+			);
+
+			// Update BTC price before creating the market
+			const btcStrikePrice = 45000;
+			const btcPriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+				BTC_PYTH_ID,
+				toBN(btcStrikePrice * 1e8),
+				74093100,
+				-8,
+				toBN(btcStrikePrice * 1e8),
+				74093100,
+				now
+			);
+
+			const btcFee = await mockPyth.getUpdateFee([btcPriceFeedUpdateData]);
+			await mockPyth.updatePriceFeeds([btcPriceFeedUpdateData], { value: btcFee });
+
+			const createParams3b = [
+				user2,
+				BTC,
+				strikeTime,
+				0, // deltaTime
+				{
+					price: btcStrikePrice * 1e8,
+					conf: 1742265769,
+					expo: -8,
+					publishTime: now,
+				},
+				1, // DOWN
+				collateral3.address,
+				toUnit(buyinAmount),
+				ZERO_ADDRESS,
+				0, // skewImpact
+			];
+
+			// Create all markets
+			const tx1a = await speedMarketsAMM.createNewMarket(createParams1a, { from: creatorAccount });
+			const market1a = tx1a.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			const tx1b = await speedMarketsAMM.createNewMarket(createParams1b, { from: creatorAccount });
+			const market1b = tx1b.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			const tx2 = await speedMarketsAMM.createNewMarket(createParams2, { from: creatorAccount });
+			const market2 = tx2.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			const tx3a = await speedMarketsAMM.createNewMarket(createParams3a, { from: creatorAccount });
+			const market3a = tx3a.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			const tx3b = await speedMarketsAMM.createNewMarket(createParams3b, { from: creatorAccount });
+			const market3b = tx3b.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			// Verify all markets were created
+			const activeMarkets = await speedMarketsAMM.activeMarkets(0, 10);
+			assert.isTrue(activeMarkets.length >= 5, 'Should have at least 5 active markets');
+
+			// Track balances before resolution
+			const userBalanceBeforeResolve = await exoticUSD.balanceOf(user);
+			const userCollateral2BeforeResolve = await collateral2.balanceOf(user);
+			const user2BalanceBeforeResolve = await collateral3.balanceOf(user2);
+
+			// Fast forward and resolve
+			await fastForward(3 * 60 * 60);
+
+			// ETH goes up (UP wins), BTC goes down (DOWN wins)
+			const finalPriceETH = 1900;
+			const finalPriceBTC = 44000;
+
+			const resolvePriceFeedETH = await mockPyth.createPriceFeedUpdateData(
+				ETH_PYTH_ID,
+				toBN(finalPriceETH * 1e8),
+				74093100,
+				-8,
+				toBN(finalPriceETH * 1e8),
+				74093100,
+				strikeTime
+			);
+
+			const resolvePriceFeedBTC = await mockPyth.createPriceFeedUpdateData(
+				BTC_PYTH_ID,
+				toBN(finalPriceBTC * 1e8),
+				74093100,
+				-8,
+				toBN(finalPriceBTC * 1e8),
+				74093100,
+				strikeTime
+			);
+
+			// Batch resolve all markets
+			const markets = [market1a, market1b, market2, market3a, market3b];
+			const priceFeeds = [
+				resolvePriceFeedETH, // market1a (ETH)
+				resolvePriceFeedETH, // market1b (ETH)
+				resolvePriceFeedETH, // market2 (ETH)
+				resolvePriceFeedETH, // market3a (ETH)
+				resolvePriceFeedBTC, // market3b (BTC)
+			];
+
+			const fee = await mockPyth.getUpdateFee(priceFeeds);
+			await speedMarketsAMM.resolveMarketsBatch(markets, priceFeeds, {
+				from: owner,
+				value: fee,
+			});
+
+			// Check final balances
+			const userBalanceAfter = await exoticUSD.balanceOf(user);
+			const userCollateral2After = await collateral2.balanceOf(user);
+			const user2BalanceAfter = await collateral3.balanceOf(user2);
+
+			// Calculate expected payouts:
+			// User1 market1a: WIN (UP) - 10 * 2 * 1.03 = 20.6 (exoticUSD)
+			// User1 market1b: LOSE (DOWN) - 0 (exoticUSD)
+			// User2 market2: WIN (UP) - 10 * 2 * 1.05 = 21 (collateral2)
+			// User3 market3a: WIN (UP) - 10 * 2 * 1.08 = 21.6 (collateral3)
+			// User3 market3b: BTC DOWN wins when price drops from 45000 to 44000 - 10 * 2 * 1.08 = 21.6 (collateral3)
+
+			const expectedUser1Payout = toUnit(20.6); // Only market1a wins
+			const expectedUser2Payout = toUnit(21); // market2 wins
+			const expectedUser3Payout = toUnit(43.2); // Both markets win: 21.6 * 2
+
+			assert.bnEqual(
+				userBalanceAfter.sub(userBalanceBeforeResolve),
+				expectedUser1Payout,
+				'User1 should receive correct payout in exoticUSD'
+			);
+
+			assert.bnEqual(
+				userCollateral2After.sub(userCollateral2BeforeResolve),
+				expectedUser2Payout,
+				'User2 should receive correct payout in collateral2'
+			);
+
+			assert.bnEqual(
+				user2BalanceAfter.sub(user2BalanceBeforeResolve),
+				expectedUser3Payout,
+				'User3 should receive correct payout in collateral3'
+			);
+
+			// Verify all markets are resolved
+			const SpeedMarket = artifacts.require('SpeedMarket');
+			for (let i = 0; i < markets.length; i++) {
+				const market = await SpeedMarket.at(markets[i]);
+				assert.equal(await market.resolved(), true, `Market ${i} should be resolved`);
+			}
+		});
 	});
 });

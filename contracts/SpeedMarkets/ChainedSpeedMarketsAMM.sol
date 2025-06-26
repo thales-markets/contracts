@@ -94,7 +94,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     struct InternalCreateMarketParams {
         CreateMarketParams createMarketParams;
         uint buyinAmount;
+        uint bonus;
         bool transferCollateral;
+        address defaultCollateral;
     }
 
     error CollateralUnsupported();
@@ -109,23 +111,63 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyPending {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        address useCollateral = _params.collateral == address(0) ? address(sUSD) : _params.collateral;
-        bool isSupportedNativeCollateral = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).supportedNativeCollateral(
-            useCollateral
+        // Determine collateral configuration
+        (bool isNativeCollateral, address defaultCollateral, uint buyinAmount, uint bonus) = _determineCollateralConfig(
+            _params,
+            contractsAddresses
         );
-        uint buyinAmount = isSupportedNativeCollateral
-            ? _params.collateralAmount
-            : _getBuyinWithConversion(_params.user, _params.collateral, _params.collateralAmount, contractsAddresses);
-        if (buyinAmount == 0) {
-            revert CollateralUnsupported();
-        }
         InternalCreateMarketParams memory internalParams = InternalCreateMarketParams({
             createMarketParams: _params,
             buyinAmount: buyinAmount,
-            transferCollateral: isSupportedNativeCollateral
+            bonus: bonus,
+            transferCollateral: isNativeCollateral,
+            defaultCollateral: defaultCollateral
         });
-        internalParams.createMarketParams.collateral = useCollateral;
+
         _createNewMarket(internalParams, contractsAddresses);
+    }
+
+    /// @notice Determines collateral configuration and calculates buyin amount
+    /// @param _params Market creation parameters
+    /// @param contractsAddresses Contract addresses from address manager
+    /// @return isNativeCollateral Whether the collateral is natively supported
+    /// @return defaultCollateral The default collateral address to use
+    /// @return buyinAmount The calculated buyin amount
+    function _determineCollateralConfig(
+        CreateMarketParams calldata _params,
+        IAddressManager.Addresses memory contractsAddresses
+    )
+        internal
+        returns (
+            bool isNativeCollateral,
+            address defaultCollateral,
+            uint buyinAmount,
+            uint bonus
+        )
+    {
+        bool isSupportedNativeCollateral = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).supportedNativeCollateral(
+            _params.collateral
+        );
+        isNativeCollateral = isSupportedNativeCollateral || _params.collateral == address(0);
+        if (isSupportedNativeCollateral && _params.collateral != address(0)) {
+            defaultCollateral = _params.collateral;
+        } else {
+            defaultCollateral = address(sUSD);
+        }
+        bonus = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).bonusPerCollateral(defaultCollateral);
+
+        // Calculate buyin amount based on collateral type
+        if (isNativeCollateral) {
+            buyinAmount = _params.collateralAmount;
+        } else {
+            // For external collaterals, convert through onramp
+            buyinAmount = _getBuyinWithConversion(
+                _params.user,
+                _params.collateral,
+                _params.collateralAmount,
+                contractsAddresses
+            );
+        }
     }
 
     function _getBuyinWithConversion(
@@ -227,13 +269,14 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             uint8(internalParams.createMarketParams.directions.length),
             tempData.payoutMultiplier
         );
+        tempData.payout = (tempData.payout * (ONE + internalParams.bonus)) / ONE;
         require(tempData.payout <= maxProfitPerIndividualMarket, "Profit too high");
 
         currentRisk += (tempData.payout - internalParams.buyinAmount);
         require(currentRisk <= maxRisk, "Out of liquidity");
         if (internalParams.transferCollateral) {
             uint totalAmountToTransfer = (internalParams.buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;
-            IERC20Upgradeable(internalParams.createMarketParams.collateral).safeTransferFrom(
+            IERC20Upgradeable(internalParams.defaultCollateral).safeTransferFrom(
                 internalParams.createMarketParams.user,
                 address(this),
                 totalAmountToTransfer
@@ -258,11 +301,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 internalParams.buyinAmount,
                 tempData.speedAMMParams.safeBoxImpact,
                 tempData.payoutMultiplier,
-                internalParams.createMarketParams.collateral
+                internalParams.createMarketParams.collateral,
+                internalParams.defaultCollateral
             )
         );
         if (internalParams.transferCollateral) {
-            IERC20Upgradeable(internalParams.createMarketParams.collateral).safeTransfer(address(csm), tempData.payout);
+            IERC20Upgradeable(internalParams.defaultCollateral).safeTransfer(address(csm), tempData.payout);
         } else {
             sUSD.safeTransfer(address(csm), tempData.payout);
         }
@@ -272,19 +316,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             internalParams.createMarketParams.referrer,
             internalParams.buyinAmount,
             tempData.speedAMMParams.safeBoxImpact,
-            internalParams.transferCollateral ? internalParams.createMarketParams.collateral : address(sUSD),
+            internalParams.defaultCollateral,
             contractsAddresses
         );
 
         _activeMarkets.add(address(csm));
         _activeMarketsPerUser[internalParams.createMarketParams.user].add(address(csm));
-
-        if (contractsAddresses.stakingThales != address(0)) {
-            IStakingThales(contractsAddresses.stakingThales).updateVolume(
-                internalParams.createMarketParams.user,
-                internalParams.buyinAmount
-            );
-        }
 
         emit MarketCreated(
             address(csm),
@@ -320,10 +357,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     ) external payable nonReentrant notPaused {
         address user = ChainedSpeedMarket(market).user();
         require(msg.sender == user, "Only allowed from market owner");
-        uint amountBefore = sUSD.balanceOf(user);
+        IERC20Upgradeable defaultCollateral = IERC20Upgradeable(ChainedSpeedMarket(market).defaultCollateral());
+        require(address(defaultCollateral) != address(0), "Invalid offramp collateral");
+        uint amountBefore = defaultCollateral.balanceOf(user);
         _resolveMarket(market, priceUpdateData);
-        uint amountDiff = sUSD.balanceOf(user) - amountBefore;
-        sUSD.safeTransferFrom(user, address(this), amountDiff);
+        uint amountDiff = defaultCollateral.balanceOf(user) - amountBefore;
+        defaultCollateral.safeTransferFrom(user, address(this), amountDiff);
         if (amountDiff > 0) {
             IMultiCollateralOnOffRamp multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
                 addressManager.multiCollateralOnOffRamp()

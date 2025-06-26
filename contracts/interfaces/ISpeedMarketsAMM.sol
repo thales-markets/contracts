@@ -65,4 +65,6 @@ interface ISpeedMarketsAMM {
     function getParams(bytes32 _asset) external view returns (Params memory);
 
     function supportedNativeCollateral(address _collateral) external view returns (bool);
+
+    function bonusPerCollateral(address _collateral) external view returns (uint);
 }

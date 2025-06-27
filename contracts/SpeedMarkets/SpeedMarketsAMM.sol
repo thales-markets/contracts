@@ -483,7 +483,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         nonReentrant
         notPaused
     {
-        for (uint i = 0; i < markets.length; i++) {
+        for (uint i; i < markets.length; ++i) {
             if (canResolveMarket(markets[i])) {
                 bytes[] memory subarray = new bytes[](1);
                 subarray[0] = priceUpdateData[i];
@@ -733,7 +733,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         delete timeThresholdsForFees;
         delete lpFees;
-        for (uint i = 0; i < _timeThresholds.length; i++) {
+        for (uint i; i < _timeThresholds.length; ++i) {
             timeThresholdsForFees.push(_timeThresholds[i]);
             lpFees.push(_lpFees[i]);
         }

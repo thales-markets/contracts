@@ -38,6 +38,23 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     uint private constant ONE = 1e18;
     uint private constant MAX_APPROVAL = type(uint256).max;
 
+    error MulticollateralOnrampDisabled();
+    error NotEnoughReceivedViaOnramp();
+    error AssetNotSupported();
+    error InvalidBuyinAmount();
+    error InvalidTimeFrame();
+    error InvalidNumberOfDirections();
+    error ProfitTooHigh();
+    error OutOfLiquidity();
+    error CanNotResolve();
+    error InvalidPrice();
+    error ResolverNotWhitelisted();
+    error OnlyCreatorAllowed();
+    error OnlyMarketOwner();
+    error EtherTransferFailed();
+    error InvalidOffRampCollateral();
+    error MinChainedMarketsError();
+
     IERC20Upgradeable public sUSD;
 
     AddressSetLib.AddressSet internal _activeMarkets;
@@ -98,8 +115,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         bool transferCollateral;
         address defaultCollateral;
     }
-
-    error CollateralUnsupported();
 
     receive() external payable {}
 
@@ -176,7 +191,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint collateralAmount,
         IAddressManager.Addresses memory contractsAddresses
     ) internal returns (uint buyinAmount) {
-        require(multicollateralEnabled, "Multicollateral onramp not enabled");
+        if (!multicollateralEnabled) revert MulticollateralOnrampDisabled();
         uint amountBefore = sUSD.balanceOf(address(this));
         IMultiCollateralOnOffRamp multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
             contractsAddresses.multiCollateralOnOffRamp
@@ -189,7 +204,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         ISpeedMarketsAMM speedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
         buyinAmount = (convertedAmount * (ONE - speedMarketsAMM.safeBoxImpact())) / ONE;
         uint amountDiff = sUSD.balanceOf(address(this)) - amountBefore;
-        require(amountDiff >= buyinAmount, "not enough received via onramp");
+        if (amountDiff < buyinAmount) revert NotEnoughReceivedViaOnramp();
     }
 
     function _getPayout(
@@ -198,7 +213,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint _payoutMultiplier
     ) internal pure returns (uint _payout) {
         _payout = _buyinAmount;
-        for (uint8 i = 0; i < _numOfDirections; i++) {
+        for (uint8 i; i < _numOfDirections; ++i) {
             _payout = (_payout * _payoutMultiplier) / ONE;
         }
     }
@@ -245,21 +260,22 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(
             internalParams.createMarketParams.asset
         );
-        require(tempData.speedAMMParams.supportedAsset, "Asset is not supported");
-        require(
-            internalParams.buyinAmount >= minBuyinAmount && internalParams.buyinAmount <= maxBuyinAmount,
-            "Wrong buy in amount"
-        );
-        require(
-            internalParams.createMarketParams.timeFrame >= minTimeFrame &&
-                internalParams.createMarketParams.timeFrame <= maxTimeFrame,
-            "Wrong time frame"
-        );
-        require(
-            internalParams.createMarketParams.directions.length >= minChainedMarkets &&
-                internalParams.createMarketParams.directions.length <= maxChainedMarkets,
-            "Wrong number of directions"
-        );
+        if (!tempData.speedAMMParams.supportedAsset) revert AssetNotSupported();
+        if (internalParams.buyinAmount < minBuyinAmount || internalParams.buyinAmount > maxBuyinAmount) {
+            revert InvalidBuyinAmount();
+        }
+        if (
+            internalParams.createMarketParams.timeFrame < minTimeFrame ||
+            internalParams.createMarketParams.timeFrame > maxTimeFrame
+        ) {
+            revert InvalidTimeFrame();
+        }
+        if (
+            internalParams.createMarketParams.directions.length < minChainedMarkets ||
+            internalParams.createMarketParams.directions.length > maxChainedMarkets
+        ) {
+            revert InvalidNumberOfDirections();
+        }
 
         tempData.payoutMultiplier = payoutMultipliers[
             uint8(internalParams.createMarketParams.directions.length) - minChainedMarkets
@@ -270,10 +286,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             tempData.payoutMultiplier
         );
         tempData.payout = (tempData.payout * (ONE + internalParams.bonus)) / ONE;
-        require(tempData.payout <= maxProfitPerIndividualMarket, "Profit too high");
+        if (tempData.payout > maxProfitPerIndividualMarket) revert ProfitTooHigh();
 
         currentRisk += (tempData.payout - internalParams.buyinAmount);
-        require(currentRisk <= maxRisk, "Out of liquidity");
+        if (currentRisk > maxRisk) revert OutOfLiquidity();
         if (internalParams.transferCollateral) {
             uint totalAmountToTransfer = (internalParams.buyinAmount * (ONE + tempData.speedAMMParams.safeBoxImpact)) / ONE;
             IERC20Upgradeable(internalParams.defaultCollateral).safeTransferFrom(
@@ -356,9 +372,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         bool toEth
     ) external payable nonReentrant notPaused {
         address user = ChainedSpeedMarket(market).user();
-        require(msg.sender == user, "Only allowed from market owner");
+        if (msg.sender != user) revert OnlyMarketOwner();
         IERC20Upgradeable defaultCollateral = IERC20Upgradeable(ChainedSpeedMarket(market).defaultCollateral());
-        require(address(defaultCollateral) != address(0), "Invalid offramp collateral");
+        if (address(defaultCollateral) == address(0)) revert InvalidOffRampCollateral();
         uint amountBefore = defaultCollateral.balanceOf(user);
         _resolveMarket(market, priceUpdateData);
         uint amountDiff = defaultCollateral.balanceOf(user) - amountBefore;
@@ -371,7 +387,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 uint offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
                 address payable _to = payable(user);
                 bool sent = _to.send(offramped);
-                require(sent, "Failed to send Ether");
+                if (!sent) revert EtherTransferFailed();
             } else {
                 uint offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
                 IERC20Upgradeable(collateral).safeTransfer(user, offramped);
@@ -386,7 +402,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         nonReentrant
         notPaused
     {
-        for (uint i = 0; i < markets.length; i++) {
+        for (uint i; i < markets.length; ++i) {
             if (canResolveMarket(markets[i])) {
                 _resolveMarket(markets[i], priceUpdateData[i]);
             }
@@ -394,7 +410,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     function _resolveMarket(address market, bytes[][] memory priceUpdateData) internal {
-        require(canResolveMarket(market), "Can not resolve");
+        if (!canResolveMarket(market)) revert CanNotResolve();
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
         ISpeedMarketsAMM speedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
@@ -404,7 +420,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
         int64[] memory prices = new int64[](priceUpdateData.length);
         uint64 strikeTimePerDirection;
-        for (uint i = 0; i < priceUpdateData.length; i++) {
+        for (uint i; i < priceUpdateData.length; ++i) {
             strikeTimePerDirection =
                 ChainedSpeedMarket(market).initialStrikeTime() +
                 uint64(i * ChainedSpeedMarket(market).timeFrame());
@@ -420,7 +436,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             );
 
             PythStructs.Price memory price = pricesPerDirection[0].price;
-            require(price.price > 0, "invalid price");
+            if (price.price <= 0) revert InvalidPrice();
             prices[i] = price.price;
         }
 
@@ -437,7 +453,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         external
         isAddressWhitelisted
     {
-        for (uint i = 0; i < markets.length; i++) {
+        for (uint i; i < markets.length; ++i) {
             if (canResolveMarket(markets[i])) {
                 _resolveMarketManually(markets[i], finalPrices[i]);
             }
@@ -445,13 +461,13 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     function _resolveMarketManually(address _market, int64[] calldata _finalPrices) internal {
-        require(canResolveMarket(_market), "Can not resolve");
+        if (!canResolveMarket(_market)) revert CanNotResolve();
         _resolveMarketWithPrices(_market, _finalPrices, true);
     }
 
     /// @notice owner can resolve market for a given market address with finalPrices
     function resolveMarketAsOwner(address _market, int64[] calldata _finalPrices) external onlyOwner {
-        require(canResolveMarket(_market), "Can not resolve");
+        if (!canResolveMarket(_market)) revert CanNotResolve();
         _resolveMarketWithPrices(_market, _finalPrices, false);
     }
 
@@ -571,7 +587,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         uint _maxRisk,
         uint[] calldata _payoutMultipliers
     ) external onlyOwner {
-        require(_minChainedMarkets > 1, "min 2 chained markets");
+        if (_minChainedMarkets <= 1) revert MinChainedMarketsError();
         minTimeFrame = _minTimeFrame;
         maxTimeFrame = _maxTimeFrame;
         minChainedMarkets = _minChainedMarkets;
@@ -621,13 +637,13 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     modifier isAddressWhitelisted() {
         ISpeedMarketsAMM speedMarketsAMM = ISpeedMarketsAMM(addressManager.speedMarketsAMM());
-        require(speedMarketsAMM.whitelistedAddresses(msg.sender), "Resolver not whitelisted");
+        if (!speedMarketsAMM.whitelistedAddresses(msg.sender)) revert ResolverNotWhitelisted();
         _;
     }
 
     modifier onlyPending() {
         address speedMarketsCreator = addressManager.getAddress("SpeedMarketsAMMCreator");
-        require(msg.sender == speedMarketsCreator, "only from Creator");
+        if (msg.sender != speedMarketsCreator) revert OnlyCreatorAllowed();
         _;
     }
 

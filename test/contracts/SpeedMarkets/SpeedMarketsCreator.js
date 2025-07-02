@@ -109,6 +109,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		// -------------------------- Chained Speed Markets --------------------------
 		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
 		chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
+
 		await chainedSpeedMarketsAMM.initialize(owner, exoticUSD.address);
 
 		await exoticUSD.transfer(chainedSpeedMarketsAMM.address, toUnit(5000), { from: owner });
@@ -139,6 +140,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		// -------------------------- Creator of Speed/Chained Markets --------------------------
 		const Creator = artifacts.require('SpeedMarketsAMMCreator');
 		creator = await Creator.new();
+		let MockFreeBetsHolder = artifacts.require('MockFreeBetsHolder');
+		let mockFreeBetsHolder = await MockFreeBetsHolder.new(creator.address);
 
 		await creator.initialize(owner, addressManager.address);
 		await creator.setAddressManager(addressManager.address);
@@ -146,6 +149,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		await creator.addToWhitelist(user, true);
 
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creator.address);
+		await addressManager.setAddressInAddressBook('FreeBetsHolder', mockFreeBetsHolder.address);
 	});
 
 	describe('Test creator of speed markets', () => {

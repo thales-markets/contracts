@@ -1,5 +1,21 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_freeBetsHolder",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -30,7 +46,7 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum SpeedMarket.Direction[]",
+            "internalType": "enum MockSpeedMarketsAMMCreator.Direction[]",
             "name": "directions",
             "type": "uint8[]"
           },
@@ -56,7 +72,7 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
+        "internalType": "struct MockSpeedMarketsAMMCreator.PendingChainedSpeedMarket",
         "name": "_pendingChainedSpeedMarket",
         "type": "tuple"
       }
@@ -100,7 +116,7 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum SpeedMarket.Direction",
+            "internalType": "enum MockSpeedMarketsAMMCreator.Direction",
             "name": "direction",
             "type": "uint8"
           },
@@ -131,7 +147,7 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
+        "internalType": "struct MockSpeedMarketsAMMCreator.PendingSpeedMarket",
         "name": "_pendingSpeedMarket",
         "type": "tuple"
       }
@@ -182,303 +198,24 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "_errorMessage",
-        "type": "string"
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
       },
       {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint64",
-            "name": "timeFrame",
-            "type": "uint64"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePrice",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePriceSlippage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum SpeedMarket.Direction[]",
-            "name": "directions",
-            "type": "uint8[]"
-          },
-          {
-            "internalType": "address",
-            "name": "collateral",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "referrer",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "createdAt",
-            "type": "uint256"
-          }
-        ],
         "indexed": false,
-        "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
-        "name": "_pendingChainedSpeedMarket",
-        "type": "tuple"
-      }
-    ],
-    "name": "LogChainedError",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes",
-        "name": "_data",
-        "type": "bytes"
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
       },
       {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint64",
-            "name": "timeFrame",
-            "type": "uint64"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePrice",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePriceSlippage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum SpeedMarket.Direction[]",
-            "name": "directions",
-            "type": "uint8[]"
-          },
-          {
-            "internalType": "address",
-            "name": "collateral",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "referrer",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "createdAt",
-            "type": "uint256"
-          }
-        ],
         "indexed": false,
-        "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
-        "name": "_pendingChainedSpeedMarket",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "buyinAmount",
+        "type": "uint256"
       }
     ],
-    "name": "LogChainedErrorData",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "_errorMessage",
-        "type": "string"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint64",
-            "name": "strikeTime",
-            "type": "uint64"
-          },
-          {
-            "internalType": "uint64",
-            "name": "delta",
-            "type": "uint64"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePrice",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePriceSlippage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum SpeedMarket.Direction",
-            "name": "direction",
-            "type": "uint8"
-          },
-          {
-            "internalType": "address",
-            "name": "collateral",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "referrer",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "skewImpact",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "createdAt",
-            "type": "uint256"
-          }
-        ],
-        "indexed": false,
-        "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
-        "name": "_pendingSpeedMarket",
-        "type": "tuple"
-      }
-    ],
-    "name": "LogError",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes",
-        "name": "_data",
-        "type": "bytes"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint64",
-            "name": "strikeTime",
-            "type": "uint64"
-          },
-          {
-            "internalType": "uint64",
-            "name": "delta",
-            "type": "uint64"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePrice",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePriceSlippage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum SpeedMarket.Direction",
-            "name": "direction",
-            "type": "uint8"
-          },
-          {
-            "internalType": "address",
-            "name": "collateral",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "referrer",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "skewImpact",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "createdAt",
-            "type": "uint256"
-          }
-        ],
-        "indexed": false,
-        "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
-        "name": "_pendingSpeedMarket",
-        "type": "tuple"
-      }
-    ],
-    "name": "LogErrorData",
+    "name": "MockChainedSpeedMarketCreated",
     "type": "event"
   },
   {
@@ -487,17 +224,23 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "oldOwner",
+        "name": "user",
         "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "buyinAmount",
+        "type": "uint256"
       }
     ],
-    "name": "OwnerChanged",
+    "name": "MockSpeedMarketCreated",
     "type": "event"
   },
   {
@@ -506,37 +249,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "newOwner",
+        "name": "_freeBetsHolder",
         "type": "address"
       }
     ],
-    "name": "OwnerNominated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "isPaused",
-        "type": "bool"
-      }
-    ],
-    "name": "PauseChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_addressManager",
-        "type": "address"
-      }
-    ],
-    "name": "SetAddressManager",
+    "name": "SetFreeBetsHolder",
     "type": "event"
   },
   {
@@ -553,13 +270,6 @@
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "acceptOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "components": [
@@ -584,7 +294,7 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum SpeedMarket.Direction[]",
+            "internalType": "enum MockSpeedMarketsAMMCreator.Direction[]",
             "name": "directions",
             "type": "uint8[]"
           },
@@ -604,7 +314,7 @@
             "type": "address"
           }
         ],
-        "internalType": "struct SpeedMarketsAMMCreator.ChainedSpeedMarketParams",
+        "internalType": "struct MockSpeedMarketsAMMCreator.ChainedSpeedMarketParams",
         "name": "_params",
         "type": "tuple"
       }
@@ -650,7 +360,7 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum SpeedMarket.Direction",
+            "internalType": "enum MockSpeedMarketsAMMCreator.Direction",
             "name": "direction",
             "type": "uint8"
           },
@@ -675,7 +385,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct SpeedMarketsAMMCreator.SpeedMarketParams",
+        "internalType": "struct MockSpeedMarketsAMMCreator.SpeedMarketParams",
         "name": "_params",
         "type": "tuple"
       }
@@ -710,19 +420,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "addressManager",
-    "outputs": [
-      {
-        "internalType": "contract IAddressManager",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "components": [
@@ -747,7 +444,7 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum SpeedMarket.Direction[]",
+            "internalType": "enum MockSpeedMarketsAMMCreator.Direction[]",
             "name": "directions",
             "type": "uint8[]"
           },
@@ -767,7 +464,7 @@
             "type": "address"
           }
         ],
-        "internalType": "struct SpeedMarketsAMMCreator.ChainedSpeedMarketParams",
+        "internalType": "struct MockSpeedMarketsAMMCreator.ChainedSpeedMarketParams",
         "name": "_chainedMarketParams",
         "type": "tuple"
       },
@@ -838,7 +535,7 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum SpeedMarket.Direction",
+            "internalType": "enum MockSpeedMarketsAMMCreator.Direction",
             "name": "direction",
             "type": "uint8"
           },
@@ -863,7 +560,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct SpeedMarketsAMMCreator.SpeedMarketParams",
+        "internalType": "struct MockSpeedMarketsAMMCreator.SpeedMarketParams",
         "name": "_speedMarketParams",
         "type": "tuple"
       },
@@ -876,6 +573,19 @@
     "name": "createSpeedMarket",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "freeBetsHolder",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -906,76 +616,12 @@
   },
   {
     "inputs": [],
-    "name": "initNonReentrant",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_addressManager",
-        "type": "address"
-      }
-    ],
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "lastPauseTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "maxCreationDelay",
     "outputs": [
       {
         "internalType": "uint64",
         "name": "",
         "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      }
-    ],
-    "name": "nominateNewOwner",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "nominatedOwner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -989,19 +635,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "paused",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1107,7 +740,7 @@
         "type": "uint256"
       },
       {
-        "internalType": "enum SpeedMarket.Direction",
+        "internalType": "enum MockSpeedMarketsAMMCreator.Direction",
         "name": "direction",
         "type": "uint8"
       },
@@ -1163,11 +796,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_addressManager",
+        "name": "_freeBetsHolder",
         "type": "address"
       }
     ],
-    "name": "setAddressManager",
+    "name": "setFreeBetsHolder",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1181,45 +814,6 @@
       }
     ],
     "name": "setMaxCreationDelay",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      }
-    ],
-    "name": "setOwner",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "_paused",
-        "type": "bool"
-      }
-    ],
-    "name": "setPaused",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "proxyAddress",
-        "type": "address"
-      }
-    ],
-    "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

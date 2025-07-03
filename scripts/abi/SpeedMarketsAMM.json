@@ -805,7 +805,13 @@
       }
     ],
     "name": "createNewMarket",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "marketAddress",
+        "type": "address"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },

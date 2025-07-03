@@ -189,11 +189,13 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                         pendingSpeedMarket.skewImpact
                     )
                 )
-            {
-                if (freeBetsHolder != address(0) && pendingSpeedMarket.user == freeBetsHolder) {
+            returns (address speedMarketAddress) {
+                if (
+                    speedMarketAddress != address(0) &&
+                    freeBetsHolder != address(0) &&
+                    pendingSpeedMarket.user == freeBetsHolder
+                ) {
                     bytes32 requestId = keccak256(abi.encode(pendingSpeedMarket));
-                    // TODO: get the address of the speed market
-                    address speedMarketAddress = address(0);
                     IFreeBetsHolder(freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
                         requestId,
                         speedMarketAddress,
@@ -343,11 +345,9 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                         pendingChainedSpeedMarket.referrer
                     )
                 )
-            {
-                if (pendingChainedSpeedMarket.user == freeBetsHolder) {
+            returns (address chainedSpeedMarketAddress) {
+                if (chainedSpeedMarketAddress != address(0) && pendingChainedSpeedMarket.user == freeBetsHolder) {
                     bytes32 requestId = keccak256(abi.encode(pendingChainedSpeedMarket));
-                    // TODO: get the address of the speed market
-                    address chainedSpeedMarketAddress = address(0);
                     IFreeBetsHolder(freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
                         requestId,
                         chainedSpeedMarketAddress,

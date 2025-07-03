@@ -124,7 +124,13 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         sUSD = _sUSD;
     }
 
-    function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyPending {
+    function createNewMarket(CreateMarketParams calldata _params)
+        external
+        nonReentrant
+        notPaused
+        onlyPending
+        returns (address marketAddress)
+    {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
         // Determine collateral configuration
         (bool isNativeCollateral, address defaultCollateral, uint buyinAmount, uint bonus) = _determineCollateralConfig(
@@ -139,7 +145,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             defaultCollateral: defaultCollateral
         });
 
-        _createNewMarket(internalParams, contractsAddresses);
+        marketAddress = _createNewMarket(internalParams, contractsAddresses);
     }
 
     /// @notice Determines collateral configuration and calculates buyin amount
@@ -255,7 +261,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     function _createNewMarket(
         InternalCreateMarketParams memory internalParams,
         IAddressManager.Addresses memory contractsAddresses
-    ) internal {
+    ) internal returns (address marketAddress) {
         TempData memory tempData;
         tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(
             internalParams.createMarketParams.asset
@@ -321,6 +327,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 internalParams.defaultCollateral
             )
         );
+        marketAddress = address(csm);
         if (internalParams.transferCollateral) {
             IERC20Upgradeable(internalParams.defaultCollateral).safeTransfer(address(csm), tempData.payout);
         } else {

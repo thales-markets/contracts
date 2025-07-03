@@ -167,7 +167,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     /// @notice create new market for a given delta/strike time
     /// @param _params parameters for creating market
-    function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyCreator {
+    function createNewMarket(CreateMarketParams calldata _params)
+        external
+        nonReentrant
+        notPaused
+        onlyCreator
+        returns (address marketAddress)
+    {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
 
         // Calculate strike time: use provided strikeTime or current timestamp + delta
@@ -189,7 +195,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             defaultCollateral: defaultCollateral
         });
 
-        _createNewMarket(internalParams, contractsAddresses);
+        marketAddress = _createNewMarket(internalParams, contractsAddresses);
     }
 
     /// @notice Determines collateral configuration and calculates buyin amount
@@ -351,6 +357,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     function _createNewMarket(InternalCreateParams memory params, IAddressManager.Addresses memory contractsAddresses)
         internal
+        returns (address marketAddress)
     {
         if (!supportedAsset[params.createMarketParams.asset]) revert AssetNotSupported();
 
@@ -398,6 +405,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 lpFeeWithSkew
             )
         );
+        marketAddress = address(srm);
         if (params.transferCollateral) {
             IERC20Upgradeable(params.defaultCollateral).safeTransfer(address(srm), payout);
         } else {

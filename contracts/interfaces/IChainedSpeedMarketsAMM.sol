@@ -12,7 +12,9 @@ import "../SpeedMarkets/ChainedSpeedMarketsAMM.sol";
 interface IChainedSpeedMarketsAMM {
     function sUSD() external view returns (IERC20Upgradeable);
 
-    function createNewMarket(ChainedSpeedMarketsAMM.CreateMarketParams calldata _params) external;
+    function createNewMarket(ChainedSpeedMarketsAMM.CreateMarketParams calldata _params)
+        external
+        returns (address marketAddress);
 
     function minChainedMarkets() external view returns (uint);
 

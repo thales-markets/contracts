@@ -1,7 +1,82 @@
 [
   {
     "inputs": [],
-    "name": "CollateralUnsupported",
+    "name": "AssetNotSupported",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CanNotResolve",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EtherTransferFailed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidBuyinAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidNumberOfDirections",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidOffRampCollateral",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidPrice",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidTimeFrame",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MinChainedMarketsError",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MulticollateralOnrampDisabled",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotEnoughReceivedViaOnramp",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyCreatorAllowed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyMarketOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OutOfLiquidity",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ProfitTooHigh",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ResolverNotWhitelisted",
     "type": "error"
   },
   {

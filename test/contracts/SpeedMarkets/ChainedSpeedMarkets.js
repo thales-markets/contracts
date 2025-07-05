@@ -648,5 +648,122 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			let curActiveMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
 			assert.equal(curActiveMarkets.length, numOfActiveMarkets - resolvedMarkets);
 		});
+
+		it('Should revert with InvalidOffRampCollateral when market has non-sUSD collateral', async () => {
+			// Use same setup as the working test first
+			// Check if we need to set default amount
+			try {
+				await exoticOP.setDefaultAmount(toUnit(100));
+			} catch (e) {
+				// If it fails, it means it's already set, which is fine
+				console.log('Default amount already set');
+			}
+
+			await exoticOP.mintForUser(user);
+			let opBalance = await exoticOP.balanceOf(user);
+			console.log('OP balance of user is ' + opBalance / 1e18);
+
+			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
+			await exoticOP.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
+
+			// Increase risk limit to allow market creation
+			await chainedSpeedMarketsAMM.setLimitParams(
+				600, // minTimeFrame
+				600, // maxTimeFrame
+				2, // minChainedMarkets
+				6, // maxChainedMarkets
+				toUnit(5), // minBuyinAmount
+				toUnit(20), // maxBuyinAmount
+				toUnit(500), // maxProfitPerIndividualMarket
+				toUnit(5000), // maxRisk INCREASED
+				PAYOUT_MULTIPLIERS
+			);
+
+			// Set exoticOP as supported native collateral
+			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticOP.address, true, 0);
+
+			// Mint exoticOP for AMM to have enough balance for payout
+			await exoticOP.mintForUser(chainedSpeedMarketsAMM.address);
+
+			let buyinAmount = 10;
+			let timeFrame = 600; // 10 min
+
+			// Create market with exoticOP (non-sUSD) as collateral
+			await chainedSpeedMarketsAMM.createNewMarket(
+				getCreateChainedSpeedAMMParams(
+					user,
+					'ETH',
+					timeFrame,
+					PYTH_ETH_PRICE,
+					now,
+					buyinAmount,
+					[0, 1], // 2 directions
+					exoticOP.address
+				),
+				{ from: creatorAccount }
+			);
+
+			let activeMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
+			let market = activeMarkets[activeMarkets.length - 1]; // Get the last created market
+
+			let ChainedSpeedMarket = artifacts.require('ChainedSpeedMarket');
+			let chainedSpeedMarket = await ChainedSpeedMarket.at(market);
+			let defaultCollateral = await chainedSpeedMarket.defaultCollateral();
+
+			console.log('Market default collateral:', defaultCollateral);
+			console.log('ExoticOP address:', exoticOP.address);
+			console.log('sUSD address:', exoticUSD.address);
+
+			// Verify that the market was created with exoticOP as default collateral
+			assert.equal(defaultCollateral, exoticOP.address);
+
+			await fastForward(6 * 60 * 60); // Fast forward 6 hours
+
+			// Create price feed update data for all 5 directions
+			let resolvePriceFeedUpdateData = [];
+			for (let i = 0; i < 5; i++) {
+				let updateData = await mockPyth.createPriceFeedUpdateData(
+					'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+					PYTH_ETH_PRICE + 100000000, // Price goes up
+					74093100,
+					-8,
+					PYTH_ETH_PRICE + 100000000,
+					74093100,
+					now + (i + 1) * 5 * 60
+				);
+				resolvePriceFeedUpdateData.push([updateData]);
+			}
+
+			// Set up another collateral for offramp (to show it's not about the offramp target)
+			let ExoticUSDC = artifacts.require('ExoticUSD');
+			let exoticUSDC = await ExoticUSDC.new();
+			await multiCollateralOnOffRamp.setSupportedCollateral(exoticUSDC.address, true);
+
+			console.log('\nAttempting to resolve chained market with offramp:');
+			console.log('Market default collateral:', exoticOP.address, '(NOT sUSD)');
+			console.log('Offramp target collateral:', exoticUSDC.address);
+
+			// This should revert with InvalidOffRampCollateral error because:
+			// 1. The market's defaultCollateral is exoticOP (not sUSD)
+			// 2. resolveMarketWithOfframp requires the market to have sUSD as default collateral
+			// 3. It doesn't matter what collateral we're trying to offramp TO - the check fails first
+			try {
+				await chainedSpeedMarketsAMM.resolveMarketWithOfframp(
+					market,
+					resolvePriceFeedUpdateData,
+					exoticUSDC.address, // trying to offramp to different collateral
+					false,
+					{ value: fee * 5, from: user }
+				);
+				assert.fail('Expected transaction to revert');
+			} catch (error) {
+				// Check if the error contains the custom error name or is a revert
+				assert.ok(
+					error.message.includes('InvalidOffRampCollateral') || error.message.includes('revert'),
+					'Expected InvalidOffRampCollateral error but got: ' + error.message
+				);
+				console.log('Correctly reverted with InvalidOffRampCollateral');
+			}
+		});
 	});
 });

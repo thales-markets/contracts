@@ -374,11 +374,11 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         address user = ChainedSpeedMarket(market).user();
         if (msg.sender != user) revert OnlyMarketOwner();
         IERC20Upgradeable defaultCollateral = IERC20Upgradeable(ChainedSpeedMarket(market).defaultCollateral());
-        if (address(defaultCollateral) == address(0)) revert InvalidOffRampCollateral();
-        uint amountBefore = defaultCollateral.balanceOf(user);
+        if (address(defaultCollateral) != address(sUSD)) revert InvalidOffRampCollateral();
+        uint amountBefore = sUSD.balanceOf(user);
         _resolveMarket(market, priceUpdateData);
-        uint amountDiff = defaultCollateral.balanceOf(user) - amountBefore;
-        defaultCollateral.safeTransferFrom(user, address(this), amountDiff);
+        uint amountDiff = sUSD.balanceOf(user) - amountBefore;
+        sUSD.safeTransferFrom(user, address(this), amountDiff);
         if (amountDiff > 0) {
             IMultiCollateralOnOffRamp multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
                 addressManager.multiCollateralOnOffRamp()

@@ -124,6 +124,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         sUSD = _sUSD;
     }
 
+    /// @notice Creates a new market
+    /// @param _params Market creation parameters
+    /// @dev This function is used to create a new market
     function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyPending {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
         // Determine collateral configuration
@@ -185,6 +188,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         }
     }
 
+    /// @notice Gets the buyin amount with conversion
+    /// @param user The user address
+    /// @param collateral The collateral address
+    /// @param collateralAmount The collateral amount
+    /// @param contractsAddresses Contract addresses from address manager
+    /// @return buyinAmount The calculated buyin amount
     function _getBuyinWithConversion(
         address user,
         address collateral,
@@ -207,6 +216,11 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         if (amountDiff < buyinAmount) revert NotEnoughReceivedViaOnramp();
     }
 
+    /// @notice Gets the payout amount
+    /// @param _buyinAmount The buyin amount
+    /// @param _numOfDirections The number of directions
+    /// @param _payoutMultiplier The payout multiplier
+    /// @return _payout The calculated payout amount
     function _getPayout(
         uint _buyinAmount,
         uint8 _numOfDirections,
@@ -218,6 +232,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         }
     }
 
+    /// @notice Handles the referrer and safe box
+    /// @param user The user address
+    /// @param referrer The referrer address
+    /// @param buyinAmount The buyin amount
+    /// @param safeBoxImpact The safe box impact
+    /// @param collateral The collateral address
     function _handleReferrerAndSafeBox(
         address user,
         address referrer,
@@ -252,6 +272,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         );
     }
 
+    /// @notice Creates a new market
+    /// @param internalParams Internal market creation parameters
+    /// @param contractsAddresses Contract addresses from address manager
     function _createNewMarket(
         InternalCreateMarketParams memory internalParams,
         IAddressManager.Addresses memory contractsAddresses
@@ -365,6 +388,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     /// @notice resolveMarketWithOfframp resolves an active market with offramp
     /// @param market address of the market
+    /// @param priceUpdateData price update data
+    /// @param collateral collateral address
+    /// @param toEth whether to offramp to ETH
     function resolveMarketWithOfframp(
         address market,
         bytes[][] calldata priceUpdateData,
@@ -396,6 +422,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     /// @notice resolveMarkets in a batch
+    /// @param markets markets to resolve
+    /// @param priceUpdateData price update data
     function resolveMarketsBatch(address[] calldata markets, bytes[][][] calldata priceUpdateData)
         external
         payable

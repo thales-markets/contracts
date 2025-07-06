@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+
 /// @title Mock FreeBetsHolder for testing speed markets integration
 contract MockFreeBetsHolder {
     struct FreeBet {
@@ -15,8 +17,12 @@ contract MockFreeBetsHolder {
 
     mapping(bytes32 => FreeBet) public freeBets;
     mapping(address => uint256) public userFreeBetBalance;
+    mapping(address => bytes32) public marketToRequestId;
+    mapping(address => address) public marketToUser;
 
     address public speedMarketsAMMCreator;
+    address public speedMarketsAMM;
+    address public chainedSpeedMarketsAMM;
 
     bytes32[] public allRequestIds;
 
@@ -28,6 +34,7 @@ contract MockFreeBetsHolder {
         uint buyinAmount,
         bool isChained
     );
+    event FreeBetMarketResolved(address indexed market, address indexed user, uint256 earned);
 
     constructor(address _speedMarketsAMMCreator) {
         speedMarketsAMMCreator = _speedMarketsAMMCreator;
@@ -61,6 +68,11 @@ contract MockFreeBetsHolder {
         });
 
         allRequestIds.push(_requestId);
+
+        // Store mapping from market to request ID and user for resolution
+        marketToRequestId[_speedMarketAddress] = _requestId;
+        // In a real implementation, we would get the user from the request
+        // For mock purposes, we'll set it when the market is created
 
         emit SpeedMarketTradeConfirmed(_requestId, _speedMarketAddress, _collateral, _buyinAmount, _isChained);
     }
@@ -104,5 +116,47 @@ contract MockFreeBetsHolder {
     function setSpeedMarketsAMMCreator(address _speedMarketsAMMCreator) external {
         require(_speedMarketsAMMCreator != address(0), "Invalid address");
         speedMarketsAMMCreator = _speedMarketsAMMCreator;
+    }
+
+    /// @notice Set the AMM addresses that can call confirmMarketResolved
+    /// @param _speedMarketsAMM The SpeedMarketsAMM address
+    /// @param _chainedSpeedMarketsAMM The ChainedSpeedMarketsAMM address
+    function setAMMAddresses(address _speedMarketsAMM, address _chainedSpeedMarketsAMM) external {
+        require(_speedMarketsAMM != address(0), "Invalid speedMarketsAMM address");
+        require(_chainedSpeedMarketsAMM != address(0), "Invalid chainedSpeedMarketsAMM address");
+        speedMarketsAMM = _speedMarketsAMM;
+        chainedSpeedMarketsAMM = _chainedSpeedMarketsAMM;
+    }
+
+    /// @notice Set the user for a market (mock helper function)
+    /// @param _market The market address
+    /// @param _user The user address
+    function setMarketUser(address _market, address _user) external {
+        marketToUser[_market] = _user;
+    }
+
+    /// @notice Confirm that a speed market has been resolved
+    /// @param _resolvedMarket The address of the resolved market
+    function confirmMarketResolved(address _resolvedMarket) external {
+        require(msg.sender == speedMarketsAMM || msg.sender == chainedSpeedMarketsAMM, "Caller not allowed");
+
+        bytes32 requestId = marketToRequestId[_resolvedMarket];
+        require(requestId != bytes32(0), "Unknown market");
+
+        FreeBet memory freeBet = freeBets[requestId];
+        require(freeBet.isConfirmed, "Market not confirmed");
+        require(freeBet.speedMarketAddress == _resolvedMarket, "Market mismatch");
+
+        address user = marketToUser[_resolvedMarket];
+        require(user != address(0), "Unknown user for market");
+
+        // Mock resolution logic - in real implementation this would check if user won
+        // For testing, we'll just return the buyin amount as earned
+        uint256 earned = freeBet.buyinAmount;
+
+        // Transfer the earned amount to the user
+        IERC20Upgradeable(freeBet.collateral).transfer(user, earned);
+
+        emit FreeBetMarketResolved(_resolvedMarket, user, earned);
     }
 }

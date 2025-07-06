@@ -441,6 +441,18 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         return pendingChainedSpeedMarkets.length;
     }
 
+    function getChainedAndSpeedMarketsAMMAddresses()
+        external
+        view
+        returns (address chainedSpeedMarketsAMM, address speedMarketsAMM)
+    {
+        string[] memory contractNames = new string[](2);
+        contractNames[0] = "ChainedSpeedMarketsAMM";
+        contractNames[1] = "SpeedMarketsAMM";
+        address[] memory addresses = addressManager.getAddresses(contractNames);
+        return (addresses[0], addresses[1]);
+    }
+
     //////////////////setters/////////////////
 
     /// @notice Set address of address manager

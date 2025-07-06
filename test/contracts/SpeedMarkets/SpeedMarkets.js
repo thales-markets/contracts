@@ -280,5 +280,119 @@ contract('SpeedMarkets', (accounts) => {
 			ammBalance = await exoticUSD.balanceOf(speedMarketsAMM.address);
 			console.log('Balance of AMM after transfer', ammBalance / 1e18);
 		});
+
+		it('Should correctly increase risk per asset for non-bonus collateral', async () => {
+			let { creatorAccount, speedMarketsAMM, speedMarketsAMMData, exoticUSD, now } =
+				await speedMarketsInit(accounts);
+
+			const ETH = toBytes32('ETH');
+			const strikeTime = now + 10 * 60 * 60; // 10 hours from now
+			const buyinAmount = 50;
+
+			// Set up supported asset and risk limits
+			await speedMarketsAMM.setSupportedAsset(ETH, true);
+			await speedMarketsAMM.setMaxRisks(ETH, toUnit(1000), toUnit(500));
+
+			// Check initial risk
+			const initialRiskPerAsset = await speedMarketsAMM.currentRiskPerAsset(ETH);
+			const initialRiskUp = await speedMarketsAMM.currentRiskPerAssetAndDirection(ETH, 0);
+			const initialRiskDown = await speedMarketsAMM.currentRiskPerAssetAndDirection(ETH, 1);
+
+			console.log('Initial risk per asset:', initialRiskPerAsset / 1e18);
+			console.log('Initial risk UP:', initialRiskUp / 1e18);
+			console.log('Initial risk DOWN:', initialRiskDown / 1e18);
+
+			// Get skew impact for first market
+			const maxSkewImpact = await speedMarketsAMM.maxSkewImpact();
+			let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(ETH);
+			let skewImpact = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact / 1e18);
+
+			// Create first market (UP direction)
+			const createParams1 = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime,
+				now,
+				buyinAmount,
+				0, // UP
+				skewImpact
+			);
+
+			await speedMarketsAMM.createNewMarket(createParams1, { from: creatorAccount });
+
+			// Check risk after first market
+			const riskAfterFirst = await speedMarketsAMM.currentRiskPerAsset(ETH);
+			const riskUpAfterFirst = await speedMarketsAMM.currentRiskPerAssetAndDirection(ETH, 0);
+
+			// Get LP fee from the created market
+			const SpeedMarket = artifacts.require('SpeedMarket');
+			const markets = await speedMarketsAMM.activeMarkets(0, 10);
+			const market1 = await SpeedMarket.at(markets[0]);
+			const lpFee1 = await market1.lpFee();
+
+			// Calculate expected risk increase
+			// Risk = payout - (buyinAmount * (1 + lpFee))
+			const payout1 = toUnit(buyinAmount * 2);
+			const buyinPlusLpFee1 = toUnit(buyinAmount).add(
+				toUnit(buyinAmount).mul(lpFee1).div(toUnit(1))
+			);
+			const expectedRiskIncrease1 = payout1.sub(buyinPlusLpFee1);
+
+			console.log('Risk after first market:', riskAfterFirst / 1e18);
+			console.log('Expected risk increase:', expectedRiskIncrease1 / 1e18);
+			console.log('Actual risk increase:', (riskAfterFirst - initialRiskPerAsset) / 1e18);
+
+			assert.bnEqual(riskAfterFirst.sub(initialRiskPerAsset), expectedRiskIncrease1);
+			assert.bnEqual(riskUpAfterFirst, toUnit(buyinAmount));
+
+			// Create second market (DOWN direction) - should reduce UP risk
+			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(ETH);
+			skewImpact = getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact / 1e18);
+
+			const createParams2 = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime + 60,
+				now,
+				buyinAmount / 2,
+				1, // DOWN
+				skewImpact
+			);
+
+			await speedMarketsAMM.createNewMarket(createParams2, { from: creatorAccount });
+
+			// Check risk after second market
+			const riskAfterSecond = await speedMarketsAMM.currentRiskPerAsset(ETH);
+			const riskUpAfterSecond = await speedMarketsAMM.currentRiskPerAssetAndDirection(ETH, 0);
+			const riskDownAfterSecond = await speedMarketsAMM.currentRiskPerAssetAndDirection(ETH, 1);
+
+			console.log('Risk after second market:', riskAfterSecond / 1e18);
+			console.log('Risk UP after second:', riskUpAfterSecond / 1e18);
+			console.log('Risk DOWN after second:', riskDownAfterSecond / 1e18);
+
+			// UP risk should be reduced by DOWN buyinAmount
+			assert.bnEqual(riskUpAfterSecond, toUnit(buyinAmount - buyinAmount / 2));
+
+			// Test approaching max risk limit
+			const currentRisk = await speedMarketsAMM.currentRiskPerAsset(ETH);
+			const maxRisk = await speedMarketsAMM.maxRiskPerAsset(ETH);
+			const remainingRisk = maxRisk.sub(currentRisk);
+			console.log('Remaining risk capacity:', remainingRisk / 1e18);
+
+			// Try to create a market that would exceed risk limit
+			const exceedingBuyinAmount = 600; // This should exceed the 1000 limit
+			const createParams3 = getCreateSpeedAMMParams(
+				user,
+				'ETH',
+				strikeTime + 120,
+				now,
+				exceedingBuyinAmount,
+				0, // UP
+				0
+			);
+
+			await expect(speedMarketsAMM.createNewMarket(createParams3, { from: creatorAccount })).to.be
+				.reverted;
+		});
 	});
 });

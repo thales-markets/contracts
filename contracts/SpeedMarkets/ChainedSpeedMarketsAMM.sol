@@ -191,6 +191,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         }
     }
 
+    /// @notice Gets the buyin amount with conversion
+    /// @param user The user address
+    /// @param collateral The collateral address
+    /// @param collateralAmount The collateral amount
+    /// @param contractsAddresses Contract addresses from address manager
+    /// @return buyinAmount The calculated buyin amount
     function _getBuyinWithConversion(
         address user,
         address collateral,
@@ -213,6 +219,11 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         if (amountDiff < buyinAmount) revert NotEnoughReceivedViaOnramp();
     }
 
+    /// @notice Gets the payout amount
+    /// @param _buyinAmount The buyin amount
+    /// @param _numOfDirections The number of directions
+    /// @param _payoutMultiplier The payout multiplier
+    /// @return _payout The calculated payout amount
     function _getPayout(
         uint _buyinAmount,
         uint8 _numOfDirections,
@@ -224,6 +235,12 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         }
     }
 
+    /// @notice Handles the referrer and safe box
+    /// @param user The user address
+    /// @param referrer The referrer address
+    /// @param buyinAmount The buyin amount
+    /// @param safeBoxImpact The safe box impact
+    /// @param collateral The collateral address
     function _handleReferrerAndSafeBox(
         address user,
         address referrer,
@@ -258,6 +275,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         );
     }
 
+    /// @notice Creates a new market
+    /// @param internalParams Internal market creation parameters
+    /// @param contractsAddresses Contract addresses from address manager
     function _createNewMarket(
         InternalCreateMarketParams memory internalParams,
         IAddressManager.Addresses memory contractsAddresses
@@ -373,6 +393,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     /// @notice resolveMarketWithOfframp resolves an active market with offramp
     /// @param market address of the market
+    /// @param priceUpdateData price update data
+    /// @param collateral collateral address
+    /// @param toEth whether to offramp to ETH
     function resolveMarketWithOfframp(
         address market,
         bytes[][] calldata priceUpdateData,
@@ -382,11 +405,11 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         address user = ChainedSpeedMarket(market).user();
         if (msg.sender != user) revert OnlyMarketOwner();
         IERC20Upgradeable defaultCollateral = IERC20Upgradeable(ChainedSpeedMarket(market).defaultCollateral());
-        if (address(defaultCollateral) == address(0)) revert InvalidOffRampCollateral();
-        uint amountBefore = defaultCollateral.balanceOf(user);
+        if (address(defaultCollateral) != address(sUSD)) revert InvalidOffRampCollateral();
+        uint amountBefore = sUSD.balanceOf(user);
         _resolveMarket(market, priceUpdateData);
-        uint amountDiff = defaultCollateral.balanceOf(user) - amountBefore;
-        defaultCollateral.safeTransferFrom(user, address(this), amountDiff);
+        uint amountDiff = sUSD.balanceOf(user) - amountBefore;
+        sUSD.safeTransferFrom(user, address(this), amountDiff);
         if (amountDiff > 0) {
             IMultiCollateralOnOffRamp multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
                 addressManager.multiCollateralOnOffRamp()
@@ -404,6 +427,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     /// @notice resolveMarkets in a batch
+    /// @param markets markets to resolve
+    /// @param priceUpdateData price update data
     function resolveMarketsBatch(address[] calldata markets, bytes[][][] calldata priceUpdateData)
         external
         payable

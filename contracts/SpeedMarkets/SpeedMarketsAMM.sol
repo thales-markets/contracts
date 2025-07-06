@@ -239,6 +239,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         }
     }
 
+    /// @notice Gets the buyin amount with conversion
+    /// @param user The user address
+    /// @param collateral The collateral address
+    /// @param collateralAmount The collateral amount
+    /// @param strikeTime The strike time
+    /// @param contractsAddresses Contract addresses from address manager
+    /// @return buyinAmount The calculated buyin amount
     function _getBuyinWithConversion(
         address user,
         address collateral,
@@ -270,12 +277,22 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         if (amountDiff < buyinAmount) revert NotEnoughReceivedViaOnramp();
     }
 
+    /// @notice Gets the skew by asset and direction
+    /// @param _asset The asset
+    /// @param _direction The direction
+    /// @return skew The skew
     function _getSkewByAssetAndDirection(bytes32 _asset, SpeedMarket.Direction _direction) internal view returns (uint) {
         return
             (((currentRiskPerAssetAndDirection[_asset][_direction] * ONE) /
                 maxRiskPerAssetAndDirection[_asset][_direction]) * maxSkewImpact) / ONE;
     }
 
+    /// @notice Handles the risk and gets the fee
+    /// @param asset The asset
+    /// @param direction The direction
+    /// @param buyinAmount The buyin amount
+    /// @param strikeTime The strike time
+    /// @param skewImpact The skew impact
     function _handleRiskAndGetFee(
         bytes32 asset,
         SpeedMarket.Direction direction,
@@ -317,15 +334,21 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             ) +
             skew -
             discount;
-
-        // payout = buyinAmount * 2;
+        // add bonus to payout
         payout = buyinAmount * 2 + (buyinAmount * 2 * payoutBonus) / ONE;
+        // update risk per asset with the bonus applied
         currentRiskPerAsset[asset] += (payout - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE);
         if (currentRiskPerAsset[asset] > maxRiskPerAsset[asset]) {
             revert RiskPerAssetExceeded();
         }
     }
 
+    /// @notice Handles the referrer and safe box
+    /// @param user The user address
+    /// @param referrer The referrer address
+    /// @param buyinAmount The buyin amount
+    /// @param collateral The collateral address
+    /// @param contractsAddresses Contract addresses from address manager
     function _handleReferrerAndSafeBox(
         address user,
         address referrer,
@@ -355,6 +378,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         collateral.safeTransfer(contractsAddresses.safeBox, (buyinAmount * safeBoxImpact) / ONE - referrerShare);
     }
 
+    /// @notice Creates a new market
+    /// @param params Internal market creation parameters
+    /// @param contractsAddresses Contract addresses from address manager
     function _createNewMarket(InternalCreateParams memory params, IAddressManager.Addresses memory contractsAddresses)
         internal
         returns (address marketAddress)
@@ -452,6 +478,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     /// @notice resolveMarket resolves an active market with offramp
     /// @param market address of the market
+    /// @param priceUpdateData price update data
+    /// @param collateral collateral address
+    /// @param toEth whether to offramp to ETH
     function resolveMarketWithOfframp(
         address market,
         bytes[] calldata priceUpdateData,
@@ -463,11 +492,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         address user = SpeedMarket(market).user();
         if (msg.sender != user) revert OnlyMarketOwner();
         IERC20Upgradeable defaultCollateral = IERC20Upgradeable(SpeedMarket(market).defaultCollateral());
-        if (address(defaultCollateral) == address(0)) revert InvalidOffRampCollateral();
-        uint amountBefore = defaultCollateral.balanceOf(user);
+        if (address(defaultCollateral) != address(sUSD)) revert InvalidOffRampCollateral();
+        uint amountBefore = sUSD.balanceOf(user);
         _resolveMarket(market, priceUpdateData);
-        uint amountDiff = defaultCollateral.balanceOf(user) - amountBefore;
-        defaultCollateral.safeTransferFrom(user, address(this), amountDiff);
+        uint amountDiff = sUSD.balanceOf(user) - amountBefore;
+        sUSD.safeTransferFrom(user, address(this), amountDiff);
         if (amountDiff > 0) {
             IMultiCollateralOnOffRamp iMultiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
                 addressManager.multiCollateralOnOffRamp()

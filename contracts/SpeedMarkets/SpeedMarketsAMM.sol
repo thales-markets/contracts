@@ -26,6 +26,7 @@ import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/IAddressManager.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
+import "../interfaces/IFreeBetsHolder.sol";
 
 import "./SpeedMarket.sol";
 import "./SpeedMarketsAMMUtils.sol";
@@ -591,20 +592,20 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     function _resolveMarketWithPrice(address market, int64 _finalPrice) internal {
-        SpeedMarket(market).resolve(_finalPrice);
+        SpeedMarket sm = SpeedMarket(market);
+        sm.resolve(_finalPrice);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
-        address user = SpeedMarket(market).user();
-
+        address user = sm.user();
         if (_activeMarketsPerUser[user].contains(market)) {
             _activeMarketsPerUser[user].remove(market);
         }
         _maturedMarketsPerUser[user].add(market);
 
-        bytes32 asset = SpeedMarket(market).asset();
-        uint buyinAmount = SpeedMarket(market).buyinAmount();
-        SpeedMarket.Direction direction = SpeedMarket(market).direction();
-        uint payoutBonus = SpeedMarket(market).payoutBonus();
+        bytes32 asset = sm.asset();
+        uint buyinAmount = sm.buyinAmount();
+        SpeedMarket.Direction direction = sm.direction();
+        uint payoutBonus = sm.payoutBonus();
         if (payoutBonus > 0) {
             buyinAmount = (buyinAmount * (ONE + payoutBonus)) / ONE;
         }
@@ -614,15 +615,19 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             currentRiskPerAssetAndDirection[asset][direction] = 0;
         }
 
-        if (!SpeedMarket(market).isUserWinner()) {
+        if (!sm.isUserWinner()) {
             if (currentRiskPerAsset[asset] > 2 * buyinAmount) {
                 currentRiskPerAsset[asset] -= (2 * buyinAmount);
             } else {
                 currentRiskPerAsset[asset] = 0;
             }
+            IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+            if (address(iFreeBetsHolder) == user) {
+                iFreeBetsHolder.confirmSpeedMarketResolved(market, 2 * buyinAmount, sm.buyinAmount(), sm.collateral());
+            }
         }
 
-        emit MarketResolved(market, SpeedMarket(market).result(), SpeedMarket(market).isUserWinner());
+        emit MarketResolved(market, sm.result(), sm.isUserWinner());
     }
 
     /// @notice Transfer amount to destination address

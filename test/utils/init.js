@@ -17,6 +17,9 @@ module.exports = {
 			from: owner,
 		});
 
+		let FreeBetsHolderContract = artifacts.require('MockFreeBetsHolder');
+		let freeBetsHolder = await FreeBetsHolderContract.new(speedMarketsAMM.address);
+
 		const Over = artifacts.require('ExoticUSD');
 		const over = await Over.new();
 
@@ -127,6 +130,7 @@ module.exports = {
 		);
 
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
+		await addressManager.setAddressInAddressBook('FreeBetsHolder', freeBetsHolder.address);
 
 		let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
 		let speedMarketMastercopy = await SpeedMarketMastercopy.new();

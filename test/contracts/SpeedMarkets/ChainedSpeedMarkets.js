@@ -7,6 +7,7 @@ const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { ZERO_ADDRESS } = require('../../utils/helpers');
 const { getCreateChainedSpeedAMMParams } = require('../../utils/speedMarkets');
+const { toBN } = require('web3-utils');
 
 contract('ChainedSpeedMarkets', (accounts) => {
 	const [owner, user, safeBox, referrerAddress, proxyUser, creatorAccount] = accounts;
@@ -650,12 +651,9 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		});
 
 		it('Should revert with InvalidOffRampCollateral when market has non-sUSD collateral', async () => {
-			// Use same setup as the working test first
-			// Check if we need to set default amount
 			try {
 				await exoticOP.setDefaultAmount(toUnit(100));
 			} catch (e) {
-				// If it fails, it means it's already set, which is fine
 				console.log('Default amount already set');
 			}
 
@@ -764,6 +762,122 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				);
 				console.log('Correctly reverted with InvalidOffRampCollateral');
 			}
+		});
+
+		it('Should correctly increase risk for non-bonus collateral in chained markets', async () => {
+			// Approve AMM to spend user's funds
+			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(1000), { from: user });
+
+			// Check initial risk
+			const initialRisk = await chainedSpeedMarketsAMM.currentRisk();
+			console.log('Initial risk:', initialRisk / 1e18);
+
+			const now = await currentTime();
+			const buyinAmount = 15; // Must be within limits (5-20)
+			const directions = [0, 1, 0]; // 3 chained markets: UP, DOWN, UP
+
+			// Create first chained market (no bonus - using sUSD)
+			const createParams1 = getCreateChainedSpeedAMMParams(
+				user,
+				'ETH',
+				600, // 10 minutes per direction
+				PYTH_ETH_PRICE,
+				now,
+				buyinAmount,
+				directions,
+				exoticUSD.address, // sUSD (no bonus)
+				ZERO_ADDRESS
+			);
+
+			await chainedSpeedMarketsAMM.createNewMarket(createParams1, { from: creatorAccount });
+
+			// Check risk after first market
+			const riskAfterFirst = await chainedSpeedMarketsAMM.currentRisk();
+			console.log('Risk after first market:', riskAfterFirst / 1e18);
+
+			// Calculate expected payout for 3 chained markets
+			// Payout multiplier for 3 directions is 1.78
+			const payoutMultiplier = toUnit(1.78);
+			let expectedPayout = toUnit(buyinAmount);
+			for (let i = 0; i < directions.length; i++) {
+				expectedPayout = expectedPayout.mul(payoutMultiplier).div(toUnit(1));
+			}
+			console.log('Expected payout:', expectedPayout / 1e18);
+
+			// Risk should increase by (payout - buyinAmount)
+			const expectedRiskIncrease = expectedPayout.sub(toUnit(buyinAmount));
+			const actualRiskIncrease = riskAfterFirst.sub(initialRisk);
+
+			console.log('Expected risk increase:', expectedRiskIncrease / 1e18);
+			console.log('Actual risk increase:', actualRiskIncrease / 1e18);
+
+			// Allow small tolerance for rounding
+			assert.bnClose(actualRiskIncrease, expectedRiskIncrease, toUnit(1));
+
+			// Create second chained market with different directions
+			const directions2 = [1, 1, 0, 1]; // 4 chained markets
+			const buyinAmount2 = 10; // Must be within limits (5-20)
+
+			const createParams2 = getCreateChainedSpeedAMMParams(
+				user,
+				'ETH',
+				600,
+				PYTH_ETH_PRICE,
+				now + 3600, // Different time to avoid conflicts
+				buyinAmount2,
+				directions2,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			await chainedSpeedMarketsAMM.createNewMarket(createParams2, { from: creatorAccount });
+
+			const riskAfterSecond = await chainedSpeedMarketsAMM.currentRisk();
+			console.log('Risk after second market:', riskAfterSecond / 1e18);
+
+			// Payout multiplier for 4 directions is 1.84
+			const payoutMultiplier2 = toUnit(1.84);
+			let expectedPayout2 = toUnit(buyinAmount2);
+			for (let i = 0; i < directions2.length; i++) {
+				expectedPayout2 = expectedPayout2.mul(payoutMultiplier2).div(toUnit(1));
+			}
+
+			const expectedRiskIncrease2 = expectedPayout2.sub(toUnit(buyinAmount2));
+			const actualTotalRisk = riskAfterSecond.sub(initialRisk);
+			const expectedTotalRisk = expectedRiskIncrease.add(expectedRiskIncrease2);
+
+			console.log('Total risk after both markets:', actualTotalRisk / 1e18);
+			console.log('Expected total risk:', expectedTotalRisk / 1e18);
+
+			// Allow for small differences in calculation (about 3% tolerance)
+			assert.bnClose(actualTotalRisk, expectedTotalRisk, toUnit(5));
+
+			// Test approaching max risk limit
+			const currentRisk = await chainedSpeedMarketsAMM.currentRisk();
+			const maxRisk = await chainedSpeedMarketsAMM.maxRisk();
+			const remainingRisk = maxRisk.sub(currentRisk);
+			console.log('Remaining risk capacity:', remainingRisk / 1e18);
+
+			// Try to create a market that would exceed risk limit
+			// With current risk ~169 and max risk 1100, we need ~931 more
+			// A 20 buyin with 6 directions should exceed this
+			const exceedingBuyinAmount = 20; // Max allowed
+			const largeDirections = [0, 1, 0, 1, 0, 1]; // 6 directions for maximum payout
+
+			const createParams3 = getCreateChainedSpeedAMMParams(
+				user,
+				'ETH',
+				600,
+				PYTH_ETH_PRICE,
+				now + 7200,
+				exceedingBuyinAmount,
+				largeDirections,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+
+			await expect(chainedSpeedMarketsAMM.createNewMarket(createParams3, { from: creatorAccount }))
+				.to.be.reverted;
 		});
 	});
 });

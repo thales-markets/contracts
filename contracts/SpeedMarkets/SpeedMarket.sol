@@ -22,6 +22,7 @@ contract SpeedMarket {
         uint _buyinAmount;
         uint _safeBoxImpact;
         uint _lpFee;
+        uint _payoutBonus;
     }
 
     enum Direction {
@@ -46,7 +47,7 @@ contract SpeedMarket {
 
     uint public safeBoxImpact;
     uint public lpFee;
-
+    uint public payoutBonus;
     uint256 public createdAt;
 
     /* ========== CONSTRUCTOR ========== */
@@ -66,6 +67,7 @@ contract SpeedMarket {
         buyinAmount = params._buyinAmount;
         safeBoxImpact = params._safeBoxImpact;
         lpFee = params._lpFee;
+        payoutBonus = params._payoutBonus;
         collateral = params._collateral;
         defaultCollateral = params._defaultCollateral;
         IERC20Upgradeable(params._defaultCollateral).approve(params._speedMarketsAMM, type(uint256).max);

@@ -324,7 +324,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 tempData.speedAMMParams.safeBoxImpact,
                 tempData.payoutMultiplier,
                 internalParams.createMarketParams.collateral,
-                internalParams.defaultCollateral
+                internalParams.defaultCollateral,
+                internalParams.bonus
             )
         );
         marketAddress = address(csm);
@@ -483,25 +484,25 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         int64[] memory _finalPrices,
         bool _isManually
     ) internal {
-        ChainedSpeedMarket(market).resolve(_finalPrices, _isManually);
-        if (ChainedSpeedMarket(market).resolved()) {
+        ChainedSpeedMarket csm = ChainedSpeedMarket(market);
+        csm.resolve(_finalPrices, _isManually);
+        if (csm.resolved()) {
             _activeMarkets.remove(market);
             _maturedMarkets.add(market);
-            address user = ChainedSpeedMarket(market).user();
+            address user = csm.user();
 
             if (_activeMarketsPerUser[user].contains(market)) {
                 _activeMarketsPerUser[user].remove(market);
             }
             _maturedMarketsPerUser[user].add(market);
 
-            uint buyinAmount = ChainedSpeedMarket(market).buyinAmount();
-            uint payout = _getPayout(
-                buyinAmount,
-                ChainedSpeedMarket(market).numOfDirections(),
-                ChainedSpeedMarket(market).payoutMultiplier()
-            );
-
-            if (!ChainedSpeedMarket(market).isUserWinner()) {
+            uint buyinAmount = csm.buyinAmount();
+            uint payout = _getPayout(buyinAmount, csm.numOfDirections(), ChainedSpeedMarket(market).payoutMultiplier());
+            uint bonus = csm.bonus();
+            if (bonus > 0) {
+                payout = (payout * (ONE + bonus)) / ONE;
+            }
+            if (!csm.isUserWinner()) {
                 if (currentRisk > payout) {
                     currentRisk -= payout;
                 } else {
@@ -510,7 +511,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             }
         }
 
-        emit MarketResolved(market, ChainedSpeedMarket(market).isUserWinner());
+        emit MarketResolved(market, csm.isUserWinner());
     }
 
     /// @notice Transfer amount to destination address

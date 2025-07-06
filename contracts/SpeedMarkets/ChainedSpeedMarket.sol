@@ -27,6 +27,7 @@ contract ChainedSpeedMarket {
         uint _payoutMultiplier;
         address _collateral;
         address _defaultCollateral;
+        uint _bonus;
     }
 
     address public user;
@@ -42,7 +43,7 @@ contract ChainedSpeedMarket {
     uint public buyinAmount;
     uint public safeBoxImpact;
     uint public payoutMultiplier;
-
+    uint public bonus;
     bool public resolved;
     int64[] public finalPrices;
     bool public isUserWinner;
@@ -71,6 +72,7 @@ contract ChainedSpeedMarket {
         payoutMultiplier = params._payoutMultiplier;
         collateral = params._collateral;
         defaultCollateral = params._defaultCollateral;
+        bonus = params._bonus;
         IERC20Upgradeable(params._defaultCollateral).approve(params._chainedMarketsAMM, type(uint256).max);
         createdAt = block.timestamp;
     }

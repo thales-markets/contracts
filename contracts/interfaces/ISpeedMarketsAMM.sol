@@ -20,6 +20,14 @@ interface ISpeedMarketsAMM {
 
     function createNewMarket(SpeedMarketsAMM.CreateMarketParams calldata _params) external;
 
+    function resolveMarketWithPrice(address _market, int64 _finalPrice) external;
+
+    function canResolveMarket(address market) external view returns (bool);
+
+    function multicollateralEnabled() external view returns (bool);
+
+    function offrampHelper(address user, uint amount) external;
+
     function supportedAsset(bytes32 _asset) external view returns (bool);
 
     function assetToPythId(bytes32 _asset) external view returns (bytes32);

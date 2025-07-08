@@ -83,19 +83,6 @@
   },
   {
     "inputs": [],
-    "name": "defaultCollateral",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "direction",
     "outputs": [
       {
@@ -165,11 +152,6 @@
             "type": "address"
           },
           {
-            "internalType": "address",
-            "name": "_defaultCollateral",
-            "type": "address"
-          },
-          {
             "internalType": "uint256",
             "name": "_buyinAmount",
             "type": "uint256"
@@ -182,11 +164,6 @@
           {
             "internalType": "uint256",
             "name": "_lpFee",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "_payoutBonus",
             "type": "uint256"
           }
         ],
@@ -229,19 +206,6 @@
   {
     "inputs": [],
     "name": "lpFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "payoutBonus",
     "outputs": [
       {
         "internalType": "uint256",

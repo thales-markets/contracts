@@ -95,7 +95,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         if (!speedMarketsAMM.multicollateralEnabled()) revert MulticollateralOnrampDisabled();
         address user = SpeedMarket(market).user();
         if (msg.sender != user) revert OnlyMarketOwner();
-        IERC20Upgradeable defaultCollateral = IERC20Upgradeable(SpeedMarket(market).defaultCollateral());
+        IERC20Upgradeable defaultCollateral = IERC20Upgradeable(SpeedMarket(market).collateral());
         if (address(defaultCollateral) != address(speedMarketsAMM.sUSD())) revert InvalidOffRampCollateral();
         uint amountBefore = speedMarketsAMM.sUSD().balanceOf(user);
         _resolveMarket(market, priceUpdateData);

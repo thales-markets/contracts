@@ -305,17 +305,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         // calculate discount as half of skew for opposite direction
         uint discount = skew == 0 ? _getSkewByAssetAndDirection(asset, oppositeDirection) / 2 : 0;
-        uint buyinAmountWithBonus = buyinAmount;
-        // the risk is calculated with the bonus applied to the buyin amount
-        if (payoutBonus > 0) {
-            buyinAmountWithBonus = (buyinAmount * (ONE + payoutBonus)) / ONE;
-        }
         // decrease risk for opposite direction if there is, otherwise increase risk for current direction
-        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmountWithBonus) {
-            currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmountWithBonus;
+        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
+            currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
         } else {
             currentRiskPerAssetAndDirection[asset][direction] +=
-                buyinAmountWithBonus -
+                buyinAmount -
                 currentRiskPerAssetAndDirection[asset][oppositeDirection];
             currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
             if (currentRiskPerAssetAndDirection[asset][direction] > maxRiskPerAssetAndDirection[asset][direction]) {
@@ -333,8 +328,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             ) +
             skew -
             discount;
-        // payout is buyinAmountWithBonus * 2
-        payout = buyinAmountWithBonus * 2;
+        // payout with bonus
+        payout = buyinAmount * 2 + (buyinAmount * payoutBonus) / ONE;
         // update risk per asset with the bonus applied
         currentRiskPerAsset[asset] += (payout - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE);
         if (currentRiskPerAsset[asset] > maxRiskPerAsset[asset]) {
@@ -423,11 +418,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 uint64(params.createMarketParams.pythPrice.publishTime),
                 params.createMarketParams.direction,
                 params.createMarketParams.collateral,
-                params.defaultCollateral,
                 params.buyinAmount,
                 safeBoxImpact,
-                lpFeeWithSkew,
-                payout
+                lpFeeWithSkew
             )
         );
         if (params.transferCollateral) {
@@ -470,7 +463,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     /// @notice owner can resolve market for a given market address with finalPrice
     function resolveMarketWithPrice(address _market, int64 _finalPrice) external {
-        if (!whitelistedAddresses[msg.sender] || msg.sender != owner) revert ResolverNotWhitelisted();
+        if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver") && msg.sender != owner)
+            revert ResolverNotWhitelisted();
         if (!canResolveMarket(_market)) revert CanNotResolve();
 
         _resolveMarketWithPrice(_market, _finalPrice);
@@ -490,10 +484,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         bytes32 asset = SpeedMarket(market).asset();
         uint buyinAmount = SpeedMarket(market).buyinAmount();
         SpeedMarket.Direction direction = SpeedMarket(market).direction();
-        uint payoutBonus = SpeedMarket(market).payoutBonus();
-        if (payoutBonus > 0) {
-            buyinAmount = (buyinAmount * (ONE + payoutBonus)) / ONE;
-        }
         if (currentRiskPerAssetAndDirection[asset][direction] > buyinAmount) {
             currentRiskPerAssetAndDirection[asset][direction] -= buyinAmount;
         } else {

@@ -12,9 +12,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 
-import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
-import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
-
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
@@ -379,121 +376,10 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         );
     }
 
-    /// @notice resolveMarket resolves an active market
-    /// @param market address of the market
-    function resolveMarket(address market, bytes[][] calldata priceUpdateData) external payable nonReentrant notPaused {
-        _resolveMarket(market, priceUpdateData);
-    }
-
-    /// @notice resolveMarketWithOfframp resolves an active market with offramp
-    /// @param market address of the market
-    /// @param priceUpdateData price update data
-    /// @param collateral collateral address
-    /// @param toEth whether to offramp to ETH
-    function resolveMarketWithOfframp(
-        address market,
-        bytes[][] calldata priceUpdateData,
-        address collateral,
-        bool toEth
-    ) external payable nonReentrant notPaused {
-        address user = ChainedSpeedMarket(market).user();
-        if (msg.sender != user) revert OnlyMarketOwner();
-        IERC20Upgradeable defaultCollateral = IERC20Upgradeable(ChainedSpeedMarket(market).collateral());
-        if (address(defaultCollateral) != address(sUSD)) revert InvalidOffRampCollateral();
-        uint amountBefore = sUSD.balanceOf(user);
-        _resolveMarket(market, priceUpdateData);
-        uint amountDiff = sUSD.balanceOf(user) - amountBefore;
-        sUSD.safeTransferFrom(user, address(this), amountDiff);
-        if (amountDiff > 0) {
-            IMultiCollateralOnOffRamp multiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
-                addressManager.multiCollateralOnOffRamp()
-            );
-            if (toEth) {
-                uint offramped = multiCollateralOnOffRamp.offrampIntoEth(amountDiff);
-                address payable _to = payable(user);
-                bool sent = _to.send(offramped);
-                if (!sent) revert EtherTransferFailed();
-            } else {
-                uint offramped = multiCollateralOnOffRamp.offramp(collateral, amountDiff);
-                IERC20Upgradeable(collateral).safeTransfer(user, offramped);
-            }
-        }
-    }
-
-    /// @notice resolveMarkets in a batch
-    /// @param markets markets to resolve
-    /// @param priceUpdateData price update data
-    function resolveMarketsBatch(address[] calldata markets, bytes[][][] calldata priceUpdateData)
-        external
-        payable
-        nonReentrant
-        notPaused
-    {
-        for (uint i; i < markets.length; ++i) {
-            if (canResolveMarket(markets[i])) {
-                _resolveMarket(markets[i], priceUpdateData[i]);
-            }
-        }
-    }
-
-    function _resolveMarket(address market, bytes[][] memory priceUpdateData) internal {
-        if (!canResolveMarket(market)) revert CanNotResolve();
-
-        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        ISpeedMarketsAMM speedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
-
-        bytes32[] memory priceIds = new bytes32[](1);
-        priceIds[0] = speedMarketsAMM.assetToPythId(ChainedSpeedMarket(market).asset());
-
-        int64[] memory prices = new int64[](priceUpdateData.length);
-        uint64 strikeTimePerDirection;
-        for (uint i; i < priceUpdateData.length; ++i) {
-            strikeTimePerDirection =
-                ChainedSpeedMarket(market).initialStrikeTime() +
-                uint64(i * ChainedSpeedMarket(market).timeFrame());
-
-            IPyth pyth = IPyth(contractsAddresses.pyth);
-            PythStructs.PriceFeed[] memory pricesPerDirection = pyth.parsePriceFeedUpdates{
-                value: pyth.getUpdateFee(priceUpdateData[i])
-            }(
-                priceUpdateData[i],
-                priceIds,
-                strikeTimePerDirection,
-                strikeTimePerDirection + speedMarketsAMM.maximumPriceDelayForResolving()
-            );
-
-            PythStructs.Price memory price = pricesPerDirection[0].price;
-            if (price.price <= 0) revert InvalidPrice();
-            prices[i] = price.price;
-        }
-
-        _resolveMarketWithPrices(market, prices, false);
-    }
-
-    /// @notice admin resolve market for a given market address with finalPrice
-    function resolveMarketManually(address _market, int64[] calldata _finalPrices) external isAddressWhitelisted {
-        _resolveMarketManually(_market, _finalPrices);
-    }
-
-    /// @notice admin resolve for a given markets with finalPrices
-    function resolveMarketManuallyBatch(address[] calldata markets, int64[][] calldata finalPrices)
-        external
-        isAddressWhitelisted
-    {
-        for (uint i; i < markets.length; ++i) {
-            if (canResolveMarket(markets[i])) {
-                _resolveMarketManually(markets[i], finalPrices[i]);
-            }
-        }
-    }
-
-    function _resolveMarketManually(address _market, int64[] calldata _finalPrices) internal {
-        if (!canResolveMarket(_market)) revert CanNotResolve();
-        _resolveMarketWithPrices(_market, _finalPrices, true);
-    }
-
-    /// @notice owner can resolve market for a given market address with finalPrices
-    function resolveMarketAsOwner(address _market, int64[] calldata _finalPrices) external onlyOwner {
+    /// @notice resolver or owner can resolve market for a given market address with finalPrices
+    function resolveMarketWithPrices(address _market, int64[] calldata _finalPrices) external {
+        if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver") && msg.sender != owner)
+            revert ResolverNotWhitelisted();
         if (!canResolveMarket(_market)) revert CanNotResolve();
         _resolveMarketWithPrices(_market, _finalPrices, false);
     }
@@ -531,6 +417,11 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         }
 
         emit MarketResolved(market, ChainedSpeedMarket(market).isUserWinner());
+    }
+
+    function offrampHelper(address user, uint amount) external {
+        if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver")) revert ResolverNotWhitelisted();
+        sUSD.safeTransferFrom(user, msg.sender, amount);
     }
 
     /// @notice Transfer amount to destination address

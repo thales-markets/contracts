@@ -111,6 +111,19 @@
   },
   {
     "inputs": [],
+    "name": "chainedSpeedMarketsAMM",
+    "outputs": [
+      {
+        "internalType": "contract IChainedSpeedMarketsAMM",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "initNonReentrant",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -202,6 +215,134 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes[][]",
+        "name": "priceUpdateData",
+        "type": "bytes[][]"
+      }
+    ],
+    "name": "resolveChainedMarket",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "int64[]",
+        "name": "_finalPrices",
+        "type": "int64[]"
+      }
+    ],
+    "name": "resolveChainedMarketManually",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "markets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "int64[][]",
+        "name": "finalPrices",
+        "type": "int64[][]"
+      }
+    ],
+    "name": "resolveChainedMarketManuallyBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes[][]",
+        "name": "priceUpdateData",
+        "type": "bytes[][]"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "toEth",
+        "type": "bool"
+      }
+    ],
+    "name": "resolveChainedMarketWithOfframp",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "markets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bytes[][][]",
+        "name": "priceUpdateData",
+        "type": "bytes[][][]"
+      }
+    ],
+    "name": "resolveChainedMarketsBatch",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "markets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bytes[][][]",
+        "name": "priceUpdateData",
+        "type": "bytes[][][]"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "toEth",
+        "type": "bool"
+      }
+    ],
+    "name": "resolveChainedMarketsBatchOffRamp",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -330,6 +471,19 @@
     "name": "resolveMarketsBatchOffRamp",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_chainedSpeedMarketsAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setChainedSpeedMarketsAMM",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

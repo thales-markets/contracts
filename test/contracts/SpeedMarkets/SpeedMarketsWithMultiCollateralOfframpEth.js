@@ -16,6 +16,7 @@ contract('SpeedMarkets', (accounts) => {
 			let {
 				creatorAccount,
 				speedMarketsAMM,
+				speedMarketsAMMResolver,
 				speedMarketsAMMData,
 				addressManager,
 				fee,
@@ -43,6 +44,7 @@ contract('SpeedMarkets', (accounts) => {
 			);
 
 			await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMM.address, true);
+			await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMMResolver.address, true);
 
 			await addressManager.setAddresses(
 				safeBox,
@@ -53,6 +55,11 @@ contract('SpeedMarkets', (accounts) => {
 				speedMarketsAMM.address
 			);
 			await speedMarketsAMM.setMultiCollateralOnOffRampEnabled(true);
+
+			await speedMarketsAMMResolver.setupMultiCollateralApproval(
+				toUnit('1000000000000000000000000000000'),
+				{ from: owner }
+			);
 
 			await exoticOP.setDefaultAmount(toUnit(10000));
 			await exoticOP.mintForUser(user);
@@ -172,9 +179,10 @@ contract('SpeedMarkets', (accounts) => {
 			let swapRouterMockWethBalance = await mockWeth.balanceOf(swapRouterMock.address);
 
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit('1000'), { from: user });
+			await exoticUSD.approve(speedMarketsAMMResolver.address, toUnit('1000'), { from: user });
 
 			console.log('swapRouterMockWethBalance before ' + swapRouterMockWethBalance / 1e18);
-			await speedMarketsAMM.resolveMarketWithOfframp(
+			await speedMarketsAMMResolver.resolveMarketWithOfframp(
 				market,
 				[resolvePriceFeedUpdateData],
 				mockWeth.address,
@@ -188,8 +196,9 @@ contract('SpeedMarkets', (accounts) => {
 			let userEthBalanceAfterDiff = userEthBalanceAfter / 1e18 - userEthBalance / 1e18;
 			console.log('userEthBalanceAfterDiff ' + userEthBalanceAfterDiff);
 
-			assert.bnGte(toUnit(userEthBalanceAfterDiff), toUnit('0.01'));
-			assert.bnLte(toUnit(userEthBalanceAfterDiff), toUnit('0.02'));
+			// User wins ~20 sUSD (minus fees), which converts to ~0.008-0.012 ETH based on the mock rates
+			assert.bnGte(toUnit(userEthBalanceAfterDiff), toUnit('0.008'));
+			assert.bnLte(toUnit(userEthBalanceAfterDiff), toUnit('0.012'));
 		});
 	});
 });

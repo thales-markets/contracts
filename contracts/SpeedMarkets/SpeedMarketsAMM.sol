@@ -329,7 +329,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             skew -
             discount;
         // payout with bonus
-        payout = buyinAmount * 2 + (buyinAmount * payoutBonus) / ONE;
+        payout = buyinAmount * 2 + (buyinAmount * 2 * payoutBonus) / ONE;
         // update risk per asset with the bonus applied
         currentRiskPerAsset[asset] += (payout - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE);
         if (currentRiskPerAsset[asset] > maxRiskPerAsset[asset]) {
@@ -417,7 +417,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 params.createMarketParams.pythPrice.price,
                 uint64(params.createMarketParams.pythPrice.publishTime),
                 params.createMarketParams.direction,
-                params.createMarketParams.collateral,
+                params.defaultCollateral,
                 params.buyinAmount,
                 safeBoxImpact,
                 lpFeeWithSkew

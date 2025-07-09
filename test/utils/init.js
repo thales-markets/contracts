@@ -126,7 +126,20 @@ module.exports = {
 			speedMarketsAMM.address
 		);
 
+		// Deploy SpeedMarketsAMMResolver
+		let SpeedMarketsAMMResolverContract = artifacts.require('SpeedMarketsAMMResolver');
+		let speedMarketsAMMResolver = await SpeedMarketsAMMResolverContract.new();
+		await speedMarketsAMMResolver.initialize(
+			owner,
+			speedMarketsAMM.address,
+			addressManager.address
+		);
+
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
+		await addressManager.setAddressInAddressBook(
+			'SpeedMarketsAMMResolver',
+			speedMarketsAMMResolver.address
+		);
 
 		let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
 		let speedMarketMastercopy = await SpeedMarketMastercopy.new();
@@ -153,6 +166,7 @@ module.exports = {
 			creatorAccount,
 			speedMarketsAMM,
 			speedMarketsAMMData,
+			speedMarketsAMMResolver,
 			addressManager,
 			balanceOfSpeedMarketAMMBefore,
 			priceFeedUpdateData,

@@ -51,14 +51,103 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         setOwner(_owner);
         speedMarketsAMM = ISpeedMarketsAMM(_speedMarketsAMM);
         addressManager = IAddressManager(_addressManager);
+        address multiCollateralAddress = addressManager.multiCollateralOnOffRamp();
+        if (multiCollateralAddress != address(0)) {
+            speedMarketsAMM.sUSD().approve(multiCollateralAddress, MAX_APPROVAL);
+        }
         initNonReentrant();
     }
 
+    /// ========== EXTERNAL FUNCTIONS ==========
+
     /// @notice resolveMarket resolves an active market
     /// @param market address of the market
+    /// @param priceUpdateData price update data
+    /// @dev priceUpdateData is an array of bytes, each element is a price update data for a market
     function resolveMarket(address market, bytes[] calldata priceUpdateData) external payable nonReentrant notPaused {
         _resolveMarket(market, priceUpdateData);
     }
+
+    /// @notice resolveMarket resolves an active market with offramp
+    /// @param market address of the market
+    /// @param priceUpdateData price update data
+    /// @param collateral collateral address
+    /// @param toEth whether to offramp to ETH
+    /// @dev priceUpdateData is an array of bytes, each element is a price update data for a market
+    function resolveMarketWithOfframp(
+        address market,
+        bytes[] calldata priceUpdateData,
+        address collateral,
+        bool toEth
+    ) external payable nonReentrant notPaused {
+        if (!speedMarketsAMM.multicollateralEnabled()) revert MulticollateralOnrampDisabled();
+        _resolveMarketWithOfframp(market, priceUpdateData, collateral, toEth);
+    }
+
+    /// @notice resolveMarkets in a batch
+    /// @param markets array of market addresses
+    /// @param priceUpdateData array of price update data
+    /// @dev priceUpdateData is an array of bytes, each element is a price update data for a market
+    function resolveMarketsBatch(address[] calldata markets, bytes[] calldata priceUpdateData)
+        external
+        payable
+        nonReentrant
+        notPaused
+    {
+        for (uint i; i < markets.length; ++i) {
+            if (speedMarketsAMM.canResolveMarket(markets[i])) {
+                bytes[] memory subarray = new bytes[](1);
+                subarray[0] = priceUpdateData[i];
+                _resolveMarket(markets[i], subarray);
+            }
+        }
+    }
+
+    /// @notice resolveMarkets in a batch
+    /// @param markets array of market addresses
+    /// @param priceUpdateData array of price update data
+    /// @param collateral collateral address
+    /// @param toEth whether to offramp to ETH
+    /// @dev priceUpdateData is an array of bytes, each element is a price update data for a market
+    function resolveMarketsBatchOffRamp(
+        address[] calldata markets,
+        bytes[] calldata priceUpdateData,
+        address collateral,
+        bool toEth
+    ) external payable nonReentrant notPaused {
+        if (!speedMarketsAMM.multicollateralEnabled()) revert MulticollateralOnrampDisabled();
+        for (uint i; i < markets.length; ++i) {
+            if (speedMarketsAMM.canResolveMarket(markets[i])) {
+                bytes[] memory subarray = new bytes[](1);
+                subarray[0] = priceUpdateData[i];
+                _resolveMarketWithOfframp(markets[i], subarray, collateral, toEth);
+            }
+        }
+    }
+
+    /// @notice admin resolve market for a given market address with finalPrice
+    /// @param _market market address
+    /// @param _finalPrice final price
+    function resolveMarketManually(address _market, int64 _finalPrice) external {
+        if (!speedMarketsAMM.whitelistedAddresses(msg.sender)) revert InvalidWhitelistAddress();
+        _resolveMarketManually(_market, _finalPrice);
+    }
+
+    /// @notice admin resolve for a given markets with finalPrices
+    /// @param markets array of market addresses
+    /// @param finalPrices array of final prices
+    function resolveMarketManuallyBatch(address[] calldata markets, int64[] calldata finalPrices) external {
+        if (!speedMarketsAMM.whitelistedAddresses(msg.sender)) revert InvalidWhitelistAddress();
+        uint len = markets.length;
+        for (uint i; i < len; ++i) {
+            address market = markets[i];
+            if (speedMarketsAMM.canResolveMarket(market)) {
+                _resolveMarketManually(market, finalPrices[i]);
+            }
+        }
+    }
+
+    /// ========== INTERNAL FUNCTIONS ==========
 
     function _resolveMarket(address market, bytes[] memory priceUpdateData) internal {
         if (!speedMarketsAMM.canResolveMarket(market)) revert CanNotResolve();
@@ -81,18 +170,12 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         speedMarketsAMM.resolveMarketWithPrice(market, price.price);
     }
 
-    /// @notice resolveMarket resolves an active market with offramp
-    /// @param market address of the market
-    /// @param priceUpdateData price update data
-    /// @param collateral collateral address
-    /// @param toEth whether to offramp to ETH
-    function resolveMarketWithOfframp(
+    function _resolveMarketWithOfframp(
         address market,
-        bytes[] calldata priceUpdateData,
+        bytes[] memory priceUpdateData,
         address collateral,
         bool toEth
-    ) external payable nonReentrant notPaused {
-        if (!speedMarketsAMM.multicollateralEnabled()) revert MulticollateralOnrampDisabled();
+    ) internal {
         address user = SpeedMarket(market).user();
         if (msg.sender != user) revert OnlyMarketOwner();
         IERC20Upgradeable defaultCollateral = IERC20Upgradeable(SpeedMarket(market).collateral());
@@ -117,40 +200,6 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         }
     }
 
-    /// @notice resolveMarkets in a batch
-    function resolveMarketsBatch(address[] calldata markets, bytes[] calldata priceUpdateData)
-        external
-        payable
-        nonReentrant
-        notPaused
-    {
-        for (uint i; i < markets.length; ++i) {
-            if (speedMarketsAMM.canResolveMarket(markets[i])) {
-                bytes[] memory subarray = new bytes[](1);
-                subarray[0] = priceUpdateData[i];
-                _resolveMarket(markets[i], subarray);
-            }
-        }
-    }
-
-    /// @notice admin resolve market for a given market address with finalPrice
-    function resolveMarketManually(address _market, int64 _finalPrice) external {
-        if (!speedMarketsAMM.whitelistedAddresses(msg.sender)) revert InvalidWhitelistAddress();
-        _resolveMarketManually(_market, _finalPrice);
-    }
-
-    /// @notice admin resolve for a given markets with finalPrices
-    function resolveMarketManuallyBatch(address[] calldata markets, int64[] calldata finalPrices) external {
-        if (!speedMarketsAMM.whitelistedAddresses(msg.sender)) revert InvalidWhitelistAddress();
-        uint len = markets.length;
-        for (uint i; i < len; ++i) {
-            address market = markets[i];
-            if (speedMarketsAMM.canResolveMarket(market)) {
-                _resolveMarketManually(market, finalPrices[i]);
-            }
-        }
-    }
-
     function _resolveMarketManually(address _market, int64 _finalPrice) internal {
         SpeedMarket.Direction direction = SpeedMarket(_market).direction();
         int64 strikePrice = SpeedMarket(_market).strikePrice();
@@ -159,5 +208,16 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         if (!speedMarketsAMM.canResolveMarket(_market) || isUserWinner) revert CanNotResolve();
 
         speedMarketsAMM.resolveMarketWithPrice(_market, _finalPrice);
+    }
+
+    /// ========== SETUP FUNCTIONS ==========
+
+    /// @notice Setup approval for multiCollateralOnOffRamp
+    /// @param amount The amount to approve (use type(uint256).max for unlimited)
+    function setupMultiCollateralApproval(uint amount) external onlyOwner {
+        address multiCollateralAddress = addressManager.multiCollateralOnOffRamp();
+        if (multiCollateralAddress != address(0)) {
+            speedMarketsAMM.sUSD().approve(multiCollateralAddress, amount);
+        }
     }
 }

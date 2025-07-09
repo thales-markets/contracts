@@ -16,6 +16,7 @@ contract('SpeedMarkets', (accounts) => {
 			let {
 				creatorAccount,
 				speedMarketsAMM,
+				speedMarketsAMMResolver,
 				speedMarketsAMMData,
 				addressManager,
 				fee,
@@ -43,6 +44,7 @@ contract('SpeedMarkets', (accounts) => {
 			);
 
 			await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMM.address, true);
+			await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMMResolver.address, true);
 
 			await addressManager.setAddresses(
 				safeBox,
@@ -53,6 +55,11 @@ contract('SpeedMarkets', (accounts) => {
 				speedMarketsAMM.address
 			);
 			await speedMarketsAMM.setMultiCollateralOnOffRampEnabled(true);
+
+			await speedMarketsAMMResolver.setupMultiCollateralApproval(
+				toUnit('10000000000000000000000000000000000000000000000000000000000'),
+				{ from: owner }
+			);
 
 			await exoticOP.setDefaultAmount(toUnit(10000));
 			await exoticOP.mintForUser(user);
@@ -130,7 +137,7 @@ contract('SpeedMarkets', (accounts) => {
 			console.log('numActiveMarkets before resolve ' + ammData.numActiveMarkets);
 
 			await expect(
-				speedMarketsAMM.resolveMarketWithOfframp(
+				speedMarketsAMMResolver.resolveMarketWithOfframp(
 					market,
 					[resolvePriceFeedUpdateData],
 					exoticOP.address,
@@ -141,6 +148,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			await exoticOP.approve(speedMarketsAMM.address, toUnit('1000'), { from: user });
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit('1000'), { from: user });
+			await exoticUSD.approve(speedMarketsAMMResolver.address, toUnit('1000'), { from: user });
 
 			await exoticOP.mintForUser(proxyUser);
 			await exoticOP.transfer(swapRouterMock.address, toUnit(1000), { from: proxyUser });
@@ -156,7 +164,7 @@ contract('SpeedMarkets', (accounts) => {
 			);
 			console.log('allowance', allowance / 1e18);
 
-			await speedMarketsAMM.resolveMarketWithOfframp(
+			await speedMarketsAMMResolver.resolveMarketWithOfframp(
 				market,
 				[resolvePriceFeedUpdateData],
 				exoticOP.address,
@@ -179,6 +187,7 @@ contract('SpeedMarkets', (accounts) => {
 			let {
 				creatorAccount,
 				speedMarketsAMM,
+				speedMarketsAMMResolver,
 				speedMarketsAMMData,
 				addressManager,
 				fee,
@@ -201,6 +210,7 @@ contract('SpeedMarkets', (accounts) => {
 			await multiCollateralOnOffRamp.setPriceFeed(MockPriceFeedDeployed.address);
 			await multiCollateralOnOffRamp.setSupportedCollateral(exoticOP.address, true);
 			await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMM.address, true);
+			await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMMResolver.address, true);
 
 			await addressManager.setAddresses(
 				safeBox,
@@ -220,6 +230,7 @@ contract('SpeedMarkets', (accounts) => {
 			// Also mint for AMM to have enough balance for payout
 			await exoticOP.mintForUser(speedMarketsAMM.address);
 			await exoticOP.approve(speedMarketsAMM.address, toUnit(1000), { from: user });
+			await exoticUSD.approve(speedMarketsAMMResolver.address, toUnit(1000), { from: user });
 
 			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
 			const buyinAmountParam = 10; // Use same format as first test
@@ -250,7 +261,7 @@ contract('SpeedMarkets', (accounts) => {
 			let SpeedMarket = artifacts.require('SpeedMarket');
 			let speedMarket = await SpeedMarket.at(market);
 			let strikeTime = await speedMarket.strikeTime();
-			let defaultCollateral = await speedMarket.defaultCollateral();
+			let defaultCollateral = await speedMarket.collateral();
 
 			console.log('Market default collateral:', defaultCollateral);
 			console.log('ExoticOP address (market collateral):', exoticOP.address);
@@ -290,7 +301,7 @@ contract('SpeedMarkets', (accounts) => {
 			// 2. resolveMarketWithOfframp requires the market to have sUSD as default collateral
 			// 3. It doesn't matter what collateral we're trying to offramp TO - the check fails first
 			try {
-				await speedMarketsAMM.resolveMarketWithOfframp(
+				await speedMarketsAMMResolver.resolveMarketWithOfframp(
 					market,
 					[resolvePriceFeedUpdateData],
 					exoticUSDC.address, // trying to offramp to different collateral

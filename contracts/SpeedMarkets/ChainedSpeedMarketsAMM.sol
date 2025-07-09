@@ -340,7 +340,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 internalParams.buyinAmount,
                 tempData.speedAMMParams.safeBoxImpact,
                 tempData.payoutMultiplier,
-                internalParams.createMarketParams.collateral,
                 internalParams.defaultCollateral
             )
         );
@@ -399,7 +398,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     ) external payable nonReentrant notPaused {
         address user = ChainedSpeedMarket(market).user();
         if (msg.sender != user) revert OnlyMarketOwner();
-        IERC20Upgradeable defaultCollateral = IERC20Upgradeable(ChainedSpeedMarket(market).defaultCollateral());
+        IERC20Upgradeable defaultCollateral = IERC20Upgradeable(ChainedSpeedMarket(market).collateral());
         if (address(defaultCollateral) != address(sUSD)) revert InvalidOffRampCollateral();
         uint amountBefore = sUSD.balanceOf(user);
         _resolveMarket(market, priceUpdateData);

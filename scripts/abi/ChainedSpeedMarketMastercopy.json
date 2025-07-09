@@ -89,19 +89,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "defaultCollateral",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -227,11 +214,6 @@
           {
             "internalType": "address",
             "name": "_collateral",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "_defaultCollateral",
             "type": "address"
           }
         ],

@@ -62,6 +62,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     error MismatchedLengths();
     error CollateralNotSupported();
     error InvalidOffRampCollateral();
+    error CanOnlyBeCalledFromResolverOrOwner();
 
     IERC20Upgradeable public sUSD;
 
@@ -464,7 +465,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice owner can resolve market for a given market address with finalPrice
     function resolveMarketWithPrice(address _market, int64 _finalPrice) external {
         if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver") && msg.sender != owner)
-            revert ResolverNotWhitelisted();
+            revert CanOnlyBeCalledFromResolverOrOwner();
         if (!canResolveMarket(_market)) revert CanNotResolve();
 
         _resolveMarketWithPrice(_market, _finalPrice);

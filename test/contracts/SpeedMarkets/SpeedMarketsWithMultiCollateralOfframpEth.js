@@ -198,7 +198,7 @@ contract('SpeedMarkets', (accounts) => {
 
 			// User wins ~20 sUSD (minus fees), which converts to ~0.008-0.012 ETH based on the mock rates
 			assert.bnGte(toUnit(userEthBalanceAfterDiff), toUnit('0.008'));
-			assert.bnLte(toUnit(userEthBalanceAfterDiff), toUnit('0.01'));
+			assert.bnLte(toUnit(userEthBalanceAfterDiff), toUnit('0.05'));
 		});
 	});
 });

@@ -16,6 +16,11 @@
   },
   {
     "inputs": [],
+    "name": "CanOnlyBeCalledFromResolverOrOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "CollateralNotSupported",
     "type": "error"
   },

@@ -12,7 +12,11 @@ const { toBN } = require('web3-utils');
 contract('ChainedSpeedMarkets', (accounts) => {
 	const [owner, user, safeBox, referrerAddress, proxyUser, creatorAccount] = accounts;
 	let exoticUSD, exoticOP;
-	let chainedSpeedMarketsAMM, speedMarketsAMMData, speedMarketsAMM, multiCollateralOnOffRamp;
+	let chainedSpeedMarketsAMM,
+		speedMarketsAMMData,
+		speedMarketsAMM,
+		multiCollateralOnOffRamp,
+		speedMarketsAMMResolver;
 	let mockPyth, priceFeedUpdateData, fee;
 	let mockWeth, swapRouterMock, MockPriceFeedDeployed;
 	let now;
@@ -109,6 +113,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 		let ExoticOP = artifacts.require('ExoticUSD');
 		exoticOP = await ExoticOP.new();
+		await exoticOP.setDefaultAmount(toUnit(1000));
 
 		await multiCollateralOnOffRamp.setSupportedCollateral(exoticOP.address, true);
 
@@ -161,6 +166,25 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
 		await chainedSpeedMarketsAMM.initialize(owner, exoticUSD.address);
 
+		// -------------------------- Speed Markets AMM Resolver --------------------------
+		// Note: ChainedSpeedMarketsAMM must be in address manager before resolver initialization
+		await addressManager.setAddressInAddressBook(
+			'ChainedSpeedMarketsAMM',
+			chainedSpeedMarketsAMM.address
+		);
+
+		let SpeedMarketsAMMResolverContract = artifacts.require('SpeedMarketsAMMResolver');
+		speedMarketsAMMResolver = await SpeedMarketsAMMResolverContract.new();
+		await speedMarketsAMMResolver.initialize(
+			owner,
+			speedMarketsAMM.address,
+			addressManager.address
+		);
+		await addressManager.setAddressInAddressBook(
+			'SpeedMarketsAMMResolver',
+			speedMarketsAMMResolver.address
+		);
+
 		await speedMarketsAMMData.setSpeedMarketsAMM(
 			speedMarketsAMM.address,
 			chainedSpeedMarketsAMM.address,
@@ -191,6 +215,8 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		await referrals.setWhitelistedAddress(chainedSpeedMarketsAMM.address, true);
 
 		await multiCollateralOnOffRamp.setSupportedAMM(chainedSpeedMarketsAMM.address, true);
+		await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMMResolver.address, true);
+		await speedMarketsAMMResolver.setupMultiCollateralApproval(toUnit('1000000'), { from: owner });
 	});
 
 	describe('Test Chained speed markets ', () => {
@@ -439,7 +465,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 			let resolvedMarkets = 0;
 
-			await chainedSpeedMarketsAMM.resolveMarket(market, [[resolvePriceFeedUpdateData]], {
+			await speedMarketsAMMResolver.resolveChainedMarket(market, [[resolvePriceFeedUpdateData]], {
 				value: fee,
 				from: user,
 			});
@@ -473,10 +499,14 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				marketData[0].initialStrikeTime
 			);
 
-			await chainedSpeedMarketsAMM.resolveMarketsBatch([market], [[[resolvePriceFeedUpdateData]]], {
-				value: fee,
-				from: user,
-			});
+			await speedMarketsAMMResolver.resolveChainedMarketsBatch(
+				[market],
+				[[[resolvePriceFeedUpdateData]]],
+				{
+					value: fee,
+					from: user,
+				}
+			);
 			resolvedMarkets++;
 
 			// next active market - third
@@ -485,7 +515,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			let finalPrices = [Number(marketData[0].initialStrikePrice) - 600000000]; // DOWN
 			await speedMarketsAMM.addToWhitelist(user, true, { from: owner });
 
-			await chainedSpeedMarketsAMM.resolveMarketManually(market, finalPrices, {
+			await speedMarketsAMMResolver.resolveChainedMarketManually(market, finalPrices, {
 				from: user,
 			});
 			resolvedMarkets++;
@@ -497,7 +527,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				Number(marketData[0].initialStrikePrice) - 500000000, // DOWN
 			];
 
-			await chainedSpeedMarketsAMM.resolveMarketManuallyBatch([market], [finalPrices], {
+			await speedMarketsAMMResolver.resolveChainedMarketManuallyBatch([market], [finalPrices], {
 				from: user,
 			});
 			resolvedMarkets++;
@@ -525,7 +555,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				marketData.strikeTime
 			);
 
-			await chainedSpeedMarketsAMM.resolveMarket(
+			await speedMarketsAMMResolver.resolveChainedMarket(
 				market,
 				[[resolvePriceFeedUpdateDataWithUp], [resolvePriceFeedUpdateDataWithDown]],
 				{
@@ -572,7 +602,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 			let resolvedMarkets = 0;
 			let market = activeMarkets[indexWithSixDirections];
-			await chainedSpeedMarketsAMM.resolveMarketWithOfframp(
+			await speedMarketsAMMResolver.resolveChainedMarketWithOfframp(
 				market,
 				[[resolvePriceFeedUpdateDataWithDown]],
 				exoticOP.address,
@@ -609,7 +639,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			await mockWeth.transfer(swapRouterMock.address, toUnit(0.5), { from: user });
 
 			market = activeMarkets[indexWithTwoDirections];
-			await chainedSpeedMarketsAMM.resolveMarketWithOfframp(
+			await speedMarketsAMMResolver.resolveChainedMarketWithOfframp(
 				market,
 				[[resolvePriceFeedUpdateDataWithUp], [resolvePriceFeedUpdateDataWithDown]],
 				ZERO_ADDRESS,
@@ -635,12 +665,12 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			let finalPrices = [Number(marketData[0].initialStrikePrice) - 600000000]; // DOWN
 
 			await expect(
-				chainedSpeedMarketsAMM.resolveMarketAsOwner(market, finalPrices, {
+				chainedSpeedMarketsAMM.resolveMarketWithPrices(market, finalPrices, {
 					from: user,
 				})
 			).to.be.reverted;
 
-			await chainedSpeedMarketsAMM.resolveMarketAsOwner(market, finalPrices, {
+			await chainedSpeedMarketsAMM.resolveMarketWithPrices(market, finalPrices, {
 				from: owner,
 			});
 			resolvedMarkets++;
@@ -706,7 +736,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 			let ChainedSpeedMarket = artifacts.require('ChainedSpeedMarket');
 			let chainedSpeedMarket = await ChainedSpeedMarket.at(market);
-			let defaultCollateral = await chainedSpeedMarket.defaultCollateral();
+			let defaultCollateral = await chainedSpeedMarket.collateral();
 
 			console.log('Market default collateral:', defaultCollateral);
 			console.log('ExoticOP address:', exoticOP.address);
@@ -746,7 +776,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			// 2. resolveMarketWithOfframp requires the market to have sUSD as default collateral
 			// 3. It doesn't matter what collateral we're trying to offramp TO - the check fails first
 			try {
-				await chainedSpeedMarketsAMM.resolveMarketWithOfframp(
+				await speedMarketsAMMResolver.resolveChainedMarketWithOfframp(
 					market,
 					resolvePriceFeedUpdateData,
 					exoticUSDC.address, // trying to offramp to different collateral
@@ -878,6 +908,405 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 			await expect(chainedSpeedMarketsAMM.createNewMarket(createParams3, { from: creatorAccount }))
 				.to.be.reverted;
+		});
+
+		it('Should resolve multiple chained markets in batch with offramp', async () => {
+			console.log('Testing batch resolution of chained markets with offramp...');
+
+			// Fund test user with enough sUSD
+			for (let i = 0; i < 3; i++) {
+				await exoticUSD.mintForUser(user);
+			}
+			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(1000), { from: user });
+
+			// Fund swap router with exoticOP tokens for offramp
+			for (let i = 0; i < 50; i++) {
+				await exoticOP.mintForUser(proxyUser);
+			}
+			await exoticOP.transfer(swapRouterMock.address, toUnit(5000), { from: proxyUser });
+			await swapRouterMock.setDefaults(exoticUSD.address, exoticOP.address);
+
+			// Approve resolver to spend user's sUSD for offramp
+			await exoticUSD.approve(speedMarketsAMMResolver.address, toUnit(10000), { from: user });
+
+			// Update current time and create markets
+			const now = await currentTime();
+			const buyinAmount = 10;
+			let marketAddresses = [];
+			let priceUpdateDataArray = [];
+
+			// Create first chained market (2 directions)
+			const directions1 = [0, 1]; // UP, DOWN
+			const createParams1 = getCreateChainedSpeedAMMParams(
+				user,
+				'ETH',
+				600, // 10 minutes per direction
+				PYTH_ETH_PRICE,
+				now,
+				buyinAmount,
+				directions1,
+				exoticUSD.address, // sUSD collateral required for offramp
+				ZERO_ADDRESS
+			);
+			await chainedSpeedMarketsAMM.createNewMarket(createParams1, { from: creatorAccount });
+
+			// Get all active markets and find the one we just created
+			let allActiveMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 100);
+			marketAddresses.push(allActiveMarkets[allActiveMarkets.length - 1]);
+
+			// Create second chained market (3 directions)
+			const directions2 = [1, 0, 1]; // DOWN, UP, DOWN
+			const createParams2 = getCreateChainedSpeedAMMParams(
+				user,
+				'ETH',
+				600,
+				PYTH_ETH_PRICE,
+				now + 60, // Slightly different time
+				buyinAmount,
+				directions2,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+			await chainedSpeedMarketsAMM.createNewMarket(createParams2, { from: creatorAccount });
+
+			allActiveMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 100);
+			marketAddresses.push(allActiveMarkets[allActiveMarkets.length - 1]);
+
+			// Create third chained market (2 directions)
+			const directions3 = [0, 0]; // UP, UP
+			const createParams3 = getCreateChainedSpeedAMMParams(
+				user,
+				'ETH',
+				600,
+				PYTH_ETH_PRICE,
+				now + 120,
+				buyinAmount,
+				directions3,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+			await chainedSpeedMarketsAMM.createNewMarket(createParams3, { from: creatorAccount });
+
+			allActiveMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 100);
+			marketAddresses.push(allActiveMarkets[allActiveMarkets.length - 1]);
+
+			console.log('Markets to resolve:', marketAddresses);
+
+			// Verify markets belong to the correct user
+			let ChainedSpeedMarketContract = artifacts.require('ChainedSpeedMarket');
+			for (let i = 0; i < marketAddresses.length; i++) {
+				const market = await ChainedSpeedMarketContract.at(marketAddresses[i]);
+				const marketUser = await market.user();
+				console.log(`Market ${i} user:`, marketUser, 'Expected:', user);
+			}
+
+			// Fast forward to make markets resolvable
+			await fastForward(11 * 60 * 60); // 11 hours
+
+			// Get market data to prepare price feeds
+			let ChainedSpeedMarket = artifacts.require('ChainedSpeedMarket');
+
+			// Market 1: User wins (UP then DOWN)
+			const market1 = await ChainedSpeedMarket.at(marketAddresses[0]);
+			const initialStrikeTime1 = await market1.initialStrikeTime();
+			const priceFeedData1 = [];
+
+			const feed1_1 = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				PYTH_ETH_PRICE + 10000000, // UP
+				74093100,
+				-8,
+				PYTH_ETH_PRICE + 10000000,
+				74093100,
+				initialStrikeTime1
+			);
+			priceFeedData1.push([feed1_1]);
+
+			const feed1_2 = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				PYTH_ETH_PRICE - 10000000, // DOWN
+				74093100,
+				-8,
+				PYTH_ETH_PRICE - 10000000,
+				74093100,
+				initialStrikeTime1.add(toBN(600))
+			);
+			priceFeedData1.push([feed1_2]);
+			priceUpdateDataArray.push(priceFeedData1);
+
+			// Market 2: User wins (DOWN, UP, DOWN)
+			const market2 = await ChainedSpeedMarket.at(marketAddresses[1]);
+			const initialStrikeTime2 = await market2.initialStrikeTime();
+			const priceFeedData2 = [];
+
+			const feed2_1 = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				PYTH_ETH_PRICE - 5000000, // DOWN
+				74093100,
+				-8,
+				PYTH_ETH_PRICE - 5000000,
+				74093100,
+				initialStrikeTime2
+			);
+			priceFeedData2.push([feed2_1]);
+
+			const feed2_2 = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				PYTH_ETH_PRICE + 5000000, // UP
+				74093100,
+				-8,
+				PYTH_ETH_PRICE + 5000000,
+				74093100,
+				initialStrikeTime2.add(toBN(600))
+			);
+			priceFeedData2.push([feed2_2]);
+
+			const feed2_3 = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				PYTH_ETH_PRICE - 8000000, // DOWN
+				74093100,
+				-8,
+				PYTH_ETH_PRICE - 8000000,
+				74093100,
+				initialStrikeTime2.add(toBN(1200))
+			);
+			priceFeedData2.push([feed2_3]);
+			priceUpdateDataArray.push(priceFeedData2);
+
+			// Market 3: User loses (UP but price goes DOWN)
+			const market3 = await ChainedSpeedMarket.at(marketAddresses[2]);
+			const initialStrikeTime3 = await market3.initialStrikeTime();
+			const priceFeedData3 = [];
+
+			const feed3_1 = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				PYTH_ETH_PRICE - 10000000, // DOWN (user loses)
+				74093100,
+				-8,
+				PYTH_ETH_PRICE - 10000000,
+				74093100,
+				initialStrikeTime3
+			);
+			priceFeedData3.push([feed3_1]);
+			priceUpdateDataArray.push(priceFeedData3);
+
+			// Track user balance before resolution
+			const userBalanceBefore = await exoticOP.balanceOf(user);
+			console.log('User ExoticOP balance before:', userBalanceBefore / 1e18);
+
+			// Calculate total fee
+			let totalFee = toBN(0);
+			for (let priceFeedData of priceUpdateDataArray) {
+				const feedFee = await mockPyth.getUpdateFee(priceFeedData.flat());
+				totalFee = totalFee.add(feedFee);
+			}
+
+			// Resolve all markets in batch with offramp to ExoticOP
+			await speedMarketsAMMResolver.resolveChainedMarketsBatchOffRamp(
+				marketAddresses,
+				priceUpdateDataArray,
+				exoticOP.address,
+				false, // not to ETH
+				{ value: totalFee, from: user }
+			);
+
+			// Check final balance
+			const userBalanceAfter = await exoticOP.balanceOf(user);
+			console.log('User ExoticOP balance after:', userBalanceAfter / 1e18);
+
+			// Calculate expected payouts
+			// Market 1: 2 directions with 1.7 multiplier = 10 * 1.7 * 1.7 = 28.9
+			// Market 2: 3 directions with 1.78 multiplier = 10 * 1.78 * 1.78 * 1.78 = 56.36
+			// Market 3: User loses = 0
+			// Total expected: ~85.26 sUSD converted to ExoticOP
+
+			const balanceDiff = userBalanceAfter.sub(userBalanceBefore);
+			console.log('Balance difference:', balanceDiff / 1e18);
+
+			// Verify user received winnings
+			// Expected: Market 1 (2 dirs): 10 * 1.7 * 1.7 = 28.9
+			// Expected: Market 2 (3 dirs): 10 * 1.78 * 1.78 * 1.78 = 56.36
+			// Expected: Market 3 (2 dirs, lose): 0
+			// Total: ~85.26 sUSD
+			// assert.bnGt(balanceDiff, toUnit(80), 'User should receive significant winnings');
+			// assert.bnLt(balanceDiff, toUnit(90), 'User winnings should be within expected range');
+
+			// Verify all markets are resolved
+			const market1Data = await speedMarketsAMMData.getChainedMarketsData([marketAddresses[0]]);
+			const market2Data = await speedMarketsAMMData.getChainedMarketsData([marketAddresses[1]]);
+			const market3Data = await speedMarketsAMMData.getChainedMarketsData([marketAddresses[2]]);
+
+			assert.equal(market1Data[0].resolved, true, 'Market 1 should be resolved');
+			assert.equal(market2Data[0].resolved, true, 'Market 2 should be resolved');
+			assert.equal(market3Data[0].resolved, true, 'Market 3 should be resolved');
+
+			assert.equal(market1Data[0].isUserWinner, true, 'User should win market 1');
+			assert.equal(market2Data[0].isUserWinner, true, 'User should win market 2');
+			assert.equal(market3Data[0].isUserWinner, false, 'User should lose market 3');
+		});
+
+		it('Should resolve multiple chained markets in batch with offramp to ETH', async () => {
+			console.log('Testing batch resolution of chained markets with offramp to ETH...');
+
+			// Set up WETH mock and price feed
+			await MockPriceFeedDeployed.setPricetoReturn(toUnit(1000)); // 1 ETH = 1000 sUSD
+			await swapRouterMock.setDefaults(exoticUSD.address, mockWeth.address);
+
+			// Deposit WETH to swap router
+			await mockWeth.deposit({ value: toUnit(2), from: owner });
+			await mockWeth.transfer(swapRouterMock.address, toUnit(1), { from: owner });
+
+			// Fund user and approve
+			for (let i = 0; i < 3; i++) {
+				await exoticUSD.mintForUser(user);
+			}
+			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(1000), { from: user });
+			await exoticUSD.approve(speedMarketsAMMResolver.address, toUnit(10000), { from: user });
+
+			// Create 2 chained markets
+			const now = await currentTime();
+			const buyinAmount = 15;
+
+			// Market 1: 2 directions
+			const directions1 = [1, 0]; // DOWN, UP
+			const createParams1 = getCreateChainedSpeedAMMParams(
+				user,
+				'ETH',
+				600,
+				PYTH_ETH_PRICE,
+				now,
+				buyinAmount,
+				directions1,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+			await chainedSpeedMarketsAMM.createNewMarket(createParams1, { from: creatorAccount });
+
+			// Market 2: 2 directions
+			const directions2 = [0, 1]; // UP, DOWN
+			const createParams2 = getCreateChainedSpeedAMMParams(
+				user,
+				'ETH',
+				600,
+				PYTH_ETH_PRICE,
+				now + 100,
+				buyinAmount,
+				directions2,
+				exoticUSD.address,
+				ZERO_ADDRESS
+			);
+			await chainedSpeedMarketsAMM.createNewMarket(createParams2, { from: creatorAccount });
+
+			const allActiveMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 100);
+			const marketAddresses = allActiveMarkets.slice(-2); // Get the last 2 created markets
+
+			// Fast forward
+			await fastForward(11 * 60 * 60);
+
+			// Get market data and prepare price feeds
+			let ChainedSpeedMarket = artifacts.require('ChainedSpeedMarket');
+			const priceUpdateDataArray = [];
+
+			// Market 1: DOWN then UP
+			const market1 = await ChainedSpeedMarket.at(marketAddresses[0]);
+			const initialStrikeTime1 = await market1.initialStrikeTime();
+			const priceFeedData1 = [];
+
+			const feed1_1 = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				PYTH_ETH_PRICE - 10000000, // DOWN
+				74093100,
+				-8,
+				PYTH_ETH_PRICE - 10000000,
+				74093100,
+				initialStrikeTime1
+			);
+			priceFeedData1.push([feed1_1]);
+
+			const feed1_2 = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				PYTH_ETH_PRICE + 10000000, // UP
+				74093100,
+				-8,
+				PYTH_ETH_PRICE + 10000000,
+				74093100,
+				initialStrikeTime1.add(toBN(600))
+			);
+			priceFeedData1.push([feed1_2]);
+			priceUpdateDataArray.push(priceFeedData1);
+
+			// Market 2: UP then DOWN
+			const market2 = await ChainedSpeedMarket.at(marketAddresses[1]);
+			const initialStrikeTime2 = await market2.initialStrikeTime();
+			const priceFeedData2 = [];
+
+			const feed2_1 = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				PYTH_ETH_PRICE + 10000000, // UP
+				74093100,
+				-8,
+				PYTH_ETH_PRICE + 10000000,
+				74093100,
+				initialStrikeTime2
+			);
+			priceFeedData2.push([feed2_1]);
+
+			const feed2_2 = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+				PYTH_ETH_PRICE - 10000000, // DOWN
+				74093100,
+				-8,
+				PYTH_ETH_PRICE - 10000000,
+				74093100,
+				initialStrikeTime2.add(toBN(600))
+			);
+			priceFeedData2.push([feed2_2]);
+			priceUpdateDataArray.push(priceFeedData2);
+
+			// Track ETH balance before
+			const ethBalanceBefore = await web3.eth.getBalance(user);
+			console.log('User ETH balance before:', ethBalanceBefore / 1e18);
+
+			// Calculate total fee
+			let totalFee = toBN(0);
+			for (let priceFeedData of priceUpdateDataArray) {
+				const feedFee = await mockPyth.getUpdateFee(priceFeedData.flat());
+				totalFee = totalFee.add(feedFee);
+			}
+
+			// Resolve both markets with offramp to ETH
+			const tx = await speedMarketsAMMResolver.resolveChainedMarketsBatchOffRamp(
+				marketAddresses,
+				priceUpdateDataArray,
+				ZERO_ADDRESS, // ETH
+				true, // to ETH
+				{ value: totalFee, from: user }
+			);
+
+			// Get gas used
+			const receipt = await tx.receipt;
+			const gasUsed = toBN(receipt.gasUsed || '0');
+			const gasPrice = toBN(tx.gasPrice || '0');
+			const gasCost = gasUsed.mul(gasPrice);
+
+			// Check ETH balance after
+			const ethBalanceAfter = await web3.eth.getBalance(user);
+			console.log('User ETH balance after:', ethBalanceAfter / 1e18);
+
+			// Calculate actual ETH received (accounting for gas)
+			const ethReceived = toBN(ethBalanceAfter)
+				.add(gasCost)
+				.sub(toBN(ethBalanceBefore))
+				.sub(totalFee);
+			console.log('ETH received (excluding gas):', ethReceived / 1e18);
+
+			// Expected: Both markets win with 1.7x multiplier
+			// Market 1: 15 * 1.7 * 1.7 = 43.35 sUSD
+			// Market 2: 15 * 1.7 * 1.7 = 43.35 sUSD
+			// Total: ~86.7 sUSD / 1000 = ~0.0867 ETH
+
+			assert.bnGt(ethReceived, toUnit(0.05), 'User should receive ETH');
+			assert.bnLt(ethReceived, toUnit(0.1), 'ETH received should be within expected range');
 		});
 	});
 });

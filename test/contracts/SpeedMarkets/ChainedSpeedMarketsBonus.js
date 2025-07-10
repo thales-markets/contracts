@@ -15,6 +15,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 	let speedMarketsAMM;
 	let chainedSpeedMarketsAMM;
 	let speedMarketsAMMData;
+	let speedMarketsAMMResolver;
 	let exoticUSD;
 	let mockPyth;
 	let collateral2;
@@ -161,17 +162,34 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 		);
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
 
+		// -------------------------- Speed Markets AMM Resolver --------------------------
+		// Deploy ChainedSpeedMarketsAMM first so it can be in address manager
+		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
+		chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
+		await chainedSpeedMarketsAMM.initialize(owner, exoticUSD.address);
+		await addressManager.setAddressInAddressBook(
+			'ChainedSpeedMarketsAMM',
+			chainedSpeedMarketsAMM.address
+		);
+
+		let SpeedMarketsAMMResolverContract = artifacts.require('SpeedMarketsAMMResolver');
+		speedMarketsAMMResolver = await SpeedMarketsAMMResolverContract.new();
+		await speedMarketsAMMResolver.initialize(
+			owner,
+			speedMarketsAMM.address,
+			addressManager.address
+		);
+		await addressManager.setAddressInAddressBook(
+			'SpeedMarketsAMMResolver',
+			speedMarketsAMMResolver.address
+		);
+
 		// Update SpeedMarketsAMM with proper addresses
 		await speedMarketsAMM.setAMMAddresses(
 			speedMarketMastercopy.address,
 			ZERO_ADDRESS,
 			addressManager.address
 		);
-
-		// -------------------------- Chained Speed Markets --------------------------
-		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
-		chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
-		await chainedSpeedMarketsAMM.initialize(owner, exoticUSD.address);
 
 		await speedMarketsAMMData.setSpeedMarketsAMM(
 			speedMarketsAMM.address,
@@ -210,6 +228,8 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 
 		await referrals.setWhitelistedAddress(chainedSpeedMarketsAMM.address, true);
 		await multiCollateralOnOffRamp.setSupportedAMM(chainedSpeedMarketsAMM.address, true);
+		await multiCollateralOnOffRamp.setSupportedAMM(speedMarketsAMMResolver.address, true);
+		await speedMarketsAMMResolver.setupMultiCollateralApproval(toUnit('1000000'), { from: owner });
 
 		// Approvals
 		const MAX_UINT = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
@@ -294,7 +314,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 
 			// Resolve market
 			const fee = await mockPyth.getUpdateFee([priceFeedUpdateData1, priceFeedUpdateData2]);
-			await chainedSpeedMarketsAMM.resolveMarket(
+			await speedMarketsAMMResolver.resolveChainedMarket(
 				marketAddress,
 				[[priceFeedUpdateData1], [priceFeedUpdateData2]],
 				{ value: fee }
@@ -526,13 +546,19 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 
 			// Resolve markets individually with their own price feed data
 			const fee1 = await mockPyth.getUpdateFee(priceFeedData1.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(market1Address, priceFeedData1, { value: fee1 });
+			await speedMarketsAMMResolver.resolveChainedMarket(market1Address, priceFeedData1, {
+				value: fee1,
+			});
 
 			const fee2 = await mockPyth.getUpdateFee(priceFeedData2.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(market2Address, priceFeedData2, { value: fee2 });
+			await speedMarketsAMMResolver.resolveChainedMarket(market2Address, priceFeedData2, {
+				value: fee2,
+			});
 
 			const fee3 = await mockPyth.getUpdateFee(priceFeedData3.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(market3Address, priceFeedData3, { value: fee3 });
+			await speedMarketsAMMResolver.resolveChainedMarket(market3Address, priceFeedData3, {
+				value: fee3,
+			});
 
 			// Check balances after
 			const userExoticUSDAfter = await exoticUSD.balanceOf(user);
@@ -620,7 +646,9 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee = await mockPyth.getUpdateFee(priceFeedData.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(marketAddress, priceFeedData, { value: fee });
+			await speedMarketsAMMResolver.resolveChainedMarket(marketAddress, priceFeedData, {
+				value: fee,
+			});
 
 			const userBalanceAfter = await exoticUSD.balanceOf(user);
 
@@ -698,7 +726,9 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee = await mockPyth.getUpdateFee(priceFeedData.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(marketAddress, priceFeedData, { value: fee });
+			await speedMarketsAMMResolver.resolveChainedMarket(marketAddress, priceFeedData, {
+				value: fee,
+			});
 
 			const userBalanceAfter = await exoticUSD.balanceOf(user);
 
@@ -833,7 +863,9 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee = await mockPyth.getUpdateFee(priceFeedData.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(marketAddress, priceFeedData, { value: fee });
+			await speedMarketsAMMResolver.resolveChainedMarket(marketAddress, priceFeedData, {
+				value: fee,
+			});
 
 			const userBalanceAfter = await exoticUSD.balanceOf(user);
 
@@ -968,10 +1000,14 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee1 = await mockPyth.getUpdateFee(priceFeedData1.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(market1Address, priceFeedData1, { value: fee1 });
+			await speedMarketsAMMResolver.resolveChainedMarket(market1Address, priceFeedData1, {
+				value: fee1,
+			});
 
 			const fee2 = await mockPyth.getUpdateFee(priceFeedData2.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(market2Address, priceFeedData2, { value: fee2 });
+			await speedMarketsAMMResolver.resolveChainedMarket(market2Address, priceFeedData2, {
+				value: fee2,
+			});
 
 			const userBalanceAfter = await exoticUSD.balanceOf(user);
 
@@ -1056,7 +1092,9 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee = await mockPyth.getUpdateFee(priceFeedData.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(marketAddress, priceFeedData, { value: fee });
+			await speedMarketsAMMResolver.resolveChainedMarket(marketAddress, priceFeedData, {
+				value: fee,
+			});
 
 			const userBalanceAfter = await exoticUSD.balanceOf(user);
 
@@ -1198,12 +1236,12 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 
 			// Resolve both markets
 			const ethFee = await mockPyth.getUpdateFee(ethPriceFeedData.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(marketETHAddress, ethPriceFeedData, {
+			await speedMarketsAMMResolver.resolveChainedMarket(marketETHAddress, ethPriceFeedData, {
 				value: ethFee,
 			});
 
 			const btcFee2 = await mockPyth.getUpdateFee(btcPriceFeedData.flat());
-			await chainedSpeedMarketsAMM.resolveMarket(marketBTCAddress, btcPriceFeedData, {
+			await speedMarketsAMMResolver.resolveChainedMarket(marketBTCAddress, btcPriceFeedData, {
 				value: btcFee2,
 			});
 

@@ -126,6 +126,17 @@ module.exports = {
 			speedMarketsAMM.address
 		);
 
+		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
+
+		// Deploy a minimal ChainedSpeedMarketsAMM to satisfy resolver initialization
+		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
+		let chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
+		await chainedSpeedMarketsAMM.initialize(owner, exoticUSD.address);
+		await addressManager.setAddressInAddressBook(
+			'ChainedSpeedMarketsAMM',
+			chainedSpeedMarketsAMM.address
+		);
+
 		// Deploy SpeedMarketsAMMResolver
 		let SpeedMarketsAMMResolverContract = artifacts.require('SpeedMarketsAMMResolver');
 		let speedMarketsAMMResolver = await SpeedMarketsAMMResolverContract.new();
@@ -134,8 +145,6 @@ module.exports = {
 			speedMarketsAMM.address,
 			addressManager.address
 		);
-
-		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
 		await addressManager.setAddressInAddressBook(
 			'SpeedMarketsAMMResolver',
 			speedMarketsAMMResolver.address

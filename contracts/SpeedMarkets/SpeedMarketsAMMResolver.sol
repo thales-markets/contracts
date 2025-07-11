@@ -399,15 +399,16 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
             speedMarketsAMM.sUSD().approve(multiCollateralAddress, amount);
             chainedSpeedMarketsAMM.sUSD().approve(multiCollateralAddress, amount);
         }
+        emit SetMulticollateralApproval(amount);
     }
 
     /// @notice Set chained speed markets AMM address
     /// @param _chainedSpeedMarketsAMM The address of the chained speed markets AMM
     function setChainedSpeedMarketsAMM(address _chainedSpeedMarketsAMM) external onlyOwner {
         chainedSpeedMarketsAMM = IChainedSpeedMarketsAMM(_chainedSpeedMarketsAMM);
-        address multiCollateralAddress = addressManager.multiCollateralOnOffRamp();
-        if (multiCollateralAddress != address(0)) {
-            chainedSpeedMarketsAMM.sUSD().approve(multiCollateralAddress, MAX_APPROVAL);
-        }
+        emit ChainedSpeedMarketsAMMSet(_chainedSpeedMarketsAMM);
     }
+
+    event ChainedSpeedMarketsAMMSet(address indexed _chainedSpeedMarketsAMM);
+    event SetMulticollateralApproval(uint amount);
 }

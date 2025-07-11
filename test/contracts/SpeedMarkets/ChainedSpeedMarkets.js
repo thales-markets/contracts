@@ -180,6 +180,9 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			speedMarketsAMM.address,
 			addressManager.address
 		);
+
+		await speedMarketsAMMResolver.setChainedSpeedMarketsAMM(chainedSpeedMarketsAMM.address);
+
 		await addressManager.setAddressInAddressBook(
 			'SpeedMarketsAMMResolver',
 			speedMarketsAMMResolver.address

@@ -18,11 +18,9 @@ contract SpeedMarket {
         uint64 _strikePricePublishTime;
         Direction _direction;
         address _collateral;
-        address _defaultCollateral;
         uint _buyinAmount;
         uint _safeBoxImpact;
         uint _lpFee;
-        uint _payoutBonus;
     }
 
     enum Direction {
@@ -38,7 +36,6 @@ contract SpeedMarket {
     Direction public direction;
     uint public buyinAmount;
     address public collateral;
-    address public defaultCollateral;
     bool public resolved;
     int64 public finalPrice;
     Direction public result;
@@ -47,7 +44,6 @@ contract SpeedMarket {
 
     uint public safeBoxImpact;
     uint public lpFee;
-    uint public payoutBonus;
     uint256 public createdAt;
 
     /* ========== CONSTRUCTOR ========== */
@@ -67,10 +63,8 @@ contract SpeedMarket {
         buyinAmount = params._buyinAmount;
         safeBoxImpact = params._safeBoxImpact;
         lpFee = params._lpFee;
-        payoutBonus = params._payoutBonus;
         collateral = params._collateral;
-        defaultCollateral = params._defaultCollateral;
-        IERC20Upgradeable(params._defaultCollateral).approve(params._speedMarketsAMM, type(uint256).max);
+        IERC20Upgradeable(params._collateral).approve(params._speedMarketsAMM, type(uint256).max);
         createdAt = block.timestamp;
     }
 
@@ -89,14 +83,11 @@ contract SpeedMarket {
         }
 
         if (direction == result) {
-            IERC20Upgradeable(defaultCollateral).safeTransfer(
-                user,
-                IERC20Upgradeable(defaultCollateral).balanceOf(address(this))
-            );
+            IERC20Upgradeable(collateral).safeTransfer(user, IERC20Upgradeable(collateral).balanceOf(address(this)));
         } else {
-            IERC20Upgradeable(defaultCollateral).safeTransfer(
+            IERC20Upgradeable(collateral).safeTransfer(
                 address(speedMarketsAMM),
-                IERC20Upgradeable(defaultCollateral).balanceOf(address(this))
+                IERC20Upgradeable(collateral).balanceOf(address(this))
             );
         }
 

@@ -37,4 +37,12 @@ interface IChainedSpeedMarketsAMM {
     function currentRisk() external view returns (uint);
 
     function getLengths(address _user) external view returns (uint[4] memory);
+
+    function multicollateralEnabled() external view returns (bool);
+
+    function canResolveMarket(address market) external view returns (bool);
+
+    function resolveMarketWithPrices(address _market, int64[] calldata _finalPrices) external;
+
+    function offrampHelper(address user, uint amount) external;
 }

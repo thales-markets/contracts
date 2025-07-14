@@ -17,6 +17,7 @@ contract('SpeedMarkets', (accounts) => {
 			let {
 				creatorAccount,
 				speedMarketsAMM,
+				speedMarketsAMMResolver,
 				speedMarketsAMMData,
 				mockPyth,
 				pythId,
@@ -59,14 +60,17 @@ contract('SpeedMarkets', (accounts) => {
 			await fastForward(86400);
 
 			const PRICE_DOWN = 180042931000;
-			await expect(speedMarketsAMM.resolveMarketManually(market, PRICE_DOWN, { from: user })).to.be
-				.reverted;
+			await expect(
+				speedMarketsAMMResolver.resolveMarketManually(market, PRICE_DOWN, { from: user })
+			).to.be.reverted;
 
 			await speedMarketsAMM.addToWhitelist(user, true);
-			await speedMarketsAMM.resolveMarketManually(market, PRICE_DOWN, { from: user });
+			await speedMarketsAMMResolver.resolveMarketManually(market, PRICE_DOWN, { from: user });
 
 			market = markets[1];
-			await speedMarketsAMM.resolveMarketManuallyBatch([market], [PRICE_DOWN], { from: user });
+			await speedMarketsAMMResolver.resolveMarketManuallyBatch([market], [PRICE_DOWN], {
+				from: user,
+			});
 
 			currestRiskPerAssetAndDirection = await speedMarketsAMM.currentRiskPerAssetAndDirection(
 				toBytes32('ETH'),
@@ -79,8 +83,14 @@ contract('SpeedMarkets', (accounts) => {
 		});
 
 		it('resolve market as owner', async () => {
-			let { creatorAccount, speedMarketsAMM, initialSkewImapct, now, exoticUSD } =
-				await speedMarketsInit(accounts);
+			let {
+				creatorAccount,
+				speedMarketsAMM,
+				speedMarketsAMMResolver,
+				initialSkewImapct,
+				now,
+				exoticUSD,
+			} = await speedMarketsInit(accounts);
 			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticUSD.address, true, 0);
 			const deltaTimeParam = 10 * 60 * 60; // 10 hours
 
@@ -95,9 +105,9 @@ contract('SpeedMarkets', (accounts) => {
 			let markets = await speedMarketsAMM.activeMarkets(0, 1);
 			let market = markets[0];
 
-			await expect(speedMarketsAMM.resolveMarketAsOwner(market, PRICE_DOWN, { from: user })).to.be
+			await expect(speedMarketsAMM.resolveMarketWithPrice(market, PRICE_DOWN, { from: user })).to.be
 				.reverted;
-			await speedMarketsAMM.resolveMarketAsOwner(market, PRICE_DOWN, { from: owner });
+			await speedMarketsAMM.resolveMarketWithPrice(market, PRICE_DOWN, { from: owner });
 		});
 	});
 });

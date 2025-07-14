@@ -17,6 +17,7 @@ contract('SpeedMarkets', (accounts) => {
 				creatorAccount,
 				speedMarketsAMM,
 				speedMarketsAMMData,
+				speedMarketsAMMResolver,
 				balanceOfSpeedMarketAMMBefore,
 				fee,
 				mockPyth,
@@ -170,13 +171,13 @@ contract('SpeedMarkets', (accounts) => {
 			);
 
 			await expect(
-				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
+				speedMarketsAMMResolver.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
 			).to.be.reverted;
 
 			await fastForward(86400);
 
 			await expect(
-				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
+				speedMarketsAMMResolver.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
 			).to.be.reverted;
 
 			now = await currentTime();
@@ -190,7 +191,7 @@ contract('SpeedMarkets', (accounts) => {
 				strikeTime
 			);
 			await expect(
-				speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
+				speedMarketsAMMResolver.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee })
 			).to.be.reverted;
 
 			now = await currentTime();
@@ -211,7 +212,9 @@ contract('SpeedMarkets', (accounts) => {
 			let balanceOfUserBefore = await exoticUSD.balanceOf(user);
 
 			// User won
-			await speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee });
+			await speedMarketsAMMResolver.resolveMarket(market, [resolvePriceFeedUpdateData], {
+				value: fee,
+			});
 
 			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
 			console.log('numActiveMarkets after resolve ' + ammData.numActiveMarkets);
@@ -256,7 +259,7 @@ contract('SpeedMarkets', (accounts) => {
 			console.log('numActiveMarkets before batch resolve ' + ammData.numActiveMarkets);
 			console.log('numMaturedMarkets before batch resolve ' + ammData.numMaturedMarkets);
 			markets = await speedMarketsAMM.activeMarkets(0, ammData.numActiveMarkets);
-			await speedMarketsAMM.resolveMarketsBatch(
+			await speedMarketsAMMResolver.resolveMarketsBatch(
 				markets,
 				[resolvePriceFeedUpdateData, resolvePriceFeedUpdateData],
 				{
@@ -282,8 +285,14 @@ contract('SpeedMarkets', (accounts) => {
 		});
 
 		it('Should correctly increase risk per asset for non-bonus collateral', async () => {
-			let { creatorAccount, speedMarketsAMM, speedMarketsAMMData, exoticUSD, now } =
-				await speedMarketsInit(accounts);
+			let {
+				creatorAccount,
+				speedMarketsAMM,
+				speedMarketsAMMData,
+				speedMarketsAMMResolver,
+				exoticUSD,
+				now,
+			} = await speedMarketsInit(accounts);
 
 			const ETH = toBytes32('ETH');
 			const strikeTime = now + 10 * 60 * 60; // 10 hours from now

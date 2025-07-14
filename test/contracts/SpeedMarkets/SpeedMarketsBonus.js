@@ -14,6 +14,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 	const [owner, user, safeBox, referrer, user2] = accounts;
 
 	let speedMarketsAMM;
+	let speedMarketsAMMResolver;
 	let speedMarketsAMMData;
 	let exoticUSD;
 	let mockPyth;
@@ -33,6 +34,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 		const initializeSpeedMarketsData = await speedMarketsInit(accounts);
 
 		speedMarketsAMM = initializeSpeedMarketsData.speedMarketsAMM;
+		speedMarketsAMMResolver = initializeSpeedMarketsData.speedMarketsAMMResolver;
 		speedMarketsAMMData = initializeSpeedMarketsData.speedMarketsAMMData;
 		exoticUSD = initializeSpeedMarketsData.exoticUSD;
 		mockPyth = initializeSpeedMarketsData.mockPyth;
@@ -175,7 +177,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 			// Resolve market
 			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
-			await speedMarketsAMM.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+			await speedMarketsAMMResolver.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
 				from: owner,
 				value: fee,
 			});
@@ -237,7 +239,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
-			await speedMarketsAMM.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+			await speedMarketsAMMResolver.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
 				from: owner,
 				value: fee,
 			});
@@ -335,12 +337,12 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 			// Resolve markets
 			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateDataETH]);
-			await speedMarketsAMM.resolveMarket(marketAddress1, [resolvePriceFeedUpdateDataETH], {
+			await speedMarketsAMMResolver.resolveMarket(marketAddress1, [resolvePriceFeedUpdateDataETH], {
 				from: owner,
 				value: fee,
 			});
 
-			await speedMarketsAMM.resolveMarket(marketAddress2, [resolvePriceFeedUpdateDataBTC], {
+			await speedMarketsAMMResolver.resolveMarket(marketAddress2, [resolvePriceFeedUpdateDataBTC], {
 				from: owner,
 				value: fee,
 			});
@@ -348,6 +350,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const userBalanceAfter = await exoticUSD.balanceOf(user);
 
 			// Check payouts - both markets have same 1% bonus
+			// Payout = buyinAmount * 2 + (buyinAmount * 2 * 0.01) = 20.2
 			const expectedPayoutPerMarket = toUnit(buyinAmount)
 				.mul(toBN(2))
 				.add(toUnit(buyinAmount).mul(toBN(2)).mul(toUnit(0.01)).div(toUnit(1))); // 20.2 each
@@ -405,7 +408,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
-			await speedMarketsAMM.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+			await speedMarketsAMMResolver.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
 				from: owner,
 				value: fee,
 			});
@@ -453,7 +456,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 			// Risk should increase by the net exposure including bonus
 			// The AMM's risk calculation considers LP fees that stay in the AMM
-			// With 10% bonus: payout = 20 + 2 = 22
+			// With 10% bonus: payout = 20 + (20 * 0.1) = 22
 
 			const payout = toUnit(buyinAmount)
 				.mul(toBN(2))
@@ -533,7 +536,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
-			await speedMarketsAMM.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+			await speedMarketsAMMResolver.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
 				from: owner,
 				value: fee,
 			});
@@ -541,6 +544,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const userBalanceAfter = await exoticUSD.balanceOf(user);
 
 			// Bonus should still be applied correctly regardless of referral fees
+			// Payout = buyinAmount * 2 + (buyinAmount * 2 * 0.03) = 20.6
 			const expectedPayout = toUnit(buyinAmount)
 				.mul(toBN(2))
 				.add(toUnit(buyinAmount).mul(toBN(2)).mul(toUnit(0.03)).div(toUnit(1)));
@@ -594,7 +598,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
-			await speedMarketsAMM.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+			await speedMarketsAMMResolver.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
 				from: owner,
 				value: fee,
 			});
@@ -667,7 +671,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
-			await speedMarketsAMM.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+			await speedMarketsAMMResolver.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
 				from: owner,
 				value: fee,
 			});
@@ -762,7 +766,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const userBalanceBefore = await exoticUSD.balanceOf(user);
 
 			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
-			await speedMarketsAMM.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+			await speedMarketsAMMResolver.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
 				from: owner,
 				value: fee,
 			});
@@ -948,7 +952,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			];
 
 			const fee = await mockPyth.getUpdateFee(priceFeeds);
-			await speedMarketsAMM.resolveMarketsBatch(markets, priceFeeds, {
+			await speedMarketsAMMResolver.resolveMarketsBatch(markets, priceFeeds, {
 				from: owner,
 				value: fee,
 			});
@@ -1164,17 +1168,17 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const fee = await mockPyth.getUpdateFee([resolvePriceFeedUpdateData]);
 
 			// Resolve all markets
-			await speedMarketsAMM.resolveMarket(market1Address, [resolvePriceFeedUpdateData], {
+			await speedMarketsAMMResolver.resolveMarket(market1Address, [resolvePriceFeedUpdateData], {
 				from: owner,
 				value: fee,
 			});
 
-			await speedMarketsAMM.resolveMarket(market2Address, [resolvePriceFeedUpdateData], {
+			await speedMarketsAMMResolver.resolveMarket(market2Address, [resolvePriceFeedUpdateData], {
 				from: owner,
 				value: fee,
 			});
 
-			await speedMarketsAMM.resolveMarket(market3Address, [resolvePriceFeedUpdateData], {
+			await speedMarketsAMMResolver.resolveMarket(market3Address, [resolvePriceFeedUpdateData], {
 				from: owner,
 				value: fee,
 			});
@@ -1413,7 +1417,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			];
 
 			const fee = await mockPyth.getUpdateFee(priceFeeds);
-			await speedMarketsAMM.resolveMarketsBatch(markets, priceFeeds, {
+			await speedMarketsAMMResolver.resolveMarketsBatch(markets, priceFeeds, {
 				from: owner,
 				value: fee,
 			});
@@ -1512,12 +1516,10 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const riskAfter5Percent = await speedMarketsAMM.currentRiskPerAsset(ETH);
 			const riskUpAfter5Percent = await speedMarketsAMM.currentRiskPerAssetAndDirection(ETH, 0);
 
-			// With 5% bonus: buyinAmountWithBonus = 50 * 1.05 = 52.5
-			const buyinAmountWith5Bonus = toUnit(buyinAmount).mul(toUnit(1.05)).div(toUnit(1));
-			console.log('Buyin amount with 5% bonus:', buyinAmountWith5Bonus / 1e18);
+			// Risk per direction now uses base buyinAmount without bonus
 			console.log('Risk UP after 5% bonus market:', riskUpAfter5Percent / 1e18);
-			console.log('Expected risk UP with 5% bonus:', buyinAmountWith5Bonus / 1e18);
-			assert.bnEqual(riskUpAfter5Percent, buyinAmountWith5Bonus);
+			console.log('Expected risk UP:', buyinAmount);
+			assert.bnEqual(riskUpAfter5Percent, toUnit(buyinAmount));
 
 			// Create market with 10% bonus collateral (opposite direction)
 			const createParams2 = getCreateSpeedAMMParams(
@@ -1539,14 +1541,12 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const riskUpAfter10Percent = await speedMarketsAMM.currentRiskPerAssetAndDirection(ETH, 0);
 			const riskDownAfter10Percent = await speedMarketsAMM.currentRiskPerAssetAndDirection(ETH, 1);
 
-			// With 10% bonus: buyinAmountWithBonus = 40 * 1.1 = 44
-			const buyinAmountWith10Bonus = toUnit(buyinAmount * 0.8)
-				.mul(toUnit(1.1))
-				.div(toUnit(1));
+			// Risk per direction uses base buyinAmount without bonus
+			const downBuyinAmount = toUnit(buyinAmount * 0.8); // 40
 
-			// UP risk should be reduced by DOWN buyinAmountWithBonus
-			const expectedRiskUp = buyinAmountWith5Bonus.sub(buyinAmountWith10Bonus);
-			console.log('Buyin amount with 10% bonus:', buyinAmountWith10Bonus / 1e18);
+			// UP risk should be reduced by DOWN buyinAmount (without bonus)
+			const expectedRiskUp = toUnit(buyinAmount).sub(downBuyinAmount);
+			console.log('DOWN buyin amount:', downBuyinAmount / 1e18);
 			console.log('Risk UP after 10% bonus DOWN market:', riskUpAfter10Percent / 1e18);
 			console.log('Expected risk UP:', expectedRiskUp / 1e18);
 			console.log('Risk DOWN after 10% bonus:', riskDownAfter10Percent / 1e18);
@@ -1580,7 +1580,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			console.log('Buyin amount no bonus:', buyinAmountNoBonus / 1e18);
 			console.log(
 				'Total buy in amount:',
-				buyinAmountNoBonus.add(buyinAmountWith5Bonus).add(buyinAmountWith10Bonus) / 1e18
+				buyinAmountNoBonus.add(toUnit(buyinAmount)).add(downBuyinAmount) / 1e18
 			);
 			// UP risk should be further reduced by DOWN buyinAmount
 			// Current UP risk is 8.5, DOWN buyinAmount is 30

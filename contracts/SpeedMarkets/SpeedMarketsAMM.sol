@@ -63,6 +63,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     error MismatchedLengths();
     error CollateralNotSupported();
     error InvalidOffRampCollateral();
+    error CanOnlyBeCalledFromResolverOrOwner();
 
     IERC20Upgradeable public sUSD;
 
@@ -311,17 +312,12 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         // calculate discount as half of skew for opposite direction
         uint discount = skew == 0 ? _getSkewByAssetAndDirection(asset, oppositeDirection) / 2 : 0;
-        uint buyinAmountWithBonus = buyinAmount;
-        // the risk is calculated with the bonus applied to the buyin amount
-        if (payoutBonus > 0) {
-            buyinAmountWithBonus = (buyinAmount * (ONE + payoutBonus)) / ONE;
-        }
         // decrease risk for opposite direction if there is, otherwise increase risk for current direction
-        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmountWithBonus) {
-            currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmountWithBonus;
+        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
+            currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
         } else {
             currentRiskPerAssetAndDirection[asset][direction] +=
-                buyinAmountWithBonus -
+                buyinAmount -
                 currentRiskPerAssetAndDirection[asset][oppositeDirection];
             currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
             if (currentRiskPerAssetAndDirection[asset][direction] > maxRiskPerAssetAndDirection[asset][direction]) {
@@ -339,8 +335,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             ) +
             skew -
             discount;
-        // payout is buyinAmountWithBonus * 2
-        payout = buyinAmountWithBonus * 2;
+        // payout with bonus
+        payout = buyinAmount * 2 + (buyinAmount * 2 * payoutBonus) / ONE;
         // update risk per asset with the bonus applied
         currentRiskPerAsset[asset] += (payout - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE);
         if (currentRiskPerAsset[asset] > maxRiskPerAsset[asset]) {
@@ -429,12 +425,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 params.createMarketParams.pythPrice.price,
                 uint64(params.createMarketParams.pythPrice.publishTime),
                 params.createMarketParams.direction,
-                params.createMarketParams.collateral,
                 params.defaultCollateral,
                 params.buyinAmount,
                 safeBoxImpact,
-                lpFeeWithSkew,
-                payout
+                lpFeeWithSkew
             )
         );
         marketAddress = address(srm);
@@ -476,117 +470,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         );
     }
 
-    /// @notice resolveMarket resolves an active market
-    /// @param market address of the market
-    function resolveMarket(address market, bytes[] calldata priceUpdateData) external payable nonReentrant notPaused {
-        _resolveMarket(market, priceUpdateData);
-    }
-
-    /// @notice resolveMarket resolves an active market with offramp
-    /// @param market address of the market
-    /// @param priceUpdateData price update data
-    /// @param collateral collateral address
-    /// @param toEth whether to offramp to ETH
-    function resolveMarketWithOfframp(
-        address market,
-        bytes[] calldata priceUpdateData,
-        address collateral,
-        bool toEth
-    ) external payable nonReentrant notPaused {
-        if (!multicollateralEnabled) revert MulticollateralOnrampDisabled();
-
-        address user = SpeedMarket(market).user();
-        if (msg.sender != user) revert OnlyMarketOwner();
-        IERC20Upgradeable defaultCollateral = IERC20Upgradeable(SpeedMarket(market).defaultCollateral());
-        if (address(defaultCollateral) != address(sUSD)) revert InvalidOffRampCollateral();
-        uint amountBefore = sUSD.balanceOf(user);
-        _resolveMarket(market, priceUpdateData);
-        uint amountDiff = sUSD.balanceOf(user) - amountBefore;
-        sUSD.safeTransferFrom(user, address(this), amountDiff);
-        if (amountDiff > 0) {
-            IMultiCollateralOnOffRamp iMultiCollateralOnOffRamp = IMultiCollateralOnOffRamp(
-                addressManager.multiCollateralOnOffRamp()
-            );
-            if (toEth) {
-                uint offramped = iMultiCollateralOnOffRamp.offrampIntoEth(amountDiff);
-                address payable _to = payable(user);
-                bool sent = _to.send(offramped);
-                if (!sent) revert EtherTransferFailed();
-            } else {
-                uint offramped = iMultiCollateralOnOffRamp.offramp(collateral, amountDiff);
-                IERC20Upgradeable(collateral).safeTransfer(user, offramped);
-            }
-        }
-    }
-
-    /// @notice resolveMarkets in a batch
-    function resolveMarketsBatch(address[] calldata markets, bytes[] calldata priceUpdateData)
-        external
-        payable
-        nonReentrant
-        notPaused
-    {
-        for (uint i; i < markets.length; ++i) {
-            if (canResolveMarket(markets[i])) {
-                bytes[] memory subarray = new bytes[](1);
-                subarray[0] = priceUpdateData[i];
-                _resolveMarket(markets[i], subarray);
-            }
-        }
-    }
-
-    function _resolveMarket(address market, bytes[] memory priceUpdateData) internal {
-        if (!canResolveMarket(market)) revert CanNotResolve();
-
-        IPyth iPyth = IPyth(addressManager.pyth());
-        bytes32[] memory priceIds = new bytes32[](1);
-        priceIds[0] = assetToPythId[SpeedMarket(market).asset()];
-        PythStructs.PriceFeed[] memory prices = iPyth.parsePriceFeedUpdates{value: iPyth.getUpdateFee(priceUpdateData)}(
-            priceUpdateData,
-            priceIds,
-            SpeedMarket(market).strikeTime(),
-            SpeedMarket(market).strikeTime() + maximumPriceDelayForResolving
-        );
-
-        PythStructs.Price memory price = prices[0].price;
-
-        if (price.price <= 0) revert InvalidPrice();
-
-        _resolveMarketWithPrice(market, price.price);
-    }
-
-    /// @notice admin resolve market for a given market address with finalPrice
-    function resolveMarketManually(address _market, int64 _finalPrice) external isAddressWhitelisted {
-        _resolveMarketManually(_market, _finalPrice);
-    }
-
-    /// @notice admin resolve for a given markets with finalPrices
-    function resolveMarketManuallyBatch(address[] calldata markets, int64[] calldata finalPrices)
-        external
-        isAddressWhitelisted
-    {
-        uint len = markets.length;
-        for (uint i; i < len; ++i) {
-            address market = markets[i];
-            if (canResolveMarket(market)) {
-                _resolveMarketManually(market, finalPrices[i]);
-            }
-        }
-    }
-
     /// @notice owner can resolve market for a given market address with finalPrice
-    function resolveMarketAsOwner(address _market, int64 _finalPrice) external onlyOwner {
+    function resolveMarketWithPrice(address _market, int64 _finalPrice) external {
+        if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver") && msg.sender != owner)
+            revert CanOnlyBeCalledFromResolverOrOwner();
         if (!canResolveMarket(_market)) revert CanNotResolve();
-
-        _resolveMarketWithPrice(_market, _finalPrice);
-    }
-
-    function _resolveMarketManually(address _market, int64 _finalPrice) internal {
-        SpeedMarket.Direction direction = SpeedMarket(_market).direction();
-        int64 strikePrice = SpeedMarket(_market).strikePrice();
-        bool isUserWinner = (_finalPrice < strikePrice && direction == SpeedMarket.Direction.Down) ||
-            (_finalPrice > strikePrice && direction == SpeedMarket.Direction.Up);
-        if (!canResolveMarket(_market) || isUserWinner) revert CanNotResolve();
 
         _resolveMarketWithPrice(_market, _finalPrice);
     }
@@ -602,13 +490,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         }
         _maturedMarketsPerUser[user].add(market);
 
-        bytes32 asset = sm.asset();
-        uint buyinAmount = sm.buyinAmount();
-        SpeedMarket.Direction direction = sm.direction();
-        uint payoutBonus = sm.payoutBonus();
-        if (payoutBonus > 0) {
-            buyinAmount = (buyinAmount * (ONE + payoutBonus)) / ONE;
-        }
+        bytes32 asset = SpeedMarket(market).asset();
+        uint buyinAmount = SpeedMarket(market).buyinAmount();
+        SpeedMarket.Direction direction = SpeedMarket(market).direction();
         if (currentRiskPerAssetAndDirection[asset][direction] > buyinAmount) {
             currentRiskPerAssetAndDirection[asset][direction] -= buyinAmount;
         } else {
@@ -628,6 +512,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         }
 
         emit MarketResolved(market, sm.result(), sm.isUserWinner());
+    }
+
+    function offrampHelper(address user, uint amount) external {
+        if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver")) revert ResolverNotWhitelisted();
+        sUSD.safeTransferFrom(user, msg.sender, amount);
     }
 
     /// @notice Transfer amount to destination address

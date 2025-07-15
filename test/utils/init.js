@@ -67,8 +67,8 @@ module.exports = {
 			[toUnit(0.18), toUnit(0.13), toUnit(0.08), toUnit(0.05)],
 			toUnit(0.04)
 		);
-		await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticUSD.address, true, 0);
-		await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(over.address, true, toUnit(0.02));
+		await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticUSD.address, true, 0);
+		await speedMarketsAMM.setSupportedNativeCollateralAndBonus(over.address, true, toUnit(0.02));
 
 		await speedMarketsAMM.setAssetToPythID(
 			toBytes32('ETH'),

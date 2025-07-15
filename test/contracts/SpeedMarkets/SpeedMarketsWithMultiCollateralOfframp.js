@@ -223,7 +223,7 @@ contract('SpeedMarkets', (accounts) => {
 			await speedMarketsAMM.setMultiCollateralOnOffRampEnabled(true);
 
 			// Set exoticOP as supported native collateral with 0% bonus
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticOP.address, true, 0);
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticOP.address, true, 0);
 
 			await exoticOP.setDefaultAmount(toUnit(10000));
 			await exoticOP.mintForUser(user);
@@ -511,7 +511,7 @@ contract('SpeedMarkets', (accounts) => {
 				now,
 			} = await speedMarketsInit(accounts);
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticUSD.address, true, 0);
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticUSD.address, true, 0);
 
 			let MultiCollateralOnOffRamp = artifacts.require('MultiCollateralOnOffRamp');
 			let multiCollateralOnOffRamp = await MultiCollateralOnOffRamp.new();

@@ -83,7 +83,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 	describe('Test Speed markets bonus configuration', () => {
 		it('Should correctly set bonus for different collaterals', async () => {
 			// Test setting bonus for default collateral (sUSD)
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.02), // 2% bonus
@@ -94,14 +94,14 @@ contract('SpeedMarketsBonus', (accounts) => {
 			assert.equal(await speedMarketsAMM.supportedNativeCollateral(exoticUSD.address), true);
 
 			// Test setting bonus for additional collaterals
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				collateral2.address,
 				true,
 				toUnit(0.05), // 5% bonus
 				{ from: owner }
 			);
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				collateral3.address,
 				true,
 				toUnit(0.03), // 3% bonus
@@ -114,7 +114,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 		it('Should revert when setting bonus higher than 10%', async () => {
 			await expect(
-				speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+				speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 					collateral2.address,
 					true,
 					toUnit(0.11), // 11% bonus - should fail
@@ -125,7 +125,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 		it('Should correctly calculate payout with bonus for winning position', async () => {
 			// Set 5% bonus for exoticUSD
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
@@ -253,7 +253,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 		it('Should handle multiple markets with different collaterals and bonuses', async () => {
 			// Set different bonuses - for now using same collateral with different bonuses to test
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.01), // 1% bonus
@@ -362,7 +362,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 		it('Should not apply bonus for losing positions', async () => {
 			// Use exoticUSD instead of collateral2 for this test
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
@@ -420,7 +420,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 		});
 
 		it('Should correctly calculate AMM risk with bonus payouts', async () => {
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.1), // 10% bonus (maximum allowed)
@@ -482,7 +482,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			// Referrals is already set up in init with default fee of 0.5%
 
 			// Set bonus
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.03), // 3% bonus
@@ -612,7 +612,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 		it('Should handle explicit zero bonus setting correctly', async () => {
 			// First set a non-zero bonus
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
@@ -623,7 +623,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(exoticUSD.address), toUnit(0.05));
 
 			// Now explicitly set bonus to 0%
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0), // 0% bonus
@@ -685,7 +685,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 		it('Should correctly apply bonus with non-zero skew impact', async () => {
 			// Set 4% bonus for exoticUSD
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.04), // 4% bonus
@@ -796,7 +796,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			let user2BalanceBefore;
 
 			// Market 1: user with 5% bonus
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
@@ -820,7 +820,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const marketAddress1 = tx1.logs.find((log) => log.event === 'MarketCreated').args._market;
 
 			// Market 2: user with 3% bonus (change bonus)
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.03), // 3% bonus
@@ -844,7 +844,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const marketAddress2 = tx2.logs.find((log) => log.event === 'MarketCreated').args._market;
 
 			// Market 3: user2 with 0% bonus
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0), // 0% bonus
@@ -868,7 +868,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const marketAddress3 = tx3.logs.find((log) => log.event === 'MarketCreated').args._market;
 
 			// Market 4: user2 with BTC and 7% bonus
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.07), // 7% bonus
@@ -992,7 +992,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 		it('Should handle invalid collateral address when setting bonus', async () => {
 			// Test with zero address - the contract allows this
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				ZERO_ADDRESS,
 				true,
 				toUnit(0.05), // 5% bonus
@@ -1008,7 +1008,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 			// This should succeed but the collateral won't be functional
 			// The contract doesn't validate if the address is a valid ERC20 token
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				randomAddress,
 				true,
 				toUnit(0.05), // 5% bonus
@@ -1062,7 +1062,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 		it('Should correctly handle changing bonus percentage for already configured collateral', async () => {
 			// Initially set 3% bonus for exoticUSD
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.03), // 3% bonus
@@ -1095,7 +1095,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const market1Address = tx1.logs.find((log) => log.event === 'MarketCreated').args._market;
 
 			// Change bonus to 7% for the same collateral
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.07), // 7% bonus
@@ -1124,7 +1124,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const market2Address = tx2.logs.find((log) => log.event === 'MarketCreated').args._market;
 
 			// Change bonus again to 0%
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0), // 0% bonus
@@ -1195,7 +1195,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			assert.bnEqual(userBalanceAfter.sub(userBalanceBefore), expectedTotalPayout);
 
 			// Also test disabling collateral support
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				false, // Disable support
 				toUnit(0.05), // Bonus is irrelevant when disabled
@@ -1239,21 +1239,21 @@ contract('SpeedMarketsBonus', (accounts) => {
 			await collateral3.transfer(speedMarketsAMM.address, toUnit(1000), { from: owner });
 
 			// Set up different bonuses for each collateral
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.03), // 3% bonus
 				{ from: owner }
 			);
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				collateral2.address,
 				true,
 				toUnit(0.05), // 5% bonus
 				{ from: owner }
 			);
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				collateral3.address,
 				true,
 				toUnit(0.08), // 8% bonus
@@ -1470,14 +1470,14 @@ contract('SpeedMarketsBonus', (accounts) => {
 			}
 			await collateral2.transfer(speedMarketsAMM.address, toUnit(1000), { from: user });
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
 				{ from: owner }
 			);
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				collateral2.address,
 				true,
 				toUnit(0.1), // 10% bonus (max allowed)

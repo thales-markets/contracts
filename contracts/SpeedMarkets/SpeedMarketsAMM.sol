@@ -709,7 +709,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice Set bonus percentage for a collateral
     /// @param _collateral collateral address
     /// @param _bonus bonus percentage (e.g., 0.02e18 for 2%)
-    function setSupportedNativeCollateralAndItsBonus(
+    function setSupportedNativeCollateralAndBonus(
         address _collateral,
         bool _supported,
         uint _bonus

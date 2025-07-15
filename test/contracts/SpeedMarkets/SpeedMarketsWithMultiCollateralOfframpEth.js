@@ -27,7 +27,7 @@ contract('SpeedMarkets', (accounts) => {
 				now,
 			} = await speedMarketsInit(accounts);
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticUSD.address, true, 0);
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticUSD.address, true, 0);
 
 			let MultiCollateralOnOffRamp = artifacts.require('MultiCollateralOnOffRamp');
 			let multiCollateralOnOffRamp = await MultiCollateralOnOffRamp.new();

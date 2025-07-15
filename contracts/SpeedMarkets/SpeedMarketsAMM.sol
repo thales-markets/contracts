@@ -115,13 +115,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     mapping(address => bool) public marketHasFeeAttribute;
 
-    mapping(address => bool) public supportedNativeCollateral;
-
     /// @return The address of the address manager contract
     IAddressManager public addressManager;
 
     uint public maxSkewImpact;
     uint public skewSlippage;
+
+    mapping(address => bool) public supportedNativeCollateral;
 
     /// @notice Bonus percentage per collateral token (e.g., 0.02e18 for 2%)
     mapping(address => uint) public bonusPerCollateral;

@@ -52,7 +52,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			speedMarketsAMMUtils.address,
 			ZERO_ADDRESS
 		);
-		// await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticUSD.address, true, 0);
+		// await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticUSD.address, true, 0);
 		await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, 60, 60);
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(500));

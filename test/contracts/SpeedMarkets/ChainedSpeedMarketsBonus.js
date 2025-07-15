@@ -184,6 +184,10 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 			speedMarketsAMMResolver.address
 		);
 
+		let MockFreeBetsHolder = artifacts.require('MockFreeBetsHolder');
+		let mockFreeBetsHolder = await MockFreeBetsHolder.new(creatorAccount);
+		await addressManager.setAddressInAddressBook('FreeBetsHolder', mockFreeBetsHolder.address);
+
 		// Update SpeedMarketsAMM with proper addresses
 		await speedMarketsAMM.setAMMAddresses(
 			speedMarketMastercopy.address,
@@ -242,7 +246,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 	describe('Test Chained Speed markets bonus configuration', () => {
 		it('Should correctly set bonus for different collaterals and apply to chained markets', async () => {
 			// Set bonus for exoticUSD
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
@@ -341,21 +345,21 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 
 		it('Should handle multiple collaterals with different bonuses for chained markets', async () => {
 			// Set different bonuses
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.03), // 3% bonus
 				{ from: owner }
 			);
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				collateral2.address,
 				true,
 				toUnit(0.06), // 6% bonus
 				{ from: owner }
 			);
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				collateral3.address,
 				true,
 				toUnit(0.08), // 8% bonus
@@ -661,7 +665,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 		});
 
 		it('Should not apply bonus for losing chained markets', async () => {
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.1), // 10% bonus
@@ -737,7 +741,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 		});
 
 		it('Should correctly calculate AMM risk with bonus for chained markets', async () => {
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.08), // 8% bonus
@@ -792,7 +796,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 		});
 
 		it('Should handle bonus correctly with referral fees for chained markets', async () => {
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.04), // 4% bonus
@@ -880,7 +884,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 
 		it('Should handle changing bonus percentage for chained markets', async () => {
 			// Set initial bonus
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.02), // 2% bonus
@@ -910,7 +914,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 			const market1Address = tx1.logs.find((log) => log.event === 'MarketCreated').args.market;
 
 			// Change bonus to 7%
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.07), // 7% bonus
@@ -1027,7 +1031,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 		});
 
 		it('Should handle maximum chain length with bonus', async () => {
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
@@ -1109,7 +1113,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 		});
 
 		it('Should handle mixed assets (ETH/BTC) in chained markets with bonus', async () => {
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.06), // 6% bonus
@@ -1282,7 +1286,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 			await collateral3.transfer(chainedSpeedMarketsAMM.address, toUnit(1000), { from: user });
 
 			// Set collateral3 as supported but with 0% bonus
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				collateral3.address,
 				true,
 				toUnit(0), // 0% bonus
@@ -1290,14 +1294,14 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 			);
 
 			// Set up multiple collaterals with different bonuses
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
 				{ from: owner }
 			);
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				collateral2.address,
 				true,
 				toUnit(0.1), // 10% bonus (max allowed)

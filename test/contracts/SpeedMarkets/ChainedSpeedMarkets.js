@@ -173,6 +173,10 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			chainedSpeedMarketsAMM.address
 		);
 
+		let MockFreeBetsHolder = artifacts.require('MockFreeBetsHolder');
+		let mockFreeBetsHolder = await MockFreeBetsHolder.new(creatorAccount);
+		await addressManager.setAddressInAddressBook('FreeBetsHolder', mockFreeBetsHolder.address);
+
 		let SpeedMarketsAMMResolverContract = artifacts.require('SpeedMarketsAMMResolver');
 		speedMarketsAMMResolver = await SpeedMarketsAMMResolverContract.new();
 		await speedMarketsAMMResolver.initialize(
@@ -711,7 +715,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			);
 
 			// Set exoticOP as supported native collateral
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticOP.address, true, 0);
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticOP.address, true, 0);
 
 			// Mint exoticOP for AMM to have enough balance for payout
 			await exoticOP.mintForUser(chainedSpeedMarketsAMM.address);

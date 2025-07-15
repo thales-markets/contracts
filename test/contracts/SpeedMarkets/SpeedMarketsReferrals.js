@@ -14,7 +14,7 @@ contract('SpeedMarketsReferrals', (accounts) => {
 		it('Should referrer receive default fee', async () => {
 			let { creatorAccount, speedMarketsAMM, exoticUSD, initialSkewImapct, now } =
 				await speedMarketsInit(accounts);
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticUSD.address, true, 0);
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticUSD.address, true, 0);
 			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
 			const createSpeedAMMParams = getCreateSpeedAMMParams(
 				user,

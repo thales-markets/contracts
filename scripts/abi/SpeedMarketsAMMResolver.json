@@ -48,6 +48,19 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_chainedSpeedMarketsAMM",
+        "type": "address"
+      }
+    ],
+    "name": "ChainedSpeedMarketsAMMSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
@@ -87,6 +100,19 @@
       }
     ],
     "name": "PauseChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMulticollateralApproval",
     "type": "event"
   },
   {

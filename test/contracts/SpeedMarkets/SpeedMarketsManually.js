@@ -91,7 +91,7 @@ contract('SpeedMarkets', (accounts) => {
 				now,
 				exoticUSD,
 			} = await speedMarketsInit(accounts);
-			await speedMarketsAMM.setSupportedNativeCollateralAndItsBonus(exoticUSD.address, true, 0);
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticUSD.address, true, 0);
 			const deltaTimeParam = 10 * 60 * 60; // 10 hours
 
 			await speedMarketsAMM.createNewMarket(

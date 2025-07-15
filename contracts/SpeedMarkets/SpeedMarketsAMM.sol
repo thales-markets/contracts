@@ -505,10 +505,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             } else {
                 currentRiskPerAsset[asset] = 0;
             }
-            IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
-            if (address(iFreeBetsHolder) == user) {
-                iFreeBetsHolder.confirmSpeedMarketResolved(market, 2 * buyinAmount, sm.buyinAmount(), sm.collateral());
-            }
+            // IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+            // if (address(iFreeBetsHolder) == user) {
+            //     iFreeBetsHolder.confirmSpeedMarketResolved(market, 2 * buyinAmount, sm.buyinAmount(), sm.collateral());
+            // }
         }
 
         emit MarketResolved(market, sm.result(), sm.isUserWinner());
@@ -721,7 +721,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice Set bonus percentage for a collateral
     /// @param _collateral collateral address
     /// @param _bonus bonus percentage (e.g., 0.02e18 for 2%)
-    function setSupportedNativeCollateralAndItsBonus(
+    function setSupportedNativeCollateralAndBonus(
         address _collateral,
         bool _supported,
         uint _bonus

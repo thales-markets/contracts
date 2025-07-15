@@ -156,16 +156,16 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
     function _resolveMarket(address market, bytes[] memory priceUpdateData) internal {
         if (!speedMarketsAMM.canResolveMarket(market)) revert CanNotResolve();
-
+        SpeedMarket sm = SpeedMarket(market);
         IPyth iPyth = IPyth(addressManager.pyth());
         bytes32[] memory priceIds = new bytes32[](1);
-        priceIds[0] = speedMarketsAMM.assetToPythId(SpeedMarket(market).asset());
+        priceIds[0] = speedMarketsAMM.assetToPythId(sm.asset());
         uint64 maximumPriceDelayForResolving = speedMarketsAMM.maximumPriceDelayForResolving();
         PythStructs.PriceFeed[] memory prices = iPyth.parsePriceFeedUpdates{value: iPyth.getUpdateFee(priceUpdateData)}(
             priceUpdateData,
             priceIds,
-            SpeedMarket(market).strikeTime(),
-            SpeedMarket(market).strikeTime() + maximumPriceDelayForResolving
+            sm.strikeTime(),
+            sm.strikeTime() + maximumPriceDelayForResolving
         );
 
         PythStructs.Price memory price = prices[0].price;
@@ -173,6 +173,11 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         if (price.price <= 0) revert InvalidPrice();
 
         speedMarketsAMM.resolveMarketWithPrice(market, price.price);
+
+        IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+        if (address(sm.user()) == address(iFreeBetsHolder)) {
+            iFreeBetsHolder.confirmSpeedMarketResolved(market, 2 * sm.buyinAmount(), sm.buyinAmount(), sm.collateral());
+        }
     }
 
     function _resolveMarketWithOfframp(
@@ -309,14 +314,13 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         IPyth iPyth = IPyth(addressManager.pyth());
         bytes32[] memory priceIds = new bytes32[](1);
-        priceIds[0] = speedMarketsAMM.assetToPythId(ChainedSpeedMarket(market).asset());
+        ChainedSpeedMarket cs = ChainedSpeedMarket(market);
+        priceIds[0] = speedMarketsAMM.assetToPythId(cs.asset());
 
         int64[] memory prices = new int64[](priceUpdateData.length);
         uint64 strikeTimePerDirection;
         for (uint i; i < priceUpdateData.length; ++i) {
-            strikeTimePerDirection =
-                ChainedSpeedMarket(market).initialStrikeTime() +
-                uint64(i * ChainedSpeedMarket(market).timeFrame());
+            strikeTimePerDirection = cs.initialStrikeTime() + uint64(i * cs.timeFrame());
 
             PythStructs.PriceFeed[] memory pricesPerDirection = iPyth.parsePriceFeedUpdates{
                 value: iPyth.getUpdateFee(priceUpdateData[i])
@@ -333,6 +337,16 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         }
 
         chainedSpeedMarketsAMM.resolveMarketWithPrices(market, prices);
+
+        IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+        if (cs.user() == address(iFreeBetsHolder)) {
+            iFreeBetsHolder.confirmSpeedMarketResolved(
+                market,
+                _getPayout(cs.buyinAmount(), uint8(cs.numOfDirections()), cs.payoutMultiplier()),
+                cs.buyinAmount(),
+                cs.collateral()
+            );
+        }
     }
 
     function _resolveChainedMarketWithOfframp(
@@ -387,6 +401,22 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         // If we reach here, user would win - manual resolution not allowed
         revert CanNotResolve();
+    }
+
+    /// @notice Gets the payout amount
+    /// @param _buyinAmount The buyin amount
+    /// @param _numOfDirections The number of directions
+    /// @param _payoutMultiplier The payout multiplier
+    /// @return _payout The calculated payout amount
+    function _getPayout(
+        uint _buyinAmount,
+        uint8 _numOfDirections,
+        uint _payoutMultiplier
+    ) internal pure returns (uint _payout) {
+        _payout = _buyinAmount;
+        for (uint8 i; i < _numOfDirections; ++i) {
+            _payout = (_payout * _payoutMultiplier) / ONE;
+        }
     }
 
     /// ========== SETUP FUNCTIONS ==========

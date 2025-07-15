@@ -407,10 +407,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
             uint buyinAmount = csm.buyinAmount();
             uint payout = _getPayout(buyinAmount, csm.numOfDirections(), ChainedSpeedMarket(market).payoutMultiplier());
-            uint bonus = csm.bonus();
-            if (bonus > 0) {
-                payout = (payout * (ONE + bonus)) / ONE;
-            }
             if (!csm.isUserWinner()) {
                 if (currentRisk > payout) {
                     currentRisk -= payout;

@@ -56,7 +56,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     error ResolverNotWhitelisted();
     error OnlyCreatorAllowed();
     error BonusTooHigh();
-    error InvalidWhitelistAddress();
     error OnlyMarketOwner();
     error EtherTransferFailed();
     error MismatchedLengths();
@@ -522,9 +521,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     /// @notice Transfer amount to destination address
-    function transferAmount(address _destination, uint _amount) external onlyOwner {
-        sUSD.safeTransfer(_destination, _amount);
-        emit AmountTransfered(_destination, _amount);
+    function transferAmount(
+        address _collateral,
+        address _destination,
+        uint _amount
+    ) external onlyOwner {
+        IERC20Upgradeable(_collateral).safeTransfer(_destination, _amount);
+        emit AmountTransfered(_collateral, _destination, _amount);
     }
 
     //////////// getters /////////////////
@@ -710,16 +713,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit MultiCollateralOnOffRampEnabled(_enabled);
     }
 
-    /// @notice adding/removing whitelist address depending on a flag
-    /// @param _whitelistAddress address that needed to be whitelisted or removed from WL
-    /// @param _flag adding or removing from whitelist (true: add, false: remove)
-    function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
-        if (_whitelistAddress == address(0)) revert InvalidWhitelistAddress();
-
-        whitelistedAddresses[_whitelistAddress] = _flag;
-        emit AddedIntoWhitelist(_whitelistAddress, _flag);
-    }
-
     /// @notice Set bonus percentage for a collateral
     /// @param _collateral collateral address
     /// @param _bonus bonus percentage (e.g., 0.02e18 for 2%)
@@ -739,12 +732,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     //////////////////modifiers/////////////////
-
-    modifier isAddressWhitelisted() {
-        if (!whitelistedAddresses[msg.sender]) revert ResolverNotWhitelisted();
-
-        _;
-    }
 
     modifier onlyCreator() {
         address speedMarketsCreator = addressManager.getAddress("SpeedMarketsAMMCreator");
@@ -792,10 +779,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetLPFeeParams(uint[] _timeThresholds, uint[] _lpFees, uint _lpFee);
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
-    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event SusdAddressChanged(address _sUSD);
     event MultiCollateralOnOffRampEnabled(bool _enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
-    event AmountTransfered(address _destination, uint _amount);
+    event AmountTransfered(address _collateral, address _destination, uint _amount);
     event CollateralBonusSet(address indexed collateral, uint bonus);
 }

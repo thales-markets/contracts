@@ -425,9 +425,13 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     /// @notice Transfer amount to destination address
-    function transferAmount(address _destination, uint _amount) external onlyOwner {
-        sUSD.safeTransfer(_destination, _amount);
-        emit AmountTransfered(_destination, _amount);
+    function transferAmount(
+        address _collateral,
+        address _destination,
+        uint _amount
+    ) external onlyOwner {
+        IERC20Upgradeable(_collateral).safeTransfer(_destination, _amount);
+        emit AmountTransfered(_collateral, _destination, _amount);
     }
 
     //////////// getters /////////////////
@@ -553,12 +557,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
 
     //////////////////modifiers/////////////////
 
-    modifier isAddressWhitelisted() {
-        ISpeedMarketsAMM speedMarketsAMM = ISpeedMarketsAMM(addressManager.speedMarketsAMM());
-        if (!speedMarketsAMM.whitelistedAddresses(msg.sender)) revert ResolverNotWhitelisted();
-        _;
-    }
-
     modifier onlyPending() {
         address speedMarketsCreator = addressManager.getAddress("SpeedMarketsAMMCreator");
         if (msg.sender != speedMarketsCreator) revert OnlyCreatorAllowed();
@@ -597,6 +595,6 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SusdAddressChanged(address _sUSD);
     event MultiCollateralOnOffRampEnabled(bool _enabled);
-    event AmountTransfered(address _destination, uint _amount);
+    event AmountTransfered(address _collateral, address _destination, uint _amount);
     event AddressManagerChanged(address _addressManager);
 }

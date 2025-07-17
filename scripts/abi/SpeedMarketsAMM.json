@@ -51,11 +51,6 @@
   },
   {
     "inputs": [],
-    "name": "InvalidWhitelistAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "MismatchedLengths",
     "type": "error"
   },
@@ -135,22 +130,9 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_whitelistAddress",
+        "name": "_collateral",
         "type": "address"
       },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "AddedIntoWhitelist",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
       {
         "indexed": false,
         "internalType": "address",
@@ -637,24 +619,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_whitelistAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "addToWhitelist",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1665,6 +1629,11 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
       {
         "internalType": "address",
         "name": "_destination",

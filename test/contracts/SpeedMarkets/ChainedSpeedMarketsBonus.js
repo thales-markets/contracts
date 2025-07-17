@@ -184,12 +184,23 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 			speedMarketsAMMResolver.address
 		);
 
-		// Update SpeedMarketsAMM with proper addresses
+		// -------------------------- Price Feed --------------------------
+
+		await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(toBytes32('eUSD'), toUnit(1));
+		await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(toBytes32('ExoticUSD'), toUnit(2));
+
+		await addressManager.setAddressInAddressBook('PriceFeed', MockPriceFeedDeployed.address);
+		await addressManager.setAddressInAddressBook('SpeedMarketsAMM', speedMarketsAMM.address);
+
+		let SpeedMarketsAMMUtilsContract = artifacts.require('SpeedMarketsAMMUtils');
+		const speedMarketsAMMUtils = await SpeedMarketsAMMUtilsContract.new();
+
 		await speedMarketsAMM.setAMMAddresses(
 			speedMarketMastercopy.address,
-			ZERO_ADDRESS,
+			speedMarketsAMMUtils.address,
 			addressManager.address
 		);
+		await speedMarketsAMMUtils.initialize(owner, addressManager.address);
 
 		await speedMarketsAMMData.setSpeedMarketsAMM(
 			speedMarketsAMM.address,
@@ -246,6 +257,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -345,6 +357,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.03), // 3% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -352,6 +365,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				collateral2.address,
 				true,
 				toUnit(0.06), // 6% bonus
+				toBytes32('collateral2'),
 				{ from: owner }
 			);
 
@@ -359,6 +373,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				collateral3.address,
 				true,
 				toUnit(0.08), // 8% bonus
+				toBytes32('collateral3'),
 				{ from: owner }
 			);
 
@@ -665,6 +680,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.1), // 10% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -741,6 +757,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.08), // 8% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -796,6 +813,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.04), // 4% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -884,6 +902,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.02), // 2% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -914,6 +933,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.07), // 7% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -1031,6 +1051,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -1113,6 +1134,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.06), // 6% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -1286,6 +1308,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				collateral3.address,
 				true,
 				toUnit(0), // 0% bonus
+				toBytes32('collateral3'),
 				{ from: owner }
 			);
 
@@ -1294,6 +1317,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -1301,6 +1325,7 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 				collateral2.address,
 				true,
 				toUnit(0.1), // 10% bonus (max allowed)
+				toBytes32('collateral2'),
 				{ from: owner }
 			);
 

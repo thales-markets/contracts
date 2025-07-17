@@ -7,6 +7,7 @@ const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { ZERO_ADDRESS } = require('../../utils/helpers');
 const { speedMarketsInit } = require('../../utils/init');
 const { getCreateSpeedAMMParams } = require('../../utils/speedMarkets');
+const { toBytes32 } = require('../../../index');
 
 contract('SpeedMarkets', (accounts) => {
 	const [owner, user, safeBox, proxyUser] = accounts;
@@ -223,7 +224,12 @@ contract('SpeedMarkets', (accounts) => {
 			await speedMarketsAMM.setMultiCollateralOnOffRampEnabled(true);
 
 			// Set exoticOP as supported native collateral with 0% bonus
-			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticOP.address, true, 0);
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
+				exoticOP.address,
+				true,
+				0,
+				toBytes32('ExoticUSD')
+			);
 
 			await exoticOP.setDefaultAmount(toUnit(10000));
 			await exoticOP.mintForUser(user);
@@ -511,7 +517,12 @@ contract('SpeedMarkets', (accounts) => {
 				now,
 			} = await speedMarketsInit(accounts);
 
-			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticUSD.address, true, 0);
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
+				exoticUSD.address,
+				true,
+				0,
+				toBytes32('ExoticUSD')
+			);
 
 			let MultiCollateralOnOffRamp = artifacts.require('MultiCollateralOnOffRamp');
 			let multiCollateralOnOffRamp = await MultiCollateralOnOffRamp.new();

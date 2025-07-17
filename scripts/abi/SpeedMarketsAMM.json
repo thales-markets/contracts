@@ -115,7 +115,7 @@
       },
       {
         "indexed": false,
-        "internalType": "contract SpeedMarketsAMMUtils",
+        "internalType": "contract ISpeedMarketsAMMUtils",
         "name": "_speedMarketsAMMUtils",
         "type": "address"
       },
@@ -1342,7 +1342,7 @@
         "type": "address"
       },
       {
-        "internalType": "contract SpeedMarketsAMMUtils",
+        "internalType": "contract ISpeedMarketsAMMUtils",
         "name": "_speedMarketsAMMUtils",
         "type": "address"
       },
@@ -1555,6 +1555,11 @@
         "internalType": "uint256",
         "name": "_bonus",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_collateralKey",
+        "type": "bytes32"
       }
     ],
     "name": "setSupportedNativeCollateralAndBonus",

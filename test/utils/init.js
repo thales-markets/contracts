@@ -67,8 +67,6 @@ module.exports = {
 			[toUnit(0.18), toUnit(0.13), toUnit(0.08), toUnit(0.05)],
 			toUnit(0.04)
 		);
-		await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticUSD.address, true, 0);
-		await speedMarketsAMM.setSupportedNativeCollateralAndBonus(over.address, true, toUnit(0.02));
 
 		await speedMarketsAMM.setAssetToPythID(
 			toBytes32('ETH'),
@@ -164,6 +162,28 @@ module.exports = {
 				from: owner,
 			}
 		);
+
+		await speedMarketsAMMUtils.initialize(owner, addressManager.address);
+		await addressManager.setAddressInAddressBook(
+			'SpeedMarketsAMMUtils',
+			speedMarketsAMMUtils.address
+		);
+		await addressManager.setAddressInAddressBook('SpeedMarketsAMM', speedMarketsAMM.address);
+		await addressManager.setAddressInAddressBook('PriceFeed', MockPriceFeedDeployed.address);
+
+		await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
+			over.address,
+			true,
+			toUnit(0.02),
+			toBytes32('OVER')
+		);
+		await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(toBytes32('OVER'), toUnit(0.3));
+
+		await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(toBytes32('eUSD'), toUnit(1));
+		await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(toBytes32('ExoticUSD'), toUnit(2));
+
+		await addressManager.setAddressInAddressBook('PriceFeed', MockPriceFeedDeployed.address);
+		await addressManager.setAddressInAddressBook('SpeedMarketsAMM', speedMarketsAMM.address);
 
 		const maxSkewImpact = (await speedMarketsAMM.maxSkewImpact()) / 1e18;
 		let riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(

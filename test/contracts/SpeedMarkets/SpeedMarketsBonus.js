@@ -19,6 +19,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 	let exoticUSD;
 	let mockPyth;
 	let MockPriceCollator;
+	let MockPriceFeedDeployed;
 	let collateral2;
 	let collateral3;
 	let addressManager;
@@ -39,6 +40,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 		exoticUSD = initializeSpeedMarketsData.exoticUSD;
 		mockPyth = initializeSpeedMarketsData.mockPyth;
 		MockPriceCollator = initializeSpeedMarketsData.MockPriceCollator;
+		MockPriceFeedDeployed = initializeSpeedMarketsData.MockPriceFeedDeployed;
 		addressManager = initializeSpeedMarketsData.addressManager;
 		creatorAccount = initializeSpeedMarketsData.creatorAccount;
 		referrals = initializeSpeedMarketsData.referrals;
@@ -87,6 +89,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.02), // 2% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -98,6 +101,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				collateral2.address,
 				true,
 				toUnit(0.05), // 5% bonus
+				toBytes32('collateral2'),
 				{ from: owner }
 			);
 
@@ -105,6 +109,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				collateral3.address,
 				true,
 				toUnit(0.03), // 3% bonus
+				toBytes32('collateral3'),
 				{ from: owner }
 			);
 
@@ -118,6 +123,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 					collateral2.address,
 					true,
 					toUnit(0.11), // 11% bonus - should fail
+					toBytes32('collateral2'),
 					{ from: owner }
 				)
 			).to.be.reverted;
@@ -129,6 +135,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -257,6 +264,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.01), // 1% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -366,6 +374,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -424,6 +433,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.1), // 10% bonus (maximum allowed)
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -486,6 +496,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.03), // 3% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -616,6 +627,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -627,6 +639,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0), // 0% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -689,6 +702,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.04), // 4% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -800,6 +814,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -824,6 +839,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.03), // 3% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -848,6 +864,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0), // 0% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -872,6 +889,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.07), // 7% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -991,58 +1009,45 @@ contract('SpeedMarketsBonus', (accounts) => {
 		});
 
 		it('Should handle invalid collateral address when setting bonus', async () => {
-			// Test with zero address - the contract allows this
-			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
-				ZERO_ADDRESS,
-				true,
-				toUnit(0.05), // 5% bonus
-				{ from: owner }
-			);
+			// Test with zero address - should revert due to validation in SpeedMarketsAMMUtils
+			await expect(
+				speedMarketsAMM.setSupportedNativeCollateralAndBonus(
+					ZERO_ADDRESS,
+					true,
+					toUnit(0.05), // 5% bonus
+					toBytes32('ZERO'),
+					{ from: owner }
+				)
+			).to.be.reverted;
 
-			// Verify the bonus was set even for zero address
-			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(ZERO_ADDRESS), toUnit(0.05));
-			assert.equal(await speedMarketsAMM.supportedNativeCollateral(ZERO_ADDRESS), true);
+			// Verify the bonus was NOT set for zero address
+			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(ZERO_ADDRESS), toUnit(0));
+			assert.equal(await speedMarketsAMM.supportedNativeCollateral(ZERO_ADDRESS), false);
 
 			// Test with non-contract address (random address)
 			const randomAddress = '0x1234567890123456789012345678901234567890';
 
-			// This should succeed but the collateral won't be functional
-			// The contract doesn't validate if the address is a valid ERC20 token
-			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
-				randomAddress,
-				true,
-				toUnit(0.05), // 5% bonus
-				{ from: owner }
-			);
+			// This should also revert because the address doesn't implement decimals() and has no price feed
+			await expect(
+				speedMarketsAMM.setSupportedNativeCollateralAndBonus(
+					randomAddress,
+					true,
+					toUnit(0.05), // 5% bonus
+					toBytes32('RANDOM'),
+					{ from: owner }
+				)
+			).to.be.reverted;
 
-			// Verify the bonus was set
-			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(randomAddress), toUnit(0.05));
-			assert.equal(await speedMarketsAMM.supportedNativeCollateral(randomAddress), true);
+			// Verify the bonus was NOT set
+			assert.bnEqual(await speedMarketsAMM.bonusPerCollateral(randomAddress), toUnit(0));
+			assert.equal(await speedMarketsAMM.supportedNativeCollateral(randomAddress), false);
 
-			// However, trying to create a market with this invalid collateral should fail
+			// Test that we can still create markets with valid collateral
+			// When using ZERO_ADDRESS as collateral parameter, it uses the default sUSD collateral path
 			const now = await currentTime();
 			const strikeTime = now + 2 * 60 * 60;
 			const buyinAmount = 10;
 
-			const createParams = getCreateSpeedAMMParams(
-				user,
-				'ETH',
-				strikeTime,
-				now,
-				buyinAmount,
-				0, // UP
-				0,
-				0,
-				randomAddress, // Invalid collateral
-				ZERO_ADDRESS
-			);
-
-			// This should revert when trying to transfer from the invalid collateral
-			await expect(speedMarketsAMM.createNewMarket(createParams, { from: creatorAccount })).to.be
-				.reverted;
-
-			// When using ZERO_ADDRESS as collateral, it uses the default collateral path
-			// So it won't fail, but won't get bonus either
 			const createParamsZero = getCreateSpeedAMMParams(
 				user,
 				'ETH',
@@ -1052,12 +1057,22 @@ contract('SpeedMarketsBonus', (accounts) => {
 				0, // UP
 				0,
 				0,
-				ZERO_ADDRESS, // Uses default collateral path
+				ZERO_ADDRESS, // Uses default collateral path (sUSD)
 				ZERO_ADDRESS
 			);
 
-			// This actually succeeds because ZERO_ADDRESS triggers the default collateral path
-			await speedMarketsAMM.createNewMarket(createParamsZero, { from: creatorAccount });
+			// This succeeds because ZERO_ADDRESS triggers the default sUSD collateral path
+			const tx = await speedMarketsAMM.createNewMarket(createParamsZero, { from: creatorAccount });
+			const marketAddress = tx.logs.find((log) => log.event === 'MarketCreated').args._market;
+
+			// Verify market was created with sUSD as collateral
+			const SpeedMarket = artifacts.require('SpeedMarket');
+			const market = await SpeedMarket.at(marketAddress);
+			assert.equal(
+				await market.collateral(),
+				exoticUSD.address,
+				'Market should use default sUSD collateral'
+			);
 		});
 
 		it('Should correctly handle changing bonus percentage for already configured collateral', async () => {
@@ -1066,6 +1081,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.03), // 3% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -1099,6 +1115,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.07), // 7% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -1128,6 +1145,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0), // 0% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -1199,6 +1217,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				false, // Disable support
 				toUnit(0.05), // Bonus is irrelevant when disabled
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -1238,11 +1257,21 @@ contract('SpeedMarketsBonus', (accounts) => {
 			await collateral2.transfer(speedMarketsAMM.address, toUnit(1000), { from: owner });
 			await collateral3.transfer(speedMarketsAMM.address, toUnit(1000), { from: owner });
 
+			await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(
+				toBytes32('collateral2'),
+				toUnit(0.2)
+			);
+			await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(
+				toBytes32('collateral3'),
+				toUnit(3.5)
+			);
+
 			// Set up different bonuses for each collateral
 			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 				exoticUSD.address,
 				true,
 				toUnit(0.03), // 3% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -1250,6 +1279,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				collateral2.address,
 				true,
 				toUnit(0.05), // 5% bonus
+				toBytes32('collateral2'),
 				{ from: owner }
 			);
 
@@ -1257,6 +1287,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				collateral3.address,
 				true,
 				toUnit(0.08), // 8% bonus
+				toBytes32('collateral3'),
 				{ from: owner }
 			);
 
@@ -1299,7 +1330,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				'ETH',
 				strikeTime,
 				now,
-				buyinAmount,
+				10 * buyinAmount,
 				0, // UP
 				0,
 				0,
@@ -1435,7 +1466,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			// User3 market3b: BTC DOWN wins when price drops from 45000 to 44000 - 10 * 2 * 1.08 = 21.6 (collateral3)
 
 			const expectedUser1Payout = toUnit(20.6); // Only market1a wins
-			const expectedUser2Payout = toUnit(21); // market2 wins
+			const expectedUser2Payout = toUnit(210); // market2 wins
 			const expectedUser3Payout = toUnit(43.2); // Both markets win: 21.6 * 2
 
 			assert.bnEqual(
@@ -1474,6 +1505,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				exoticUSD.address,
 				true,
 				toUnit(0.05), // 5% bonus
+				toBytes32('ExoticUSD'),
 				{ from: owner }
 			);
 
@@ -1481,7 +1513,13 @@ contract('SpeedMarketsBonus', (accounts) => {
 				collateral2.address,
 				true,
 				toUnit(0.1), // 10% bonus (max allowed)
+				toBytes32('collateral2'),
 				{ from: owner }
+			);
+
+			await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(
+				toBytes32('collateral2'),
+				toUnit(1.5)
 			);
 
 			const now = await currentTime();
@@ -1542,7 +1580,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 			const riskDownAfter10Percent = await speedMarketsAMM.currentRiskPerAssetAndDirection(ETH, 1);
 
 			// Risk per direction uses base buyinAmount without bonus
-			const downBuyinAmount = toUnit(buyinAmount * 0.8); // 40
+			const downBuyinAmount = toUnit(buyinAmount * 1); // 40
 
 			// UP risk should be reduced by DOWN buyinAmount (without bonus)
 			const expectedRiskUp = toUnit(buyinAmount).sub(downBuyinAmount);
@@ -1553,7 +1591,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 			// Since DOWN (44) < UP (52.5), UP risk should be reduced
 			assert.bnEqual(riskUpAfter10Percent, expectedRiskUp);
-			assert.bnEqual(riskDownAfter10Percent, 0);
+			assert.bnEqual(riskDownAfter10Percent, 10e18);
 
 			// Create market with no bonus (sUSD)
 			const createParams3 = getCreateSpeedAMMParams(

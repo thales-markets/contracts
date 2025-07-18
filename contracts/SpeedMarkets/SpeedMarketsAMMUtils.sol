@@ -62,10 +62,10 @@ contract SpeedMarketsAMMUtils is Initializable, ProxyOwned, ProxyPausable {
     function setCollateralKey(address _collateral, bytes32 _key) external {
         if (msg.sender != addressManager.getAddress("SpeedMarketsAMM") && msg.sender != owner)
             revert UnauthorizedCollateralKeySetter();
+        collateralKey[_collateral] = _key;
         uint price = _getCollateralPriceInUSD(_collateral);
         if (price == 0) revert CollateralNotSupportedOnPriceFeed();
         if (IERC20Decimals(_collateral).decimals() == 0) revert InvalidCollateralDecimals();
-        collateralKey[_collateral] = _key;
         emit CollateralKeySet(_collateral, _key);
     }
 

@@ -62,6 +62,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     error CollateralNotSupported();
     error InvalidOffRampCollateral();
     error CanOnlyBeCalledFromResolverOrOwner();
+    error InvalidWhitelistAddress();
 
     IERC20Upgradeable public sUSD;
 
@@ -731,6 +732,16 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit CollateralBonusSet(_collateral, _bonus);
     }
 
+    /// @notice adding/removing whitelist address depending on a flag
+    /// @param _whitelistAddress address that needed to be whitelisted or removed from WL
+    /// @param _flag adding or removing from whitelist (true: add, false: remove)
+    function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
+        if (_whitelistAddress == address(0)) revert InvalidWhitelistAddress();
+
+        whitelistedAddresses[_whitelistAddress] = _flag;
+        emit AddedIntoWhitelist(_whitelistAddress, _flag);
+    }
+
     //////////////////modifiers/////////////////
 
     modifier onlyCreator() {
@@ -784,4 +795,5 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event AmountTransfered(address _collateral, address _destination, uint _amount);
     event CollateralBonusSet(address indexed collateral, uint bonus);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 }

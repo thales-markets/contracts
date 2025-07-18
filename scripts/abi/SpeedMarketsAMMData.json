@@ -87,6 +87,25 @@
     "inputs": [
       {
         "internalType": "address[]",
+        "name": "collaterals",
+        "type": "address[]"
+      }
+    ],
+    "name": "getBonusesPerCollateral",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "bonuses",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
         "name": "marketsArray",
         "type": "address[]"
       }
@@ -143,6 +162,21 @@
           {
             "internalType": "uint256",
             "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "isNativeCollateral",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "payout",
             "type": "uint256"
           },
           {
@@ -353,6 +387,21 @@
           {
             "internalType": "uint256",
             "name": "buyinAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "isNativeCollateral",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "payout",
             "type": "uint256"
           },
           {

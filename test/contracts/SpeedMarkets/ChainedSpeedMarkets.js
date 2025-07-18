@@ -317,6 +317,10 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				marketDataArray[0].strikeTime
 			);
 
+			console.log('Check collateral');
+			assert.equal(marketDataArray[0].collateral, exoticUSD.address);
+			assert.isTrue(marketDataArray[0].isNativeCollateral);
+
 			console.log('Check payout');
 			let marketBalance = await exoticUSD.balanceOf(market);
 			let payoutMultiplier = PAYOUT_MULTIPLIERS[numOfDirections - 2] / 1e18; // minChainedMarkets = 2

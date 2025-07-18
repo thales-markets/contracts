@@ -17,22 +17,39 @@ module.exports = {
 			from: owner,
 		});
 
+		let FreeBetsHolderContract = artifacts.require('MockFreeBetsHolder');
+		let freeBetsHolder = await FreeBetsHolderContract.new(speedMarketsAMM.address);
+
+		const Over = artifacts.require('ExoticUSD');
+		const over = await Over.new();
+
 		let ExoticUSD = artifacts.require('ExoticUSD');
 		let exoticUSD = await ExoticUSD.new();
 
 		await exoticUSD.setDefaultAmount(toUnit(100));
+		await over.setDefaultAmount(toUnit(100));
 
 		await exoticUSD.mintForUser(user);
+		await over.mintForUser(user);
 		let balance = await exoticUSD.balanceOf(user);
 
 		await exoticUSD.transfer(speedMarketsAMM.address, toUnit(100), { from: user });
+		await over.transfer(speedMarketsAMM.address, toUnit(100), { from: user });
 
 		await exoticUSD.mintForUser(user);
 		await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
 		console.log('Balance of user is ' + balance / 1e18);
 
+		await over.mintForUser(user);
+		await over.approve(speedMarketsAMM.address, toUnit(100), { from: user });
+		console.log('Balance of user is ' + balance / 1e18);
+
 		await exoticUSD.mintForUser(owner);
 		balance = await exoticUSD.balanceOf(owner);
+		console.log('Balance of owner is ' + balance / 1e18);
+
+		await over.mintForUser(owner);
+		balance = await over.balanceOf(owner);
 		console.log('Balance of owner is ' + balance / 1e18);
 
 		let balanceOfSpeedMarketAMMBefore = await exoticUSD.balanceOf(speedMarketsAMM.address);
@@ -53,6 +70,8 @@ module.exports = {
 			[toUnit(0.18), toUnit(0.13), toUnit(0.08), toUnit(0.05)],
 			toUnit(0.04)
 		);
+		await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticUSD.address, true, 0);
+		await speedMarketsAMM.setSupportedNativeCollateralAndBonus(over.address, true, toUnit(0.02));
 
 		await speedMarketsAMM.setAssetToPythID(
 			toBytes32('ETH'),
@@ -111,6 +130,29 @@ module.exports = {
 		);
 
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
+		await addressManager.setAddressInAddressBook('FreeBetsHolder', freeBetsHolder.address);
+
+		// Deploy a minimal ChainedSpeedMarketsAMM to satisfy resolver initialization
+		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
+		let chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
+		await chainedSpeedMarketsAMM.initialize(owner, exoticUSD.address);
+		await addressManager.setAddressInAddressBook(
+			'ChainedSpeedMarketsAMM',
+			chainedSpeedMarketsAMM.address
+		);
+
+		// Deploy SpeedMarketsAMMResolver
+		let SpeedMarketsAMMResolverContract = artifacts.require('SpeedMarketsAMMResolver');
+		let speedMarketsAMMResolver = await SpeedMarketsAMMResolverContract.new();
+		await speedMarketsAMMResolver.initialize(
+			owner,
+			speedMarketsAMM.address,
+			addressManager.address
+		);
+		await addressManager.setAddressInAddressBook(
+			'SpeedMarketsAMMResolver',
+			speedMarketsAMMResolver.address
+		);
 
 		let SpeedMarketMastercopy = artifacts.require('SpeedMarketMastercopy');
 		let speedMarketMastercopy = await SpeedMarketMastercopy.new();
@@ -137,6 +179,7 @@ module.exports = {
 			creatorAccount,
 			speedMarketsAMM,
 			speedMarketsAMMData,
+			speedMarketsAMMResolver,
 			addressManager,
 			balanceOfSpeedMarketAMMBefore,
 			priceFeedUpdateData,
@@ -144,6 +187,7 @@ module.exports = {
 			mockPyth,
 			MockPriceFeedDeployed,
 			pythId,
+			over,
 			exoticUSD,
 			referrals,
 			initialSkewImapct,

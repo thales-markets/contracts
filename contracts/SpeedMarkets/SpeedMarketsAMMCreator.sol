@@ -15,6 +15,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../interfaces/IAddressManager.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
 import "../interfaces/IChainedSpeedMarketsAMM.sol";
+import "../interfaces/IFreeBetsHolder.sol";
 
 import "./SpeedMarket.sol";
 import "./SpeedMarketsAMM.sol";
@@ -85,6 +86,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     mapping(address => bool) public whitelistedAddresses;
 
+    mapping(bytes32 => address) public requestToSender;
+
     function initialize(address _owner, address _addressManager) external initializer {
         setOwner(_owner);
         addressManager = IAddressManager(_addressManager);
@@ -92,7 +95,16 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     /// @notice add new speed market to pending - waiting for creation
     /// @param _params parameters for adding pending speed market
-    function addPendingSpeedMarket(SpeedMarketParams calldata _params) external nonReentrant notPaused {
+    function addPendingSpeedMarket(SpeedMarketParams calldata _params)
+        external
+        nonReentrant
+        notPaused
+        returns (bytes32 requestId)
+    {
+        return _addPendingSpeedMarket(_params);
+    }
+
+    function _addPendingSpeedMarket(SpeedMarketParams calldata _params) internal returns (bytes32 requestId) {
         PendingSpeedMarket memory pendingSpeedMarket = PendingSpeedMarket(
             msg.sender,
             _params.asset,
@@ -111,6 +123,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         pendingSpeedMarkets.push(pendingSpeedMarket);
 
         emit AddSpeedMarket(pendingSpeedMarket);
+
+        requestId = keccak256(abi.encode(pendingSpeedMarket));
     }
 
     /// @notice create all speed markets from pending using latest price feeds from param
@@ -128,6 +142,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         require(_priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
+        address freeBetsHolder = addressManager.getAddress("FreeBetsHolder");
         _updatePythPrice(contractsAddresses.pyth, _priceUpdateData);
 
         ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
@@ -150,7 +165,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 pendingSpeedMarket.strikePrice,
                 pendingSpeedMarket.strikePriceSlippage
             );
-
             try
                 iSpeedMarketsAMM.createNewMarket(
                     SpeedMarketsAMM.CreateMarketParams(
@@ -166,7 +180,21 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                         pendingSpeedMarket.skewImpact
                     )
                 )
-            {
+            returns (address speedMarketAddress) {
+                if (
+                    speedMarketAddress != address(0) &&
+                    freeBetsHolder != address(0) &&
+                    pendingSpeedMarket.user == freeBetsHolder
+                ) {
+                    bytes32 requestId = keccak256(abi.encode(pendingSpeedMarket));
+                    IFreeBetsHolder(freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
+                        requestId,
+                        speedMarketAddress,
+                        pendingSpeedMarket.collateral,
+                        pendingSpeedMarket.buyinAmount,
+                        false
+                    );
+                }
                 createdSize++;
             } catch Error(string memory reason) {
                 emit LogError(reason, pendingSpeedMarket);
@@ -226,7 +254,16 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     /// @notice add new chained speed market to pending - waiting for creation
     /// @param _params parameters for adding pending chained speed market
-    function addPendingChainedSpeedMarket(ChainedSpeedMarketParams calldata _params) external nonReentrant notPaused {
+    function addPendingChainedSpeedMarket(ChainedSpeedMarketParams calldata _params)
+        external
+        nonReentrant
+        notPaused
+        returns (bytes32 requestId)
+    {
+        return _addPendingChainedSpeedMarket(_params);
+    }
+
+    function _addPendingChainedSpeedMarket(ChainedSpeedMarketParams calldata _params) internal returns (bytes32 requestId) {
         PendingChainedSpeedMarket memory pendingChainedSpeedMarket = PendingChainedSpeedMarket(
             msg.sender,
             _params.asset,
@@ -243,6 +280,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         pendingChainedSpeedMarkets.push(pendingChainedSpeedMarket);
 
         emit AddChainedSpeedMarket(pendingChainedSpeedMarket);
+
+        requestId = keccak256(abi.encode(pendingChainedSpeedMarket));
     }
 
     /// @notice create all chained speed markets from pending using latest price feeds from param
@@ -260,6 +299,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         require(_priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
+        address freeBetsHolder = addressManager.getAddress("FreeBetsHolder");
         _updatePythPrice(contractsAddresses.pyth, _priceUpdateData);
 
         ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
@@ -296,7 +336,17 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                         pendingChainedSpeedMarket.referrer
                     )
                 )
-            {
+            returns (address chainedSpeedMarketAddress) {
+                if (chainedSpeedMarketAddress != address(0) && pendingChainedSpeedMarket.user == freeBetsHolder) {
+                    bytes32 requestId = keccak256(abi.encode(pendingChainedSpeedMarket));
+                    IFreeBetsHolder(freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
+                        requestId,
+                        chainedSpeedMarketAddress,
+                        pendingChainedSpeedMarket.collateral,
+                        pendingChainedSpeedMarket.buyinAmount,
+                        true
+                    );
+                }
                 createdSize++;
             } catch Error(string memory reason) {
                 emit LogChainedError(reason, pendingChainedSpeedMarket);
@@ -380,6 +430,18 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     /// @notice get length of pending chained speed markets
     function getPendingChainedSpeedMarketsSize() external view returns (uint) {
         return pendingChainedSpeedMarkets.length;
+    }
+
+    function getChainedAndSpeedMarketsAMMAddresses()
+        external
+        view
+        returns (address chainedSpeedMarketsAMM, address speedMarketsAMM)
+    {
+        string[] memory contractNames = new string[](2);
+        contractNames[0] = "ChainedSpeedMarketsAMM";
+        contractNames[1] = "SpeedMarketsAMM";
+        address[] memory addresses = addressManager.getAddresses(contractNames);
+        return (addresses[0], addresses[1]);
     }
 
     //////////////////setters/////////////////

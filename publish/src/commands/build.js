@@ -21,7 +21,7 @@ const {
 
 const DEFAULTS = {
 	buildPath: path.join(__dirname, '..', '..', '..', BUILD_FOLDER),
-	optimizerRuns: 200,
+	optimizerRuns: 100,
 };
 
 const build = async ({
@@ -34,15 +34,14 @@ const build = async ({
 	useOvm,
 	cleanBuild,
 } = {}) => {
-
-	console.log("buildPath=" + buildPath);
-	console.log("optimizerRuns=" + optimizerRuns);
-	console.log("skipUnchanged=" + skipUnchanged);
-	console.log("testHelpers=" + testHelpers);
-	console.log("showWarnings=" + showWarnings);
-	console.log("showContractSize=" + showContractSize);
-	console.log("useOvm=" + useOvm);
-	console.log("cleanBuild=" + cleanBuild);
+	console.log('buildPath=' + buildPath);
+	console.log('optimizerRuns=' + optimizerRuns);
+	console.log('skipUnchanged=' + skipUnchanged);
+	console.log('testHelpers=' + testHelpers);
+	console.log('showWarnings=' + showWarnings);
+	console.log('showContractSize=' + showContractSize);
+	console.log('useOvm=' + useOvm);
+	console.log('cleanBuild=' + cleanBuild);
 
 	console.log(gray(`Starting build${useOvm ? ' using OVM' : ''}...`));
 
@@ -68,9 +67,9 @@ const build = async ({
 		console.log(gray(`  Sources to be ignored for OVM compilation (see publish/ovm-ignore.json):`));
 
 		const contractPaths = Object.keys(contracts);
-		contractPaths.map(contractPath => {
+		contractPaths.map((contractPath) => {
 			const filename = path.basename(contractPath, '.sol');
-			const isIgnored = ovmIgnored.some(ignored => filename === ignored);
+			const isIgnored = ovmIgnored.some((ignored) => filename === ignored);
 
 			if (isIgnored) {
 				console.log(gray(`    > ${filename}`));
@@ -210,7 +209,7 @@ const build = async ({
 
 	if (showContractSize) {
 		const contractToObjectMap = allCompiledFilePaths
-			.filter(file => fs.existsSync(file))
+			.filter((file) => fs.existsSync(file))
 			.reduce((memo, file) => {
 				memo[file] = require(file).evm.deployedBytecode.object;
 				return memo;
@@ -223,7 +222,7 @@ const build = async ({
 module.exports = {
 	build,
 	DEFAULTS,
-	cmd: program =>
+	cmd: (program) =>
 		program
 			.command('build')
 			.description('Build (flatten and compile) solidity files')

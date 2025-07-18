@@ -15,6 +15,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 	let creator, speedMarketsAMM, chainedSpeedMarketsAMM;
 	let mockPyth, priceFeedUpdateData, fee;
 	let now;
+	let addressManager;
 
 	const PAYOUT_MULTIPLIERS = [toUnit(1.7), toUnit(1.78), toUnit(1.82), toUnit(1.84), toUnit(1.9)];
 	const PYTH_ETH_PRICE = 186342931000;
@@ -51,6 +52,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			speedMarketsAMMUtils.address,
 			ZERO_ADDRESS
 		);
+		// await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticUSD.address, true, 0);
 		await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, 60, 60);
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(500));
@@ -87,7 +89,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 		// ------------------------- Address Manager -------------------------
 		let AddressManagerContract = artifacts.require('AddressManager');
-		let addressManager = await AddressManagerContract.new();
+		addressManager = await AddressManagerContract.new();
 
 		await addressManager.initialize(
 			owner,
@@ -108,6 +110,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		// -------------------------- Chained Speed Markets --------------------------
 		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
 		chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
+
 		await chainedSpeedMarketsAMM.initialize(owner, exoticUSD.address);
 
 		await exoticUSD.transfer(chainedSpeedMarketsAMM.address, toUnit(5000), { from: owner });
@@ -130,6 +133,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			PAYOUT_MULTIPLIERS
 		);
 
+		await addressManager.setAddressInAddressBook('SpeedMarketsAMM', speedMarketsAMM.address);
 		await addressManager.setAddressInAddressBook(
 			'ChainedSpeedMarketsAMM',
 			chainedSpeedMarketsAMM.address
@@ -138,6 +142,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		// -------------------------- Creator of Speed/Chained Markets --------------------------
 		const Creator = artifacts.require('SpeedMarketsAMMCreator');
 		creator = await Creator.new();
+		let MockFreeBetsHolder = artifacts.require('MockFreeBetsHolder');
+		let mockFreeBetsHolder = await MockFreeBetsHolder.new(creator.address);
 
 		await creator.initialize(owner, addressManager.address);
 		await creator.setAddressManager(addressManager.address);
@@ -145,6 +151,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		await creator.addToWhitelist(user, true);
 
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creator.address);
+		await addressManager.setAddressInAddressBook('FreeBetsHolder', mockFreeBetsHolder.address);
 	});
 
 	describe('Test creator of speed markets', () => {
@@ -369,20 +376,21 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			);
 
 			const pendingSizeBefore = Number(await creator.getPendingSpeedMarketsSize());
-
+			await exoticUSD.approve(speedMarketsAMM.address, toUnit(0), { from: user });
+			console.log('exoticUSD address', exoticUSD.address);
 			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
 
 			let pendingSize = Number(await creator.getPendingSpeedMarketsSize());
 			assert.equal(pendingSize, pendingSizeBefore + 1, 'Should add 1 pending speed market!');
 
 			const activeMarketsSizeBefore = (await speedMarketsAMM.activeMarkets(0, 10)).length;
-
+			console.log('activeMarketsSizeBefore', activeMarketsSizeBefore);
 			// no approval
 			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
-
+			console.log('activeMarketsSizeAfter', (await speedMarketsAMM.activeMarkets(0, 10)).length);
 			pendingSize = await creator.getPendingSpeedMarketsSize();
 			assert.equal(pendingSize, 0, 'Should remove 1 pending speed market!');
 			let activeMarketsSize = (await speedMarketsAMM.activeMarkets(0, 10)).length;
@@ -682,6 +690,67 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				activeMarketsSize,
 				activeMarketsSizeBefore,
 				'Should not be created any new chained speed markets!'
+			);
+		});
+	});
+
+	describe('Test getChainedAndSpeedMarketsAMMAddresses', () => {
+		it('Should return correct SpeedMarketsAMM and ChainedSpeedMarketsAMM addresses', async () => {
+			const addresses = await creator.getChainedAndSpeedMarketsAMMAddresses();
+			const returnedChainedAMM = addresses.chainedSpeedMarketsAMM;
+			const returnedSpeedAMM = addresses.speedMarketsAMM;
+
+			console.log('Returned ChainedSpeedMarketsAMM:', returnedChainedAMM);
+			console.log('Returned SpeedMarketsAMM:', returnedSpeedAMM);
+			console.log('Expected ChainedSpeedMarketsAMM:', chainedSpeedMarketsAMM.address);
+			console.log('Expected SpeedMarketsAMM:', speedMarketsAMM.address);
+
+			assert.equal(
+				returnedChainedAMM,
+				chainedSpeedMarketsAMM.address,
+				'ChainedSpeedMarketsAMM address should match'
+			);
+			assert.equal(
+				returnedSpeedAMM,
+				speedMarketsAMM.address,
+				'SpeedMarketsAMM address should match'
+			);
+		});
+
+		it('Should correctly update addresses when AMMs are changed in AddressManager', async () => {
+			// Deploy new AMM contracts
+			const SpeedMarketsAMMContract = artifacts.require('SpeedMarketsAMM');
+			const newSpeedMarketsAMM = await SpeedMarketsAMMContract.new();
+
+			const ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
+			const newChainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
+
+			// Update the addresses in AddressManager
+			await addressManager.setAddressInAddressBook('SpeedMarketsAMM', newSpeedMarketsAMM.address);
+			await addressManager.setAddressInAddressBook(
+				'ChainedSpeedMarketsAMM',
+				newChainedSpeedMarketsAMM.address
+			);
+
+			// Get updated addresses from creator
+			const addresses = await creator.getChainedAndSpeedMarketsAMMAddresses();
+			const returnedChainedAMM = addresses.chainedSpeedMarketsAMM;
+			const returnedSpeedAMM = addresses.speedMarketsAMM;
+
+			console.log('Updated ChainedSpeedMarketsAMM:', returnedChainedAMM);
+			console.log('Updated SpeedMarketsAMM:', returnedSpeedAMM);
+			console.log('Expected new ChainedSpeedMarketsAMM:', newChainedSpeedMarketsAMM.address);
+			console.log('Expected new SpeedMarketsAMM:', newSpeedMarketsAMM.address);
+
+			assert.equal(
+				returnedChainedAMM,
+				newChainedSpeedMarketsAMM.address,
+				'Should return updated ChainedSpeedMarketsAMM address'
+			);
+			assert.equal(
+				returnedSpeedAMM,
+				newSpeedMarketsAMM.address,
+				'Should return updated SpeedMarketsAMM address'
 			);
 		});
 	});

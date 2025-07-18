@@ -16,6 +16,7 @@ contract('SpeedMarkets', (accounts) => {
 			let {
 				creatorAccount,
 				speedMarketsAMM,
+				speedMarketsAMMResolver,
 				speedMarketsAMMData,
 				addressManager,
 				balanceOfSpeedMarketAMMBefore,
@@ -172,7 +173,9 @@ contract('SpeedMarkets', (accounts) => {
 			let balanceOfMarketBefore = await exoticUSD.balanceOf(market);
 			let balanceOfUserBefore = await exoticUSD.balanceOf(owner);
 
-			await speedMarketsAMM.resolveMarket(market, [resolvePriceFeedUpdateData], { value: fee });
+			await speedMarketsAMMResolver.resolveMarket(market, [resolvePriceFeedUpdateData], {
+				value: fee,
+			});
 
 			ammData = await speedMarketsAMMData.getSpeedMarketsAMMParameters(user);
 			console.log('numActiveMarkets after resolve' + ammData.numActiveMarkets);

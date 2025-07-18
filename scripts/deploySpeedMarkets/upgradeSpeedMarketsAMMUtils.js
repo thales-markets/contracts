@@ -1,8 +1,12 @@
+const path = require('path');
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const { setTargetAddress, getTargetAddress } = require('../helpers');
+
+const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
+	let accounts = await ethers.getSigners();
+	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 
@@ -47,7 +51,6 @@ async function main() {
 	if (networkObj.chainId == 168587773) {
 		networkObj.name = 'blastSepolia';
 		network = 'blastSepolia';
-		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
 	if (networkObj.chainId == 11155420) {
@@ -55,44 +58,42 @@ async function main() {
 		network = 'optimisticSepolia';
 	}
 
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
+	console.log('Account is:' + owner.address);
+	console.log('Network name:' + network);
 
-	console.log('Owner is: ' + owner.address);
-	console.log('Network:' + network);
-	console.log('Network id:' + networkObj.chainId);
-
-	const addressManagerAddress = getTargetAddress('AddressManager', network);
-	console.log('AddressManager address:', addressManagerAddress);
+	const speedMarketsAMMUtilsAddress = getTargetAddress('SpeedMarketsAMMUtils', network);
+	console.log('Found SpeedMarketsAMMUtils at:', speedMarketsAMMUtilsAddress);
 
 	const SpeedMarketsAMMUtils = await ethers.getContractFactory('SpeedMarketsAMMUtils');
-	const SpeedMarketsAMMUtilsDeployed = await upgrades.deployProxy(SpeedMarketsAMMUtils, [
-		owner.address,
-		addressManagerAddress,
-	]);
-	await SpeedMarketsAMMUtilsDeployed.deployed();
 
-	console.log('SpeedMarketsAMMUtils proxy:', SpeedMarketsAMMUtilsDeployed.address);
-
-	const SpeedMarketsAMMUtilsImplementation = await getImplementationAddress(
+	const implementation = await getImplementationAddress(
 		ethers.provider,
-		SpeedMarketsAMMUtilsDeployed.address
+		speedMarketsAMMUtilsAddress
 	);
+	console.log('Current implementation:', implementation);
 
-	console.log('Implementation SpeedMarketsAMMUtils: ', SpeedMarketsAMMUtilsImplementation);
+	// Upgrade the contract
+	console.log('Upgrading SpeedMarketsAMMUtils...');
+	const upgraded = await upgrades.upgradeProxy(speedMarketsAMMUtilsAddress, SpeedMarketsAMMUtils);
+	await upgraded.deployed();
 
-	setTargetAddress('SpeedMarketsAMMUtils', network, SpeedMarketsAMMUtilsDeployed.address);
-	setTargetAddress(
-		'SpeedMarketsAMMUtilsImplementation',
-		network,
-		SpeedMarketsAMMUtilsImplementation
+	console.log('SpeedMarketsAMMUtils upgraded');
+
+	const newImplementation = await getImplementationAddress(
+		ethers.provider,
+		speedMarketsAMMUtilsAddress
 	);
+	console.log('New implementation:', newImplementation);
 
+	setTargetAddress('SpeedMarketsAMMUtilsImplementation', network, newImplementation);
+
+	// Wait for confirmation
 	await delay(5000);
 
 	try {
 		await hre.run('verify:verify', {
-			address: SpeedMarketsAMMUtilsImplementation,
+			address: newImplementation,
+			constructorArguments: [],
 		});
 	} catch (e) {
 		console.log(e);

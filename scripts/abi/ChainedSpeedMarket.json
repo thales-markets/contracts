@@ -59,6 +59,19 @@
   },
   {
     "inputs": [],
+    "name": "collateral",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "createdAt",
     "outputs": [
       {
@@ -192,6 +205,11 @@
             "internalType": "uint256",
             "name": "_payoutMultiplier",
             "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "_collateral",
+            "type": "address"
           }
         ],
         "internalType": "struct ChainedSpeedMarket.InitParams",

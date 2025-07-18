@@ -312,6 +312,24 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "priceToSet",
+        "type": "uint256"
+      }
+    ],
+    "name": "setStaticPricePerCurrencyKey",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "timestampToSet",
         "type": "uint256"
@@ -320,6 +338,25 @@
     "name": "setTimestamptoReturn",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "staticPricePerCurrencyKey",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

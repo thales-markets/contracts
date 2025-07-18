@@ -27,6 +27,9 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         int64 strikePrice;
         SpeedMarket.Direction direction;
         uint buyinAmount;
+        address collateral;
+        bool isNativeCollateral;
+        uint payout;
         bool resolved;
         int64 finalPrice;
         SpeedMarket.Direction result;
@@ -47,6 +50,9 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         int64[] strikePrices;
         int64[] finalPrices;
         uint buyinAmount;
+        address collateral;
+        bool isNativeCollateral;
+        uint payout;
         uint payoutMultiplier;
         bool resolved;
         bool isUserWinner;
@@ -127,10 +133,14 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].strikePrice = market.strikePrice();
             markets[i].direction = market.direction();
             markets[i].buyinAmount = market.buyinAmount();
+            markets[i].collateral = market.collateral();
             markets[i].resolved = market.resolved();
             markets[i].finalPrice = market.finalPrice();
             markets[i].result = market.result();
             markets[i].isUserWinner = market.isUserWinner();
+
+            markets[i].isNativeCollateral = ISpeedMarketsAMM(speedMarketsAMM).supportedNativeCollateral(market.collateral());
+            markets[i].payout = IERC20Upgradeable(market.collateral()).balanceOf(marketsArray[i]);
 
             if (ISpeedMarketsAMM(speedMarketsAMM).marketHasFeeAttribute(marketsArray[i])) {
                 markets[i].safeBoxImpact = market.safeBoxImpact();
@@ -172,6 +182,11 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].finalPrices = marketFinalPrices;
 
             markets[i].buyinAmount = market.buyinAmount();
+            markets[i].collateral = market.collateral();
+
+            markets[i].isNativeCollateral = ISpeedMarketsAMM(speedMarketsAMM).supportedNativeCollateral(market.collateral());
+            markets[i].payout = IERC20Upgradeable(market.collateral()).balanceOf(marketsArray[i]);
+
             markets[i].payoutMultiplier = market.payoutMultiplier();
             markets[i].resolved = market.resolved();
             markets[i].isUserWinner = market.isUserWinner();
@@ -276,6 +291,14 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
                 risk,
                 payoutMultipliers
             );
+    }
+
+    /// @notice return bonuses for an array of collaterals
+    function getBonusesPerCollateral(address[] calldata collaterals) external view returns (uint[] memory bonuses) {
+        bonuses = new uint[](collaterals.length);
+        for (uint i = 0; i < collaterals.length; i++) {
+            bonuses[i] = ISpeedMarketsAMM(speedMarketsAMM).bonusPerCollateral(collaterals[i]);
+        }
     }
 
     //////////////////events/////////////////

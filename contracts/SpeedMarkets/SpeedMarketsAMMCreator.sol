@@ -150,7 +150,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 pendingSpeedMarket.strikePrice,
                 pendingSpeedMarket.strikePriceSlippage
             );
-
             try
                 iSpeedMarketsAMM.createNewMarket(
                     SpeedMarketsAMM.CreateMarketParams(

@@ -28,6 +28,8 @@ contract MockPriceFeed is Owned, IPriceFeed {
     uint public priceToReturn;
     uint public timestampToReturn;
 
+    mapping(bytes32 => uint) public staticPricePerCurrencyKey;
+
     // ========== CONSTRUCTOR ==========
     constructor(address _owner) Owned(_owner) {}
 
@@ -101,11 +103,23 @@ contract MockPriceFeed is Owned, IPriceFeed {
     }
 
     function _getRateAndUpdatedTime(bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
-        return
-            RateAndUpdatedTime({
-                rate: uint216(_formatAggregatorAnswer(currencyKey, int256(priceToReturn))),
-                time: uint40(timestampToReturn)
-            });
+        if (staticPricePerCurrencyKey[currencyKey] > 0) {
+            return
+                RateAndUpdatedTime({
+                    rate: uint216(_formatAggregatorAnswer(currencyKey, int256(staticPricePerCurrencyKey[currencyKey]))),
+                    time: uint40(timestampToReturn)
+                });
+        } else {
+            return
+                RateAndUpdatedTime({
+                    rate: uint216(_formatAggregatorAnswer(currencyKey, int256(priceToReturn))),
+                    time: uint40(timestampToReturn)
+                });
+        }
+    }
+
+    function setStaticPricePerCurrencyKey(bytes32 currencyKey, uint priceToSet) external onlyOwner {
+        staticPricePerCurrencyKey[currencyKey] = priceToSet;
     }
 
     function setPricetoReturn(uint priceToSet) external {

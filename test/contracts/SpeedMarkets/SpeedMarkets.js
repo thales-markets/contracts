@@ -291,7 +291,7 @@ contract('SpeedMarkets', (accounts) => {
 				balanceOfSpeedMarketAMMAfterCreation.add(toUnit(2 * buyinAmountParam))
 			);
 
-			await speedMarketsAMM.transferAmount(user, toUnit(1));
+			await speedMarketsAMM.transferAmount(exoticUSD.address, user, toUnit(1));
 			ammBalance = await exoticUSD.balanceOf(speedMarketsAMM.address);
 			console.log('Balance of AMM after transfer', ammBalance / 1e18);
 		});

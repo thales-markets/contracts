@@ -402,7 +402,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 			console.log('Check AMM balance after transfer');
 			let ammBalanceBefore = await exoticUSD.balanceOf(chainedSpeedMarketsAMM.address);
-			await chainedSpeedMarketsAMM.transferAmount(owner, toUnit(2));
+			await chainedSpeedMarketsAMM.transferAmount(exoticUSD.address, owner, toUnit(2));
 			let ammBalance = await exoticUSD.balanceOf(chainedSpeedMarketsAMM.address);
 			assert.equal(ammBalanceBefore / 1e18 - ammBalance / 1e18, 2);
 		});

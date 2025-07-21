@@ -28,7 +28,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         SpeedMarket.Direction direction;
         uint buyinAmount;
         address collateral;
-        bool isNativeCollateral;
+        bool isDefaultCollateral;
         uint payout;
         bool resolved;
         int64 finalPrice;
@@ -51,7 +51,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         int64[] finalPrices;
         uint buyinAmount;
         address collateral;
-        bool isNativeCollateral;
+        bool isDefaultCollateral;
         uint payout;
         uint payoutMultiplier;
         bool resolved;
@@ -152,13 +152,11 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].result = market.result();
             markets[i].isUserWinner = market.isUserWinner();
 
-            address marketCollateral = _getMarketCollateralOrFallback(
-                address(market),
-                address(ISpeedMarketsAMM(speedMarketsAMM).sUSD())
-            );
+            address defaultCollateral = address(ISpeedMarketsAMM(speedMarketsAMM).sUSD());
+            address marketCollateral = _getMarketCollateralOrFallback(address(market), defaultCollateral);
 
             markets[i].collateral = marketCollateral;
-            markets[i].isNativeCollateral = ISpeedMarketsAMM(speedMarketsAMM).supportedNativeCollateral(marketCollateral);
+            markets[i].isDefaultCollateral = marketCollateral == defaultCollateral;
             markets[i].payout = IERC20Upgradeable(marketCollateral).balanceOf(marketsArray[i]);
 
             if (ISpeedMarketsAMM(speedMarketsAMM).marketHasFeeAttribute(marketsArray[i])) {
@@ -202,13 +200,11 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
 
             markets[i].buyinAmount = market.buyinAmount();
 
-            address marketCollateral = _getMarketCollateralOrFallback(
-                address(market),
-                address(IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).sUSD())
-            );
+            address defaultCollateral = address(IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).sUSD());
+            address marketCollateral = _getMarketCollateralOrFallback(address(market), defaultCollateral);
 
             markets[i].collateral = marketCollateral;
-            markets[i].isNativeCollateral = ISpeedMarketsAMM(speedMarketsAMM).supportedNativeCollateral(marketCollateral);
+            markets[i].isDefaultCollateral = marketCollateral == defaultCollateral;
             markets[i].payout = IERC20Upgradeable(marketCollateral).balanceOf(marketsArray[i]);
 
             markets[i].payoutMultiplier = market.payoutMultiplier();

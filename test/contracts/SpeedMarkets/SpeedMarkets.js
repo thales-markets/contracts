@@ -160,7 +160,7 @@ contract('SpeedMarkets', (accounts) => {
 				lpFeeByDeltaTime + getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact) / 1e18;
 			assert.equal(marketData[0].lpFee / 1e18, expectedLpFee.toFixed(5));
 			assert.equal(marketData[0].collateral, exoticUSD.address);
-			assert.isTrue(marketData[0].isNativeCollateral);
+			assert.isTrue(marketData[0].isDefaultCollateral);
 
 			const bonuses = await speedMarketsAMMData.getBonusesPerCollateral([
 				exoticUSD.address,

@@ -319,7 +319,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 			console.log('Check collateral');
 			assert.equal(marketDataArray[0].collateral, exoticUSD.address);
-			assert.isTrue(marketDataArray[0].isNativeCollateral);
+			assert.isTrue(marketDataArray[0].isDefaultCollateral);
 
 			console.log('Check payout');
 			let marketBalance = await exoticUSD.balanceOf(market);

@@ -122,6 +122,20 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
 
     //////////////////getters/////////////////
 
+    function _getMarketCollateralOrFallback(address market, address fallbackCollateral) internal view returns (address) {
+        // This is the function selector for "collateral()"
+        bytes4 selector = bytes4(keccak256("collateral()"));
+
+        (bool success, bytes memory result) = market.staticcall(abi.encodeWithSelector(selector));
+
+        if (success && result.length == 32) {
+            return abi.decode(result, (address));
+        }
+
+        // Fallback if collateral() doesn't exist or call fails
+        return fallbackCollateral;
+    }
+
     /// @notice return all speed market data for an array of markets
     function getMarketsData(address[] calldata marketsArray) external view returns (MarketData[] memory) {
         MarketData[] memory markets = new MarketData[](marketsArray.length);
@@ -133,14 +147,19 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].strikePrice = market.strikePrice();
             markets[i].direction = market.direction();
             markets[i].buyinAmount = market.buyinAmount();
-            markets[i].collateral = market.collateral();
             markets[i].resolved = market.resolved();
             markets[i].finalPrice = market.finalPrice();
             markets[i].result = market.result();
             markets[i].isUserWinner = market.isUserWinner();
 
-            markets[i].isNativeCollateral = ISpeedMarketsAMM(speedMarketsAMM).supportedNativeCollateral(market.collateral());
-            markets[i].payout = IERC20Upgradeable(market.collateral()).balanceOf(marketsArray[i]);
+            address marketCollateral = _getMarketCollateralOrFallback(
+                address(market),
+                address(ISpeedMarketsAMM(speedMarketsAMM).sUSD())
+            );
+
+            markets[i].collateral = marketCollateral;
+            markets[i].isNativeCollateral = ISpeedMarketsAMM(speedMarketsAMM).supportedNativeCollateral(marketCollateral);
+            markets[i].payout = IERC20Upgradeable(marketCollateral).balanceOf(marketsArray[i]);
 
             if (ISpeedMarketsAMM(speedMarketsAMM).marketHasFeeAttribute(marketsArray[i])) {
                 markets[i].safeBoxImpact = market.safeBoxImpact();
@@ -182,10 +201,15 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].finalPrices = marketFinalPrices;
 
             markets[i].buyinAmount = market.buyinAmount();
-            markets[i].collateral = market.collateral();
 
-            markets[i].isNativeCollateral = ISpeedMarketsAMM(speedMarketsAMM).supportedNativeCollateral(market.collateral());
-            markets[i].payout = IERC20Upgradeable(market.collateral()).balanceOf(marketsArray[i]);
+            address marketCollateral = _getMarketCollateralOrFallback(
+                address(market),
+                address(IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).sUSD())
+            );
+
+            markets[i].collateral = marketCollateral;
+            markets[i].isNativeCollateral = ISpeedMarketsAMM(speedMarketsAMM).supportedNativeCollateral(marketCollateral);
+            markets[i].payout = IERC20Upgradeable(marketCollateral).balanceOf(marketsArray[i]);
 
             markets[i].payoutMultiplier = market.payoutMultiplier();
             markets[i].resolved = market.resolved();

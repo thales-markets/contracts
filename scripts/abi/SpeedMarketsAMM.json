@@ -1613,6 +1613,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "speedMarketsAMMUtils",
+    "outputs": [
+      {
+        "internalType": "contract ISpeedMarketsAMMUtils",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",

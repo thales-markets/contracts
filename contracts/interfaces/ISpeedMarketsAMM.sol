@@ -8,6 +8,7 @@ import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
 
 import "../SpeedMarkets/SpeedMarket.sol";
 import "../SpeedMarkets/SpeedMarketsAMM.sol";
+import "./ISpeedMarketsAMMUtils.sol";
 
 interface ISpeedMarketsAMM {
     struct Params {
@@ -75,4 +76,6 @@ interface ISpeedMarketsAMM {
     function supportedNativeCollateral(address _collateral) external view returns (bool);
 
     function bonusPerCollateral(address _collateral) external view returns (uint);
+
+    function speedMarketsAMMUtils() external view returns (ISpeedMarketsAMMUtils);
 }

@@ -111,7 +111,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     uint[] public timeThresholdsForFees;
     uint[] public lpFees;
 
-    ISpeedMarketsAMMUtils private speedMarketsAMMUtils;
+    ISpeedMarketsAMMUtils public speedMarketsAMMUtils;
 
     mapping(address => bool) public marketHasFeeAttribute;
 

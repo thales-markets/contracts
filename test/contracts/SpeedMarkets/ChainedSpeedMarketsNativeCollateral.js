@@ -194,6 +194,10 @@ contract('ChainedSpeedMarketsNativeCollateral', (accounts) => {
 		await addressManager.setAddressInAddressBook('PriceFeed', MockPriceFeedDeployed.address);
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMM', speedMarketsAMM.address);
 
+		let MockFreeBetsHolder = artifacts.require('MockFreeBetsHolder');
+		let mockFreeBetsHolder = await MockFreeBetsHolder.new(creatorAccount);
+		await addressManager.setAddressInAddressBook('FreeBetsHolder', mockFreeBetsHolder.address);
+
 		// Deploy and setup ChainedSpeedMarketsAMM
 		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
 		chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();

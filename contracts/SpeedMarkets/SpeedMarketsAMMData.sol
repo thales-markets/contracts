@@ -27,6 +27,9 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         int64 strikePrice;
         SpeedMarket.Direction direction;
         uint buyinAmount;
+        address collateral;
+        bool isDefaultCollateral;
+        uint payout;
         bool resolved;
         int64 finalPrice;
         SpeedMarket.Direction result;
@@ -47,6 +50,9 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         int64[] strikePrices;
         int64[] finalPrices;
         uint buyinAmount;
+        address collateral;
+        bool isDefaultCollateral;
+        uint payout;
         uint payoutMultiplier;
         bool resolved;
         bool isUserWinner;
@@ -116,6 +122,20 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
 
     //////////////////getters/////////////////
 
+    function _getMarketCollateralOrFallback(address market, address fallbackCollateral) internal view returns (address) {
+        // This is the function selector for "collateral()"
+        bytes4 selector = bytes4(keccak256("collateral()"));
+
+        (bool success, bytes memory result) = market.staticcall(abi.encodeWithSelector(selector));
+
+        if (success && result.length == 32) {
+            return abi.decode(result, (address));
+        }
+
+        // Fallback if collateral() doesn't exist or call fails
+        return fallbackCollateral;
+    }
+
     /// @notice return all speed market data for an array of markets
     function getMarketsData(address[] calldata marketsArray) external view returns (MarketData[] memory) {
         MarketData[] memory markets = new MarketData[](marketsArray.length);
@@ -131,6 +151,13 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].finalPrice = market.finalPrice();
             markets[i].result = market.result();
             markets[i].isUserWinner = market.isUserWinner();
+
+            address defaultCollateral = address(ISpeedMarketsAMM(speedMarketsAMM).sUSD());
+            address marketCollateral = _getMarketCollateralOrFallback(address(market), defaultCollateral);
+
+            markets[i].collateral = marketCollateral;
+            markets[i].isDefaultCollateral = marketCollateral == defaultCollateral;
+            markets[i].payout = IERC20Upgradeable(marketCollateral).balanceOf(marketsArray[i]);
 
             if (ISpeedMarketsAMM(speedMarketsAMM).marketHasFeeAttribute(marketsArray[i])) {
                 markets[i].safeBoxImpact = market.safeBoxImpact();
@@ -172,6 +199,14 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].finalPrices = marketFinalPrices;
 
             markets[i].buyinAmount = market.buyinAmount();
+
+            address defaultCollateral = address(IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).sUSD());
+            address marketCollateral = _getMarketCollateralOrFallback(address(market), defaultCollateral);
+
+            markets[i].collateral = marketCollateral;
+            markets[i].isDefaultCollateral = marketCollateral == defaultCollateral;
+            markets[i].payout = IERC20Upgradeable(marketCollateral).balanceOf(marketsArray[i]);
+
             markets[i].payoutMultiplier = market.payoutMultiplier();
             markets[i].resolved = market.resolved();
             markets[i].isUserWinner = market.isUserWinner();
@@ -276,6 +311,14 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
                 risk,
                 payoutMultipliers
             );
+    }
+
+    /// @notice return bonuses for an array of collaterals
+    function getBonusesPerCollateral(address[] calldata collaterals) external view returns (uint[] memory bonuses) {
+        bonuses = new uint[](collaterals.length);
+        for (uint i = 0; i < collaterals.length; i++) {
+            bonuses[i] = ISpeedMarketsAMM(speedMarketsAMM).bonusPerCollateral(collaterals[i]);
+        }
     }
 
     //////////////////events/////////////////

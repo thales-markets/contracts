@@ -24,6 +24,7 @@ contract('SpeedMarkets', (accounts) => {
 				pythId,
 				exoticUSD,
 				now,
+				over,
 			} = await speedMarketsInit(accounts);
 
 			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
@@ -158,6 +159,17 @@ contract('SpeedMarkets', (accounts) => {
 			const expectedLpFee =
 				lpFeeByDeltaTime + getSkewImpact(riskPerAssetAndDirectionData, maxSkewImpact) / 1e18;
 			assert.equal(marketData[0].lpFee / 1e18, expectedLpFee.toFixed(5));
+			assert.equal(marketData[0].collateral, exoticUSD.address);
+			assert.isTrue(marketData[0].isDefaultCollateral);
+
+			const bonuses = await speedMarketsAMMData.getBonusesPerCollateral([
+				exoticUSD.address,
+				over.address,
+			]);
+			assert.equal(bonuses[0] / 1e18, 0);
+			assert.equal(bonuses[1] / 1e18, 0.02);
+			const expectedPayout = 2 * buyinAmountParam * (1 + bonuses[0] / 1e18) * 1e18;
+			assert.equal(marketData[0].payout, expectedPayout);
 
 			now = await currentTime();
 			let resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
@@ -279,7 +291,7 @@ contract('SpeedMarkets', (accounts) => {
 				balanceOfSpeedMarketAMMAfterCreation.add(toUnit(2 * buyinAmountParam))
 			);
 
-			await speedMarketsAMM.transferAmount(user, toUnit(1));
+			await speedMarketsAMM.transferAmount(exoticUSD.address, user, toUnit(1));
 			ammBalance = await exoticUSD.balanceOf(speedMarketsAMM.address);
 			console.log('Balance of AMM after transfer', ammBalance / 1e18);
 		});

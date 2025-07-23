@@ -29,7 +29,7 @@ import "../interfaces/ISpeedMarketsAMM.sol";
 import "../interfaces/IFreeBetsHolder.sol";
 
 import "./SpeedMarket.sol";
-import "./SpeedMarketsAMMUtils.sol";
+import "../interfaces/ISpeedMarketsAMMUtils.sol";
 
 /// @title An AMM for Thales speed markets
 contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
@@ -57,13 +57,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     error ResolverNotWhitelisted();
     error OnlyCreatorAllowed();
     error BonusTooHigh();
-    error InvalidWhitelistAddress();
     error OnlyMarketOwner();
     error EtherTransferFailed();
     error MismatchedLengths();
     error CollateralNotSupported();
     error InvalidOffRampCollateral();
     error CanOnlyBeCalledFromResolverOrOwner();
+    error InvalidWhitelistAddress();
 
     IERC20Upgradeable public sUSD;
 
@@ -112,7 +112,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     uint[] public timeThresholdsForFees;
     uint[] public lpFees;
 
-    SpeedMarketsAMMUtils private speedMarketsAMMUtils;
+    ISpeedMarketsAMMUtils public speedMarketsAMMUtils;
 
     mapping(address => bool) public marketHasFeeAttribute;
 
@@ -155,6 +155,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         bool transferCollateral;
         uint64 strikeTime;
         uint buyinAmount;
+        uint buyinAmountInUSD;
         address defaultCollateral;
     }
 
@@ -180,21 +181,21 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         // Calculate strike time: use provided strikeTime or current timestamp + delta
         uint64 strikeTime = _params.strikeTime == 0 ? uint64(block.timestamp + _params.delta) : _params.strikeTime;
-
         // Determine collateral configuration
-        (bool isNativeCollateral, address defaultCollateral, uint buyinAmount) = _determineCollateralConfig(
-            _params,
-            strikeTime,
-            contractsAddresses
-        );
-
+        (
+            bool isNativeCollateral,
+            address defaultCollateral,
+            uint buyinAmount,
+            uint buyinAmountInUSD
+        ) = _determineCollateralConfig(_params, strikeTime, contractsAddresses);
         // Create internal parameters struct
         InternalCreateParams memory internalParams = InternalCreateParams({
             createMarketParams: _params,
             strikeTime: strikeTime,
             buyinAmount: buyinAmount,
             transferCollateral: isNativeCollateral,
-            defaultCollateral: defaultCollateral
+            defaultCollateral: defaultCollateral,
+            buyinAmountInUSD: buyinAmountInUSD
         });
 
         marketAddress = _createNewMarket(internalParams, contractsAddresses);
@@ -216,7 +217,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         returns (
             bool isNativeCollateral,
             address defaultCollateral,
-            uint buyinAmount
+            uint buyinAmount,
+            uint buyinAmountInUSD
         )
     {
         isNativeCollateral = supportedNativeCollateral[_params.collateral] || _params.collateral == address(0);
@@ -228,10 +230,17 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
         // Calculate buyin amount based on collateral type
         if (isNativeCollateral) {
-            buyinAmount = _params.collateralAmount;
+            buyinAmount = buyinAmountInUSD = _params.collateralAmount;
+            if (defaultCollateral != address(sUSD)) {
+                buyinAmountInUSD = speedMarketsAMMUtils.transformCollateralToUSD(
+                    defaultCollateral,
+                    address(sUSD),
+                    _params.collateralAmount
+                );
+            }
         } else {
             // For external collaterals, convert through onramp
-            buyinAmount = _getBuyinWithConversion(
+            buyinAmount = buyinAmountInUSD = _getBuyinWithConversion(
                 _params.user,
                 _params.collateral,
                 _params.collateralAmount,
@@ -292,17 +301,17 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice Handles the risk and gets the fee
     /// @param asset The asset
     /// @param direction The direction
-    /// @param buyinAmount The buyin amount
+    /// @param buyinAmountInUSD The buyin amount in USD
     /// @param strikeTime The strike time
     /// @param skewImpact The skew impact
     function _handleRiskAndGetFee(
         bytes32 asset,
         SpeedMarket.Direction direction,
-        uint buyinAmount,
+        uint buyinAmountInUSD,
         uint64 strikeTime,
         uint skewImpact,
         uint payoutBonus
-    ) internal returns (uint lpFeeWithSkew, uint payout) {
+    ) internal returns (uint lpFeeWithSkew, uint payoutInUSD) {
         uint skew = _getSkewByAssetAndDirection(asset, direction);
         if (skew > skewImpact + skewSlippage) revert SkewSlippageExceeded();
 
@@ -313,11 +322,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         // calculate discount as half of skew for opposite direction
         uint discount = skew == 0 ? _getSkewByAssetAndDirection(asset, oppositeDirection) / 2 : 0;
         // decrease risk for opposite direction if there is, otherwise increase risk for current direction
-        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmount) {
-            currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmount;
+        if (currentRiskPerAssetAndDirection[asset][oppositeDirection] > buyinAmountInUSD) {
+            currentRiskPerAssetAndDirection[asset][oppositeDirection] -= buyinAmountInUSD;
         } else {
             currentRiskPerAssetAndDirection[asset][direction] +=
-                buyinAmount -
+                buyinAmountInUSD -
                 currentRiskPerAssetAndDirection[asset][oppositeDirection];
             currentRiskPerAssetAndDirection[asset][oppositeDirection] = 0;
             if (currentRiskPerAssetAndDirection[asset][direction] > maxRiskPerAssetAndDirection[asset][direction]) {
@@ -336,9 +345,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             skew -
             discount;
         // payout with bonus
-        payout = buyinAmount * 2 + (buyinAmount * 2 * payoutBonus) / ONE;
+        payoutInUSD = buyinAmountInUSD * 2 + (buyinAmountInUSD * 2 * payoutBonus) / ONE;
         // update risk per asset with the bonus applied
-        currentRiskPerAsset[asset] += (payout - (buyinAmount * (ONE + lpFeeWithSkew)) / ONE);
+        currentRiskPerAsset[asset] += (payoutInUSD - (buyinAmountInUSD * (ONE + lpFeeWithSkew)) / ONE);
         if (currentRiskPerAsset[asset] > maxRiskPerAsset[asset]) {
             revert RiskPerAssetExceeded();
         }
@@ -387,8 +396,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         returns (address marketAddress)
     {
         if (!supportedAsset[params.createMarketParams.asset]) revert AssetNotSupported();
-
-        if (params.buyinAmount < minBuyinAmount || params.buyinAmount > maxBuyinAmount) {
+        if (params.buyinAmountInUSD < minBuyinAmount || params.buyinAmountInUSD > maxBuyinAmount) {
             revert InvalidBuyinAmount();
         }
 
@@ -399,10 +407,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         if (params.strikeTime > block.timestamp + maximalTimeToMaturity) {
             revert TimeTooFarIntoFuture();
         }
-        (uint lpFeeWithSkew, uint payout) = _handleRiskAndGetFee(
+        (uint lpFeeWithSkew, uint payoutInUSD) = _handleRiskAndGetFee(
             params.createMarketParams.asset,
             params.createMarketParams.direction,
-            params.buyinAmount,
+            params.buyinAmountInUSD,
             params.strikeTime,
             params.createMarketParams.skewImpact,
             params.transferCollateral ? bonusPerCollateral[params.defaultCollateral] : 0
@@ -432,10 +440,14 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             )
         );
         marketAddress = address(srm);
-        if (params.transferCollateral) {
+        if (params.transferCollateral && params.defaultCollateral != address(sUSD)) {
+            uint payout = params.buyinAmount *
+                2 +
+                (params.buyinAmount * 2 * bonusPerCollateral[params.defaultCollateral]) /
+                ONE;
             IERC20Upgradeable(params.defaultCollateral).safeTransfer(address(srm), payout);
         } else {
-            sUSD.safeTransfer(address(srm), payout);
+            sUSD.safeTransfer(address(srm), payoutInUSD);
         }
         _handleReferrerAndSafeBox(
             params.createMarketParams.user,
@@ -464,7 +476,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             params.strikeTime,
             params.createMarketParams.pythPrice.price,
             params.createMarketParams.direction,
-            params.buyinAmount,
+            params.buyinAmountInUSD,
             safeBoxImpact,
             lpFeeWithSkew
         );
@@ -491,24 +503,23 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         _maturedMarketsPerUser[user].add(market);
 
         bytes32 asset = SpeedMarket(market).asset();
-        uint buyinAmount = SpeedMarket(market).buyinAmount();
+        address collateral = SpeedMarket(market).collateral();
+        uint buyinAmountInUSD = collateral == address(sUSD) || collateral == address(0)
+            ? SpeedMarket(market).buyinAmount()
+            : speedMarketsAMMUtils.transformCollateralToUSD(collateral, address(sUSD), SpeedMarket(market).buyinAmount());
         SpeedMarket.Direction direction = SpeedMarket(market).direction();
-        if (currentRiskPerAssetAndDirection[asset][direction] > buyinAmount) {
-            currentRiskPerAssetAndDirection[asset][direction] -= buyinAmount;
+        if (currentRiskPerAssetAndDirection[asset][direction] > buyinAmountInUSD) {
+            currentRiskPerAssetAndDirection[asset][direction] -= buyinAmountInUSD;
         } else {
             currentRiskPerAssetAndDirection[asset][direction] = 0;
         }
 
         if (!sm.isUserWinner()) {
-            if (currentRiskPerAsset[asset] > 2 * buyinAmount) {
-                currentRiskPerAsset[asset] -= (2 * buyinAmount);
+            if (currentRiskPerAsset[asset] > 2 * buyinAmountInUSD) {
+                currentRiskPerAsset[asset] -= (2 * buyinAmountInUSD);
             } else {
                 currentRiskPerAsset[asset] = 0;
             }
-            // IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
-            // if (address(iFreeBetsHolder) == user) {
-            //     iFreeBetsHolder.confirmSpeedMarketResolved(market, 2 * buyinAmount, sm.buyinAmount(), sm.collateral());
-            // }
         }
 
         emit MarketResolved(market, sm.result(), sm.isUserWinner());
@@ -520,9 +531,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     /// @notice Transfer amount to destination address
-    function transferAmount(address _destination, uint _amount) external onlyOwner {
-        sUSD.safeTransfer(_destination, _amount);
-        emit AmountTransfered(_destination, _amount);
+    function transferAmount(
+        address _collateral,
+        address _destination,
+        uint _amount
+    ) external onlyOwner {
+        IERC20Upgradeable(_collateral).safeTransfer(_destination, _amount);
+        emit AmountTransfered(_collateral, _destination, _amount);
     }
 
     //////////// getters /////////////////
@@ -597,7 +612,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param _addressManager address manager contract
     function setAMMAddresses(
         address _mastercopy,
-        SpeedMarketsAMMUtils _speedMarketsAMMUtils,
+        ISpeedMarketsAMMUtils _speedMarketsAMMUtils,
         address _addressManager
     ) external onlyOwner {
         speedMarketMastercopy = _mastercopy;
@@ -708,6 +723,24 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit MultiCollateralOnOffRampEnabled(_enabled);
     }
 
+    /// @notice Set bonus percentage for a collateral
+    /// @param _collateral collateral address
+    /// @param _bonus bonus percentage (e.g., 0.02e18 for 2%)
+    function setSupportedNativeCollateralAndBonus(
+        address _collateral,
+        bool _supported,
+        uint _bonus,
+        bytes32 _collateralKey
+    ) external onlyOwner {
+        // 10% bonus as max
+        if (_bonus > 1e17) revert BonusTooHigh();
+
+        bonusPerCollateral[_collateral] = _bonus;
+        supportedNativeCollateral[_collateral] = _supported;
+        speedMarketsAMMUtils.setCollateralKey(_collateral, _collateralKey);
+        emit CollateralBonusSet(_collateral, _bonus);
+    }
+
     /// @notice adding/removing whitelist address depending on a flag
     /// @param _whitelistAddress address that needed to be whitelisted or removed from WL
     /// @param _flag adding or removing from whitelist (true: add, false: remove)
@@ -718,29 +751,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit AddedIntoWhitelist(_whitelistAddress, _flag);
     }
 
-    /// @notice Set bonus percentage for a collateral
-    /// @param _collateral collateral address
-    /// @param _bonus bonus percentage (e.g., 0.02e18 for 2%)
-    function setSupportedNativeCollateralAndBonus(
-        address _collateral,
-        bool _supported,
-        uint _bonus
-    ) external onlyOwner {
-        // 10% bonus as max
-        if (_bonus > 1e17) revert BonusTooHigh();
-
-        bonusPerCollateral[_collateral] = _bonus;
-        supportedNativeCollateral[_collateral] = _supported;
-        emit CollateralBonusSet(_collateral, _bonus);
-    }
-
     //////////////////modifiers/////////////////
-
-    modifier isAddressWhitelisted() {
-        if (!whitelistedAddresses[msg.sender]) revert ResolverNotWhitelisted();
-
-        _;
-    }
 
     modifier onlyCreator() {
         address speedMarketsCreator = addressManager.getAddress("SpeedMarketsAMMCreator");
@@ -774,7 +785,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     event MarketResolved(address _market, SpeedMarket.Direction _result, bool _userIsWinner);
 
-    event AMMAddressesChanged(address _mastercopy, SpeedMarketsAMMUtils _speedMarketsAMMUtils, address _addressManager);
+    event AMMAddressesChanged(address _mastercopy, ISpeedMarketsAMMUtils _speedMarketsAMMUtils, address _addressManager);
     event LimitParamsChanged(
         uint _minBuyinAmount,
         uint _maxBuyinAmount,
@@ -788,10 +799,10 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SetLPFeeParams(uint[] _timeThresholds, uint[] _lpFees, uint _lpFee);
     event SetSupportedAsset(bytes32 asset, bool _supported);
     event SetAssetToPythID(bytes32 asset, bytes32 pythId);
-    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event SusdAddressChanged(address _sUSD);
     event MultiCollateralOnOffRampEnabled(bool _enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
-    event AmountTransfered(address _destination, uint _amount);
+    event AmountTransfered(address _collateral, address _destination, uint _amount);
     event CollateralBonusSet(address indexed collateral, uint bonus);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 }

@@ -55,11 +55,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		let speedMarketMastercopy = await SpeedMarketMastercopy.new();
 
 		await speedMarketsAMM.initialize(owner, exoticUSD.address);
-		await speedMarketsAMM.setAMMAddresses(
-			speedMarketMastercopy.address,
-			ZERO_ADDRESS,
-			ZERO_ADDRESS
-		);
+
 		await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 3600, 86400, 60, 60);
 		await speedMarketsAMM.setSupportedAsset(toBytes32('ETH'), true);
 		await speedMarketsAMM.setMaxRisks(toBytes32('ETH'), toUnit(1000), toUnit(500));
@@ -173,9 +169,25 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			chainedSpeedMarketsAMM.address
 		);
 
+		// -------------------------- Price Feed --------------------------
 		let MockFreeBetsHolder = artifacts.require('MockFreeBetsHolder');
 		let mockFreeBetsHolder = await MockFreeBetsHolder.new(creatorAccount);
 		await addressManager.setAddressInAddressBook('FreeBetsHolder', mockFreeBetsHolder.address);
+		await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(toBytes32('eUSD'), toUnit(1));
+		await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(toBytes32('ExoticUSD'), toUnit(2));
+
+		await addressManager.setAddressInAddressBook('PriceFeed', MockPriceFeedDeployed.address);
+		await addressManager.setAddressInAddressBook('SpeedMarketsAMM', speedMarketsAMM.address);
+
+		let SpeedMarketsAMMUtilsContract = artifacts.require('SpeedMarketsAMMUtils');
+		const speedMarketsAMMUtils = await SpeedMarketsAMMUtilsContract.new();
+
+		await speedMarketsAMM.setAMMAddresses(
+			speedMarketMastercopy.address,
+			speedMarketsAMMUtils.address,
+			addressManager.address
+		);
+		await speedMarketsAMMUtils.initialize(owner, addressManager.address);
 
 		let SpeedMarketsAMMResolverContract = artifacts.require('SpeedMarketsAMMResolver');
 		speedMarketsAMMResolver = await SpeedMarketsAMMResolverContract.new();
@@ -191,6 +203,8 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			'SpeedMarketsAMMResolver',
 			speedMarketsAMMResolver.address
 		);
+
+		await addressManager.setAddressInAddressBook('SpeedMarketsAMM', speedMarketsAMM.address);
 
 		await speedMarketsAMMData.setSpeedMarketsAMM(
 			speedMarketsAMM.address,
@@ -305,6 +319,10 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				marketDataArray[0].strikeTime
 			);
 
+			console.log('Check collateral');
+			assert.equal(marketDataArray[0].collateral, exoticUSD.address);
+			assert.isTrue(marketDataArray[0].isDefaultCollateral);
+
 			console.log('Check payout');
 			let marketBalance = await exoticUSD.balanceOf(market);
 			let payoutMultiplier = PAYOUT_MULTIPLIERS[numOfDirections - 2] / 1e18; // minChainedMarkets = 2
@@ -386,7 +404,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 			console.log('Check AMM balance after transfer');
 			let ammBalanceBefore = await exoticUSD.balanceOf(chainedSpeedMarketsAMM.address);
-			await chainedSpeedMarketsAMM.transferAmount(owner, toUnit(2));
+			await chainedSpeedMarketsAMM.transferAmount(exoticUSD.address, owner, toUnit(2));
 			let ammBalance = await exoticUSD.balanceOf(chainedSpeedMarketsAMM.address);
 			assert.equal(ammBalanceBefore / 1e18 - ammBalance / 1e18, 2);
 		});
@@ -714,8 +732,12 @@ contract('ChainedSpeedMarkets', (accounts) => {
 				PAYOUT_MULTIPLIERS
 			);
 
-			// Set exoticOP as supported native collateral
-			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(exoticOP.address, true, 0);
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
+				exoticOP.address,
+				true,
+				0,
+				toBytes32('ExoticUSD')
+			);
 
 			// Mint exoticOP for AMM to have enough balance for payout
 			await exoticOP.mintForUser(chainedSpeedMarketsAMM.address);

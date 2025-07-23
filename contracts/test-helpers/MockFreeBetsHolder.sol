@@ -2,9 +2,12 @@
 pragma solidity ^0.8.0;
 
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "../interfaces/IFreeBetsHolder.sol";
+import "../SpeedMarkets/SpeedMarketsAMMCreator.sol";
+import "../SpeedMarkets/SpeedMarket.sol";
 
-/// @title Mock FreeBetsHolder for testing speed markets integration
-contract MockFreeBetsHolder {
+/// @title FreeBetsHolder V2
+contract MockFreeBetsHolder is IFreeBetsHolder {
     struct FreeBet {
         bytes32 requestId;
         address speedMarketAddress;
@@ -13,12 +16,41 @@ contract MockFreeBetsHolder {
         bool isChained;
         bool isConfirmed;
         uint256 timestamp;
+        bool isResolved;
+        bool isWinner;
     }
 
+    struct FreebetAllocation {
+        uint256 amount;
+        uint256 usedAmount;
+        uint256 expiryTime;
+        bool isActive;
+    }
+
+    struct PendingFreebetRequest {
+        address user;
+        bytes32 freebetRequestId;
+        uint256 amount;
+        bool isProcessed;
+    }
+
+    // Request ID => FreeBet details
     mapping(bytes32 => FreeBet) public freeBets;
-    mapping(address => uint256) public userFreeBetBalance;
+
+    // User => Freebet Request ID => Freebet allocation
+    mapping(address => mapping(bytes32 => FreebetAllocation)) public userFreebets;
+
+    // Market => Request ID
     mapping(address => bytes32) public marketToRequestId;
+
+    // Market => User
     mapping(address => address) public marketToUser;
+
+    // User => array of request IDs
+    mapping(address => bytes32[]) public userRequestIds;
+
+    // Pending request ID => Pending freebet request
+    mapping(bytes32 => PendingFreebetRequest) public pendingRequests;
 
     address public speedMarketsAMMCreator;
     address public speedMarketsAMM;
@@ -26,7 +58,255 @@ contract MockFreeBetsHolder {
 
     bytes32[] public allRequestIds;
 
-    event FreeBetCreated(bytes32 indexed requestId, address indexed user, uint256 amount);
+    constructor(address _speedMarketsAMMCreator) {
+        speedMarketsAMMCreator = _speedMarketsAMMCreator;
+    }
+
+    /// @notice Allocate freebets to a user with a specific request ID
+    /// @param _user The user address
+    /// @param _amount The amount to allocate
+    /// @param _requestId The unique request ID for this allocation
+    function allocateFreebets(
+        address _user,
+        uint256 _amount,
+        bytes32 _requestId
+    ) external {
+        require(_user != address(0), "Invalid user");
+        require(_amount > 0, "Invalid amount");
+        require(_requestId != bytes32(0), "Invalid request ID");
+
+        FreebetAllocation storage allocation = userFreebets[_user][_requestId];
+        require(!allocation.isActive || allocation.expiryTime < block.timestamp, "Allocation already active");
+
+        allocation.amount = _amount;
+        allocation.usedAmount = 0;
+        allocation.expiryTime = block.timestamp + 30 days; // Default 30 day expiry
+        allocation.isActive = true;
+
+        // Track request IDs for user
+        bool found = false;
+        for (uint i = 0; i < userRequestIds[_user].length; i++) {
+            if (userRequestIds[_user][i] == _requestId) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            userRequestIds[_user].push(_requestId);
+        }
+
+        emit FreebetAllocated(_user, _requestId, _amount, allocation.expiryTime);
+    }
+
+    /// @notice Get freebet balance for a user and request ID
+    /// @param _user The user address
+    /// @param _requestId The request ID
+    /// @return The available freebet balance
+    function getFreebetBalance(address _user, bytes32 _requestId) external view returns (uint256) {
+        FreebetAllocation memory allocation = userFreebets[_user][_requestId];
+        if (!allocation.isActive || allocation.expiryTime < block.timestamp) {
+            return 0;
+        }
+        return allocation.amount - allocation.usedAmount;
+    }
+
+    /// @notice Create a speed market using freebets
+    /// @param _speedMarketsAMMCreator The creator address
+    /// @param _params The market creation parameters
+    /// @param _freebetRequestId The freebet request ID to use
+    function createSpeedMarketWithFreebets(
+        address _speedMarketsAMMCreator,
+        SpeedMarketsAMMCreator.SpeedMarketParams memory _params,
+        bytes32 _freebetRequestId
+    ) external returns (bytes32 creatorRequestId) {
+        FreebetAllocation storage allocation = userFreebets[msg.sender][_freebetRequestId];
+
+        require(allocation.isActive, "No active freebet allocation");
+        require(allocation.expiryTime >= block.timestamp, "Freebet expired");
+        require(allocation.amount - allocation.usedAmount >= _params.buyinAmount, "Insufficient freebet balance");
+
+        allocation.usedAmount += _params.buyinAmount;
+
+        (address chainedAMM, address speedAMM) = SpeedMarketsAMMCreator(_speedMarketsAMMCreator)
+            .getChainedAndSpeedMarketsAMMAddresses();
+
+        IERC20Upgradeable(_params.collateral).approve(speedAMM, _params.buyinAmount);
+
+        creatorRequestId = SpeedMarketsAMMCreator(_speedMarketsAMMCreator).addPendingSpeedMarket(_params);
+
+        pendingRequests[creatorRequestId] = PendingFreebetRequest({
+            user: msg.sender,
+            freebetRequestId: _freebetRequestId,
+            amount: _params.buyinAmount,
+            isProcessed: false
+        });
+
+        emit FreebetUsed(msg.sender, _freebetRequestId, _params.buyinAmount);
+        emit PendingFreebetMarketCreated(creatorRequestId, _freebetRequestId, msg.sender);
+
+        return creatorRequestId;
+    }
+
+    /// @notice Create a chained speed market using freebets
+    /// @param _speedMarketsAMMCreator The creator address
+    /// @param _params The market creation parameters
+    /// @param _freebetRequestId The freebet request ID to use
+    function createChainedSpeedMarketWithFreebets(
+        address _speedMarketsAMMCreator,
+        SpeedMarketsAMMCreator.ChainedSpeedMarketParams memory _params,
+        bytes32 _freebetRequestId
+    ) external returns (bytes32 creatorRequestId) {
+        FreebetAllocation storage allocation = userFreebets[msg.sender][_freebetRequestId];
+
+        require(allocation.isActive, "No active freebet allocation");
+        require(allocation.expiryTime >= block.timestamp, "Freebet expired");
+        require(allocation.amount - allocation.usedAmount >= _params.buyinAmount, "Insufficient freebet balance");
+
+        allocation.usedAmount += _params.buyinAmount;
+
+        (address chainedAMM, address speedAMM) = SpeedMarketsAMMCreator(_speedMarketsAMMCreator)
+            .getChainedAndSpeedMarketsAMMAddresses();
+
+        IERC20Upgradeable(_params.collateral).approve(chainedAMM, _params.buyinAmount);
+
+        creatorRequestId = SpeedMarketsAMMCreator(_speedMarketsAMMCreator).addPendingChainedSpeedMarket(_params);
+
+        pendingRequests[creatorRequestId] = PendingFreebetRequest({
+            user: msg.sender,
+            freebetRequestId: _freebetRequestId,
+            amount: _params.buyinAmount,
+            isProcessed: false
+        });
+
+        emit FreebetUsed(msg.sender, _freebetRequestId, _params.buyinAmount);
+        emit PendingFreebetMarketCreated(creatorRequestId, _freebetRequestId, msg.sender);
+
+        return creatorRequestId;
+    }
+
+    /// @notice Confirm a speed or chained speed market trade
+    function confirmSpeedOrChainedSpeedMarketTrade(
+        bytes32 _requestId,
+        address _speedMarketAddress,
+        address _collateral,
+        uint _buyinAmount,
+        bool _isChained
+    ) external override {
+        require(msg.sender == speedMarketsAMMCreator, "Only speedMarketsAMMCreator");
+        require(_speedMarketAddress != address(0), "Invalid market address");
+        require(_buyinAmount > 0, "Invalid buyin amount");
+
+        PendingFreebetRequest storage pendingRequest = pendingRequests[_requestId];
+        if (pendingRequest.user != address(0) && !pendingRequest.isProcessed) {
+            pendingRequest.isProcessed = true;
+
+            freeBets[_requestId] = FreeBet({
+                requestId: _requestId,
+                speedMarketAddress: _speedMarketAddress,
+                collateral: _collateral,
+                buyinAmount: _buyinAmount,
+                isChained: _isChained,
+                isConfirmed: true,
+                timestamp: block.timestamp,
+                isResolved: false,
+                isWinner: false
+            });
+
+            allRequestIds.push(_requestId);
+
+            marketToRequestId[_speedMarketAddress] = pendingRequest.freebetRequestId;
+            marketToUser[_speedMarketAddress] = pendingRequest.user;
+        }
+
+        emit SpeedMarketTradeConfirmed(_requestId, _speedMarketAddress, _collateral, _buyinAmount, _isChained);
+    }
+
+    /// @notice Confirm that a speed market has been resolved
+    function confirmSpeedMarketResolved(
+        address _resolvedTicket,
+        uint _exercized,
+        uint _buyInAmount,
+        address _collateral
+    ) external override {
+        require(msg.sender == speedMarketsAMM || msg.sender == chainedSpeedMarketsAMM, "Caller not allowed");
+
+        bytes32 freebetRequestId = marketToRequestId[_resolvedTicket];
+        require(freebetRequestId != bytes32(0), "Unknown market");
+
+        bytes32 creatorRequestId;
+        bool found = false;
+        for (uint i = 0; i < allRequestIds.length; i++) {
+            if (freeBets[allRequestIds[i]].speedMarketAddress == _resolvedTicket) {
+                creatorRequestId = allRequestIds[i];
+                found = true;
+                break;
+            }
+        }
+        require(found, "Market not found in freebets");
+
+        FreeBet storage freeBet = freeBets[creatorRequestId];
+        require(freeBet.isConfirmed, "Market not confirmed");
+        require(!freeBet.isResolved, "Market already resolved");
+
+        address user = marketToUser[_resolvedTicket];
+        require(user != address(0), "Unknown user for market");
+
+        freeBet.isResolved = true;
+        freeBet.isWinner = _exercized > 0;
+
+        uint256 payout = _exercized;
+
+        if (payout > 0) {
+            IERC20Upgradeable(_collateral).transfer(user, payout);
+        }
+
+        emit FreeBetMarketResolved(_resolvedTicket, user, _exercized > 0, payout);
+    }
+
+    /// @notice Set the AMM addresses
+    function setAMMAddresses(address _speedMarketsAMM, address _chainedSpeedMarketsAMM) external {
+        speedMarketsAMM = _speedMarketsAMM;
+        chainedSpeedMarketsAMM = _chainedSpeedMarketsAMM;
+    }
+
+    /// @notice Set the speed markets AMM creator address
+    function setSpeedMarketsAMMCreator(address _speedMarketsAMMCreator) external {
+        require(_speedMarketsAMMCreator != address(0), "Invalid address");
+        speedMarketsAMMCreator = _speedMarketsAMMCreator;
+    }
+
+    /// @notice Get all request IDs for a user
+    function getUserRequestIds(address _user) external view returns (bytes32[] memory) {
+        return userRequestIds[_user];
+    }
+
+    /// @notice Check if a freebet allocation is expired
+    function isFreebetExpired(address _user, bytes32 _requestId) external view returns (bool) {
+        FreebetAllocation memory allocation = userFreebets[_user][_requestId];
+        return !allocation.isActive || allocation.expiryTime < block.timestamp;
+    }
+
+    /// @notice Set expiry time for testing
+    function setFreebetExpiry(
+        address _user,
+        bytes32 _requestId,
+        uint256 _expiryTime
+    ) external {
+        userFreebets[_user][_requestId].expiryTime = _expiryTime;
+    }
+
+    /// @notice Fund the contract with collateral for testing
+    function fundContract(address _token, uint256 _amount) external {
+        IERC20Upgradeable(_token).transferFrom(msg.sender, address(this), _amount);
+    }
+
+    /// @notice Set market to user mapping for testing
+    function setMarketUser(address _market, address _user) external {
+        marketToUser[_market] = _user;
+    }
+
+    event FreebetAllocated(address indexed user, bytes32 indexed requestId, uint256 amount, uint256 expiryTime);
+    event FreebetUsed(address indexed user, bytes32 indexed requestId, uint256 amount);
     event SpeedMarketTradeConfirmed(
         bytes32 indexed requestId,
         address indexed speedMarketAddress,
@@ -34,129 +314,10 @@ contract MockFreeBetsHolder {
         uint buyinAmount,
         bool isChained
     );
-    event FreeBetMarketResolved(address indexed market, address indexed user, uint256 earned);
-
-    constructor(address _speedMarketsAMMCreator) {
-        speedMarketsAMMCreator = _speedMarketsAMMCreator;
-    }
-
-    /// @notice Confirm a speed or chained speed market trade
-    /// @param _requestId The request ID from the speed markets creator
-    /// @param _speedMarketAddress The address of the created speed market
-    /// @param _collateral The collateral token address
-    /// @param _buyinAmount The buyin amount
-    /// @param _isChained Whether this is a chained speed market
-    function confirmSpeedOrChainedSpeedMarketTrade(
-        bytes32 _requestId,
-        address _speedMarketAddress,
-        address _collateral,
-        uint _buyinAmount,
-        bool _isChained
-    ) external {
-        require(msg.sender == speedMarketsAMMCreator, "Only speedMarketsAMMCreator");
-        require(_speedMarketAddress != address(0), "Invalid market address");
-        require(_buyinAmount > 0, "Invalid buyin amount");
-
-        freeBets[_requestId] = FreeBet({
-            requestId: _requestId,
-            speedMarketAddress: _speedMarketAddress,
-            collateral: _collateral,
-            buyinAmount: _buyinAmount,
-            isChained: _isChained,
-            isConfirmed: true,
-            timestamp: block.timestamp
-        });
-
-        allRequestIds.push(_requestId);
-
-        // Store mapping from market to request ID and user for resolution
-        marketToRequestId[_speedMarketAddress] = _requestId;
-        // In a real implementation, we would get the user from the request
-        // For mock purposes, we'll set it when the market is created
-
-        emit SpeedMarketTradeConfirmed(_requestId, _speedMarketAddress, _collateral, _buyinAmount, _isChained);
-    }
-
-    /// @notice Mock function to allocate free bet balance to a user
-    /// @param _user The user address
-    /// @param _amount The amount to allocate
-    function allocateFreeBet(address _user, uint256 _amount) external {
-        userFreeBetBalance[_user] += _amount;
-        emit FreeBetCreated(keccak256(abi.encodePacked(_user, _amount, block.timestamp)), _user, _amount);
-    }
-
-    /// @notice Get free bet details by request ID
-    /// @param _requestId The request ID to query
-    /// @return The FreeBet struct
-    function getFreeBet(bytes32 _requestId) external view returns (FreeBet memory) {
-        return freeBets[_requestId];
-    }
-
-    /// @notice Get total number of confirmed free bets
-    /// @return The total count
-    function getTotalFreeBets() external view returns (uint256) {
-        return allRequestIds.length;
-    }
-
-    /// @notice Get all request IDs
-    /// @return Array of all request IDs
-    function getAllRequestIds() external view returns (bytes32[] memory) {
-        return allRequestIds;
-    }
-
-    /// @notice Check if a request ID has been confirmed
-    /// @param _requestId The request ID to check
-    /// @return Whether the request has been confirmed
-    function isRequestConfirmed(bytes32 _requestId) external view returns (bool) {
-        return freeBets[_requestId].isConfirmed;
-    }
-
-    /// @notice Update the speed markets AMM creator address
-    /// @param _speedMarketsAMMCreator The new address
-    function setSpeedMarketsAMMCreator(address _speedMarketsAMMCreator) external {
-        require(_speedMarketsAMMCreator != address(0), "Invalid address");
-        speedMarketsAMMCreator = _speedMarketsAMMCreator;
-    }
-
-    /// @notice Set the AMM addresses that can call confirmMarketResolved
-    /// @param _speedMarketsAMM The SpeedMarketsAMM address
-    /// @param _chainedSpeedMarketsAMM The ChainedSpeedMarketsAMM address
-    function setAMMAddresses(address _speedMarketsAMM, address _chainedSpeedMarketsAMM) external {
-        require(_speedMarketsAMM != address(0), "Invalid speedMarketsAMM address");
-        require(_chainedSpeedMarketsAMM != address(0), "Invalid chainedSpeedMarketsAMM address");
-        speedMarketsAMM = _speedMarketsAMM;
-        chainedSpeedMarketsAMM = _chainedSpeedMarketsAMM;
-    }
-
-    /// @notice Set the user for a market (mock helper function)
-    /// @param _market The market address
-    /// @param _user The user address
-    function setMarketUser(address _market, address _user) external {
-        marketToUser[_market] = _user;
-    }
-
-    /// @notice Confirm that a speed market has been resolved
-    /// @param _resolvedMarket The address of the resolved market
-    function confirmMarketResolved(address _resolvedMarket) external {
-        require(msg.sender == speedMarketsAMM || msg.sender == chainedSpeedMarketsAMM, "Caller not allowed");
-
-        bytes32 requestId = marketToRequestId[_resolvedMarket];
-        require(requestId != bytes32(0), "Unknown market");
-
-        FreeBet memory freeBet = freeBets[requestId];
-        require(freeBet.isConfirmed, "Market not confirmed");
-        require(freeBet.speedMarketAddress == _resolvedMarket, "Market mismatch");
-
-        address user = marketToUser[_resolvedMarket];
-        require(user != address(0), "Unknown user for market");
-
-        // Mock resolution logic - in real implementation this would check if user won
-        // For testing, we'll just return the buyin amount as earned
-        uint256 earned = freeBet.buyinAmount;
-
-        // Transfer the earned amount to the user
-        IERC20Upgradeable(freeBet.collateral).transfer(user, earned);
-
-        emit FreeBetMarketResolved(_resolvedMarket, user, earned);
-    }
+    event FreeBetMarketResolved(address indexed market, address indexed user, bool isWinner, uint256 payout);
+    event PendingFreebetMarketCreated(
+        bytes32 indexed creatorRequestId,
+        bytes32 indexed freebetRequestId,
+        address indexed user
+    );
 }

@@ -17,6 +17,7 @@ import "../interfaces/IAddressManager.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
 import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import "../interfaces/IChainedSpeedMarketsAMM.sol";
+import "../interfaces/IFreeBetsHolder.sol";
 
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";

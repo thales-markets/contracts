@@ -212,6 +212,7 @@ module.exports = {
 			referrals,
 			initialSkewImapct,
 			now,
+			chainedSpeedMarketsAMM,
 		};
 	},
 };

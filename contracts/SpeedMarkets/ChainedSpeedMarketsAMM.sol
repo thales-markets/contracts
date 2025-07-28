@@ -360,10 +360,11 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                 internalParams.buyinAmount,
                 tempData.speedAMMParams.safeBoxImpact,
                 tempData.payoutMultiplier,
-                internalParams.defaultCollateral
+                internalParams.defaultCollateral,
+                tempData.payout
             )
         );
-        if (internalParams.transferCollateral) {
+        if (internalParams.transferCollateral && internalParams.defaultCollateral != address(sUSD)) {
             IERC20Upgradeable(internalParams.defaultCollateral).safeTransfer(address(csm), tempData.payout);
         } else {
             sUSD.safeTransfer(address(csm), payoutInUSD);

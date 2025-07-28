@@ -416,6 +416,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             );
         }
         SpeedMarket srm = SpeedMarket(Clones.clone(speedMarketMastercopy));
+        uint payout = payoutInUSD;
+        bool defaultCollateralIsNotUSD = params.transferCollateral && params.defaultCollateral != address(sUSD);
+        if (defaultCollateralIsNotUSD) {
+            payout = params.buyinAmount * 2 + (params.buyinAmount * 2 * bonusPerCollateral[params.defaultCollateral]) / ONE;
+        }
         srm.initialize(
             SpeedMarket.InitParams(
                 address(this),
@@ -428,14 +433,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 params.defaultCollateral,
                 params.buyinAmount,
                 safeBoxImpact,
-                lpFeeWithSkew
+                lpFeeWithSkew,
+                payout
             )
         );
-        if (params.transferCollateral && params.defaultCollateral != address(sUSD)) {
-            uint payout = params.buyinAmount *
-                2 +
-                (params.buyinAmount * 2 * bonusPerCollateral[params.defaultCollateral]) /
-                ONE;
+        if (defaultCollateralIsNotUSD) {
             IERC20Upgradeable(params.defaultCollateral).safeTransfer(address(srm), payout);
         } else {
             sUSD.safeTransfer(address(srm), payoutInUSD);

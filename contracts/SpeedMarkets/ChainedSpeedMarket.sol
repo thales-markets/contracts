@@ -26,6 +26,7 @@ contract ChainedSpeedMarket {
         uint _safeBoxImpact;
         uint _payoutMultiplier;
         address _collateral;
+        uint _payout;
     }
 
     address public user;
@@ -38,6 +39,7 @@ contract ChainedSpeedMarket {
     int64[] public strikePrices;
     SpeedMarket.Direction[] public directions;
     uint public buyinAmount;
+    uint public payout;
     uint public safeBoxImpact;
     uint public payoutMultiplier;
 
@@ -68,6 +70,7 @@ contract ChainedSpeedMarket {
         safeBoxImpact = params._safeBoxImpact;
         payoutMultiplier = params._payoutMultiplier;
         collateral = params._collateral;
+        payout = params._payout;
         IERC20Upgradeable(params._collateral).approve(params._chainedMarketsAMM, type(uint256).max);
         createdAt = block.timestamp;
     }
@@ -100,14 +103,15 @@ contract ChainedSpeedMarket {
         }
 
         require(resolved, "Not ready to resolve");
-
+        uint payoutToTransfer = IERC20Upgradeable(collateral).balanceOf(address(this));
         if (isUserWinner) {
-            IERC20Upgradeable(collateral).safeTransfer(user, IERC20Upgradeable(collateral).balanceOf(address(this)));
+            if (payoutToTransfer > payout) {
+                IERC20Upgradeable(collateral).safeTransfer(address(chainedMarketsAMM), payoutToTransfer - payout);
+                payoutToTransfer = payout;
+            }
+            IERC20Upgradeable(collateral).safeTransfer(user, payoutToTransfer);
         } else {
-            IERC20Upgradeable(collateral).safeTransfer(
-                address(chainedMarketsAMM),
-                IERC20Upgradeable(collateral).balanceOf(address(this))
-            );
+            IERC20Upgradeable(collateral).safeTransfer(address(chainedMarketsAMM), payoutToTransfer);
         }
 
         emit Resolved(finalPrices, isUserWinner);

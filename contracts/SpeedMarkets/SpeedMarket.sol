@@ -21,6 +21,7 @@ contract SpeedMarket {
         uint _buyinAmount;
         uint _safeBoxImpact;
         uint _lpFee;
+        uint _payout;
     }
 
     enum Direction {
@@ -35,6 +36,7 @@ contract SpeedMarket {
     uint64 public strikePricePublishTime;
     Direction public direction;
     uint public buyinAmount;
+    uint public payout;
     address public collateral;
     bool public resolved;
     int64 public finalPrice;
@@ -64,6 +66,7 @@ contract SpeedMarket {
         safeBoxImpact = params._safeBoxImpact;
         lpFee = params._lpFee;
         collateral = params._collateral;
+        payout = params._payout;
         IERC20Upgradeable(params._collateral).approve(params._speedMarketsAMM, type(uint256).max);
         createdAt = block.timestamp;
     }
@@ -81,14 +84,16 @@ contract SpeedMarket {
         } else {
             result = direction == Direction.Up ? Direction.Down : Direction.Up;
         }
+        uint payoutToTransfer = IERC20Upgradeable(collateral).balanceOf(address(this));
 
         if (direction == result) {
-            IERC20Upgradeable(collateral).safeTransfer(user, IERC20Upgradeable(collateral).balanceOf(address(this)));
+            if (payoutToTransfer > payout) {
+                IERC20Upgradeable(collateral).safeTransfer(address(speedMarketsAMM), payoutToTransfer - payout);
+                payoutToTransfer = payout;
+            }
+            IERC20Upgradeable(collateral).safeTransfer(user, payoutToTransfer);
         } else {
-            IERC20Upgradeable(collateral).safeTransfer(
-                address(speedMarketsAMM),
-                IERC20Upgradeable(collateral).balanceOf(address(this))
-            );
+            IERC20Upgradeable(collateral).safeTransfer(address(speedMarketsAMM), payoutToTransfer);
         }
 
         emit Resolved(finalPrice, result, direction == result);

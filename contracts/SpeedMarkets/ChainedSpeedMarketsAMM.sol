@@ -319,9 +319,9 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         if (internalParams.bonus > 0) {
             tempData.payout = (tempData.payout * (ONE + internalParams.bonus)) / ONE;
         }
-        uint payoutInUSD;
+
         {
-            payoutInUSD = internalParams.defaultCollateral == address(sUSD)
+            uint payoutInUSD = internalParams.defaultCollateral == address(sUSD)
                 ? tempData.payout
                 : ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).speedMarketsAMMUtils().transformCollateralToUSD(
                     internalParams.defaultCollateral,
@@ -367,7 +367,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         if (internalParams.transferCollateral && internalParams.defaultCollateral != address(sUSD)) {
             IERC20Upgradeable(internalParams.defaultCollateral).safeTransfer(address(csm), tempData.payout);
         } else {
-            sUSD.safeTransfer(address(csm), payoutInUSD);
+            sUSD.safeTransfer(address(csm), tempData.payout);
         }
 
         _handleReferrerAndSafeBox(

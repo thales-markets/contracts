@@ -249,6 +249,8 @@ contract('SpeedMarkets', (accounts) => {
 			let balanceOfMarketAfter = await exoticUSD.balanceOf(market);
 			console.log('balanceOfMarketBefore ' + balanceOfMarketBefore / 1e18);
 			console.log('balanceOfMarketAfter ' + balanceOfMarketAfter / 1e18);
+			const payout = await speedMarket.payout();
+			assert.bnEqual(payout, balanceOfMarketBefore);
 
 			let balanceOfUserAfter = await exoticUSD.balanceOf(user);
 			console.log('balanceOfUserBefore ' + balanceOfUserBefore / 1e18);

@@ -440,7 +440,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         if (defaultCollateralIsNotUSD) {
             IERC20Upgradeable(params.defaultCollateral).safeTransfer(address(srm), payout);
         } else {
-            sUSD.safeTransfer(address(srm), payoutInUSD);
+            sUSD.safeTransfer(address(srm), payout);
         }
         _handleReferrerAndSafeBox(
             params.createMarketParams.user,

@@ -165,6 +165,11 @@
             "internalType": "uint256",
             "name": "_lpFee",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_payout",
+            "type": "uint256"
           }
         ],
         "internalType": "struct SpeedMarket.InitParams",
@@ -206,6 +211,19 @@
   {
     "inputs": [],
     "name": "lpFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "payout",
     "outputs": [
       {
         "internalType": "uint256",

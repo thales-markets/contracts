@@ -511,6 +511,13 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			console.log('Check is user lost on first market');
 			assert.equal(marketData[0].isUserWinner, false);
 
+			console.log('Check market data payout after resolve');
+			const marketDataAfterResolve = await speedMarketsAMMData.getChainedMarketsData([market]);
+			const ChainedSpeedMarket = artifacts.require('ChainedSpeedMarket');
+			const chainedSpeedMarket = await ChainedSpeedMarket.at(market);
+			const payout = await chainedSpeedMarket.payout();
+			assert.bnEqual(marketDataAfterResolve[0].payout, payout);
+
 			// next active market - second
 			market = activeMarkets[1];
 			marketData = await speedMarketsAMMData.getChainedMarketsData([market]);

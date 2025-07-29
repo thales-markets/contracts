@@ -136,6 +136,20 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         return fallbackCollateral;
     }
 
+    function _getMarketPayout(address market) internal view returns (uint) {
+        // This is the function selector for "payout()"
+        bytes4 selector = bytes4(keccak256("payout()"));
+
+        (bool success, bytes memory result) = market.staticcall(abi.encodeWithSelector(selector));
+
+        if (success) {
+            return abi.decode(result, (uint));
+        }
+
+        // Old market payout() if it doesn't exist or call fails
+        return 2 * SpeedMarket(market).buyinAmount();
+    }
+
     /// @notice return all speed market data for an array of markets
     function getMarketsData(address[] calldata marketsArray) external view returns (MarketData[] memory) {
         MarketData[] memory markets = new MarketData[](marketsArray.length);
@@ -157,7 +171,8 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
 
             markets[i].collateral = marketCollateral;
             markets[i].isDefaultCollateral = marketCollateral == defaultCollateral;
-            markets[i].payout = IERC20Upgradeable(marketCollateral).balanceOf(marketsArray[i]);
+
+            markets[i].payout = _getMarketPayout(address(market));
 
             if (ISpeedMarketsAMM(speedMarketsAMM).marketHasFeeAttribute(marketsArray[i])) {
                 markets[i].safeBoxImpact = market.safeBoxImpact();
@@ -205,7 +220,8 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
 
             markets[i].collateral = marketCollateral;
             markets[i].isDefaultCollateral = marketCollateral == defaultCollateral;
-            markets[i].payout = IERC20Upgradeable(marketCollateral).balanceOf(marketsArray[i]);
+
+            markets[i].payout = _getMarketPayout(address(market));
 
             markets[i].payoutMultiplier = market.payoutMultiplier();
             markets[i].resolved = market.resolved();

@@ -228,6 +228,11 @@
             "internalType": "address",
             "name": "_collateral",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_payout",
+            "type": "uint256"
           }
         ],
         "internalType": "struct ChainedSpeedMarket.InitParams",
@@ -282,6 +287,19 @@
   {
     "inputs": [],
     "name": "numOfPrices",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "payout",
     "outputs": [
       {
         "internalType": "uint256",

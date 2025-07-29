@@ -401,11 +401,16 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     /// @notice resolver or owner can resolve market for a given market address with finalPrices
-    function resolveMarketWithPrices(address _market, int64[] calldata _finalPrices) external {
+    function resolveMarketWithPrices(
+        address _market,
+        int64[] calldata _finalPrices,
+        bool _isManually
+    ) external {
         if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver") && msg.sender != owner)
             revert ResolverNotWhitelisted();
         if (!canResolveMarket(_market)) revert CanNotResolve();
-        _resolveMarketWithPrices(_market, _finalPrices, false);
+        _isManually = msg.sender == owner ? false : _isManually;
+        _resolveMarketWithPrices(_market, _finalPrices, _isManually);
     }
 
     function _resolveMarketWithPrices(

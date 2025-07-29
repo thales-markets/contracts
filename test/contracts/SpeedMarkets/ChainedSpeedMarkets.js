@@ -695,12 +695,12 @@ contract('ChainedSpeedMarkets', (accounts) => {
 			let finalPrices = [Number(marketData[0].initialStrikePrice) - 600000000]; // DOWN
 
 			await expect(
-				chainedSpeedMarketsAMM.resolveMarketWithPrices(market, finalPrices, {
+				chainedSpeedMarketsAMM.resolveMarketWithPrices(market, finalPrices, false, {
 					from: user,
 				})
 			).to.be.reverted;
 
-			await chainedSpeedMarketsAMM.resolveMarketWithPrices(market, finalPrices, {
+			await chainedSpeedMarketsAMM.resolveMarketWithPrices(market, finalPrices, false, {
 				from: owner,
 			});
 			resolvedMarkets++;

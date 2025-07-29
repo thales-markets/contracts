@@ -40,7 +40,11 @@ interface IChainedSpeedMarketsAMM {
 
     function canResolveMarket(address market) external view returns (bool);
 
-    function resolveMarketWithPrices(address _market, int64[] calldata _finalPrices) external;
+    function resolveMarketWithPrices(
+        address _market,
+        int64[] calldata _finalPrices,
+        bool _manualResolution
+    ) external;
 
     function offrampHelper(address user, uint amount) external;
 }

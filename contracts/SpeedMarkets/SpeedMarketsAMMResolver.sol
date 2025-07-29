@@ -332,7 +332,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
             prices[i] = price.price;
         }
 
-        chainedSpeedMarketsAMM.resolveMarketWithPrices(market, prices);
+        chainedSpeedMarketsAMM.resolveMarketWithPrices(market, prices, false);
     }
 
     function _resolveChainedMarketWithOfframp(
@@ -379,7 +379,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
             if (userLostDirection) {
                 // User lost, manual resolution is allowed
-                chainedSpeedMarketsAMM.resolveMarketWithPrices(_market, _finalPrices);
+                chainedSpeedMarketsAMM.resolveMarketWithPrices(_market, _finalPrices, true);
                 return;
             }
             currentPrice = _finalPrices[i];

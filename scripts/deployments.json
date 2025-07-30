@@ -163,7 +163,7 @@
 		"GamesPlayerPropsImplementation": "0xC0906e7433c032D6561c7C08FAba1bC6008aDf6e",
 		"GamesPlayerPropsReceiver": "0xA6cd4eB2426bACa4772b48847Ec6b83b36dB71F6",
 		"GamesPlayerPropsReceiverImplementation": "0xFB9A18230dc13FC7f066417379C3E23Ed4D47C20",
-		"SpeedMarketsAMMUtils": "0x7374dFf55ACb83F5E9bcd3416ED510620C648680",
+		"SpeedMarketsAMMUtils": "0x6F37C912a290035A3bdaf78044bC8C461347ad4f",
 		"SpeedMarketsAMMData": "0x467e14ac025499d60c417D7F00A7D9E83293F43c",
 		"SpeedMarketsAMMDataImplementation": "0xdC6f77131A402dBc480a887f20C3fBf1E3d9f218",
 		"ParlayPolicy": "0x6880b6fc24Ac20a9081FfA39B1A504A44BAEB2dE",
@@ -196,7 +196,8 @@
 		"PositionalMarketDataImplementationUSDC": "0xDb36A40e866c2ef7ba30385AbFD6335580631eaf",
 		"RangedPositionMastercopyUSDC": "0xB79bb051a80a8c4330ce3875d56061712ea8d88b",
 		"RangedMarketMastercopyUSDC": "0x13DC6B44f6604695704ED3892ea0D5BA86becffd",
-		"MarchMadnessV2": "0x74A498769a6B9E5c6C89bd28a4720c52C904b81f"
+		"MarchMadnessV2": "0x74A498769a6B9E5c6C89bd28a4720c52C904b81f",
+		"SpeedMarketsAMMUtilsImplementation": "0x9F14ED1fD19b102AFD873690031266fACfB34288"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
@@ -325,7 +326,7 @@
 		"GamesPlayerPropsImplementation": "0xe02e12C409c8b71C22E9e7eFD49D95e5811155E0",
 		"GamesPlayerPropsReceiver": "0x5311EF5370EAf6eb428DD4eA556AA3461269Aee0",
 		"GamesPlayerPropsReceiverImplementation": "0xa4a1b07f95e9BD296c5846f03b12E9c76dF07B1e",
-		"SpeedMarketsAMMUtils": "0x5D7c74d64ae47b3b4Bf60cB15a14dCd6048E5B14",
+		"SpeedMarketsAMMUtils": "0x219B2D1BF8F0287C35Ed9a80d24Ed73539b1d7bC",
 		"SpeedMarketsAMMData": "0xbbE161Bf57799104eFd6524133e305BBcB7C07EA",
 		"SpeedMarketsAMMDataImplementation": "0x31AF147CB1c66702ca311B3A36FA1Cb3eC259C13",
 		"ParlayPolicy": "0x6880b6fc24Ac20a9081FfA39B1A504A44BAEB2dE",
@@ -348,7 +349,10 @@
 		"MultiCollateralOnOffRampImplementationUSDC": "0xE450074D5F3D7590389A33499fd65B5B6A2FFc5A",
 		"SpeedMarketsAMMCreator": "0x905D1732F7639a402B1E0Ffcc2CeD2270Fc16812",
 		"SpeedMarketsAMMCreatorImplementation": "0x4385f3d85E81f97A555E9327eB83ccd263E7EE45",
-		"SessionValidationModule": "0x94d06B770D41D9b3A3bb2E636F3F93F69909099f"
+		"SessionValidationModule": "0x94d06B770D41D9b3A3bb2E636F3F93F69909099f",
+		"SpeedMarketsAMMResolver": "0xed997191b30948f80a91ed2A21150b02aEaEFa2C",
+		"SpeedMarketsAMMResolverImplementation": "0x190f4a78C0B271a3Df2dDadB7cB9305ee8A742E4",
+		"SpeedMarketsAMMUtilsImplementation": "0xaeAfcc1012aD527f0334B0Fad7F4B268e1a7C409"
 	},
 	"baseMainnet": {
 		"ThalesAMM": "0xe41cD3A25CBdeDA0BC46D48C380393D953bD2034",
@@ -452,7 +456,7 @@
 		"SwapRouter": "0xeA05705e26C8aabeA407994ea5e9D84db217e78C",
 		"MultiCollateralOnOffRamp": "0x0946BfE3c543e0B770B7F7e508c8A566947C4278",
 		"MultiCollateralOnOffRampImplementation": "0x38a50ebB6b299361D4492D488F95e13bE0A6b693",
-		"SpeedMarketsAMMUtils": "0xe99890296E1254D667Bc21ceEe22a8b95c0a82a4",
+		"SpeedMarketsAMMUtils": "0x4471F16BB87aAa69a50D5F97937155eCE8aa94B8",
 		"SpeedMarketsAMMData": "0xD6155E7C948458D6Ab58f9D63E1566493b9304C1",
 		"SpeedMarketsAMMDataImplementation": "0xcCF365e42b3F7Ea4AC6831a3506998C374a5396A",
 		"ParlayPolicy": "0x6880b6fc24Ac20a9081FfA39B1A504A44BAEB2dE",
@@ -470,7 +474,10 @@
 		"SpeedMarketsAMMCreator": "0x6B5FE966Ea9B05d8E628E772B0b745734D069983",
 		"SpeedMarketsAMMCreatorImplementation": "0x342D29603CE81cF3aC1B004A5e19C6Ff6d7fe516",
 		"SessionValidationModule": "0x1E82dbfb6BefF4b4799a1a688d09B259eb173F64",
-		"MarchMadnessV2": "0xd56e477a63C5b20959E1B93bB436cBF0179e2F19"
+		"MarchMadnessV2": "0xd56e477a63C5b20959E1B93bB436cBF0179e2F19",
+		"SpeedMarketsAMMResolver": "0x8B691621d39cC83E2B0079DE5eed9D14d27F3745",
+		"SpeedMarketsAMMResolverImplementation": "0xA31B33a2C95Ed6E2354E185B16Bc2175cdfa939f",
+		"SpeedMarketsAMMUtilsImplementation": "0x91244D1924Db9B301473f395be8075eAD9C7a66C"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

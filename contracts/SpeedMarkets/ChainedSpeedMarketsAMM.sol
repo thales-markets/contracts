@@ -27,7 +27,7 @@ import "../interfaces/IAddressManager.sol";
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";
 
-/// @title An AMM for Thales chained speed markets
+/// @title An AMM for Overtime Speed Markets
 contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -45,7 +45,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     error OutOfLiquidity();
     error CanNotResolve();
     error InvalidPrice();
-    error ResolverNotWhitelisted();
+    error CanOnlyBeCalledFromResolver();
     error OnlyCreatorAllowed();
     error OnlyMarketOwner();
     error EtherTransferFailed();
@@ -407,7 +407,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         bool _isManually
     ) external {
         if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver") && msg.sender != owner)
-            revert ResolverNotWhitelisted();
+            revert CanOnlyBeCalledFromResolver();
         if (!canResolveMarket(_market)) revert CanNotResolve();
         _isManually = msg.sender == owner ? false : _isManually;
         _resolveMarketWithPrices(_market, _finalPrices, _isManually);
@@ -460,7 +460,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     function offrampHelper(address user, uint amount) external {
-        if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver")) revert ResolverNotWhitelisted();
+        if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver")) revert CanOnlyBeCalledFromResolver();
         sUSD.safeTransferFrom(user, msg.sender, amount);
     }
 

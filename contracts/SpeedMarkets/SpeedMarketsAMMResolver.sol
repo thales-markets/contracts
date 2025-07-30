@@ -21,7 +21,7 @@ import "../interfaces/IChainedSpeedMarketsAMM.sol";
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";
 
-/// @title An AMM for Thales speed markets
+/// @title An AMM for Overtime Speed Markets
 contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 

@@ -11,6 +11,11 @@
   },
   {
     "inputs": [],
+    "name": "CanOnlyBeCalledFromResolver",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "EtherTransferFailed",
     "type": "error"
   },
@@ -72,11 +77,6 @@
   {
     "inputs": [],
     "name": "ProfitTooHigh",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ResolverNotWhitelisted",
     "type": "error"
   },
   {

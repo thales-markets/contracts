@@ -14,7 +14,7 @@ import "../interfaces/IChainedSpeedMarketsAMM.sol";
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";
 
-/// @title An AMM data fetching for Thales speed markets
+/// @title An AMM data fetching for Overtime Speed Markets
 contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
     address public speedMarketsAMM;
 

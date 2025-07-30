@@ -15,7 +15,7 @@ interface IERC20Decimals {
     function decimals() external view returns (uint);
 }
 
-/// @title An AMM utils for Thales speed markets
+/// @title An AMM utils for Overtime Speed Markets
 contract SpeedMarketsAMMUtils is Initializable, ProxyOwned, ProxyPausable {
     error UnauthorizedCollateralKeySetter();
     error CollateralNotSupportedOnPriceFeed();

@@ -81,11 +81,6 @@
   },
   {
     "inputs": [],
-    "name": "ResolverNotWhitelisted",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "RiskPerAssetExceeded",
     "type": "error"
   },

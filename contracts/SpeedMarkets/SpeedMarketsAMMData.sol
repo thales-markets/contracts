@@ -16,6 +16,8 @@ import "./ChainedSpeedMarket.sol";
 
 /// @title An AMM data fetching for Overtime Speed Markets
 contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
+    uint private constant ONE = 1e18;
+
     address public speedMarketsAMM;
 
     address public chainedSpeedMarketsAMM;
@@ -136,7 +138,23 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         return fallbackCollateral;
     }
 
-    function _getMarketPayout(address market) internal view returns (uint) {
+    /// @notice Gets the payout amount
+    /// @param _buyinAmount The buyin amount
+    /// @param _numOfDirections The number of directions
+    /// @param _payoutMultiplier The payout multiplier
+    /// @return _payout The calculated payout amount
+    function _getPayout(
+        uint _buyinAmount,
+        uint8 _numOfDirections,
+        uint _payoutMultiplier
+    ) internal pure returns (uint _payout) {
+        _payout = _buyinAmount;
+        for (uint8 i; i < _numOfDirections; ++i) {
+            _payout = (_payout * _payoutMultiplier) / ONE;
+        }
+    }
+
+    function _getMarketPayout(address market, bool isChained) internal view returns (uint) {
         // This is the function selector for "payout()"
         bytes4 selector = bytes4(keccak256("payout()"));
 
@@ -147,7 +165,14 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         }
 
         // Old market payout() if it doesn't exist or call fails
-        return 2 * SpeedMarket(market).buyinAmount();
+        return
+            isChained
+                ? _getPayout(
+                    ChainedSpeedMarket(market).buyinAmount(),
+                    ChainedSpeedMarket(market).numOfDirections(),
+                    ChainedSpeedMarket(market).payoutMultiplier()
+                )
+                : 2 * SpeedMarket(market).buyinAmount();
     }
 
     /// @notice return all speed market data for an array of markets
@@ -172,7 +197,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].collateral = marketCollateral;
             markets[i].isDefaultCollateral = marketCollateral == defaultCollateral;
 
-            markets[i].payout = _getMarketPayout(address(market));
+            markets[i].payout = _getMarketPayout(address(market), false);
 
             if (ISpeedMarketsAMM(speedMarketsAMM).marketHasFeeAttribute(marketsArray[i])) {
                 markets[i].safeBoxImpact = market.safeBoxImpact();
@@ -221,7 +246,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].collateral = marketCollateral;
             markets[i].isDefaultCollateral = marketCollateral == defaultCollateral;
 
-            markets[i].payout = _getMarketPayout(address(market));
+            markets[i].payout = _getMarketPayout(address(market), true);
 
             markets[i].payoutMultiplier = market.payoutMultiplier();
             markets[i].resolved = market.resolved();

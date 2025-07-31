@@ -197,7 +197,9 @@
 		"RangedPositionMastercopyUSDC": "0xB79bb051a80a8c4330ce3875d56061712ea8d88b",
 		"RangedMarketMastercopyUSDC": "0x13DC6B44f6604695704ED3892ea0D5BA86becffd",
 		"MarchMadnessV2": "0x74A498769a6B9E5c6C89bd28a4720c52C904b81f",
-		"SpeedMarketsAMMUtilsImplementation": "0x9F14ED1fD19b102AFD873690031266fACfB34288"
+		"SpeedMarketsAMMUtilsImplementation": "0x9F14ED1fD19b102AFD873690031266fACfB34288",
+		"SpeedMarketsAMMResolver": "0x012Aed94088c09B082A783C3D053C0e9FD14f052",
+		"SpeedMarketsAMMResolverImplementation": "0x4407c597fBeD351DFCCa5033aF8FA1B321b5319D"
 	},
 	"arbitrumOne": {
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",

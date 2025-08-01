@@ -71,6 +71,11 @@
   },
   {
     "inputs": [],
+    "name": "OnlyWhitelistedAddresses",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "OutOfLiquidity",
     "type": "error"
   },
@@ -888,6 +893,29 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "int64[]",
+        "name": "_finalPrices",
+        "type": "int64[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isManually",
+        "type": "bool"
+      }
+    ],
+    "name": "resolveMarketCompatibleBackwards",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

@@ -51,6 +51,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     error EtherTransferFailed();
     error InvalidOffRampCollateral();
     error MinChainedMarketsError();
+    error OnlyWhitelistedAddresses();
 
     IERC20Upgradeable public sUSD;
 
@@ -456,6 +457,45 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             }
         }
 
+        emit MarketResolved(market, ChainedSpeedMarket(market).isUserWinner());
+    }
+
+    function resolveMarketCompatibleBackwards(
+        address _market,
+        int64[] calldata _finalPrices,
+        bool _isManually
+    ) external {
+        ISpeedMarketsAMM speedMarketsAMM = ISpeedMarketsAMM(addressManager.speedMarketsAMM());
+        if (!speedMarketsAMM.whitelistedAddresses(msg.sender)) revert OnlyWhitelistedAddresses();
+        _resolveMarketBackwardsCompatible(_market, _finalPrices, _isManually);
+    }
+
+    function _resolveMarketBackwardsCompatible(
+        address market,
+        int64[] memory _finalPrices,
+        bool _isManually
+    ) internal {
+        ChainedSpeedMarket csm = ChainedSpeedMarket(market);
+        csm.resolve(_finalPrices, _isManually);
+        if (csm.resolved()) {
+            _activeMarkets.remove(market);
+            _maturedMarkets.add(market);
+            address user = csm.user();
+
+            if (_activeMarketsPerUser[user].contains(market)) {
+                _activeMarketsPerUser[user].remove(market);
+            }
+            _maturedMarketsPerUser[user].add(market);
+            uint buyinAmount = csm.buyinAmount();
+            uint payout = _getPayout(buyinAmount, csm.numOfDirections(), csm.payoutMultiplier());
+            if (!csm.isUserWinner()) {
+                if (currentRisk > payout) {
+                    currentRisk -= payout;
+                } else {
+                    currentRisk = 0;
+                }
+            }
+        }
         emit MarketResolved(market, ChainedSpeedMarket(market).isUserWinner());
     }
 

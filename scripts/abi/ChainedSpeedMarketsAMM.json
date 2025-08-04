@@ -11,6 +11,11 @@
   },
   {
     "inputs": [],
+    "name": "CanOnlyBeCalledFromResolver",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "EtherTransferFailed",
     "type": "error"
   },
@@ -66,17 +71,17 @@
   },
   {
     "inputs": [],
+    "name": "OnlyWhitelistedAddresses",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "OutOfLiquidity",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "ProfitTooHigh",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ResolverNotWhitelisted",
     "type": "error"
   },
   {
@@ -907,6 +912,11 @@
         "internalType": "int64[]",
         "name": "_finalPrices",
         "type": "int64[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isManually",
+        "type": "bool"
       }
     ],
     "name": "resolveMarketWithPrices",

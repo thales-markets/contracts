@@ -22,7 +22,7 @@ import "../interfaces/IFreeBetsHolder.sol";
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";
 
-/// @title An AMM for Thales speed markets
+/// @title An AMM for Overtime Speed Markets
 contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -337,7 +337,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
             prices[i] = price.price;
         }
 
-        chainedSpeedMarketsAMM.resolveMarketWithPrices(market, prices);
+        chainedSpeedMarketsAMM.resolveMarketWithPrices(market, prices, false);
 
         IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
         if (cs.user() == address(iFreeBetsHolder)) {
@@ -394,7 +394,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
             if (userLostDirection) {
                 // User lost, manual resolution is allowed
-                chainedSpeedMarketsAMM.resolveMarketWithPrices(_market, _finalPrices);
+                chainedSpeedMarketsAMM.resolveMarketWithPrices(_market, _finalPrices, true);
                 return;
             }
             currentPrice = _finalPrices[i];

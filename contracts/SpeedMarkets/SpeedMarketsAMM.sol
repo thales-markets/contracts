@@ -31,7 +31,7 @@ import "../interfaces/IFreeBetsHolder.sol";
 import "./SpeedMarket.sol";
 import "../interfaces/ISpeedMarketsAMMUtils.sol";
 
-/// @title An AMM for Thales speed markets
+/// @title An AMM for Overtime Speed Markets
 contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -54,7 +54,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     error TimeTooFarIntoFuture();
     error CanNotResolve();
     error InvalidPrice();
-    error ResolverNotWhitelisted();
+    error CanOnlyBeCalledFromResolverOrOwner();
     error OnlyCreatorAllowed();
     error BonusTooHigh();
     error OnlyMarketOwner();
@@ -62,7 +62,6 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     error MismatchedLengths();
     error CollateralNotSupported();
     error InvalidOffRampCollateral();
-    error CanOnlyBeCalledFromResolverOrOwner();
     error InvalidWhitelistAddress();
 
     IERC20Upgradeable public sUSD;
@@ -527,7 +526,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     function offrampHelper(address user, uint amount) external {
-        if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver")) revert ResolverNotWhitelisted();
+        if (msg.sender != addressManager.getAddress("SpeedMarketsAMMResolver")) revert CanOnlyBeCalledFromResolverOrOwner();
         sUSD.safeTransferFrom(user, msg.sender, amount);
     }
 

@@ -177,7 +177,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
         if (address(sm.user()) == address(iFreeBetsHolder)) {
-            iFreeBetsHolder.confirmSpeedMarketResolved(market, 2 * sm.buyinAmount(), sm.buyinAmount(), sm.collateral());
+            iFreeBetsHolder.confirmSpeedMarketResolved(market, sm.payout(), sm.buyinAmount(), sm.collateral());
         }
     }
 
@@ -212,13 +212,18 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
     }
 
     function _resolveMarketManually(address _market, int64 _finalPrice) internal {
-        SpeedMarket.Direction direction = SpeedMarket(_market).direction();
-        int64 strikePrice = SpeedMarket(_market).strikePrice();
+        SpeedMarket sm = SpeedMarket(_market);
+        SpeedMarket.Direction direction = sm.direction();
+        int64 strikePrice = sm.strikePrice();
         bool isUserWinner = (_finalPrice < strikePrice && direction == SpeedMarket.Direction.Down) ||
             (_finalPrice > strikePrice && direction == SpeedMarket.Direction.Up);
         if (!speedMarketsAMM.canResolveMarket(_market) || isUserWinner) revert CanNotResolve();
 
         speedMarketsAMM.resolveMarketWithPrice(_market, _finalPrice);
+        IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+        if (address(sm.user()) == address(iFreeBetsHolder)) {
+            iFreeBetsHolder.confirmSpeedMarketResolved(_market, sm.payout(), sm.buyinAmount(), sm.collateral());
+        }
     }
 
     /// ========== CHAINED MARKETS FUNCTIONS ==========
@@ -341,12 +346,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
         if (cs.user() == address(iFreeBetsHolder)) {
-            iFreeBetsHolder.confirmSpeedMarketResolved(
-                market,
-                _getPayout(cs.buyinAmount(), uint8(cs.numOfDirections()), cs.payoutMultiplier()),
-                cs.buyinAmount(),
-                cs.collateral()
-            );
+            iFreeBetsHolder.confirmSpeedMarketResolved(market, cs.payout(), cs.buyinAmount(), cs.collateral());
         }
     }
 
@@ -395,6 +395,15 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
             if (userLostDirection) {
                 // User lost, manual resolution is allowed
                 chainedSpeedMarketsAMM.resolveMarketWithPrices(_market, _finalPrices, true);
+                IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+                if (address(chainedMarket.user()) == address(iFreeBetsHolder)) {
+                    iFreeBetsHolder.confirmSpeedMarketResolved(
+                        _market,
+                        chainedMarket.payout(),
+                        chainedMarket.buyinAmount(),
+                        chainedMarket.collateral()
+                    );
+                }
                 return;
             }
             currentPrice = _finalPrices[i];

@@ -413,22 +413,6 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         revert CanNotResolve();
     }
 
-    /// @notice Gets the payout amount
-    /// @param _buyinAmount The buyin amount
-    /// @param _numOfDirections The number of directions
-    /// @param _payoutMultiplier The payout multiplier
-    /// @return _payout The calculated payout amount
-    function _getPayout(
-        uint _buyinAmount,
-        uint8 _numOfDirections,
-        uint _payoutMultiplier
-    ) internal pure returns (uint _payout) {
-        _payout = _buyinAmount;
-        for (uint8 i; i < _numOfDirections; ++i) {
-            _payout = (_payout * _payoutMultiplier) / ONE;
-        }
-    }
-
     /// ========== SETUP FUNCTIONS ==========
 
     /// @notice Setup approval for multiCollateralOnOffRamp

@@ -181,6 +181,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                     )
                 )
             returns (address speedMarketAddress) {
+                emit LogCreatedSpeedMarket(speedMarketAddress, freeBetsHolder, pendingSpeedMarket.user);
                 if (
                     speedMarketAddress != address(0) &&
                     freeBetsHolder != address(0) &&
@@ -490,4 +491,5 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     event LogChainedError(string _errorMessage, PendingChainedSpeedMarket _pendingChainedSpeedMarket);
     event LogChainedErrorData(bytes _data, PendingChainedSpeedMarket _pendingChainedSpeedMarket);
+    event LogCreatedSpeedMarket(address _speedMarketAddress, address _freeBetsHolder, address _user);
 }

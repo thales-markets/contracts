@@ -392,7 +392,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param contractsAddresses Contract addresses from address manager
     function _createNewMarket(InternalCreateParams memory params, IAddressManager.Addresses memory contractsAddresses)
         internal
-        returns (address marketAddress)
+        returns (address)
     {
         if (!supportedAsset[params.createMarketParams.asset]) revert AssetNotSupported();
         if (params.buyinAmountInUSD < minBuyinAmount || params.buyinAmountInUSD > maxBuyinAmount) {
@@ -480,6 +480,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             safeBoxImpact,
             lpFeeWithSkew
         );
+        return address(srm);
     }
 
     /// @notice owner can resolve market for a given market address with finalPrice

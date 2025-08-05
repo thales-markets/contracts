@@ -290,7 +290,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     function _createNewMarket(
         InternalCreateMarketParams memory internalParams,
         IAddressManager.Addresses memory contractsAddresses
-    ) internal returns (address marketAddress) {
+    ) internal returns (address) {
         TempData memory tempData;
         tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(
             internalParams.createMarketParams.asset
@@ -402,6 +402,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             tempData.payoutMultiplier,
             tempData.speedAMMParams.safeBoxImpact
         );
+        return address(csm);
     }
 
     /// @notice resolver or owner can resolve market for a given market address with finalPrices

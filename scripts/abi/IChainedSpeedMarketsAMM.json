@@ -2,6 +2,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "canResolveMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "components": [
           {
             "internalType": "address",
@@ -213,6 +232,37 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "multicollateralEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "offrampHelper",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -229,6 +279,29 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "int64[]",
+        "name": "_finalPrices",
+        "type": "int64[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_manualResolution",
+        "type": "bool"
+      }
+    ],
+    "name": "resolveMarketWithPrices",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

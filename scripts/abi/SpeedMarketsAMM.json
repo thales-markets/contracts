@@ -1,5 +1,105 @@
 [
   {
+    "inputs": [],
+    "name": "AssetNotSupported",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "BonusTooHigh",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CanNotResolve",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CanOnlyBeCalledFromResolverOrOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CollateralNotSupported",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EtherTransferFailed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidBuyinAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidOffRampCollateral",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidPrice",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidStrikeTime",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidWhitelistAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MismatchedLengths",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MulticollateralOnrampDisabled",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotEnoughReceivedViaOnramp",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyCreatorAllowed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyMarketOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "RiskPerAssetExceeded",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "RiskPerDirectionExceeded",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SkewSlippageExceeded",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TimeTooFarIntoFuture",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -10,7 +110,7 @@
       },
       {
         "indexed": false,
-        "internalType": "contract SpeedMarketsAMMUtils",
+        "internalType": "contract ISpeedMarketsAMMUtils",
         "name": "_speedMarketsAMMUtils",
         "type": "address"
       },
@@ -49,6 +149,12 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_destination",
         "type": "address"
       },
@@ -60,6 +166,25 @@
       }
     ],
     "name": "AmountTransfered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "bonus",
+        "type": "uint256"
+      }
+    ],
+    "name": "CollateralBonusSet",
     "type": "event"
   },
   {
@@ -560,6 +685,25 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "bonusPerCollateral",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1104,6 +1248,24 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "offrampHelper",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -1133,24 +1295,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes[]",
-        "name": "priceUpdateData",
-        "type": "bytes[]"
-      }
-    ],
-    "name": "resolveMarket",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_market",
         "type": "address"
       },
@@ -1160,91 +1304,9 @@
         "type": "int64"
       }
     ],
-    "name": "resolveMarketAsOwner",
+    "name": "resolveMarketWithPrice",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "int64",
-        "name": "_finalPrice",
-        "type": "int64"
-      }
-    ],
-    "name": "resolveMarketManually",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "markets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "int64[]",
-        "name": "finalPrices",
-        "type": "int64[]"
-      }
-    ],
-    "name": "resolveMarketManuallyBatch",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes[]",
-        "name": "priceUpdateData",
-        "type": "bytes[]"
-      },
-      {
-        "internalType": "address",
-        "name": "collateral",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "toEth",
-        "type": "bool"
-      }
-    ],
-    "name": "resolveMarketWithOfframp",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "markets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "bytes[]",
-        "name": "priceUpdateData",
-        "type": "bytes[]"
-      }
-    ],
-    "name": "resolveMarketsBatch",
-    "outputs": [],
-    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1281,7 +1343,7 @@
         "type": "address"
       },
       {
-        "internalType": "contract SpeedMarketsAMMUtils",
+        "internalType": "contract ISpeedMarketsAMMUtils",
         "name": "_speedMarketsAMMUtils",
         "type": "address"
       },
@@ -1482,6 +1544,34 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_supported",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_bonus",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_collateralKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setSupportedNativeCollateralAndBonus",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_sUSD",
         "type": "address"
       }
@@ -1518,6 +1608,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "speedMarketsAMMUtils",
+    "outputs": [
+      {
+        "internalType": "contract ISpeedMarketsAMMUtils",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -1526,6 +1629,25 @@
       }
     ],
     "name": "supportedAsset",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "supportedNativeCollateral",
     "outputs": [
       {
         "internalType": "bool",
@@ -1557,6 +1679,11 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
       {
         "internalType": "address",
         "name": "_destination",

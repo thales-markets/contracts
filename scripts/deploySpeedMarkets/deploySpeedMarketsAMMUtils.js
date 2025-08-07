@@ -1,4 +1,5 @@
-const { ethers } = require('hardhat');
+const { ethers, upgrades } = require('hardhat');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 const { setTargetAddress, getTargetAddress } = require('../helpers');
 
 async function main() {
@@ -54,20 +55,44 @@ async function main() {
 		network = 'optimisticSepolia';
 	}
 
+	let accounts = await ethers.getSigners();
+	let owner = accounts[0];
+
+	console.log('Owner is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
+	const addressManagerAddress = getTargetAddress('AddressManager', network);
+	console.log('AddressManager address:', addressManagerAddress);
+
 	const SpeedMarketsAMMUtils = await ethers.getContractFactory('SpeedMarketsAMMUtils');
-	const SpeedMarketsAMMUtilsDeployed = await SpeedMarketsAMMUtils.deploy();
+	const SpeedMarketsAMMUtilsDeployed = await upgrades.deployProxy(SpeedMarketsAMMUtils, [
+		owner.address,
+		addressManagerAddress,
+	]);
 	await SpeedMarketsAMMUtilsDeployed.deployed();
 
+	console.log('SpeedMarketsAMMUtils proxy:', SpeedMarketsAMMUtilsDeployed.address);
+
+	const SpeedMarketsAMMUtilsImplementation = await getImplementationAddress(
+		ethers.provider,
+		SpeedMarketsAMMUtilsDeployed.address
+	);
+
+	console.log('Implementation SpeedMarketsAMMUtils: ', SpeedMarketsAMMUtilsImplementation);
+
 	setTargetAddress('SpeedMarketsAMMUtils', network, SpeedMarketsAMMUtilsDeployed.address);
+	setTargetAddress(
+		'SpeedMarketsAMMUtilsImplementation',
+		network,
+		SpeedMarketsAMMUtilsImplementation
+	);
 
 	await delay(5000);
 
 	try {
 		await hre.run('verify:verify', {
-			address: SpeedMarketsAMMUtilsDeployed.address,
+			address: SpeedMarketsAMMUtilsImplementation,
 		});
 	} catch (e) {
 		console.log(e);

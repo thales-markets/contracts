@@ -5,6 +5,7 @@ const { assert } = require('../../utils/common');
 const { toUnit } = require('../../utils')();
 const { speedMarketsInit } = require('../../utils/init');
 const { getCreateSpeedAMMParams } = require('../../utils/speedMarkets');
+const { toBytes32 } = require('../../../index');
 const { ZERO_ADDRESS } = require('../../utils/helpers');
 
 contract('SpeedMarketsReferrals', (accounts) => {
@@ -14,7 +15,12 @@ contract('SpeedMarketsReferrals', (accounts) => {
 		it('Should referrer receive default fee', async () => {
 			let { creatorAccount, speedMarketsAMM, exoticUSD, initialSkewImapct, now } =
 				await speedMarketsInit(accounts);
-
+			await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
+				exoticUSD.address,
+				true,
+				0,
+				toBytes32('ExoticUSD')
+			);
 			const strikeTimeParam = now + 10 * 60 * 60; // 10 hours from now
 			const createSpeedAMMParams = getCreateSpeedAMMParams(
 				user,

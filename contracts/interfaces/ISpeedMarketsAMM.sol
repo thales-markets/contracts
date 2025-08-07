@@ -8,6 +8,7 @@ import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
 
 import "../SpeedMarkets/SpeedMarket.sol";
 import "../SpeedMarkets/SpeedMarketsAMM.sol";
+import "./ISpeedMarketsAMMUtils.sol";
 
 interface ISpeedMarketsAMM {
     struct Params {
@@ -19,6 +20,14 @@ interface ISpeedMarketsAMM {
     function sUSD() external view returns (IERC20Upgradeable);
 
     function createNewMarket(SpeedMarketsAMM.CreateMarketParams calldata _params) external;
+
+    function resolveMarketWithPrice(address _market, int64 _finalPrice) external;
+
+    function canResolveMarket(address market) external view returns (bool);
+
+    function multicollateralEnabled() external view returns (bool);
+
+    function offrampHelper(address user, uint amount) external;
 
     function supportedAsset(bytes32 _asset) external view returns (bool);
 
@@ -63,4 +72,10 @@ interface ISpeedMarketsAMM {
     function getLengths(address _user) external view returns (uint[5] memory);
 
     function getParams(bytes32 _asset) external view returns (Params memory);
+
+    function supportedNativeCollateral(address _collateral) external view returns (bool);
+
+    function bonusPerCollateral(address _collateral) external view returns (uint);
+
+    function speedMarketsAMMUtils() external view returns (ISpeedMarketsAMMUtils);
 }

@@ -25,9 +25,12 @@ contract ChainedSpeedMarket {
         uint _buyinAmount;
         uint _safeBoxImpact;
         uint _payoutMultiplier;
+        address _collateral;
+        uint _payout;
     }
 
     address public user;
+    address public collateral;
     bytes32 public asset;
     uint64 public timeFrame;
     uint64 public initialStrikeTime;
@@ -36,6 +39,7 @@ contract ChainedSpeedMarket {
     int64[] public strikePrices;
     SpeedMarket.Direction[] public directions;
     uint public buyinAmount;
+    uint public payout;
     uint public safeBoxImpact;
     uint public payoutMultiplier;
 
@@ -65,7 +69,9 @@ contract ChainedSpeedMarket {
         buyinAmount = params._buyinAmount;
         safeBoxImpact = params._safeBoxImpact;
         payoutMultiplier = params._payoutMultiplier;
-        chainedMarketsAMM.sUSD().approve(params._chainedMarketsAMM, type(uint256).max);
+        collateral = params._collateral;
+        payout = params._payout;
+        IERC20Upgradeable(params._collateral).approve(params._chainedMarketsAMM, type(uint256).max);
         createdAt = block.timestamp;
     }
 
@@ -97,14 +103,15 @@ contract ChainedSpeedMarket {
         }
 
         require(resolved, "Not ready to resolve");
-
+        uint payoutToTransfer = IERC20Upgradeable(collateral).balanceOf(address(this));
         if (isUserWinner) {
-            chainedMarketsAMM.sUSD().safeTransfer(user, chainedMarketsAMM.sUSD().balanceOf(address(this)));
+            if (payoutToTransfer > payout) {
+                IERC20Upgradeable(collateral).safeTransfer(address(chainedMarketsAMM), payoutToTransfer - payout);
+                payoutToTransfer = payout;
+            }
+            IERC20Upgradeable(collateral).safeTransfer(user, payoutToTransfer);
         } else {
-            chainedMarketsAMM.sUSD().safeTransfer(
-                address(chainedMarketsAMM),
-                chainedMarketsAMM.sUSD().balanceOf(address(this))
-            );
+            IERC20Upgradeable(collateral).safeTransfer(address(chainedMarketsAMM), payoutToTransfer);
         }
 
         emit Resolved(finalPrices, isUserWinner);

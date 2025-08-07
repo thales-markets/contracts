@@ -1,5 +1,90 @@
 [
   {
+    "inputs": [],
+    "name": "AssetNotSupported",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CanNotResolve",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CanOnlyBeCalledFromResolver",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EtherTransferFailed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidBuyinAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidNumberOfDirections",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidOffRampCollateral",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidPrice",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidTimeFrame",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MinChainedMarketsError",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MulticollateralOnrampDisabled",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotEnoughReceivedViaOnramp",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyCreatorAllowed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyMarketOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyWhitelistedAddresses",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OutOfLiquidity",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ProfitTooHigh",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -15,6 +100,12 @@
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
       {
         "indexed": false,
         "internalType": "address",
@@ -742,6 +833,24 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "offrampHelper",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -790,24 +899,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes[][]",
-        "name": "priceUpdateData",
-        "type": "bytes[][]"
-      }
-    ],
-    "name": "resolveMarket",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_market",
         "type": "address"
       },
@@ -815,93 +906,16 @@
         "internalType": "int64[]",
         "name": "_finalPrices",
         "type": "int64[]"
-      }
-    ],
-    "name": "resolveMarketAsOwner",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "int64[]",
-        "name": "_finalPrices",
-        "type": "int64[]"
-      }
-    ],
-    "name": "resolveMarketManually",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "markets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "int64[][]",
-        "name": "finalPrices",
-        "type": "int64[][]"
-      }
-    ],
-    "name": "resolveMarketManuallyBatch",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes[][]",
-        "name": "priceUpdateData",
-        "type": "bytes[][]"
-      },
-      {
-        "internalType": "address",
-        "name": "collateral",
-        "type": "address"
       },
       {
         "internalType": "bool",
-        "name": "toEth",
+        "name": "_isManually",
         "type": "bool"
       }
     ],
-    "name": "resolveMarketWithOfframp",
+    "name": "resolveMarketWithPrices",
     "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "markets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "bytes[][][]",
-        "name": "priceUpdateData",
-        "type": "bytes[][][]"
-      }
-    ],
-    "name": "resolveMarketsBatch",
-    "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1050,6 +1064,11 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
       {
         "internalType": "address",
         "name": "_destination",

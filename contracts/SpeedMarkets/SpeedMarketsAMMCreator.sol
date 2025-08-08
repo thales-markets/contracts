@@ -188,11 +188,13 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                     pendingSpeedMarket.user == freeBetsHolder
                 ) {
                     bytes32 requestId = keccak256(abi.encode(pendingSpeedMarket));
+                    SpeedMarket sm = SpeedMarket(speedMarketAddress);
+                    uint buyAmount = (pendingSpeedMarket.buyinAmount * (ONE + sm.safeBoxImpact() + sm.lpFee())) / ONE;
                     IFreeBetsHolder(freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
                         requestId,
                         speedMarketAddress,
                         pendingSpeedMarket.collateral,
-                        pendingSpeedMarket.buyinAmount,
+                        buyAmount,
                         false
                     );
                 }

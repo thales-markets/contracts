@@ -17,9 +17,7 @@ import "../interfaces/ISpeedMarketsAMM.sol";
 import "../interfaces/IChainedSpeedMarketsAMM.sol";
 import "../interfaces/IFreeBetsHolder.sol";
 
-import "./SpeedMarket.sol";
 import "./SpeedMarketsAMM.sol";
-import "./ChainedSpeedMarketsAMM.sol";
 
 /// @title speed/chained markets prepared for creation with latest Pyth price
 contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
@@ -188,8 +186,11 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                     pendingSpeedMarket.user == freeBetsHolder
                 ) {
                     bytes32 requestId = keccak256(abi.encode(pendingSpeedMarket));
-                    SpeedMarket sm = SpeedMarket(speedMarketAddress);
-                    uint buyAmount = (pendingSpeedMarket.buyinAmount * (ONE + sm.safeBoxImpact() + sm.lpFee())) / ONE;
+                    uint buyAmount = pendingSpeedMarket.buyinAmount;
+                    if (iSpeedMarketsAMM.supportedNativeCollateral(pendingSpeedMarket.collateral)) {
+                        SpeedMarket sm = SpeedMarket(speedMarketAddress);
+                        buyAmount = (pendingSpeedMarket.buyinAmount * (ONE + sm.safeBoxImpact() + sm.lpFee())) / ONE;
+                    }
                     IFreeBetsHolder(freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
                         requestId,
                         speedMarketAddress,
@@ -342,6 +343,11 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             returns (address chainedSpeedMarketAddress) {
                 if (chainedSpeedMarketAddress != address(0) && pendingChainedSpeedMarket.user == freeBetsHolder) {
                     bytes32 requestId = keccak256(abi.encode(pendingChainedSpeedMarket));
+                    uint buyAmount = pendingChainedSpeedMarket.buyinAmount;
+                    if (iSpeedMarketsAMM.supportedNativeCollateral(pendingChainedSpeedMarket.collateral)) {
+                        ChainedSpeedMarket csm = ChainedSpeedMarket(chainedSpeedMarketAddress);
+                        buyAmount = (pendingChainedSpeedMarket.buyinAmount * (ONE + csm.safeBoxImpact())) / ONE;
+                    }
                     IFreeBetsHolder(freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
                         requestId,
                         chainedSpeedMarketAddress,

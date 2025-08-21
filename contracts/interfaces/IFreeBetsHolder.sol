@@ -11,6 +11,8 @@ interface IFreeBetsHolder {
 
     function numOfResolvedChainedSpeedMarketsPerUser(address _user) external view returns (uint);
 
+    function ticketToUser(address _speedMarket) external view returns (address);
+
     function confirmSpeedMarketResolved(
         address _resolvedTicket,
         uint _exercized,

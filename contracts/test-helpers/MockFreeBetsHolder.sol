@@ -73,6 +73,8 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
     // stores resolved chained speed markets per user
     mapping(address => AddressSetLib.AddressSet) internal resolvedChainedSpeedMarketsPerUser;
 
+    mapping(address => address) public override ticketToUser;
+
     constructor(address _speedMarketsAMMCreator) {
         speedMarketsAMMCreator = _speedMarketsAMMCreator;
     }
@@ -232,6 +234,7 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
             marketToRequestId[_speedMarketAddress] = pendingRequest.freebetRequestId;
             marketToUser[_speedMarketAddress] = pendingRequest.user;
 
+            ticketToUser[_speedMarketAddress] = pendingRequest.user;
             if (_isChained) {
                 activeChainedSpeedMarketsPerUser[pendingRequest.user].add(_speedMarketAddress);
             } else {

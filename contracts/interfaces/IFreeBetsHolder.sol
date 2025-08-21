@@ -7,7 +7,8 @@ interface IFreeBetsHolder {
         address _resolvedTicket,
         uint _exercized,
         uint _buyInAmount,
-        address _collateral
+        address _collateral,
+        bool _isChained
     ) external;
 
     function confirmSpeedOrChainedSpeedMarketTrade(

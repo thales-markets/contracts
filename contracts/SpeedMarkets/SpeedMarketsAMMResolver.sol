@@ -177,7 +177,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
         if (address(sm.user()) == address(iFreeBetsHolder)) {
-            iFreeBetsHolder.confirmSpeedMarketResolved(market, sm.payout(), sm.buyinAmount(), sm.collateral());
+            iFreeBetsHolder.confirmSpeedMarketResolved(market, sm.payout(), sm.buyinAmount(), sm.collateral(), false);
         }
     }
 
@@ -222,7 +222,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         speedMarketsAMM.resolveMarketWithPrice(_market, _finalPrice);
         IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
         if (address(sm.user()) == address(iFreeBetsHolder)) {
-            iFreeBetsHolder.confirmSpeedMarketResolved(_market, sm.payout(), sm.buyinAmount(), sm.collateral());
+            iFreeBetsHolder.confirmSpeedMarketResolved(_market, sm.payout(), sm.buyinAmount(), sm.collateral(), false);
         }
     }
 
@@ -346,7 +346,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
         if (cs.user() == address(iFreeBetsHolder)) {
-            iFreeBetsHolder.confirmSpeedMarketResolved(market, cs.payout(), cs.buyinAmount(), cs.collateral());
+            iFreeBetsHolder.confirmSpeedMarketResolved(market, cs.payout(), cs.buyinAmount(), cs.collateral(), true);
         }
     }
 
@@ -401,7 +401,8 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
                         _market,
                         chainedMarket.payout(),
                         chainedMarket.buyinAmount(),
-                        chainedMarket.collateral()
+                        chainedMarket.collateral(),
+                        true
                     );
                 }
                 return;

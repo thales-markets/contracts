@@ -226,7 +226,8 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
         address _resolvedTicket,
         uint _exercized,
         uint _buyInAmount,
-        address _collateral
+        address _collateral,
+        bool _isChained
     ) external override {
         require(msg.sender == speedMarketsAMM || msg.sender == chainedSpeedMarketsAMM, "Caller not allowed");
 

@@ -235,6 +235,11 @@
         "internalType": "address",
         "name": "_collateral",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isChained",
+        "type": "bool"
       }
     ],
     "name": "confirmSpeedMarketResolved",

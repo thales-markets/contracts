@@ -242,7 +242,17 @@
           },
           {
             "internalType": "uint256",
+            "name": "numFreeBetActiveMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "numMaturedMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numFreeBetMaturedMarketsPerUser",
             "type": "uint256"
           },
           {
@@ -508,7 +518,17 @@
           },
           {
             "internalType": "uint256",
+            "name": "numFreeBetActiveMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "numMaturedMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numFreeBetMaturedMarketsPerUser",
             "type": "uint256"
           },
           {

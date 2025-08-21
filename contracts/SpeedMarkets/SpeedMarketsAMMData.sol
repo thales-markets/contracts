@@ -10,6 +10,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
 import "../interfaces/ISpeedMarketsAMM.sol";
 import "../interfaces/IChainedSpeedMarketsAMM.sol";
+import "../interfaces/IAddressManager.sol";
 
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";
@@ -77,7 +78,9 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         uint numActiveMarkets;
         uint numMaturedMarkets;
         uint numActiveMarketsPerUser;
+        uint numFreeBetActiveMarketsPerUser;
         uint numMaturedMarketsPerUser;
+        uint numFreeBetMaturedMarketsPerUser;
         uint minBuyinAmount;
         uint maxBuyinAmount;
         uint minimalTimeToMaturity;
@@ -96,7 +99,9 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         uint numActiveMarkets;
         uint numMaturedMarkets;
         uint numActiveMarketsPerUser;
+        uint numFreeBetActiveMarketsPerUser;
         uint numMaturedMarketsPerUser;
+        uint numFreeBetMaturedMarketsPerUser;
         uint minChainedMarkets;
         uint maxChainedMarkets;
         uint64 minTimeFrame;
@@ -294,12 +299,21 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             lpFees[i] = ISpeedMarketsAMM(speedMarketsAMM).lpFees(i);
         }
 
+        address addressManager = ISpeedMarketsAMM(speedMarketsAMM).addressManager();
+        address freeBetsHolder = IAddressManager(addressManager).getAddress("FreeBetsHolder");
+
         return
             SpeedMarketsAMMParameters(
                 allLengths[0], // numActiveMarkets
                 allLengths[1], // numMaturedMarkets
                 _walletAddress != address(0) ? allLengths[2] : 0, // numActiveMarketsPerUser
+                _walletAddress != address(0)
+                    ? IFreeBetsHolder(freeBetsHolder).numOfActiveSpeedMarketsPerUser(_walletAddress)
+                    : 0, // numFreeBetActiveMarketsPerUser
                 _walletAddress != address(0) ? allLengths[3] : 0, // numMaturedMarketsPerUser
+                _walletAddress != address(0)
+                    ? IFreeBetsHolder(freeBetsHolder).numOfResolvedSpeedMarketsPerUser(_walletAddress)
+                    : 0, // numFreeBetMaturedMarketsPerUser
                 ISpeedMarketsAMM(speedMarketsAMM).minBuyinAmount(),
                 ISpeedMarketsAMM(speedMarketsAMM).maxBuyinAmount(),
                 ISpeedMarketsAMM(speedMarketsAMM).minimalTimeToMaturity(),
@@ -336,12 +350,21 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             payoutMultipliers[i] = IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).payoutMultipliers(i);
         }
 
+        address addressManager = ISpeedMarketsAMM(speedMarketsAMM).addressManager();
+        address freeBetsHolder = IAddressManager(addressManager).getAddress("FreeBetsHolder");
+
         return
             ChainedSpeedMarketsAMMParameters(
                 allLengths[0], // numActiveMarkets
                 allLengths[1], // numMaturedMarkets
                 _walletAddress != address(0) ? allLengths[2] : 0, // numActiveMarketsPerUser
+                _walletAddress != address(0)
+                    ? IFreeBetsHolder(freeBetsHolder).numOfActiveChainedSpeedMarketsPerUser(_walletAddress)
+                    : 0, // numFreeBetActiveMarketsPerUser
                 _walletAddress != address(0) ? allLengths[3] : 0, // numMaturedMarketsPerUser
+                _walletAddress != address(0)
+                    ? IFreeBetsHolder(freeBetsHolder).numOfResolvedChainedSpeedMarketsPerUser(_walletAddress)
+                    : 0, // numFreeBetMaturedMarketsPerUser
                 minChainedMarkets,
                 maxChainedMarkets,
                 IChainedSpeedMarketsAMM(chainedSpeedMarketsAMM).minTimeFrame(),

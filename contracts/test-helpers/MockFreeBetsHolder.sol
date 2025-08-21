@@ -2,12 +2,15 @@
 pragma solidity ^0.8.0;
 
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "../utils/libraries/AddressSetLib.sol";
 import "../interfaces/IFreeBetsHolder.sol";
 import "../SpeedMarkets/SpeedMarketsAMMCreator.sol";
 import "../SpeedMarkets/SpeedMarket.sol";
 
 /// @title FreeBetsHolder V2
 contract MockFreeBetsHolder is IFreeBetsHolder {
+    using AddressSetLib for AddressSetLib.AddressSet;
+
     struct FreeBet {
         bytes32 requestId;
         address speedMarketAddress;
@@ -57,6 +60,18 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
     address public chainedSpeedMarketsAMM;
 
     bytes32[] public allRequestIds;
+
+    // stores active speed markets per user
+    mapping(address => AddressSetLib.AddressSet) internal activeSpeedMarketsPerUser;
+
+    // stores resolved speed markets per user
+    mapping(address => AddressSetLib.AddressSet) internal resolvedSpeedMarketsPerUser;
+
+    // stores active chained speed markets per user
+    mapping(address => AddressSetLib.AddressSet) internal activeChainedSpeedMarketsPerUser;
+
+    // stores resolved chained speed markets per user
+    mapping(address => AddressSetLib.AddressSet) internal resolvedChainedSpeedMarketsPerUser;
 
     constructor(address _speedMarketsAMMCreator) {
         speedMarketsAMMCreator = _speedMarketsAMMCreator;
@@ -216,6 +231,12 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
 
             marketToRequestId[_speedMarketAddress] = pendingRequest.freebetRequestId;
             marketToUser[_speedMarketAddress] = pendingRequest.user;
+
+            if (_isChained) {
+                activeChainedSpeedMarketsPerUser[pendingRequest.user].add(_speedMarketAddress);
+            } else {
+                activeSpeedMarketsPerUser[pendingRequest.user].add(_speedMarketAddress);
+            }
         }
 
         emit SpeedMarketTradeConfirmed(_requestId, _speedMarketAddress, _collateral, _buyinAmount, _isChained);
@@ -304,6 +325,34 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
     /// @notice Set market to user mapping for testing
     function setMarketUser(address _market, address _user) external {
         marketToUser[_market] = _user;
+    }
+
+    /// @notice gets number of active speed markets per user
+    /// @param _user to get number of active speed markets for
+    /// @return numOfActiveSpeedMarkets
+    function numOfActiveSpeedMarketsPerUser(address _user) external view override returns (uint) {
+        return activeSpeedMarketsPerUser[_user].elements.length;
+    }
+
+    /// @notice gets number of active chained speed markets per user
+    /// @param _user to get number of active chained speed markets for
+    /// @return numOfActiveChainedSpeedMarkets
+    function numOfActiveChainedSpeedMarketsPerUser(address _user) external view override returns (uint) {
+        return activeChainedSpeedMarketsPerUser[_user].elements.length;
+    }
+
+    /// @notice gets number of resolved speed markets per user
+    /// @param _user to get number of resolved speed markets for
+    /// @return numOfResolvedSpeedMarkets
+    function numOfResolvedSpeedMarketsPerUser(address _user) external view override returns (uint) {
+        return resolvedSpeedMarketsPerUser[_user].elements.length;
+    }
+
+    /// @notice gets number of resolved chained speed markets per user
+    /// @param _user to get number of resolved chained speed markets for
+    /// @return numOfResolvedSpeedMarkets
+    function numOfResolvedChainedSpeedMarketsPerUser(address _user) external view override returns (uint) {
+        return resolvedChainedSpeedMarketsPerUser[_user].elements.length;
     }
 
     event FreebetAllocated(address indexed user, bytes32 indexed requestId, uint256 amount, uint256 expiryTime);

@@ -19,6 +19,8 @@ interface ISpeedMarketsAMM {
 
     function sUSD() external view returns (IERC20Upgradeable);
 
+    function addressManager() external view returns (address);
+
     function createNewMarket(SpeedMarketsAMM.CreateMarketParams calldata _params) external returns (address marketAddress);
 
     function resolveMarketWithPrice(address _market, int64 _finalPrice) external;

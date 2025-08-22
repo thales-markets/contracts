@@ -177,7 +177,11 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
         if (address(sm.user()) == address(iFreeBetsHolder)) {
-            iFreeBetsHolder.confirmSpeedMarketResolved(market, sm.payout(), sm.buyinAmount(), sm.collateral(), false);
+            uint buyAmount = sm.buyinAmount();
+            if (speedMarketsAMM.supportedNativeCollateral(sm.collateral())) {
+                buyAmount = (buyAmount * (ONE + sm.safeBoxImpact() + sm.lpFee())) / ONE;
+            }
+            iFreeBetsHolder.confirmSpeedMarketResolved(market, sm.payout(), buyAmount, sm.collateral(), false);
         }
     }
 
@@ -222,7 +226,11 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         speedMarketsAMM.resolveMarketWithPrice(_market, _finalPrice);
         IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
         if (address(sm.user()) == address(iFreeBetsHolder)) {
-            iFreeBetsHolder.confirmSpeedMarketResolved(_market, sm.payout(), sm.buyinAmount(), sm.collateral(), false);
+            uint buyAmount = sm.buyinAmount();
+            if (speedMarketsAMM.supportedNativeCollateral(sm.collateral())) {
+                buyAmount = (buyAmount * (ONE + sm.safeBoxImpact() + sm.lpFee())) / ONE;
+            }
+            iFreeBetsHolder.confirmSpeedMarketResolved(_market, sm.payout(), buyAmount, sm.collateral(), false);
         }
     }
 
@@ -346,7 +354,12 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
         if (cs.user() == address(iFreeBetsHolder)) {
-            iFreeBetsHolder.confirmSpeedMarketResolved(market, cs.payout(), cs.buyinAmount(), cs.collateral(), true);
+            uint buyAmount = cs.buyinAmount();
+            address collateral = cs.collateral();
+            if (speedMarketsAMM.supportedNativeCollateral(collateral)) {
+                buyAmount = (buyAmount * (ONE + cs.safeBoxImpact())) / ONE;
+            }
+            iFreeBetsHolder.confirmSpeedMarketResolved(market, cs.payout(), buyAmount, collateral, true);
         }
     }
 
@@ -397,10 +410,14 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
                 chainedSpeedMarketsAMM.resolveMarketWithPrices(_market, _finalPrices, true);
                 IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
                 if (address(chainedMarket.user()) == address(iFreeBetsHolder)) {
+                    uint buyAmount = chainedMarket.buyinAmount();
+                    if (speedMarketsAMM.supportedNativeCollateral(chainedMarket.collateral())) {
+                        buyAmount = (buyAmount * (ONE + chainedMarket.safeBoxImpact())) / ONE;
+                    }
                     iFreeBetsHolder.confirmSpeedMarketResolved(
                         _market,
                         chainedMarket.payout(),
-                        chainedMarket.buyinAmount(),
+                        buyAmount,
                         chainedMarket.collateral(),
                         true
                     );

@@ -22,6 +22,7 @@ import "./SpeedMarketsAMM.sol";
 /// @title speed/chained markets prepared for creation with latest Pyth price
 contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     uint private constant ONE = 1e18;
+    address constant FAILURE_SENTINEL = address(1);
 
     struct SpeedMarketParams {
         bytes32 asset;
@@ -84,7 +85,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     mapping(address => bool) public whitelistedAddresses;
 
-    mapping(bytes32 => address) public requestToSender;
+    mapping(bytes32 => address) public requestIdToMarket;
 
     function initialize(address _owner, address _addressManager) external initializer {
         setOwner(_owner);
@@ -120,9 +121,9 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
         pendingSpeedMarkets.push(pendingSpeedMarket);
 
-        emit AddSpeedMarket(pendingSpeedMarket);
-
         requestId = keccak256(abi.encode(pendingSpeedMarket));
+
+        emit AddSpeedMarket(pendingSpeedMarket, requestId);
     }
 
     /// @notice create all speed markets from pending using latest price feeds from param
@@ -163,6 +164,9 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 pendingSpeedMarket.strikePrice,
                 pendingSpeedMarket.strikePriceSlippage
             );
+
+            bytes32 requestId = keccak256(abi.encode(pendingSpeedMarket));
+
             try
                 iSpeedMarketsAMM.createNewMarket(
                     SpeedMarketsAMM.CreateMarketParams(
@@ -185,7 +189,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                     freeBetsHolder != address(0) &&
                     pendingSpeedMarket.user == freeBetsHolder
                 ) {
-                    bytes32 requestId = keccak256(abi.encode(pendingSpeedMarket));
                     uint buyAmount = pendingSpeedMarket.buyinAmount;
                     if (iSpeedMarketsAMM.supportedNativeCollateral(pendingSpeedMarket.collateral)) {
                         SpeedMarket sm = SpeedMarket(speedMarketAddress);
@@ -200,9 +203,12 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                     );
                 }
                 createdSize++;
+                requestIdToMarket[requestId] = speedMarketAddress;
             } catch Error(string memory reason) {
+                requestIdToMarket[requestId] = FAILURE_SENTINEL;
                 emit LogError(reason, pendingSpeedMarket);
             } catch (bytes memory data) {
+                requestIdToMarket[requestId] = FAILURE_SENTINEL;
                 emit LogErrorData(data, pendingSpeedMarket);
             }
         }
@@ -283,9 +289,9 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
         pendingChainedSpeedMarkets.push(pendingChainedSpeedMarket);
 
-        emit AddChainedSpeedMarket(pendingChainedSpeedMarket);
-
         requestId = keccak256(abi.encode(pendingChainedSpeedMarket));
+
+        emit AddChainedSpeedMarket(pendingChainedSpeedMarket, requestId);
     }
 
     /// @notice create all chained speed markets from pending using latest price feeds from param
@@ -327,6 +333,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 pendingChainedSpeedMarket.strikePriceSlippage
             );
 
+            bytes32 requestId = keccak256(abi.encode(pendingChainedSpeedMarket));
+
             try
                 IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(
                     ChainedSpeedMarketsAMM.CreateMarketParams(
@@ -342,7 +350,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 )
             returns (address chainedSpeedMarketAddress) {
                 if (chainedSpeedMarketAddress != address(0) && pendingChainedSpeedMarket.user == freeBetsHolder) {
-                    bytes32 requestId = keccak256(abi.encode(pendingChainedSpeedMarket));
                     uint buyAmount = pendingChainedSpeedMarket.buyinAmount;
                     if (iSpeedMarketsAMM.supportedNativeCollateral(pendingChainedSpeedMarket.collateral)) {
                         ChainedSpeedMarket csm = ChainedSpeedMarket(chainedSpeedMarketAddress);
@@ -356,10 +363,13 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                         true
                     );
                 }
+                requestIdToMarket[requestId] = chainedSpeedMarketAddress;
                 createdSize++;
             } catch Error(string memory reason) {
+                requestIdToMarket[requestId] = FAILURE_SENTINEL;
                 emit LogChainedError(reason, pendingChainedSpeedMarket);
             } catch (bytes memory data) {
+                requestIdToMarket[requestId] = FAILURE_SENTINEL;
                 emit LogChainedErrorData(data, pendingChainedSpeedMarket);
             }
         }
@@ -486,8 +496,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     //////////////////events/////////////////
 
-    event AddSpeedMarket(PendingSpeedMarket _pendingSpeedMarket);
-    event AddChainedSpeedMarket(PendingChainedSpeedMarket _pendingChainedSpeedMarket);
+    event AddSpeedMarket(PendingSpeedMarket _pendingSpeedMarket, bytes32 _requestId);
+    event AddChainedSpeedMarket(PendingChainedSpeedMarket _pendingChainedSpeedMarket, bytes32 _requestId);
     event CreateSpeedMarkets(uint _pendingSize, uint8 _createdSize);
 
     event SetAddressManager(address _addressManager);

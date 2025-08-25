@@ -151,9 +151,11 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         // process all pending speed markets
         for (uint8 i = 0; i < pendingSpeedMarkets.length; i++) {
             PendingSpeedMarket memory pendingSpeedMarket = pendingSpeedMarkets[i];
+            bytes32 requestId = keccak256(abi.encode(pendingSpeedMarket));
 
             if ((pendingSpeedMarket.createdAt + maxCreationDelay) <= block.timestamp) {
                 // too late for processing
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
                 continue;
             }
 
@@ -164,8 +166,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 pendingSpeedMarket.strikePrice,
                 pendingSpeedMarket.strikePriceSlippage
             );
-
-            bytes32 requestId = keccak256(abi.encode(pendingSpeedMarket));
 
             try
                 iSpeedMarketsAMM.createNewMarket(
@@ -319,9 +319,11 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         // process all pending chained speed markets
         for (uint8 i = 0; i < pendingChainedSpeedMarkets.length; i++) {
             PendingChainedSpeedMarket memory pendingChainedSpeedMarket = pendingChainedSpeedMarkets[i];
+            bytes32 requestId = keccak256(abi.encode(pendingChainedSpeedMarket));
 
             if ((pendingChainedSpeedMarket.createdAt + maxCreationDelay) <= block.timestamp) {
                 // too late for processing
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
                 continue;
             }
 
@@ -332,8 +334,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 pendingChainedSpeedMarket.strikePrice,
                 pendingChainedSpeedMarket.strikePriceSlippage
             );
-
-            bytes32 requestId = keccak256(abi.encode(pendingChainedSpeedMarket));
 
             try
                 IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(

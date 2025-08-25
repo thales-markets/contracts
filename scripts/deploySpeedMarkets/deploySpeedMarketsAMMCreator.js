@@ -72,9 +72,10 @@ async function main() {
 	console.log('Network id:' + networkObj.chainId);
 
 	const SpeedMarketsAMMCreator = await ethers.getContractFactory('SpeedMarketsAMMCreator');
+	const addressManager = getTargetAddress('AddressManager', network);
 	let SpeedMarketsAMMCreatorDeployed = await upgrades.deployProxy(SpeedMarketsAMMCreator, [
 		owner.address,
-		proxySUSD,
+		addressManager,
 	]);
 	await SpeedMarketsAMMCreatorDeployed.deployed();
 

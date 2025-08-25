@@ -26,6 +26,7 @@ import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/IAddressManager.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
+import "../interfaces/IFreeBetsHolder.sol";
 
 import "./SpeedMarket.sol";
 import "../interfaces/ISpeedMarketsAMMUtils.sol";
@@ -168,8 +169,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     /// @notice create new market for a given delta/strike time
     /// @param _params parameters for creating market
-    /// @dev This function is used to create a new market
-    function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyCreator {
+    function createNewMarket(CreateMarketParams calldata _params)
+        external
+        nonReentrant
+        notPaused
+        onlyCreator
+        returns (address marketAddress)
+    {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
 
         // Calculate strike time: use provided strikeTime or current timestamp + delta
@@ -190,7 +196,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             defaultCollateral: defaultCollateral,
             buyinAmountInUSD: buyinAmountInUSD
         });
-        _createNewMarket(internalParams, contractsAddresses);
+
+        marketAddress = _createNewMarket(internalParams, contractsAddresses);
     }
 
     /// @notice Determines collateral configuration and calculates buyin amount
@@ -385,6 +392,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param contractsAddresses Contract addresses from address manager
     function _createNewMarket(InternalCreateParams memory params, IAddressManager.Addresses memory contractsAddresses)
         internal
+        returns (address)
     {
         if (!supportedAsset[params.createMarketParams.asset]) revert AssetNotSupported();
         if (params.buyinAmountInUSD < minBuyinAmount || params.buyinAmountInUSD > maxBuyinAmount) {
@@ -472,6 +480,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             safeBoxImpact,
             lpFeeWithSkew
         );
+        return address(srm);
     }
 
     /// @notice owner can resolve market for a given market address with finalPrice
@@ -484,11 +493,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     function _resolveMarketWithPrice(address market, int64 _finalPrice) internal {
-        SpeedMarket(market).resolve(_finalPrice);
+        SpeedMarket sm = SpeedMarket(market);
+        sm.resolve(_finalPrice);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
-        address user = SpeedMarket(market).user();
-
+        address user = sm.user();
         if (_activeMarketsPerUser[user].contains(market)) {
             _activeMarketsPerUser[user].remove(market);
         }
@@ -506,7 +515,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             currentRiskPerAssetAndDirection[asset][direction] = 0;
         }
 
-        if (!SpeedMarket(market).isUserWinner()) {
+        if (!sm.isUserWinner()) {
             if (currentRiskPerAsset[asset] > 2 * buyinAmountInUSD) {
                 currentRiskPerAsset[asset] -= (2 * buyinAmountInUSD);
             } else {
@@ -514,7 +523,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             }
         }
 
-        emit MarketResolved(market, SpeedMarket(market).result(), SpeedMarket(market).isUserWinner());
+        emit MarketResolved(market, sm.result(), sm.isUserWinner());
     }
 
     function offrampHelper(address user, uint amount) external {

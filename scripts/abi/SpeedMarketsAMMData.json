@@ -120,6 +120,11 @@
             "type": "address"
           },
           {
+            "internalType": "address",
+            "name": "freeBetUser",
+            "type": "address"
+          },
+          {
             "internalType": "bytes32",
             "name": "asset",
             "type": "bytes32"
@@ -242,7 +247,17 @@
           },
           {
             "internalType": "uint256",
+            "name": "numFreeBetActiveMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "numMaturedMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numFreeBetMaturedMarketsPerUser",
             "type": "uint256"
           },
           {
@@ -362,6 +377,11 @@
           {
             "internalType": "address",
             "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "freeBetUser",
             "type": "address"
           },
           {
@@ -508,7 +528,17 @@
           },
           {
             "internalType": "uint256",
+            "name": "numFreeBetActiveMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "numMaturedMarketsPerUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numFreeBetMaturedMarketsPerUser",
             "type": "uint256"
           },
           {

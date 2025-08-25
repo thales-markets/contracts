@@ -122,6 +122,7 @@ contract('SpeedMarkets', (accounts) => {
 			console.log('AMM Data ' + ammData);
 			console.log('numActiveMarkets ' + ammData.numActiveMarkets);
 			console.log('numActiveMarketsPerUser ' + ammData.numActiveMarketsPerUser);
+			console.log('numFreeBetActiveMarketsPerUser ' + ammData.numFreeBetActiveMarketsPerUser);
 
 			riskPerAssetAndDirectionData = await speedMarketsAMMData.getDirectionalRiskPerAsset(
 				toBytes32('ETH')
@@ -285,6 +286,7 @@ contract('SpeedMarkets', (accounts) => {
 			console.log('numActiveMarkets after batch resolve ' + ammData.numActiveMarkets);
 			console.log('numMaturedMarkets after batch resolve ' + ammData.numMaturedMarkets);
 			console.log('numMaturedMarketsPerUser ' + ammData.numMaturedMarketsPerUser);
+			console.log('numFreeBetMaturedMarketsPerUser ' + ammData.numFreeBetMaturedMarketsPerUser);
 
 			let ammBalance = await exoticUSD.balanceOf(speedMarketsAMM.address);
 			console.log('Balance of AMM', ammBalance / 1e18);

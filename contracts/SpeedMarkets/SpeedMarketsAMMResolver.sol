@@ -17,6 +17,7 @@ import "../interfaces/IAddressManager.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
 import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import "../interfaces/IChainedSpeedMarketsAMM.sol";
+import "../interfaces/IFreeBetsHolder.sol";
 
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";
@@ -156,16 +157,16 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
     function _resolveMarket(address market, bytes[] memory priceUpdateData) internal {
         if (!speedMarketsAMM.canResolveMarket(market)) revert CanNotResolve();
-
+        SpeedMarket sm = SpeedMarket(market);
         IPyth iPyth = IPyth(addressManager.pyth());
         bytes32[] memory priceIds = new bytes32[](1);
-        priceIds[0] = speedMarketsAMM.assetToPythId(SpeedMarket(market).asset());
+        priceIds[0] = speedMarketsAMM.assetToPythId(sm.asset());
         uint64 maximumPriceDelayForResolving = speedMarketsAMM.maximumPriceDelayForResolving();
         PythStructs.PriceFeed[] memory prices = iPyth.parsePriceFeedUpdates{value: iPyth.getUpdateFee(priceUpdateData)}(
             priceUpdateData,
             priceIds,
-            SpeedMarket(market).strikeTime(),
-            SpeedMarket(market).strikeTime() + maximumPriceDelayForResolving
+            sm.strikeTime(),
+            sm.strikeTime() + maximumPriceDelayForResolving
         );
 
         PythStructs.Price memory price = prices[0].price;
@@ -173,6 +174,15 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         if (price.price <= 0) revert InvalidPrice();
 
         speedMarketsAMM.resolveMarketWithPrice(market, price.price);
+
+        IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+        if (address(sm.user()) == address(iFreeBetsHolder)) {
+            uint buyAmount = sm.buyinAmount();
+            if (speedMarketsAMM.supportedNativeCollateral(sm.collateral())) {
+                buyAmount = (buyAmount * (ONE + sm.safeBoxImpact() + sm.lpFee())) / ONE;
+            }
+            iFreeBetsHolder.confirmSpeedMarketResolved(market, sm.payout(), buyAmount, sm.collateral(), false);
+        }
     }
 
     function _resolveMarketWithOfframp(
@@ -206,13 +216,22 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
     }
 
     function _resolveMarketManually(address _market, int64 _finalPrice) internal {
-        SpeedMarket.Direction direction = SpeedMarket(_market).direction();
-        int64 strikePrice = SpeedMarket(_market).strikePrice();
+        SpeedMarket sm = SpeedMarket(_market);
+        SpeedMarket.Direction direction = sm.direction();
+        int64 strikePrice = sm.strikePrice();
         bool isUserWinner = (_finalPrice < strikePrice && direction == SpeedMarket.Direction.Down) ||
             (_finalPrice > strikePrice && direction == SpeedMarket.Direction.Up);
         if (!speedMarketsAMM.canResolveMarket(_market) || isUserWinner) revert CanNotResolve();
 
         speedMarketsAMM.resolveMarketWithPrice(_market, _finalPrice);
+        IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+        if (address(sm.user()) == address(iFreeBetsHolder)) {
+            uint buyAmount = sm.buyinAmount();
+            if (speedMarketsAMM.supportedNativeCollateral(sm.collateral())) {
+                buyAmount = (buyAmount * (ONE + sm.safeBoxImpact() + sm.lpFee())) / ONE;
+            }
+            iFreeBetsHolder.confirmSpeedMarketResolved(_market, sm.payout(), buyAmount, sm.collateral(), false);
+        }
     }
 
     /// ========== CHAINED MARKETS FUNCTIONS ==========
@@ -309,14 +328,13 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         IPyth iPyth = IPyth(addressManager.pyth());
         bytes32[] memory priceIds = new bytes32[](1);
-        priceIds[0] = speedMarketsAMM.assetToPythId(ChainedSpeedMarket(market).asset());
+        ChainedSpeedMarket cs = ChainedSpeedMarket(market);
+        priceIds[0] = speedMarketsAMM.assetToPythId(cs.asset());
 
         int64[] memory prices = new int64[](priceUpdateData.length);
         uint64 strikeTimePerDirection;
         for (uint i; i < priceUpdateData.length; ++i) {
-            strikeTimePerDirection =
-                ChainedSpeedMarket(market).initialStrikeTime() +
-                uint64(i * ChainedSpeedMarket(market).timeFrame());
+            strikeTimePerDirection = cs.initialStrikeTime() + uint64(i * cs.timeFrame());
 
             PythStructs.PriceFeed[] memory pricesPerDirection = iPyth.parsePriceFeedUpdates{
                 value: iPyth.getUpdateFee(priceUpdateData[i])
@@ -333,6 +351,16 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         }
 
         chainedSpeedMarketsAMM.resolveMarketWithPrices(market, prices, false);
+
+        IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+        if (cs.user() == address(iFreeBetsHolder)) {
+            uint buyAmount = cs.buyinAmount();
+            address collateral = cs.collateral();
+            if (speedMarketsAMM.supportedNativeCollateral(collateral)) {
+                buyAmount = (buyAmount * (ONE + cs.safeBoxImpact())) / ONE;
+            }
+            iFreeBetsHolder.confirmSpeedMarketResolved(market, cs.payout(), buyAmount, collateral, true);
+        }
     }
 
     function _resolveChainedMarketWithOfframp(
@@ -380,6 +408,20 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
             if (userLostDirection) {
                 // User lost, manual resolution is allowed
                 chainedSpeedMarketsAMM.resolveMarketWithPrices(_market, _finalPrices, true);
+                IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+                if (address(chainedMarket.user()) == address(iFreeBetsHolder)) {
+                    uint buyAmount = chainedMarket.buyinAmount();
+                    if (speedMarketsAMM.supportedNativeCollateral(chainedMarket.collateral())) {
+                        buyAmount = (buyAmount * (ONE + chainedMarket.safeBoxImpact())) / ONE;
+                    }
+                    iFreeBetsHolder.confirmSpeedMarketResolved(
+                        _market,
+                        chainedMarket.payout(),
+                        buyAmount,
+                        chainedMarket.collateral(),
+                        true
+                    );
+                }
                 return;
             }
             currentPrice = _finalPrices[i];

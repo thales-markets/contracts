@@ -12,9 +12,11 @@ const Big = require('big.js');
 const { numberExponentToLarge } = require('../../scripts/helpers');
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const DEAD_ADDRESS = '0x000000000000000000000000000000000000dEaD';
 
 module.exports = {
 	ZERO_ADDRESS,
+	DEAD_ADDRESS,
 
 	encodeCall(name, argument, values) {
 		const methodId = abi.methodID(name, argument).toString('hex');

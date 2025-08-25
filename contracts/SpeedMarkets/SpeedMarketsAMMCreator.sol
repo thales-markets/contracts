@@ -156,16 +156,30 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             if ((pendingSpeedMarket.createdAt + maxCreationDelay) <= block.timestamp) {
                 // too late for processing
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
+                emit LogError("maxCreationDelay expired", pendingSpeedMarket);
                 continue;
             }
 
-            PythStructs.Price memory pythPrice = _getPythPrice(
-                contractsAddresses,
-                pendingSpeedMarket.asset,
-                maximumPriceDelay,
-                pendingSpeedMarket.strikePrice,
-                pendingSpeedMarket.strikePriceSlippage
+            PythStructs.Price memory pythPrice = _getPythPrice(contractsAddresses, pendingSpeedMarket.asset);
+
+            bool isStalePrice = (pythPrice.publishTime + maximumPriceDelay) <= block.timestamp || pythPrice.price <= 0;
+            if (isStalePrice) {
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
+                emit LogError("Stale price", pendingSpeedMarket);
+                continue;
+            }
+
+            int64 maxPrice = int64(
+                uint64((pendingSpeedMarket.strikePrice * (ONE + pendingSpeedMarket.strikePriceSlippage)) / ONE)
             );
+            int64 minPrice = int64(
+                uint64((pendingSpeedMarket.strikePrice * (ONE - pendingSpeedMarket.strikePriceSlippage)) / ONE)
+            );
+            if (pythPrice.price > maxPrice || pythPrice.price < minPrice) {
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
+                emit LogError("Pyth price exceeds slippage", pendingSpeedMarket);
+                continue;
+            }
 
             try
                 iSpeedMarketsAMM.createNewMarket(
@@ -236,13 +250,20 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
         ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
 
-        PythStructs.Price memory pythPrice = _getPythPrice(
-            contractsAddresses,
-            _speedMarketParams.asset,
-            iSpeedMarketsAMM.maximumPriceDelay(),
-            _speedMarketParams.strikePrice,
-            _speedMarketParams.strikePriceSlippage
+        PythStructs.Price memory pythPrice = _getPythPrice(contractsAddresses, _speedMarketParams.asset);
+
+        require(
+            (pythPrice.publishTime + iSpeedMarketsAMM.maximumPriceDelay()) > block.timestamp && pythPrice.price > 0,
+            "Stale price"
         );
+
+        int64 maxPrice = int64(
+            uint64((_speedMarketParams.strikePrice * (ONE + _speedMarketParams.strikePriceSlippage)) / ONE)
+        );
+        int64 minPrice = int64(
+            uint64((_speedMarketParams.strikePrice * (ONE - _speedMarketParams.strikePriceSlippage)) / ONE)
+        );
+        require(pythPrice.price <= maxPrice && pythPrice.price >= minPrice, "Pyth price exceeds slippage");
 
         iSpeedMarketsAMM.createNewMarket(
             SpeedMarketsAMM.CreateMarketParams(
@@ -324,16 +345,30 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             if ((pendingChainedSpeedMarket.createdAt + maxCreationDelay) <= block.timestamp) {
                 // too late for processing
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
+                emit LogChainedError("maxCreationDelay expired", pendingChainedSpeedMarket);
                 continue;
             }
 
-            PythStructs.Price memory pythPrice = _getPythPrice(
-                contractsAddresses,
-                pendingChainedSpeedMarket.asset,
-                maximumPriceDelay,
-                pendingChainedSpeedMarket.strikePrice,
-                pendingChainedSpeedMarket.strikePriceSlippage
+            PythStructs.Price memory pythPrice = _getPythPrice(contractsAddresses, pendingChainedSpeedMarket.asset);
+
+            bool isStalePrice = (pythPrice.publishTime + maximumPriceDelay) <= block.timestamp || pythPrice.price <= 0;
+            if (isStalePrice) {
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
+                emit LogChainedError("Stale price", pendingChainedSpeedMarket);
+                continue;
+            }
+
+            int64 maxPrice = int64(
+                uint64((pendingChainedSpeedMarket.strikePrice * (ONE + pendingChainedSpeedMarket.strikePriceSlippage)) / ONE)
             );
+            int64 minPrice = int64(
+                uint64((pendingChainedSpeedMarket.strikePrice * (ONE - pendingChainedSpeedMarket.strikePriceSlippage)) / ONE)
+            );
+            if (pythPrice.price > maxPrice || pythPrice.price < minPrice) {
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
+                emit LogChainedError("Pyth price exceeds slippage", pendingChainedSpeedMarket);
+                continue;
+            }
 
             try
                 IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(
@@ -394,13 +429,20 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
         ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
 
-        PythStructs.Price memory pythPrice = _getPythPrice(
-            contractsAddresses,
-            _chainedMarketParams.asset,
-            iSpeedMarketsAMM.maximumPriceDelay(),
-            _chainedMarketParams.strikePrice,
-            _chainedMarketParams.strikePriceSlippage
+        PythStructs.Price memory pythPrice = _getPythPrice(contractsAddresses, _chainedMarketParams.asset);
+
+        require(
+            (pythPrice.publishTime + iSpeedMarketsAMM.maximumPriceDelay()) > block.timestamp && pythPrice.price > 0,
+            "Stale price"
         );
+
+        int64 maxPrice = int64(
+            uint64((_chainedMarketParams.strikePrice * (ONE + _chainedMarketParams.strikePriceSlippage)) / ONE)
+        );
+        int64 minPrice = int64(
+            uint64((_chainedMarketParams.strikePrice * (ONE - _chainedMarketParams.strikePriceSlippage)) / ONE)
+        );
+        require(pythPrice.price <= maxPrice && pythPrice.price >= minPrice, "Pyth price exceeds slippage");
 
         IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(
             ChainedSpeedMarketsAMM.CreateMarketParams(
@@ -421,22 +463,15 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(_priceUpdateData)}(_priceUpdateData);
     }
 
-    function _getPythPrice(
-        IAddressManager.Addresses memory _contractsAddresses,
-        bytes32 _asset,
-        uint64 _maximumPriceDelay,
-        uint _strikePrice,
-        uint _strikePriceSlippage
-    ) internal view returns (PythStructs.Price memory pythPrice) {
+    function _getPythPrice(IAddressManager.Addresses memory _contractsAddresses, bytes32 _asset)
+        internal
+        view
+        returns (PythStructs.Price memory pythPrice)
+    {
         ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(_contractsAddresses.speedMarketsAMM);
         IPyth iPyth = IPyth(_contractsAddresses.pyth);
 
         pythPrice = iPyth.getPriceUnsafe(iSpeedMarketsAMM.assetToPythId(_asset));
-        require((pythPrice.publishTime + _maximumPriceDelay) > block.timestamp && pythPrice.price > 0, "Stale price");
-
-        int64 maxPrice = int64(uint64((_strikePrice * (ONE + _strikePriceSlippage)) / ONE));
-        int64 minPrice = int64(uint64((_strikePrice * (ONE - _strikePriceSlippage)) / ONE));
-        require(pythPrice.price <= maxPrice && pythPrice.price >= minPrice, "Pyth price exceeds slippage");
     }
 
     //////////////////getters/////////////////

@@ -5,7 +5,7 @@ const { assert } = require('../../utils/common');
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
-const { ZERO_ADDRESS } = require('../../utils/helpers');
+const { ZERO_ADDRESS, DEAD_ADDRESS } = require('../../utils/helpers');
 const { getPendingSpeedParams, getPendingChainedSpeedParams } = require('../../utils/speedMarkets');
 const { toBN } = require('web3-utils');
 
@@ -267,7 +267,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 			// create new pending market
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
-			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			let tx = await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			let requestId = tx.receipt.logs[0].args._requestId;
 
 			// 1. Empty price update data
 			console.log('1. Check empty price update data');
@@ -282,15 +283,19 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			console.log('2. Check stale price');
 			let maxPriceDelay = 1; // 1s
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
-			await expect(
-				creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Stale price');
+			tx = await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
+				value: fee,
+				from: user,
+			});
+			let createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Stale price');
 
 			// 3. Pyth price exceeds slippage
 			console.log('3. Check pyth price exceeds slippage');
+			tx = await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			requestId = tx.receipt.logs[0].args._requestId;
+
 			maxPriceDelay = 60;
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
 
@@ -308,12 +313,13 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				nowLocal // publishTime
 			);
 
-			await expect(
-				creator.createFromPendingSpeedMarkets([priceFeedUpdateDataLocal], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Pyth price exceeds slippage');
+			tx = await creator.createFromPendingSpeedMarkets([priceFeedUpdateDataLocal], {
+				value: fee,
+				from: user,
+			});
+			createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Pyth price exceeds slippage');
 		});
 
 		it('Should create speed market directly (no pending)', async () => {
@@ -533,7 +539,10 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 			// create new pending market
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
-			await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, { from: user });
+			let tx = await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, {
+				from: user,
+			});
+			let requestId = tx.receipt.logs[0].args._requestId;
 
 			// 1. Empty price update data
 			console.log('1. Check empty price update data');
@@ -548,15 +557,21 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			console.log('2. Check stale price');
 			let maxPriceDelay = 1; // 1s
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
-			await expect(
-				creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Stale price');
+			tx = await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
+				value: fee,
+				from: user,
+			});
+			let createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Stale price');
 
 			// 3. Pyth price exceeds slippage
 			console.log('3. Check pyth price exceeds slippage');
+			tx = await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, {
+				from: user,
+			});
+			requestId = tx.receipt.logs[0].args._requestId;
+
 			maxPriceDelay = 60;
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
 
@@ -574,12 +589,13 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				nowLocal // publishTime
 			);
 
-			await expect(
-				creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateDataLocal], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Pyth price exceeds slippage');
+			tx = await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateDataLocal], {
+				value: fee,
+				from: user,
+			});
+			createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Pyth price exceeds slippage');
 		});
 
 		it('Should create chained speed market directly (no pending)', async () => {

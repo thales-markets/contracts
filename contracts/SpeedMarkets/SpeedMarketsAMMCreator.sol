@@ -22,7 +22,7 @@ import "./SpeedMarketsAMM.sol";
 /// @title speed/chained markets prepared for creation with latest Pyth price
 contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     uint private constant ONE = 1e18;
-    address constant FAILURE_SENTINEL = address(1);
+    address constant DEAD_ADDRESS = 0x000000000000000000000000000000000000dEaD;
 
     struct SpeedMarketParams {
         bytes32 asset;
@@ -205,10 +205,10 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 createdSize++;
                 requestIdToMarket[requestId] = speedMarketAddress;
             } catch Error(string memory reason) {
-                requestIdToMarket[requestId] = FAILURE_SENTINEL;
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogError(reason, pendingSpeedMarket);
             } catch (bytes memory data) {
-                requestIdToMarket[requestId] = FAILURE_SENTINEL;
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogErrorData(data, pendingSpeedMarket);
             }
         }
@@ -366,10 +366,10 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 requestIdToMarket[requestId] = chainedSpeedMarketAddress;
                 createdSize++;
             } catch Error(string memory reason) {
-                requestIdToMarket[requestId] = FAILURE_SENTINEL;
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogChainedError(reason, pendingChainedSpeedMarket);
             } catch (bytes memory data) {
-                requestIdToMarket[requestId] = FAILURE_SENTINEL;
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogChainedErrorData(data, pendingChainedSpeedMarket);
             }
         }

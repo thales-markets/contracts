@@ -59,6 +59,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
         "name": "_pendingChainedSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "AddChainedSpeedMarket",
@@ -134,6 +140,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
         "name": "_pendingSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "AddSpeedMarket",
@@ -553,6 +565,31 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_destination",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "TokenWithdrawn",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -610,7 +647,13 @@
       }
     ],
     "name": "addPendingChainedSpeedMarket",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -675,7 +718,13 @@
       }
     ],
     "name": "addPendingSpeedMarket",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -971,6 +1020,19 @@
   },
   {
     "inputs": [],
+    "name": "oracleSource",
+    "outputs": [
+      {
+        "internalType": "enum ISpeedMarketsAMM.OracleSource",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -1131,6 +1193,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "requestIdToMarket",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_addressManager",
         "type": "address"
@@ -1150,6 +1231,19 @@
       }
     ],
     "name": "setMaxCreationDelay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "enum ISpeedMarketsAMM.OracleSource",
+        "name": "_source",
+        "type": "uint8"
+      }
+    ],
+    "name": "setOracleSource",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1210,6 +1304,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_destination",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "withdrawToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

@@ -121,7 +121,7 @@ contract RangedPosition is IERC20 {
         return totalSupply;
     }
 
-    modifier onlyRangedMarket {
+    modifier onlyRangedMarket() {
         require(msg.sender == address(rangedMarket), "only the Ranged Market may perform these methods");
         _;
     }

@@ -41,8 +41,12 @@ contract MockSafeBox is ProxyOwned, Initializable {
         require(ticksFromLastBuyBack > 0, "Not enough ticks have passed since last buyback");
 
         // buy THALES via Uniswap
-        uint256 amountThales =
-            _swapExactInput(sUSDperTick * ticksFromLastBuyBack, address(sUSD), address(thalesToken), 3000);
+        uint256 amountThales = _swapExactInput(
+            sUSDperTick * ticksFromLastBuyBack,
+            address(sUSD),
+            address(thalesToken),
+            3000
+        );
 
         lastBuyback = block.timestamp;
         emit BuybackExecuted(sUSDperTick, amountThales);

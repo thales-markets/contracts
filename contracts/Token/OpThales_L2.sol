@@ -7,7 +7,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IL2StandardERC20} from "@eth-optimism/contracts/libraries/standards/IL2StandardERC20.sol";
 
 contract OpThales is IL2StandardERC20, ERC20, Ownable {
-    string private __name; 
+    string private __name;
     string private __symbol;
     uint8 private constant __decimals = 18;
     uint private constant INITIAL_TOTAL_SUPPLY = 100000000;
@@ -55,15 +55,16 @@ contract OpThales is IL2StandardERC20, ERC20, Ownable {
         emit SymbolChanged(symbol_);
     }
 
-    modifier onlyL2Bridge {
+    modifier onlyL2Bridge() {
         require(msg.sender == l2Bridge, "Only L2 Bridge can mint and burn");
         _;
     }
 
     function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {
         bytes4 firstSupportedInterface = bytes4(keccak256("supportsInterface(bytes4)")); // ERC165
-        bytes4 secondSupportedInterface =
-            IL2StandardERC20.l1Token.selector ^ IL2StandardERC20.mint.selector ^ IL2StandardERC20.burn.selector;
+        bytes4 secondSupportedInterface = IL2StandardERC20.l1Token.selector ^
+            IL2StandardERC20.mint.selector ^
+            IL2StandardERC20.burn.selector;
         return _interfaceId == firstSupportedInterface || _interfaceId == secondSupportedInterface;
     }
 

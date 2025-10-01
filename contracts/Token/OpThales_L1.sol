@@ -35,7 +35,7 @@ contract OpThales is ERC20, Ownable {
         __symbol = symbol_;
         emit SymbolChanged(symbol_);
     }
-    
+
     event NameChanged(string name);
     event SymbolChanged(string symbol);
 }

@@ -99,7 +99,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         address user;
         bytes32 asset;
         uint64 timeFrame;
-        PythStructs.Price pythPrice;
+        int64 strikePrice;
         SpeedMarket.Direction[] directions;
         address collateral;
         uint collateralAmount;
@@ -123,10 +123,13 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         sUSD = _sUSD;
     }
 
-    /// @notice Creates a new market
-    /// @param _params Market creation parameters
-    /// @dev This function is used to create a new market
-    function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyPending {
+    function createNewMarket(CreateMarketParams calldata _params)
+        external
+        nonReentrant
+        notPaused
+        onlyPending
+        returns (address marketAddress)
+    {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
         // Determine collateral configuration
         (
@@ -145,7 +148,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             defaultCollateral: defaultCollateral
         });
 
-        _createNewMarket(internalParams, contractsAddresses);
+        marketAddress = _createNewMarket(internalParams, contractsAddresses);
     }
 
     /// @notice Determines collateral configuration and calculates buyin amount
@@ -287,7 +290,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
     function _createNewMarket(
         InternalCreateMarketParams memory internalParams,
         IAddressManager.Addresses memory contractsAddresses
-    ) internal {
+    ) internal returns (address) {
         TempData memory tempData;
         tempData.speedAMMParams = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM).getParams(
             internalParams.createMarketParams.asset
@@ -356,7 +359,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                         internalParams.createMarketParams.timeFrame *
                         internalParams.createMarketParams.directions.length
                 ), // strike time
-                internalParams.createMarketParams.pythPrice.price,
+                internalParams.createMarketParams.strikePrice,
                 internalParams.createMarketParams.directions,
                 internalParams.buyinAmount,
                 tempData.speedAMMParams.safeBoxImpact,
@@ -393,12 +396,13 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                     internalParams.createMarketParams.timeFrame *
                     internalParams.createMarketParams.directions.length
             ), // strike time
-            internalParams.createMarketParams.pythPrice.price,
+            internalParams.createMarketParams.strikePrice,
             internalParams.createMarketParams.directions,
             internalParams.buyinAmount,
             tempData.payoutMultiplier,
             tempData.speedAMMParams.safeBoxImpact
         );
+        return address(csm);
     }
 
     /// @notice resolver or owner can resolve market for a given market address with finalPrices
@@ -457,7 +461,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
             }
         }
 
-        emit MarketResolved(market, ChainedSpeedMarket(market).isUserWinner());
+        emit MarketResolved(market, csm.isUserWinner());
     }
 
     function offrampHelper(address user, uint amount) external {

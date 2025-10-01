@@ -13,7 +13,10 @@ import "../interfaces/IPositionalMarketManager.sol";
 contract RangedMarket {
     using SafeERC20 for IERC20;
 
-    enum Position {In, Out}
+    enum Position {
+        In,
+        Out
+    }
 
     IPositionalMarket public leftMarket;
     IPositionalMarket public rightMarket;
@@ -213,7 +216,7 @@ contract RangedMarket {
         rangedMarketsAMM.sUSD().transfer(recipient, rangedMarketsAMM.sUSD().balanceOf(address(this)));
     }
 
-    modifier onlyAMM {
+    modifier onlyAMM() {
         require(msg.sender == address(rangedMarketsAMM), "only the AMM may perform these methods");
         _;
     }

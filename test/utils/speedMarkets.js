@@ -63,12 +63,8 @@ const getCreateSpeedAMMParams = (
 	toBytes32(asset),
 	strikeTime,
 	deltaTime || 0,
-	{
-		price: 186342931000,
-		conf: 1742265769,
-		expo: -8,
-		publishTime,
-	},
+	186342931000,
+	publishTime,
 	direction || 0,
 	collateral || ZERO_ADDRESS,
 	toUnit(buyinAmount),
@@ -119,12 +115,7 @@ const getCreateChainedSpeedAMMParams = (
 	user,
 	toBytes32(asset),
 	timeFrame,
-	{
-		price: pythPrice,
-		conf: 1742265769,
-		expo: -8,
-		publishTime,
-	},
+	pythPrice,
 	directions || [0, 1, 0, 0, 0, 0], // UP, DOWN, UP, UP, UP, UP
 	collateral || ZERO_ADDRESS,
 	toUnit(buyinAmount),

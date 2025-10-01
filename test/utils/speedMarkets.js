@@ -84,19 +84,24 @@ const getCreateSpeedAMMParamsZkSync = (
 	collateral,
 	referrer
 ) => {
-	const params = getCreateSpeedAMMParams(
+	const params = [
 		user,
-		asset,
+		toBytes32(asset),
 		strikeTime,
-		publishTime,
-		buyinAmount,
-		direction,
-		skewImpact,
-		deltaTime,
-		collateral,
-		referrer
-	);
-	params.push(0);
+		deltaTime || 0,
+		{
+			price: 186342931000,
+			conf: 1742265769,
+			expo: -8,
+			publishTime,
+		},
+		direction || 0,
+		collateral || ZERO_ADDRESS,
+		toUnit(buyinAmount),
+		referrer || ZERO_ADDRESS,
+		skewImpact || 0,
+		0,
+	];
 
 	return params;
 };

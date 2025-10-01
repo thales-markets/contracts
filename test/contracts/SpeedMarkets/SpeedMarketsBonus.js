@@ -299,12 +299,8 @@ contract('SpeedMarketsBonus', (accounts) => {
 				BTC,
 				strikeTime,
 				0, // deltaTime
-				{
-					price: btcStrikePrice * 1e8, // 45000 with 8 decimals
-					conf: 1742265769,
-					expo: -8,
-					publishTime: now,
-				},
+				btcStrikePrice * 1e8, // 45000 with 8 decimals
+				now,
 				1, // DOWN direction
 				exoticUSD.address,
 				toUnit(buyinAmount),
@@ -913,12 +909,8 @@ contract('SpeedMarketsBonus', (accounts) => {
 				BTC,
 				strikeTime,
 				0, // deltaTime
-				{
-					price: btcStrikePrice * 1e8,
-					conf: 1742265769,
-					expo: -8,
-					publishTime: now,
-				},
+				btcStrikePrice * 1e8,
+				now,
 				1, // DOWN
 				exoticUSD.address,
 				toUnit(buyinAmount),
@@ -1372,12 +1364,8 @@ contract('SpeedMarketsBonus', (accounts) => {
 				BTC,
 				strikeTime,
 				0, // deltaTime
-				{
-					price: btcStrikePrice * 1e8,
-					conf: 1742265769,
-					expo: -8,
-					publishTime: now,
-				},
+				btcStrikePrice * 1e8,
+				now,
 				1, // DOWN
 				collateral3.address,
 				toUnit(buyinAmount),

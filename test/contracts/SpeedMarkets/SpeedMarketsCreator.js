@@ -5,7 +5,7 @@ const { assert } = require('../../utils/common');
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
-const { ZERO_ADDRESS } = require('../../utils/helpers');
+const { ZERO_ADDRESS, DEAD_ADDRESS } = require('../../utils/helpers');
 const { getPendingSpeedParams, getPendingChainedSpeedParams } = require('../../utils/speedMarkets');
 const { toBN } = require('web3-utils');
 
@@ -13,11 +13,13 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 	const [owner, user, safeBox] = accounts;
 	let exoticUSD;
 	let creator, speedMarketsAMM, chainedSpeedMarketsAMM;
-	let mockPyth, priceFeedUpdateData, fee;
+	let mockPyth, priceFeedUpdateData, fee, unverifiedReport;
 	let now;
+	let addressManager;
 
 	const PAYOUT_MULTIPLIERS = [toUnit(1.7), toUnit(1.78), toUnit(1.82), toUnit(1.84), toUnit(1.9)];
 	const PYTH_ETH_PRICE = 186342931000;
+	const CHAINLINK_ETH_PRICE = toUnit(4168.89);
 
 	beforeEach(async () => {
 		// -------------------------- Speed Markets --------------------------
@@ -68,7 +70,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 		now = await currentTime();
 
-		let MockPyth = artifacts.require('MockPythCustom');
+		const MockPyth = artifacts.require('MockPythCustom');
 		mockPyth = await MockPyth.new(60, 1e6);
 
 		priceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
@@ -88,7 +90,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 		// ------------------------- Address Manager -------------------------
 		let AddressManagerContract = artifacts.require('AddressManager');
-		let addressManager = await AddressManagerContract.new();
+		addressManager = await AddressManagerContract.new();
 
 		await addressManager.initialize(
 			owner,
@@ -109,6 +111,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		// -------------------------- Chained Speed Markets --------------------------
 		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
 		chainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
+
 		await chainedSpeedMarketsAMM.initialize(owner, exoticUSD.address);
 
 		await exoticUSD.transfer(chainedSpeedMarketsAMM.address, toUnit(5000), { from: owner });
@@ -131,6 +134,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			PAYOUT_MULTIPLIERS
 		);
 
+		await addressManager.setAddressInAddressBook('SpeedMarketsAMM', speedMarketsAMM.address);
 		await addressManager.setAddressInAddressBook(
 			'ChainedSpeedMarketsAMM',
 			chainedSpeedMarketsAMM.address
@@ -146,6 +150,21 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		await creator.addToWhitelist(user, true);
 
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creator.address);
+
+		const MockChainlinkVerifier = artifacts.require('MockChainlinkVerifier');
+		const mockChainlinkVerifier = await MockChainlinkVerifier.new(ZERO_ADDRESS);
+		await addressManager.setAddressInAddressBook(
+			'ChainlinkVerifier',
+			mockChainlinkVerifier.address
+		);
+
+		unverifiedReport = await mockChainlinkVerifier.createUnverifiedReport(
+			'0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782', // ETH feed ID
+			now, // validFromTimestamp
+			'0x3d9c4bf380da', // nativeFee
+			'0x2d299261f9bc63', // linkFee
+			CHAINLINK_ETH_PRICE
+		);
 	});
 
 	describe('Test creator of speed markets', () => {
@@ -256,12 +275,13 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			 * Check validations:
 			 * 1. Empty price update data
 			 * 2. Stale price
-			 * 3. Pyth price exceeds slippage
+			 * 3. price exceeds slippage
 			 */
 
 			// create new pending market
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
-			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			let tx = await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			let requestId = tx.receipt.logs[0].args._requestId;
 
 			// 1. Empty price update data
 			console.log('1. Check empty price update data');
@@ -276,15 +296,19 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			console.log('2. Check stale price');
 			let maxPriceDelay = 1; // 1s
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
-			await expect(
-				creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Stale price');
+			tx = await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
+				value: fee,
+				from: user,
+			});
+			let createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Stale price');
 
-			// 3. Pyth price exceeds slippage
-			console.log('3. Check pyth price exceeds slippage');
+			// 3. price exceeds slippage
+			console.log('3. Check price exceeds slippage');
+			tx = await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			requestId = tx.receipt.logs[0].args._requestId;
+
 			maxPriceDelay = 60;
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
 
@@ -302,12 +326,13 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				nowLocal // publishTime
 			);
 
-			await expect(
-				creator.createFromPendingSpeedMarkets([priceFeedUpdateDataLocal], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Pyth price exceeds slippage');
+			tx = await creator.createFromPendingSpeedMarkets([priceFeedUpdateDataLocal], {
+				value: fee,
+				from: user,
+			});
+			createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'price exceeds slippage');
 		});
 
 		it('Should create speed market directly (no pending)', async () => {
@@ -411,6 +436,39 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				activeMarketsSizeBefore,
 				'Should not be created any new speed markets!'
 			);
+		});
+	});
+
+	describe('Test creator of speed markets using Chainlink', () => {
+		it('Should add speed markets to pending and create using Chainlink', async () => {
+			await creator.setOracleSource(1); // 1 = Chainlink
+
+			const DELTA_TIME = 5 * 60; // 5 min
+			const ETH_STRIKE_PRICE = 4168;
+			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
+			const BUYIN_AMOUNT = 10;
+
+			const pendingSpeedParams = getPendingSpeedParams(
+				'ETH',
+				DELTA_TIME,
+				ETH_STRIKE_PRICE,
+				STRIKE_PRICE_SLIPPAGE,
+				BUYIN_AMOUNT
+			);
+
+			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+
+			let pendingSize = await creator.getPendingSpeedMarketsSize();
+			assert.equal(pendingSize, 1, 'Should add 1 pending speed market!');
+
+			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
+
+			await creator.createFromPendingSpeedMarkets([unverifiedReport], { from: user });
+
+			pendingSize = await creator.getPendingSpeedMarketsSize();
+			assert.equal(pendingSize, 0, 'Should remove 1 pending speed market!');
+			const activeMarketsSize = (await speedMarketsAMM.activeMarkets(0, 10)).length;
+			assert.equal(activeMarketsSize, 1, 'Should be created 1 speed market!');
 		});
 	});
 
@@ -522,12 +580,15 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			 * Check validations:
 			 * 1. Empty price update data
 			 * 2. Stale price
-			 * 3. Pyth price exceeds slippage
+			 * 3. price exceeds slippage
 			 */
 
 			// create new pending market
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
-			await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, { from: user });
+			let tx = await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, {
+				from: user,
+			});
+			let requestId = tx.receipt.logs[0].args._requestId;
 
 			// 1. Empty price update data
 			console.log('1. Check empty price update data');
@@ -542,15 +603,21 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			console.log('2. Check stale price');
 			let maxPriceDelay = 1; // 1s
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
-			await expect(
-				creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Stale price');
+			tx = await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
+				value: fee,
+				from: user,
+			});
+			let createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Stale price');
 
-			// 3. Pyth price exceeds slippage
-			console.log('3. Check pyth price exceeds slippage');
+			// 3. price exceeds slippage
+			console.log('3. Check price exceeds slippage');
+			tx = await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, {
+				from: user,
+			});
+			requestId = tx.receipt.logs[0].args._requestId;
+
 			maxPriceDelay = 60;
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
 
@@ -568,12 +635,13 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				nowLocal // publishTime
 			);
 
-			await expect(
-				creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateDataLocal], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Pyth price exceeds slippage');
+			tx = await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateDataLocal], {
+				value: fee,
+				from: user,
+			});
+			createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'price exceeds slippage');
 		});
 
 		it('Should create chained speed market directly (no pending)', async () => {

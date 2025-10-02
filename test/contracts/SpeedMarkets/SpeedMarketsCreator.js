@@ -755,4 +755,22 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			);
 		});
 	});
+
+	describe('Test creator withdraw token', () => {
+		it('Should withdraw tokens', async () => {
+			await exoticUSD.transfer(creator.address, toUnit(10), { from: user });
+			const balanceBefore = await exoticUSD.balanceOf(user);
+
+			const amountToWithdraw = toUnit(10);
+
+			await creator.transferAmount(user, exoticUSD.address, amountToWithdraw, { from: owner });
+
+			const balanceAfter = await exoticUSD.balanceOf(user);
+			assert.equal(
+				(balanceAfter / 1e18).toFixed(0),
+				(balanceBefore / 1e18 + amountToWithdraw / 1e18).toFixed(0),
+				'Should add token amount to user balance!'
+			);
+		});
+	});
 });

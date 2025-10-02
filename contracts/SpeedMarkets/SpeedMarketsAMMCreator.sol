@@ -3,12 +3,10 @@ pragma solidity ^0.8.0;
 
 // external
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
 import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
-
-import {IERC20} from "@chainlink/contracts-0.8.0/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@chainlink/contracts-0.8.0/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/contracts/token/ERC20/utils/SafeERC20.sol";
 
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
@@ -25,7 +23,7 @@ import "../interfaces/IChainlinkFeeManager.sol";
 
 /// @title speed/chained markets prepared for creation with latest oracle price
 contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     uint private constant ONE = 1e18;
     int192 private constant PRICE_DIVISOR = 1e10;
@@ -455,13 +453,16 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     /**
      * @notice Withdraw all balance of an ERC-20 token held by this contract.
      * @param _destination Address that receives the tokens.
-     * @param _token       ERC-20 token address.
+     * @param _collateral  ERC-20 token address.
+     * @param _amount      ERC-20 token amount.
      */
-    function withdrawToken(address _destination, address _token) external onlyOwner {
-        uint256 amount = IERC20(_token).balanceOf(address(this));
-        require(amount > 0, "NothingToWithdraw");
-        IERC20(_token).safeTransfer(_destination, amount);
-        emit TokenWithdrawn(_destination, _token, amount);
+    function transferAmount(
+        address _destination,
+        address _collateral,
+        uint256 _amount
+    ) external onlyOwner {
+        IERC20Upgradeable(_collateral).safeTransfer(_destination, _amount);
+        emit AmountTransfered(_collateral, _destination, _amount);
     }
 
     function _updatePythPrice(address _pyth, bytes[] calldata _priceUpdateData) internal {
@@ -499,7 +500,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
             (Common.Asset memory fee, , ) = iChainlinkFeeManager.getFeeAndReward(address(this), reportData, feeToken);
 
-            IERC20(feeToken).approve(iChainlinkFeeManager.i_rewardManager(), fee.amount);
+            IERC20Upgradeable(feeToken).approve(iChainlinkFeeManager.i_rewardManager(), fee.amount);
             parameterPayload = abi.encode(feeToken);
         } else {
             // No FeeManager deployed on this chain
@@ -580,7 +581,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     event AddSpeedMarket(PendingSpeedMarket _pendingSpeedMarket, bytes32 _requestId);
     event AddChainedSpeedMarket(PendingChainedSpeedMarket _pendingChainedSpeedMarket, bytes32 _requestId);
     event CreateSpeedMarkets(uint _pendingSize, uint8 _createdSize);
-    event TokenWithdrawn(address _destination, address _token, uint256 _amount);
+    event AmountTransfered(address _destination, address _collateral, uint256 _amount);
 
     event SetAddressManager(address _addressManager);
     event SetMaxCreationDelay(uint64 _maxCreationDelay);

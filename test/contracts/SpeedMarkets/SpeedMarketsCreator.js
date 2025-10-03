@@ -756,6 +756,42 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		});
 	});
 
+	describe('Test creator of Chained speed markets using Chainlink', () => {
+		it('Should add chained speed markets to pending and create using Chainlink', async () => {
+			await creator.setOracleSource(1); // 1 = Chainlink
+
+			const TIME_FRAME = 5 * 60; // 5 min
+			const ETH_STRIKE_PRICE = 4168;
+			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
+			const BUYIN_AMOUNT = 10;
+
+			const pendingChainedSpeedParams = getPendingChainedSpeedParams(
+				'ETH',
+				TIME_FRAME,
+				ETH_STRIKE_PRICE,
+				STRIKE_PRICE_SLIPPAGE,
+				BUYIN_AMOUNT
+			);
+
+			await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, { from: user });
+
+			let pendingSize = await creator.getPendingChainedSpeedMarketsSize();
+			assert.equal(pendingSize, 1, 'Should add 1 pending chained speed market!');
+
+			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
+
+			await creator.createFromPendingChainedSpeedMarkets([unverifiedReport], {
+				value: fee,
+				from: user,
+			});
+
+			pendingSize = await creator.getPendingChainedSpeedMarketsSize();
+			assert.equal(pendingSize, 0, 'Should remove 1 pending chained speed market!');
+			const activeMarketsSize = (await chainedSpeedMarketsAMM.activeMarkets(0, 10)).length;
+			assert.equal(activeMarketsSize, 1, 'Should be created 1 chained speed market!');
+		});
+	});
+
 	describe('Test creator withdraw token', () => {
 		it('Should withdraw tokens', async () => {
 			await exoticUSD.transfer(creator.address, toUnit(10), { from: user });

@@ -465,6 +465,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         emit AmountTransfered(_collateral, _destination, _amount);
     }
 
+    /// ========== INTERNAL FUNCTIONS ==========
+
     function _updatePythPrice(address _pyth, bytes[] calldata _priceUpdateData) internal {
         IPyth iPyth = IPyth(_pyth);
         iPyth.updatePriceFeeds{value: iPyth.getUpdateFee(_priceUpdateData)}(_priceUpdateData);
@@ -567,6 +569,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     /// @param _source The oracle source to use (default Pyth): 0 for Pyth Network or 1 for Chainlink Feeds
     function setOracleSource(ISpeedMarketsAMM.OracleSource _source) external onlyOwner {
         oracleSource = _source;
+        emit OracleSourceSet(_source);
     }
 
     //////////////////modifiers/////////////////
@@ -586,6 +589,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     event SetAddressManager(address _addressManager);
     event SetMaxCreationDelay(uint64 _maxCreationDelay);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
+    event OracleSourceSet(ISpeedMarketsAMM.OracleSource _source);
 
     event LogError(string _errorMessage, PendingSpeedMarket _pendingSpeedMarket);
     event LogErrorData(bytes _data, PendingSpeedMarket _pendingSpeedMarket);

@@ -523,6 +523,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "enum ISpeedMarketsAMM.OracleSource",
+        "name": "_source",
+        "type": "uint8"
+      }
+    ],
+    "name": "OracleSourceSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"

@@ -26,6 +26,11 @@
   },
   {
     "inputs": [],
+    "name": "InvalidPriceTime",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidWhitelistAddress",
     "type": "error"
   },
@@ -48,6 +53,31 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_destination",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "AmountTransfered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "_chainedSpeedMarketsAMM",
@@ -55,6 +85,19 @@
       }
     ],
     "name": "ChainedSpeedMarketsAMMSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "enum ISpeedMarketsAMM.OracleSource",
+        "name": "_source",
+        "type": "uint8"
+      }
+    ],
+    "name": "OracleSourceSet",
     "type": "event"
   },
   {
@@ -212,6 +255,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "oracleSource",
+    "outputs": [
+      {
+        "internalType": "enum ISpeedMarketsAMM.OracleSource",
+        "name": "",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -515,6 +571,19 @@
   {
     "inputs": [
       {
+        "internalType": "enum ISpeedMarketsAMM.OracleSource",
+        "name": "_source",
+        "type": "uint8"
+      }
+    ],
+    "name": "setOracleSource",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -562,6 +631,29 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_destination",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

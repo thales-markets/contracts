@@ -19,6 +19,7 @@ import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import "../interfaces/IChainedSpeedMarketsAMM.sol";
 import "../interfaces/IChainlinkVerifierProxy.sol";
 import "../interfaces/IChainlinkFeeManager.sol";
+import "../interfaces/IWeth.sol";
 
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";
@@ -188,12 +189,13 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         bytes memory parameterPayload;
         if (address(iChainlinkFeeManager) != address(0)) {
             // FeeManager exists — always quote & approve
-            address feeToken = iChainlinkFeeManager.i_linkAddress();
+            address feeToken = iChainlinkFeeManager.i_nativeAddress();
 
             (, bytes memory reportData) = abi.decode(unverifiedReport, (bytes32[3], bytes));
 
             (Common.Asset memory fee, , ) = iChainlinkFeeManager.getFeeAndReward(address(this), reportData, feeToken);
 
+            IWeth(feeToken).deposit{value: fee.amount}();
             IERC20Upgradeable(feeToken).approve(iChainlinkFeeManager.i_rewardManager(), fee.amount);
             parameterPayload = abi.encode(feeToken);
         } else {

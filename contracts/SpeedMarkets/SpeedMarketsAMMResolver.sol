@@ -195,8 +195,10 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
             (Common.Asset memory fee, , ) = iChainlinkFeeManager.getFeeAndReward(address(this), reportData, feeToken);
 
-            IWeth(feeToken).deposit{value: fee.amount}();
-            IERC20Upgradeable(feeToken).approve(iChainlinkFeeManager.i_rewardManager(), fee.amount);
+            if (fee.amount > 0) {
+                IWeth(feeToken).deposit{value: fee.amount}();
+                IERC20Upgradeable(feeToken).approve(iChainlinkFeeManager.i_rewardManager(), fee.amount);
+            }
             parameterPayload = abi.encode(feeToken);
         } else {
             // No FeeManager deployed on this chain

@@ -576,11 +576,11 @@
 		"SpeedMarketMastercopy": "0x1573172D7EAf9379fbF5444E4f1aC2Ddda8bcfc4",
 		"SpeedMarketsAMMUtils": "0x3c86173F8aE3238b2C70A1C76e67c814f7a209B2",
 		"SpeedMarketsAMM": "0x8749DBe947DAd052228ad8FeA0d67055A8504a03",
-		"SpeedMarketsAMMImplementation": "0x50fFdC3e0C094680078cA52470b2b70F689FB01e",
+		"SpeedMarketsAMMImplementation": "0x78FbCA615AFDb540ed94Ed086eFc05467F0C4B7E",
 		"SpeedMarketsAMMData": "0x09B0fEC3B78575abEa303144b9Da78fb86036faf",
 		"SpeedMarketsAMMDataImplementation": "0xBB9b7068454f197401c426D260E15b757a15869e",
 		"SpeedMarketsAMMCreator": "0x715E12FF752a95eb74E3e0Feea58b9E8C3Fab51F",
-		"SpeedMarketsAMMCreatorImplementation": "0xa84Ee15Bd2FAaA47363a992c53f464442436A96a",
+		"SpeedMarketsAMMCreatorImplementation": "0x9219A5fAdE593788A646C6a3695630dAecfce1cb",
 		"ChainedSpeedMarketMastercopy": "0x73d62E0d23D93C39abB81E8B5b3FaabD013051cA",
 		"ChainedSpeedMarketsAMM": "0xB7e396e2a14F15C721e7AF39E3be68Cdd501F9e1",
 		"ChainedSpeedMarketsAMMImplementation": "0xEd29eB99c471716f3b9c6E2755a7eFE389E8B912",
@@ -600,7 +600,7 @@
 		"PriceFeedNewImplementation": "0xf55b63C7A692be226EddBEe56EF2b84a25f3212F",
 		"MarchMadnessV2": "0x748aCe6036061D965566d62ae103a56efE86C23d",
 		"SpeedMarketsAMMResolver": "0x5F5406e2aee68cB2cf6D179CB17a129848B7efE6",
-		"SpeedMarketsAMMResolverImplementation": "0x1E924782fE5a44D21C1FC3097814593AfBaf9B5c",
+		"SpeedMarketsAMMResolverImplementation": "0xA7aFe8D7648905a276498bDA237009E1cB618a6e",
 		"SpeedMarketsAMMUtilsImplementation": "0x8C506C5d4119cC740Af32290398BE687c74D598d"
 	},
 	"mainnet": {

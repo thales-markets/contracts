@@ -68,9 +68,10 @@ module.exports = {
 			toUnit(0.04)
 		);
 
-		await speedMarketsAMM.setAssetToPythID(
+		await speedMarketsAMM.setAssetToPriceOracleID(
 			toBytes32('ETH'),
-			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace'
+			'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
+			'0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782'
 		);
 
 		let pythId = await speedMarketsAMM.assetToPythId(toBytes32('ETH'));

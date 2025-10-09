@@ -31,6 +31,8 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 	const BTC = toBytes32('BTC');
 	const ETH_PYTH_ID = '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace';
 	const BTC_PYTH_ID = '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43';
+	const ETH_CHAINLINK_ID = '0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782';
+	const BTC_CHAINLINK_ID = '0x00037da06d56d083fe599397a4769a042d63aa73dc4ef57709d31e9971a5b439';
 
 	const ONE = toUnit(1);
 
@@ -112,11 +114,15 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 		await exoticUSDT.approve(speedMarketsAMM.address, MAX_UINT, { from: user2 });
 
 		// Configure assets
-		await speedMarketsAMM.setAssetToPythID(ETH, ETH_PYTH_ID, { from: owner });
+		await speedMarketsAMM.setAssetToPriceOracleID(ETH, ETH_PYTH_ID, ETH_CHAINLINK_ID, {
+			from: owner,
+		});
 		await speedMarketsAMM.setSupportedAsset(ETH, true, { from: owner });
 		await speedMarketsAMM.setMaxRisks(ETH, toUnit(10000), toUnit(5000), { from: owner });
 
-		await speedMarketsAMM.setAssetToPythID(BTC, BTC_PYTH_ID, { from: owner });
+		await speedMarketsAMM.setAssetToPriceOracleID(BTC, BTC_PYTH_ID, BTC_CHAINLINK_ID, {
+			from: owner,
+		});
 		await speedMarketsAMM.setSupportedAsset(BTC, true, { from: owner });
 		await speedMarketsAMM.setMaxRisks(BTC, toUnit(10000), toUnit(5000), { from: owner });
 	});

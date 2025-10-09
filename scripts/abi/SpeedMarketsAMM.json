@@ -493,9 +493,15 @@
         "internalType": "bytes32",
         "name": "pythId",
         "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "chainlinkId",
+        "type": "bytes32"
       }
     ],
-    "name": "SetAssetToPythID",
+    "name": "SetAssetToPriceOracleID",
     "type": "event"
   },
   {
@@ -666,6 +672,25 @@
         "internalType": "contract IAddressManager",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "assetToChainlinkId",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -1358,9 +1383,14 @@
         "internalType": "bytes32",
         "name": "pythId",
         "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "chainlinkId",
+        "type": "bytes32"
       }
     ],
-    "name": "setAssetToPythID",
+    "name": "setAssetToPriceOracleID",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

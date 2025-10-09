@@ -39,6 +39,8 @@ interface ISpeedMarketsAMM {
 
     function assetToPythId(bytes32 _asset) external view returns (bytes32);
 
+    function assetToChainlinkId(bytes32 _asset) external view returns (bytes32);
+
     function minBuyinAmount() external view returns (uint);
 
     function maxBuyinAmount() external view returns (uint);

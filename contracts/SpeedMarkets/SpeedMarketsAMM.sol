@@ -124,6 +124,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice Bonus percentage per collateral token (e.g., 0.02e18 for 2%)
     mapping(address => uint) public bonusPerCollateral;
 
+    mapping(bytes32 => bytes32) public assetToChainlinkId;
+
     /// @param user user wallet address
     /// @param asset market asset
     /// @param strikeTime strike time, if zero delta time is used
@@ -702,10 +704,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetSupportedAsset(asset, _supported);
     }
 
-    /// @notice map asset to PythID, e.g. "ETH" as bytes 32 to an equivalent ID from pyth docs
-    function setAssetToPythID(bytes32 asset, bytes32 pythId) external onlyOwner {
+    /// @notice map asset to PythID/ChainlinkID, e.g. "ETH" as bytes 32 to an equivalent ID from pyth/chainlink docs
+    function setAssetToPriceOracleID(
+        bytes32 asset,
+        bytes32 pythId,
+        bytes32 chainlinkId
+    ) external onlyOwner {
         assetToPythId[asset] = pythId;
-        emit SetAssetToPythID(asset, pythId);
+        assetToChainlinkId[asset] = chainlinkId;
+        emit SetAssetToPriceOracleID(asset, pythId, chainlinkId);
     }
 
     /// @notice set sUSD address (default collateral)
@@ -799,7 +806,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SafeBoxAndMaxSkewImpactChanged(uint _safeBoxImpact, uint _maxSkewImpact, uint _skewSlippage);
     event SetLPFeeParams(uint[] _timeThresholds, uint[] _lpFees, uint _lpFee);
     event SetSupportedAsset(bytes32 asset, bool _supported);
-    event SetAssetToPythID(bytes32 asset, bytes32 pythId);
+    event SetAssetToPriceOracleID(bytes32 asset, bytes32 pythId, bytes32 chainlinkId);
     event SusdAddressChanged(address _sUSD);
     event MultiCollateralOnOffRampEnabled(bool _enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);

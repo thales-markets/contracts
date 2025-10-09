@@ -172,7 +172,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             (int64 price, uint64 publishTime) = _getPriceAndPublishTime(
                 contractsAddresses,
                 pendingSpeedMarket.asset,
-                _priceUpdateData[0]
+                _priceUpdateData
             );
 
             bool isStalePrice = (publishTime + maximumPriceDelay) <= block.timestamp || price <= 0;
@@ -250,7 +250,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         (int64 price, uint64 publishTime) = _getPriceAndPublishTime(
             contractsAddresses,
             _speedMarketParams.asset,
-            _priceUpdateData[0]
+            _priceUpdateData
         );
 
         require((publishTime + iSpeedMarketsAMM.maximumPriceDelay()) > block.timestamp && price > 0, "Stale price");
@@ -352,7 +352,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             (int64 price, uint64 publishTime) = _getPriceAndPublishTime(
                 contractsAddresses,
                 pendingChainedSpeedMarket.asset,
-                _priceUpdateData[0]
+                _priceUpdateData
             );
 
             bool isStalePrice = (publishTime + maximumPriceDelay) <= block.timestamp || price <= 0;
@@ -424,7 +424,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         (int64 price, uint64 publishTime) = _getPriceAndPublishTime(
             contractsAddresses,
             _chainedMarketParams.asset,
-            _priceUpdateData[0]
+            _priceUpdateData
         );
 
         require((publishTime + iSpeedMarketsAMM.maximumPriceDelay()) > block.timestamp && price > 0, "Stale price");
@@ -484,7 +484,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         pythPrice = iPyth.getPriceUnsafe(iSpeedMarketsAMM.assetToPythId(_asset));
     }
 
-    function _verifyChainlinkReport(bytes memory unverifiedReport)
+    function _verifyChainlinkReport(bytes memory _unverifiedReport)
         internal
         returns (ChainlinkStructs.ReportV3 memory verifiedReport)
     {
@@ -499,7 +499,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             // FeeManager exists — always quote & approve
             address feeToken = iChainlinkFeeManager.i_nativeAddress();
 
-            (, bytes memory reportData) = abi.decode(unverifiedReport, (bytes32[3], bytes));
+            (, bytes memory reportData) = abi.decode(_unverifiedReport, (bytes32[3], bytes));
 
             (Common.Asset memory fee, , ) = iChainlinkFeeManager.getFeeAndReward(address(this), reportData, feeToken);
 
@@ -513,20 +513,39 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             parameterPayload = bytes("");
         }
 
-        bytes memory verified = iChainlinkVerifier.verify(unverifiedReport, parameterPayload);
+        bytes memory verified = iChainlinkVerifier.verify(_unverifiedReport, parameterPayload);
         verifiedReport = abi.decode(verified, (ChainlinkStructs.ReportV3));
     }
 
     function _getPriceAndPublishTime(
         IAddressManager.Addresses memory _contractsAddresses,
         bytes32 _asset,
-        bytes memory _unverifiedReport
+        bytes[] memory _unverifiedReports
     ) internal returns (int64 price, uint64 publishTime) {
         if (oracleSource == ISpeedMarketsAMM.OracleSource.Chainlink) {
-            ChainlinkStructs.ReportV3 memory verifiedReport = _verifyChainlinkReport(_unverifiedReport);
-            price = int64(verifiedReport.price / PRICE_DIVISOR); // safe only for assets on 18 decimals (max decimal price: 92,233,720.36854775)
-            publishTime = uint64(verifiedReport.validFromTimestamp);
+            // Chainlink
+            ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(_contractsAddresses.speedMarketsAMM);
+            bytes32 requiredFeedId = iSpeedMarketsAMM.assetToChainlinkId(_asset);
+
+            bytes memory unverifiedReport;
+            for (uint8 i = 0; i < _unverifiedReports.length; i++) {
+                (, bytes memory reportData) = abi.decode(_unverifiedReports[i], (bytes32[3], bytes));
+                ChainlinkStructs.ReportV3 memory report = abi.decode(reportData, (ChainlinkStructs.ReportV3));
+                if (report.feedId == requiredFeedId) {
+                    unverifiedReport = _unverifiedReports[i];
+                    break;
+                }
+            }
+            if (unverifiedReport.length == 0) {
+                price = 0;
+                publishTime = 0;
+            } else {
+                ChainlinkStructs.ReportV3 memory verifiedReport = _verifyChainlinkReport(unverifiedReport);
+                price = int64(verifiedReport.price / PRICE_DIVISOR); // safe only for assets on 18 decimals (max decimal price: 92,233,720.36854775)
+                publishTime = uint64(verifiedReport.validFromTimestamp);
+            }
         } else {
+            // Pyth
             PythStructs.Price memory pythPrice = _getPythPrice(_contractsAddresses, _asset);
             price = pythPrice.price;
             publishTime = uint64(pythPrice.publishTime);

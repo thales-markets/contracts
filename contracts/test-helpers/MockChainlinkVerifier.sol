@@ -132,8 +132,9 @@ contract MockChainlinkVerifier is IVerifierProxy, ConfirmedOwner, TypeAndVersion
         }
 
         // return _verify(payload);
-        // Just return the payload directly as "verified"
-        return payload;
+        // Just return the reportData directly as "verified"
+        (, bytes memory reportData) = abi.decode(payload, (bytes32[3], bytes));
+        return reportData;
     }
 
     /// @inheritdoc IVerifierProxy
@@ -253,6 +254,14 @@ contract MockChainlinkVerifier is IVerifierProxy, ConfirmedOwner, TypeAndVersion
         reportV3.bid = price;
         reportV3.ask = price;
 
-        unverifiedReport = abi.encode(reportV3);
+        // create a dummy header to match bytes32[3] expected
+        bytes32[3] memory header;
+        header[0] = bytes32(0);
+        header[1] = bytes32(0);
+        header[2] = bytes32(0);
+
+        bytes memory reportBytes = abi.encode(reportV3);
+
+        unverifiedReport = abi.encode(header, reportBytes);
     }
 }

@@ -43,6 +43,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
     error CanNotResolve();
     error InvalidPrice();
     error InvalidPriceTime();
+    error InvalidPriceFeedId();
     error MulticollateralOnrampDisabled();
 
     /// @return The address of the address manager contract
@@ -218,6 +219,11 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         if (oracleSource == ISpeedMarketsAMM.OracleSource.Chainlink) {
             ChainlinkStructs.ReportV3 memory verifiedReport = _verifyChainlinkReport(_priceUpdateData[0]);
+
+            bytes32 requiredFeedId = speedMarketsAMM.assetToChainlinkId(_asset);
+            if (verifiedReport.feedId != requiredFeedId) {
+                revert InvalidPriceFeedId();
+            }
             uint64 validFromTimestamp = uint64(verifiedReport.validFromTimestamp);
             if (validFromTimestamp < _strikeTime || validFromTimestamp > _strikeTime + maximumPriceDelayForResolving) {
                 revert InvalidPriceTime();

@@ -28,6 +28,8 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 	const BTC = toBytes32('BTC');
 	const ETH_PYTH_ID = '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace';
 	const BTC_PYTH_ID = '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43';
+	const ETH_CHAINLINK_ID = '0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782';
+	const BTC_CHAINLINK_ID = '0x00037da06d56d083fe599397a4769a042d63aa73dc4ef57709d31e9971a5b439';
 	const PYTH_ETH_PRICE = 186342931000;
 
 	const PAYOUT_MULTIPLIERS = [toUnit(1.7), toUnit(1.78), toUnit(1.82), toUnit(1.84), toUnit(1.9)];
@@ -74,8 +76,8 @@ contract('ChainedSpeedMarketsBonus', (accounts) => {
 		await speedMarketsAMM.setMaxRisks(ETH, toUnit(1000), toUnit(500));
 		await speedMarketsAMM.setMaxRisks(BTC, toUnit(1000), toUnit(500));
 		await speedMarketsAMM.setSafeBoxAndMaxSkewImpact(toUnit(0.02), toUnit(0.05), toUnit(0.02));
-		await speedMarketsAMM.setAssetToPythID(ETH, ETH_PYTH_ID);
-		await speedMarketsAMM.setAssetToPythID(BTC, BTC_PYTH_ID);
+		await speedMarketsAMM.setAssetToPriceOracleID(ETH, ETH_PYTH_ID, ETH_CHAINLINK_ID);
+		await speedMarketsAMM.setAssetToPriceOracleID(BTC, BTC_PYTH_ID, BTC_CHAINLINK_ID);
 
 		// Setup Pyth mock
 		let MockPyth = artifacts.require('MockPythCustom');

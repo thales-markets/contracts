@@ -26,6 +26,11 @@
   },
   {
     "inputs": [],
+    "name": "InvalidPriceFeedId",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidPriceTime",
     "type": "error"
   },

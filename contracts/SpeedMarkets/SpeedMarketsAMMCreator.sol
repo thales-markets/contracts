@@ -505,7 +505,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
             if (fee.amount > 0) {
                 IWeth(feeToken).deposit{value: fee.amount}();
-                IERC20Upgradeable(feeToken).approve(iChainlinkFeeManager.i_rewardManager(), fee.amount);
+                IERC20Upgradeable(feeToken).approve(address(iChainlinkFeeManager), fee.amount);
             }
             parameterPayload = abi.encode(feeToken);
         } else {

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 // external
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
 import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
@@ -94,6 +94,8 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     mapping(bytes32 => address) public requestIdToMarket;
 
     ISpeedMarketsAMM.OracleSource public oracleSource;
+
+    receive() external payable {}
 
     function initialize(address _owner, address _addressManager) external initializer {
         setOwner(_owner);

@@ -167,7 +167,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             if ((pendingSpeedMarket.createdAt + maxCreationDelay) <= block.timestamp) {
                 // too late for processing
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogError("maxCreationDelay expired", pendingSpeedMarket);
+                emit LogError("maxCreationDelay expired", pendingSpeedMarket, requestId);
                 continue;
             }
 
@@ -180,7 +180,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             bool isStalePrice = (publishTime + maximumPriceDelay) <= block.timestamp || price <= 0;
             if (isStalePrice) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogError("Stale price", pendingSpeedMarket);
+                emit LogError("Stale price", pendingSpeedMarket, requestId);
                 continue;
             }
 
@@ -192,7 +192,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             );
             if (price > maxPrice || price < minPrice) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogError("price exceeds slippage", pendingSpeedMarket);
+                emit LogError("price exceeds slippage", pendingSpeedMarket, requestId);
                 continue;
             }
 
@@ -217,10 +217,10 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 createdSize++;
             } catch Error(string memory reason) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogError(reason, pendingSpeedMarket);
+                emit LogError(reason, pendingSpeedMarket, requestId);
             } catch (bytes memory data) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogErrorData(data, pendingSpeedMarket);
+                emit LogErrorData(data, pendingSpeedMarket, requestId);
             }
         }
 
@@ -347,7 +347,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             if ((pendingChainedSpeedMarket.createdAt + maxCreationDelay) <= block.timestamp) {
                 // too late for processing
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogChainedError("maxCreationDelay expired", pendingChainedSpeedMarket);
+                emit LogChainedError("maxCreationDelay expired", pendingChainedSpeedMarket, requestId);
                 continue;
             }
 
@@ -360,7 +360,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             bool isStalePrice = (publishTime + maximumPriceDelay) <= block.timestamp || price <= 0;
             if (isStalePrice) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogChainedError("Stale price", pendingChainedSpeedMarket);
+                emit LogChainedError("Stale price", pendingChainedSpeedMarket, requestId);
                 continue;
             }
 
@@ -372,7 +372,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             );
             if (price > maxPrice || price < minPrice) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogChainedError("price exceeds slippage", pendingChainedSpeedMarket);
+                emit LogChainedError("price exceeds slippage", pendingChainedSpeedMarket, requestId);
                 continue;
             }
 
@@ -394,10 +394,10 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 createdSize++;
             } catch Error(string memory reason) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogChainedError(reason, pendingChainedSpeedMarket);
+                emit LogChainedError(reason, pendingChainedSpeedMarket, requestId);
             } catch (bytes memory data) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogChainedErrorData(data, pendingChainedSpeedMarket);
+                emit LogChainedErrorData(data, pendingChainedSpeedMarket, requestId);
             }
         }
 
@@ -616,9 +616,9 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event OracleSourceSet(ISpeedMarketsAMM.OracleSource _source);
 
-    event LogError(string _errorMessage, PendingSpeedMarket _pendingSpeedMarket);
-    event LogErrorData(bytes _data, PendingSpeedMarket _pendingSpeedMarket);
+    event LogError(string _errorMessage, PendingSpeedMarket _pendingSpeedMarket, bytes32 _requestId);
+    event LogErrorData(bytes _data, PendingSpeedMarket _pendingSpeedMarket, bytes32 _requestId);
 
-    event LogChainedError(string _errorMessage, PendingChainedSpeedMarket _pendingChainedSpeedMarket);
-    event LogChainedErrorData(bytes _data, PendingChainedSpeedMarket _pendingChainedSpeedMarket);
+    event LogChainedError(string _errorMessage, PendingChainedSpeedMarket _pendingChainedSpeedMarket, bytes32 _requestId);
+    event LogChainedErrorData(bytes _data, PendingChainedSpeedMarket _pendingChainedSpeedMarket, bytes32 _requestId);
 }

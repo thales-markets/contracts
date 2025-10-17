@@ -280,6 +280,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
         "name": "_pendingChainedSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "LogChainedError",
@@ -351,6 +357,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
         "name": "_pendingChainedSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "LogChainedErrorData",
@@ -432,6 +444,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
         "name": "_pendingSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "LogError",
@@ -513,6 +531,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
         "name": "_pendingSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "LogErrorData",

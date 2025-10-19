@@ -16,6 +16,7 @@ contract SpeedMarket {
         uint64 _strikeTime;
         int64 _strikePrice;
         uint64 _strikePricePublishTime;
+        ISpeedMarketsAMM.OracleSource _oracleSource;
         Direction _direction;
         address _collateral;
         uint _buyinAmount;
@@ -34,6 +35,7 @@ contract SpeedMarket {
     uint64 public strikeTime;
     int64 public strikePrice;
     uint64 public strikePricePublishTime;
+    ISpeedMarketsAMM.OracleSource public oracleSource;
     Direction public direction;
     uint public buyinAmount;
     uint public payout;
@@ -61,6 +63,7 @@ contract SpeedMarket {
         strikeTime = params._strikeTime;
         strikePrice = params._strikePrice;
         strikePricePublishTime = params._strikePricePublishTime;
+        oracleSource = params._oracleSource;
         direction = params._direction;
         buyinAmount = params._buyinAmount;
         safeBoxImpact = params._safeBoxImpact;

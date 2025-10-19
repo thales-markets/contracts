@@ -21,6 +21,10 @@ contract('SpeedMarketsAMMResolver', (accounts) => {
 	const PYTH_ETH_RESOLVE_PRICE = 186461758000;
 	const CHAINLINK_ETH_PRICE = toUnit(4168.89);
 	const CHAINLINK_ETH_RESOLVE_PRICE = toUnit(4167.25);
+	const oracleSource = {
+		Pyth: 0,
+		Chainlink: 1,
+	};
 
 	beforeEach(async () => {
 		// -------------------------- Speed Markets --------------------------
@@ -192,7 +196,7 @@ contract('SpeedMarketsAMMResolver', (accounts) => {
 
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
 			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
-			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [priceFeedUpdateData], 0], {
 				value: fee,
 				from: user,
 			});
@@ -223,9 +227,6 @@ contract('SpeedMarketsAMMResolver', (accounts) => {
 
 	describe('Test resolver of speed markets using Chainlink', () => {
 		it('Should resolve speed markets using Chainlink', async () => {
-			await creator.setOracleSource(1); // 1 = Chainlink
-			await resolver.setOracleSource(1); // 1 = Chainlink
-
 			const DELTA_TIME = 5 * 60; // 5 min
 			const ETH_STRIKE_PRICE = 4168;
 			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
@@ -236,12 +237,15 @@ contract('SpeedMarketsAMMResolver', (accounts) => {
 				DELTA_TIME,
 				ETH_STRIKE_PRICE,
 				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT
+				BUYIN_AMOUNT,
+				true
 			);
 
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
 			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
-			await creator.createFromPendingSpeedMarkets([unverifiedReport], { from: user });
+			await creator.createFromPendingSpeedMarkets([oracleSource.Chainlink, [unverifiedReport], 0], {
+				from: user,
+			});
 
 			let activeMarkets = await speedMarketsAMM.activeMarkets(0, 10);
 			const market = activeMarkets[0];
@@ -297,7 +301,7 @@ contract('SpeedMarketsAMMResolver', (accounts) => {
 
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
 			await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, { from: user });
-			await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingChainedSpeedMarkets(oracleSource.Pyth, [priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
@@ -331,9 +335,6 @@ contract('SpeedMarketsAMMResolver', (accounts) => {
 
 	describe('Test resolver of Chained speed markets using Chainlink', () => {
 		it('Should resolve chained speed markets using Chainlink', async () => {
-			await creator.setOracleSource(1); // 1 = Chainlink
-			await resolver.setOracleSource(1); // 1 = Chainlink
-
 			const TIME_FRAME = 5 * 60; // 5 min
 			const ETH_STRIKE_PRICE = 4168;
 			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
@@ -344,15 +345,20 @@ contract('SpeedMarketsAMMResolver', (accounts) => {
 				TIME_FRAME,
 				ETH_STRIKE_PRICE,
 				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT
+				BUYIN_AMOUNT,
+				true
 			);
 
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
 			await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, { from: user });
-			await creator.createFromPendingChainedSpeedMarkets([unverifiedReport], {
-				value: fee,
-				from: user,
-			});
+			await creator.createFromPendingChainedSpeedMarkets(
+				oracleSource.Chainlink,
+				[unverifiedReport],
+				{
+					value: fee,
+					from: user,
+				}
+			);
 
 			let activeMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
 			const market = activeMarkets[0];

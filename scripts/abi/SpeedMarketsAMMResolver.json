@@ -97,19 +97,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "enum ISpeedMarketsAMM.OracleSource",
-        "name": "_source",
-        "type": "uint8"
-      }
-    ],
-    "name": "OracleSourceSet",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -260,19 +247,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "oracleSource",
-    "outputs": [
-      {
-        "internalType": "enum ISpeedMarketsAMM.OracleSource",
-        "name": "",
-        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -569,19 +543,6 @@
       }
     ],
     "name": "setChainedSpeedMarketsAMM",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "enum ISpeedMarketsAMM.OracleSource",
-        "name": "_source",
-        "type": "uint8"
-      }
-    ],
-    "name": "setOracleSource",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

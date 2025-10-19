@@ -100,6 +100,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         bytes32 asset;
         uint64 timeFrame;
         int64 strikePrice;
+        ISpeedMarketsAMM.OracleSource oracleSource;
         SpeedMarket.Direction[] directions;
         address collateral;
         uint collateralAmount;
@@ -360,6 +361,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                         internalParams.createMarketParams.directions.length
                 ), // strike time
                 internalParams.createMarketParams.strikePrice,
+                internalParams.createMarketParams.oracleSource,
                 internalParams.createMarketParams.directions,
                 internalParams.buyinAmount,
                 tempData.speedAMMParams.safeBoxImpact,

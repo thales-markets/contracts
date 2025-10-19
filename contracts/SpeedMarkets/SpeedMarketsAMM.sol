@@ -144,6 +144,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         uint64 delta;
         int64 strikePrice;
         uint64 strikePricePublishTime;
+        ISpeedMarketsAMM.OracleSource oracleSource;
         SpeedMarket.Direction direction;
         address collateral;
         uint collateralAmount;
@@ -438,6 +439,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 params.strikeTime,
                 params.createMarketParams.strikePrice,
                 params.createMarketParams.strikePricePublishTime,
+                params.createMarketParams.oracleSource,
                 params.createMarketParams.direction,
                 params.defaultCollateral,
                 params.buyinAmount,

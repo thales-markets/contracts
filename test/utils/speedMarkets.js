@@ -9,6 +9,7 @@ const getPendingSpeedParams = (
 	strikePrice,
 	strikePriceSlippage,
 	buyinAmount,
+	isChainlink = false,
 	direction,
 	skewImpact,
 	strikeTime,
@@ -20,6 +21,7 @@ const getPendingSpeedParams = (
 	deltaTime,
 	toBN(strikePrice * 1e8), // pyth price is with 8 decimals
 	toUnit(strikePriceSlippage),
+	isChainlink ? 1 : 0,
 	direction || 0,
 	collateral || ZERO_ADDRESS,
 	toUnit(buyinAmount),
@@ -33,6 +35,7 @@ const getPendingChainedSpeedParams = (
 	strikePrice,
 	strikePriceSlippage,
 	buyinAmount,
+	isChainlink = false,
 	directions,
 	collateral,
 	referrer
@@ -41,6 +44,7 @@ const getPendingChainedSpeedParams = (
 	timeFrame,
 	toBN(strikePrice * 1e8), // pyth price is with 8 decimals
 	toUnit(strikePriceSlippage),
+	isChainlink ? 1 : 0,
 	directions || [0, 0],
 	collateral || ZERO_ADDRESS,
 	toUnit(buyinAmount),
@@ -65,6 +69,7 @@ const getCreateSpeedAMMParams = (
 	deltaTime || 0,
 	186342931000,
 	publishTime,
+	0,
 	direction || 0,
 	collateral || ZERO_ADDRESS,
 	toUnit(buyinAmount),
@@ -121,23 +126,11 @@ const getCreateChainedSpeedAMMParams = (
 	toBytes32(asset),
 	timeFrame,
 	pythPrice,
+	0,
 	directions || [0, 1, 0, 0, 0, 0], // UP, DOWN, UP, UP, UP, UP
 	collateral || ZERO_ADDRESS,
 	toUnit(buyinAmount),
 	referrer || ZERO_ADDRESS,
-];
-
-const getCreateSpeedParams = (asset, strikeTime, buyinAmount) => [
-	toBytes32(asset),
-	strikeTime,
-	0,
-	186342931000,
-	2000000, // 2 %
-	0,
-	ZERO_ADDRESS,
-	toUnit(buyinAmount),
-	ZERO_ADDRESS,
-	0,
 ];
 
 const getSkewImpact = (riskPerAssetAndDirectionData, maxSkewImpact) => {
@@ -155,6 +148,5 @@ module.exports = {
 	getCreateSpeedAMMParams,
 	getCreateSpeedAMMParamsZkSync,
 	getCreateChainedSpeedAMMParams,
-	getCreateSpeedParams,
 	getSkewImpact,
 };

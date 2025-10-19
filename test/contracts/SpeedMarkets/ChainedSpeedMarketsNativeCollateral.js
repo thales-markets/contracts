@@ -340,7 +340,7 @@ contract('ChainedSpeedMarketsNativeCollateral', (accounts) => {
 		);
 
 		// Override the buyinAmount with the actual amount in native decimals
-		params[6] = buyinAmount;
+		params[7] = buyinAmount;
 
 		try {
 			const tx = await chainedSpeedMarketsAMM.createNewMarket(params, { from: creatorAccount });
@@ -1183,7 +1183,7 @@ contract('ChainedSpeedMarketsNativeCollateral', (accounts) => {
 				referrer
 			);
 			// Override with native decimal amount
-			params[6] = buyinAmount;
+			params[7] = buyinAmount;
 
 			await chainedSpeedMarketsAMM.createNewMarket(params, { from: creatorAccount });
 

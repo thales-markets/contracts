@@ -304,6 +304,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				0, // deltaTime
 				btcStrikePrice * 1e8, // 45000 with 8 decimals
 				now,
+				0, // Pyth
 				1, // DOWN direction
 				exoticUSD.address,
 				toUnit(buyinAmount),
@@ -914,6 +915,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				0, // deltaTime
 				btcStrikePrice * 1e8,
 				now,
+				0, // Pyth
 				1, // DOWN
 				exoticUSD.address,
 				toUnit(buyinAmount),
@@ -1369,6 +1371,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 				0, // deltaTime
 				btcStrikePrice * 1e8,
 				now,
+				0, // Pyth
 				1, // DOWN
 				collateral3.address,
 				toUnit(buyinAmount),

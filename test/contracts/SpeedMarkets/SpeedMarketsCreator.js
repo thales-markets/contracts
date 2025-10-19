@@ -10,7 +10,7 @@ const { getPendingSpeedParams, getPendingChainedSpeedParams } = require('../../u
 const { toBN } = require('web3-utils');
 
 contract('SpeedMarketsAMMCreator', (accounts) => {
-	const [owner, user, safeBox] = accounts;
+	const [owner, user, safeBox, user_2, user_3] = accounts;
 	let exoticUSD;
 	let creator, speedMarketsAMM, chainedSpeedMarketsAMM;
 	let mockPyth, priceFeedUpdateData, fee, unverifiedReport;
@@ -20,6 +20,10 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 	const PAYOUT_MULTIPLIERS = [toUnit(1.7), toUnit(1.78), toUnit(1.82), toUnit(1.84), toUnit(1.9)];
 	const PYTH_ETH_PRICE = 186342931000;
 	const CHAINLINK_ETH_PRICE = toUnit(4168.89);
+	const oracleSource = {
+		Pyth: 0,
+		Chainlink: 1,
+	};
 
 	beforeEach(async () => {
 		// -------------------------- Speed Markets --------------------------
@@ -190,7 +194,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
 
-			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [priceFeedUpdateData], 0], {
 				value: fee,
 				from: user,
 			});
@@ -208,7 +212,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			pendingSize = await creator.getPendingSpeedMarketsSize();
 			assert.equal(pendingSize, 2, 'Should add 2 pending speed markets!');
 
-			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [priceFeedUpdateData], 0], {
 				value: 2 * fee,
 				from: user,
 			});
@@ -220,7 +224,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			assert.equal(additionalActiveMarketsSize, 2, 'Should be created 2 speed markets!');
 
 			// when no pending markets just return
-			expect(creator.createFromPendingSpeedMarkets([], { from: user })).to.be.ok;
+			expect(creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [], 0], { from: user })).to
+				.be.ok;
 		});
 
 		it('Should add speed markets to pending and skip creation as old market', async () => {
@@ -237,7 +242,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				BUYIN_AMOUNT
 			);
 
-			const activeMarketsSizeBefore = (await speedMarketsAMM.activeMarkets(0, 10)).length;
+			const activeMarketsSizeBefore = (await speedMarketsAMM.activeMarkets(oracleSource.Pyth, 10))
+				.length;
 
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
 
@@ -246,7 +252,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 			await fastForward(maxDelayForCreation);
 
-			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [priceFeedUpdateData], 0], {
 				value: fee,
 				from: user,
 			});
@@ -287,7 +293,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			// 1. Empty price update data
 			console.log('1. Check empty price update data');
 			await expect(
-				creator.createFromPendingSpeedMarkets([], {
+				creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [], 0], {
 					value: fee,
 					from: user,
 				})
@@ -297,10 +303,10 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			console.log('2. Check stale price');
 			let maxPriceDelay = 1; // 1s
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
-			tx = await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-				value: fee,
-				from: user,
-			});
+			tx = await creator.createFromPendingSpeedMarkets(
+				[oracleSource.Pyth, [priceFeedUpdateData], 0],
+				{ value: fee, from: user }
+			);
 			let createdMarketAddress = await creator.requestIdToMarket(requestId);
 			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
 			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Stale price');
@@ -327,58 +333,13 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				nowLocal // publishTime
 			);
 
-			tx = await creator.createFromPendingSpeedMarkets([priceFeedUpdateDataLocal], {
-				value: fee,
-				from: user,
-			});
+			tx = await creator.createFromPendingSpeedMarkets(
+				[oracleSource.Pyth, [priceFeedUpdateDataLocal], 0],
+				{ value: fee, from: user }
+			);
 			createdMarketAddress = await creator.requestIdToMarket(requestId);
 			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
 			assert.equal(tx.receipt.logs[0].args._errorMessage, 'price exceeds slippage');
-		});
-
-		it('Should create speed market directly (no pending)', async () => {
-			const DELTA_TIME = 5 * 60; // 5 min
-			const ETH_STRIKE_PRICE = 1856;
-			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
-			const BUYIN_AMOUNT = 10;
-
-			const pendingSpeedParams = getPendingSpeedParams(
-				'ETH',
-				DELTA_TIME,
-				ETH_STRIKE_PRICE,
-				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT
-			);
-
-			const nowLocal = await currentTime();
-			const priceFeedUpdateDataLocal = await mockPyth.createPriceFeedUpdateData(
-				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace', // ETH pyth ID
-				PYTH_ETH_PRICE,
-				74093100,
-				-8,
-				PYTH_ETH_PRICE,
-				74093100,
-				nowLocal // publishTime
-			);
-
-			await expect(
-				creator.createSpeedMarket(pendingSpeedParams, [], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Empty price update data');
-
-			const activeSpeedMarketsSizeBefore = (await speedMarketsAMM.activeMarkets(0, 10)).length;
-
-			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
-			await creator.createSpeedMarket(pendingSpeedParams, [priceFeedUpdateDataLocal], {
-				value: fee,
-				from: user,
-			});
-
-			const additionalActiveSpeedMarketsSize =
-				(await speedMarketsAMM.activeMarkets(0, 10)).length - activeSpeedMarketsSizeBefore;
-			assert.equal(additionalActiveSpeedMarketsSize, 1, 'Should create 1 speed market!');
 		});
 
 		it('Should catch creation errors and not to create speed markets', async () => {
@@ -406,7 +367,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			const activeMarketsSizeBefore = (await speedMarketsAMM.activeMarkets(0, 10)).length;
 			console.log('activeMarketsSizeBefore', activeMarketsSizeBefore);
 			// no approval
-			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [priceFeedUpdateData], 0], {
 				value: fee,
 				from: user,
 			});
@@ -424,7 +385,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
 
 			// Missing addresses for AddressManager, Utils and Mastercopy
-			await creator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [priceFeedUpdateData], 0], {
 				value: fee,
 				from: user,
 			});
@@ -442,8 +403,6 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 	describe('Test creator of speed markets using Chainlink', () => {
 		it('Should add speed markets to pending and create using Chainlink', async () => {
-			await creator.setOracleSource(1); // 1 = Chainlink
-
 			const DELTA_TIME = 5 * 60; // 5 min
 			const ETH_STRIKE_PRICE = 4168;
 			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
@@ -454,7 +413,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				DELTA_TIME,
 				ETH_STRIKE_PRICE,
 				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT
+				BUYIN_AMOUNT,
+				true
 			);
 
 			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
@@ -464,7 +424,9 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
 
-			await creator.createFromPendingSpeedMarkets([unverifiedReport], { from: user });
+			await creator.createFromPendingSpeedMarkets([oracleSource.Chainlink, [unverifiedReport], 0], {
+				from: user,
+			});
 
 			pendingSize = await creator.getPendingSpeedMarketsSize();
 			assert.equal(pendingSize, 0, 'Should remove 1 pending speed market!');
@@ -495,7 +457,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
 
-			await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingChainedSpeedMarkets(oracleSource.Pyth, [priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
@@ -513,7 +475,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			pendingSize = await creator.getPendingChainedSpeedMarketsSize();
 			assert.equal(pendingSize, 2, 'Should add 2 pending chained speed markets!');
 
-			await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingChainedSpeedMarkets(oracleSource.Pyth, [priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
@@ -525,7 +487,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			assert.equal(additionalActiveMarketsSize, 2, 'Should be created 2 chained speed markets!');
 
 			// when no pending markets just return
-			expect(creator.createFromPendingChainedSpeedMarkets([], { from: user })).to.be.ok;
+			expect(creator.createFromPendingChainedSpeedMarkets(oracleSource.Pyth, [], { from: user })).to
+				.be.ok;
 		});
 
 		it('Should add chained speed markets to pending and skip creation as old market', async () => {
@@ -551,7 +514,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 			await fastForward(maxDelayForCreation);
 
-			await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingChainedSpeedMarkets(oracleSource.Pyth, [priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
@@ -594,7 +557,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			// 1. Empty price update data
 			console.log('1. Check empty price update data');
 			await expect(
-				creator.createFromPendingChainedSpeedMarkets([], {
+				creator.createFromPendingChainedSpeedMarkets(oracleSource.Pyth, [], {
 					value: fee,
 					from: user,
 				})
@@ -604,10 +567,14 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			console.log('2. Check stale price');
 			let maxPriceDelay = 1; // 1s
 			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
-			tx = await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
-				value: fee,
-				from: user,
-			});
+			tx = await creator.createFromPendingChainedSpeedMarkets(
+				oracleSource.Pyth,
+				[priceFeedUpdateData],
+				{
+					value: fee,
+					from: user,
+				}
+			);
 			let createdMarketAddress = await creator.requestIdToMarket(requestId);
 			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
 			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Stale price');
@@ -636,63 +603,17 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				nowLocal // publishTime
 			);
 
-			tx = await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateDataLocal], {
-				value: fee,
-				from: user,
-			});
-			createdMarketAddress = await creator.requestIdToMarket(requestId);
-			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
-			assert.equal(tx.receipt.logs[0].args._errorMessage, 'price exceeds slippage');
-		});
-
-		it('Should create chained speed market directly (no pending)', async () => {
-			const TIME_FRAME = 5 * 60; // 5 min
-			const ETH_STRIKE_PRICE = 1856;
-			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
-			const BUYIN_AMOUNT = 10;
-
-			const pendingChainedSpeedParams = getPendingChainedSpeedParams(
-				'ETH',
-				TIME_FRAME,
-				ETH_STRIKE_PRICE,
-				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT
-			);
-
-			const nowLocal = await currentTime();
-			const priceFeedUpdateDataLocal = await mockPyth.createPriceFeedUpdateData(
-				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace', // ETH pyth ID
-				PYTH_ETH_PRICE,
-				74093100,
-				-8,
-				PYTH_ETH_PRICE,
-				74093100,
-				nowLocal // publishTime
-			);
-
-			await expect(
-				creator.createChainedSpeedMarket(pendingChainedSpeedParams, [], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Empty price update data');
-
-			const activeSpeedMarketsSizeBefore = (await chainedSpeedMarketsAMM.activeMarkets(0, 10))
-				.length;
-
-			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
-			await creator.createChainedSpeedMarket(
-				pendingChainedSpeedParams,
+			tx = await creator.createFromPendingChainedSpeedMarkets(
+				oracleSource.Pyth,
 				[priceFeedUpdateDataLocal],
 				{
 					value: fee,
 					from: user,
 				}
 			);
-
-			const additionalActiveSpeedMarketsSize =
-				(await chainedSpeedMarketsAMM.activeMarkets(0, 10)).length - activeSpeedMarketsSizeBefore;
-			assert.equal(additionalActiveSpeedMarketsSize, 1, 'Should create 1 chained speed market!');
+			createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'price exceeds slippage');
 		});
 
 		it('Should catch chained creation errors and not to create chained speed markets', async () => {
@@ -723,7 +644,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			const activeMarketsSizeBefore = (await chainedSpeedMarketsAMM.activeMarkets(0, 10)).length;
 
 			// no approval
-			await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingChainedSpeedMarkets(oracleSource.Pyth, [priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
@@ -741,7 +662,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, { from: user });
 
 			// Missing address for AddressManager
-			await creator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
+			await creator.createFromPendingChainedSpeedMarkets(oracleSource.Pyth, [priceFeedUpdateData], {
 				value: fee,
 				from: user,
 			});
@@ -759,8 +680,6 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 	describe('Test creator of Chained speed markets using Chainlink', () => {
 		it('Should add chained speed markets to pending and create using Chainlink', async () => {
-			await creator.setOracleSource(1); // 1 = Chainlink
-
 			const TIME_FRAME = 5 * 60; // 5 min
 			const ETH_STRIKE_PRICE = 4168;
 			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
@@ -771,7 +690,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				TIME_FRAME,
 				ETH_STRIKE_PRICE,
 				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT
+				BUYIN_AMOUNT,
+				true
 			);
 
 			await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, { from: user });
@@ -781,15 +701,223 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
 
-			await creator.createFromPendingChainedSpeedMarkets([unverifiedReport], {
-				value: fee,
-				from: user,
-			});
+			await creator.createFromPendingChainedSpeedMarkets(
+				oracleSource.Chainlink,
+				[unverifiedReport],
+				{ value: fee, from: user }
+			);
 
 			pendingSize = await creator.getPendingChainedSpeedMarketsSize();
 			assert.equal(pendingSize, 0, 'Should remove 1 pending chained speed market!');
 			const activeMarketsSize = (await chainedSpeedMarketsAMM.activeMarkets(0, 10)).length;
 			assert.equal(activeMarketsSize, 1, 'Should be created 1 chained speed market!');
+		});
+	});
+
+	describe('Test creator of speed markets', () => {
+		it('Should add speed markets to pending and create from pending', async () => {
+			const DELTA_TIME = 5 * 60; // 5 min
+			const ETH_STRIKE_PRICE = 1856;
+			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
+			const BUYIN_AMOUNT = 10;
+
+			const pendingSpeedParams = getPendingSpeedParams(
+				'ETH',
+				DELTA_TIME,
+				ETH_STRIKE_PRICE,
+				STRIKE_PRICE_SLIPPAGE,
+				BUYIN_AMOUNT
+			);
+
+			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+
+			let pendingSize = await creator.getPendingSpeedMarketsSize();
+			assert.equal(pendingSize, 1, 'Should add 1 pending speed market!');
+
+			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
+
+			await creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [priceFeedUpdateData], 0], {
+				value: fee,
+				from: user,
+			});
+
+			pendingSize = await creator.getPendingSpeedMarketsSize();
+			assert.equal(pendingSize, 0, 'Should remove 1 pending speed market!');
+			const activeMarketsSize = (await speedMarketsAMM.activeMarkets(0, 10)).length;
+			assert.equal(activeMarketsSize, 1, 'Should be created 1 speed market!');
+
+			// ---------------- Add 2 pending speed markets ----------------
+
+			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+
+			pendingSize = await creator.getPendingSpeedMarketsSize();
+			assert.equal(pendingSize, 2, 'Should add 2 pending speed markets!');
+
+			await creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [priceFeedUpdateData], 0], {
+				value: 2 * fee,
+				from: user,
+			});
+
+			pendingSize = await creator.getPendingSpeedMarketsSize();
+			assert.equal(pendingSize, 0, 'Should remove 2 pending speed market!');
+			const additionalActiveMarketsSize =
+				(await speedMarketsAMM.activeMarkets(0, 10)).length - activeMarketsSize;
+			assert.equal(additionalActiveMarketsSize, 2, 'Should be created 2 speed markets!');
+
+			// when no pending markets just return
+			expect(creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [], 0], { from: user })).to
+				.be.ok;
+		});
+
+		it('Should add speed markets to pending and skip creation as old market', async () => {
+			const DELTA_TIME = 5 * 60; // 5 min
+			const ETH_STRIKE_PRICE = 1856;
+			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
+			const BUYIN_AMOUNT = 10;
+
+			const pendingSpeedParams = getPendingSpeedParams(
+				'ETH',
+				DELTA_TIME,
+				ETH_STRIKE_PRICE,
+				STRIKE_PRICE_SLIPPAGE,
+				BUYIN_AMOUNT
+			);
+
+			const activeMarketsSizeBefore = (await speedMarketsAMM.activeMarkets(oracleSource.Pyth, 10))
+				.length;
+
+			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
+
+			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			const maxDelayForCreation = Number(await creator.maxCreationDelay());
+
+			await fastForward(maxDelayForCreation);
+
+			await creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [priceFeedUpdateData], 0], {
+				value: fee,
+				from: user,
+			});
+
+			const pendingSize = await creator.getPendingSpeedMarketsSize();
+			assert.equal(pendingSize, 0, 'Should remove one pending speed market!');
+			const additionalActiveMarketsSize =
+				(await speedMarketsAMM.activeMarkets(0, 10)).length - activeMarketsSizeBefore;
+			assert.equal(additionalActiveMarketsSize, 0, 'Should not create speed market!');
+		});
+
+		it('Should check all validations', async () => {
+			const DELTA_TIME = 5 * 60; // 5 min
+			const ETH_STRIKE_PRICE = 1856;
+			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
+			const BUYIN_AMOUNT = 10;
+
+			const pendingSpeedParams = getPendingSpeedParams(
+				'ETH',
+				DELTA_TIME,
+				ETH_STRIKE_PRICE,
+				STRIKE_PRICE_SLIPPAGE,
+				BUYIN_AMOUNT
+			);
+
+			/*
+			 * Check validations:
+			 * 1. Empty price update data
+			 * 2. Stale price
+			 * 3. price exceeds slippage
+			 */
+
+			// create new pending market
+			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
+			let tx = await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			let requestId = tx.receipt.logs[0].args._requestId;
+
+			// 1. Empty price update data
+			console.log('1. Check empty price update data');
+			await expect(
+				creator.createFromPendingSpeedMarkets([oracleSource.Pyth, [], 0], {
+					value: fee,
+					from: user,
+				})
+			).to.be.revertedWith('Empty price update data');
+
+			// 2. Stale price
+			console.log('2. Check stale price');
+			let maxPriceDelay = 1; // 1s
+			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
+			tx = await creator.createFromPendingSpeedMarkets(
+				[oracleSource.Pyth, [priceFeedUpdateData], 0],
+				{ value: fee, from: user }
+			);
+			let createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Stale price');
+
+			// 3. price exceeds slippage
+			console.log('3. Check price exceeds slippage');
+			tx = await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			requestId = tx.receipt.logs[0].args._requestId;
+
+			maxPriceDelay = 60;
+			await speedMarketsAMM.setLimitParams(toUnit(5), toUnit(500), 300, 86400, maxPriceDelay, 60);
+
+			await creator.setMaxCreationDelay(60); // 60s
+
+			const currentPrice = Math.round(ETH_STRIKE_PRICE * (1 + STRIKE_PRICE_SLIPPAGE + 0.001)); // 0.1% higher than slippage
+			const nowLocal = await currentTime();
+			const priceFeedUpdateDataLocal = await mockPyth.createPriceFeedUpdateData(
+				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace', // ETH pyth ID
+				toBN(currentPrice * 1e8),
+				74093100,
+				-8,
+				toBN(currentPrice * 1e8),
+				74093100,
+				nowLocal // publishTime
+			);
+
+			tx = await creator.createFromPendingSpeedMarkets(
+				[oracleSource.Pyth, [priceFeedUpdateDataLocal], 0],
+				{ value: fee, from: user }
+			);
+			createdMarketAddress = await creator.requestIdToMarket(requestId);
+			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
+			assert.equal(tx.receipt.logs[0].args._errorMessage, 'price exceeds slippage');
+		});
+
+		it('Should delete pending speed markets', async () => {
+			const DELTA_TIME = 5 * 60; // 5 min
+			const ETH_STRIKE_PRICE = 1856;
+			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
+			const BUYIN_AMOUNT = 10;
+
+			let pendingSpeedParams = getPendingSpeedParams(
+				'ETH',
+				DELTA_TIME,
+				ETH_STRIKE_PRICE,
+				STRIKE_PRICE_SLIPPAGE,
+				BUYIN_AMOUNT
+			);
+
+			const pendingSizeBefore = Number(await creator.getPendingSpeedMarketsSize());
+			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
+			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user_2 });
+			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user_3 });
+
+			let pendingSize = Number(await creator.getPendingSpeedMarketsSize());
+			assert.equal(pendingSize, pendingSizeBefore + 3, 'Should add 3 pending speed markets!');
+
+			await creator.deletePendingSpeedMarkets(false, [user_2], { from: user });
+			pendingSize = Number(await creator.getPendingSpeedMarketsSize());
+			assert.equal(pendingSize, pendingSizeBefore + 2, 'Should remove 1 pending speed market!');
+
+			const pending_1 = await creator.pendingSpeedMarkets(0);
+			const pending_2 = await creator.pendingSpeedMarkets(1);
+			assert.isTrue([pending_1.user, pending_2.user].includes(user), 'Should not remove user');
+			assert.isFalse([pending_1.user, pending_2.user].includes(user_2), 'Should remove user_2');
+
+			await creator.deletePendingSpeedMarkets(true, [], { from: user });
+			pendingSize = Number(await creator.getPendingSpeedMarketsSize());
+			assert.equal(pendingSize, 0, 'Should remove all pending speed markets!');
 		});
 	});
 

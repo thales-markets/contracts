@@ -36,6 +36,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         uint64 delta;
         uint strikePrice;
         uint strikePriceSlippage;
+        ISpeedMarketsAMM.OracleSource oracleSource;
         SpeedMarket.Direction direction;
         address collateral;
         uint buyinAmount;
@@ -63,6 +64,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         uint64 timeFrame;
         uint strikePrice;
         uint strikePriceSlippage;
+        ISpeedMarketsAMM.OracleSource oracleSource;
         SpeedMarket.Direction[] directions;
         address collateral;
         uint buyinAmount;
@@ -82,6 +84,12 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         uint256 createdAt;
     }
 
+    struct CreateFromPendingSpeedParams {
+        ISpeedMarketsAMM.OracleSource oracleSource;
+        bytes[] priceUpdateData;
+        uint64 minDelta;
+    }
+
     uint64 public maxCreationDelay;
 
     PendingSpeedMarket[] public pendingSpeedMarkets;
@@ -92,8 +100,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     mapping(address => bool) public whitelistedAddresses;
 
     mapping(bytes32 => address) public requestIdToMarket;
-
-    ISpeedMarketsAMM.OracleSource public oracleSource;
 
     receive() external payable {}
 
@@ -136,9 +142,12 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         emit AddSpeedMarket(pendingSpeedMarket, requestId);
     }
 
-    /// @notice create all speed markets from pending using latest price feeds from param
-    /// @param _priceUpdateData oracle priceUpdateData for all supported assets
-    function createFromPendingSpeedMarkets(bytes[] calldata _priceUpdateData)
+    /// @notice Creates all pending speed markets using the latest oracle price feeds.
+    /// @param _params Struct containing all parameters required to process pending markets:
+    /// - `oracleSource`: The oracle source to use for price updates (e.g., Pyth, Chainlink).
+    /// - `priceUpdateData`: The oracle price update payloads for all supported assets.
+    /// - `minDelta`: The minimum allowed time delta for pending market creation.
+    function createFromPendingSpeedMarkets(CreateFromPendingSpeedParams calldata _params)
         external
         payable
         nonReentrant
@@ -148,11 +157,11 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         if (pendingSpeedMarkets.length == 0) {
             return;
         }
-        require(_priceUpdateData.length > 0, "Empty price update data");
+        require(_params.priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        if (oracleSource == ISpeedMarketsAMM.OracleSource.Pyth) {
-            _updatePythPrice(contractsAddresses.pyth, _priceUpdateData);
+        if (_params.oracleSource == ISpeedMarketsAMM.OracleSource.Pyth) {
+            _updatePythPrice(contractsAddresses.pyth, _params.priceUpdateData);
         }
 
         ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
@@ -164,55 +173,54 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             PendingSpeedMarket memory pendingSpeedMarket = pendingSpeedMarkets[i];
             bytes32 requestId = keccak256(abi.encode(pendingSpeedMarket));
 
-            if ((pendingSpeedMarket.createdAt + maxCreationDelay) <= block.timestamp) {
+            if (_isExpired(pendingSpeedMarket.createdAt)) {
                 // too late for processing
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogError("maxCreationDelay expired", pendingSpeedMarket, requestId);
                 continue;
             }
 
+            if (_isInvalidDelta(pendingSpeedMarket.strikeTime, pendingSpeedMarket.delta, _params.minDelta)) {
+                requestIdToMarket[requestId] = DEAD_ADDRESS;
+                emit LogError("invalid delta/strike time", pendingSpeedMarket, requestId);
+                continue;
+            }
+
             (int64 price, uint64 publishTime) = _getPriceAndPublishTime(
                 contractsAddresses,
                 pendingSpeedMarket.asset,
-                _priceUpdateData
+                _params.oracleSource,
+                _params.priceUpdateData
             );
 
-            bool isStalePrice = (publishTime + maximumPriceDelay) <= block.timestamp || price <= 0;
-            if (isStalePrice) {
+            if (_isStalePrice(price, publishTime, maximumPriceDelay)) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogError("Stale price", pendingSpeedMarket, requestId);
                 continue;
             }
 
-            int64 maxPrice = int64(
-                uint64((pendingSpeedMarket.strikePrice * (ONE + pendingSpeedMarket.strikePriceSlippage)) / ONE)
-            );
-            int64 minPrice = int64(
-                uint64((pendingSpeedMarket.strikePrice * (ONE - pendingSpeedMarket.strikePriceSlippage)) / ONE)
-            );
-            if (price > maxPrice || price < minPrice) {
+            if (_isPriceSlippageExceeded(price, pendingSpeedMarket.strikePrice, pendingSpeedMarket.strikePriceSlippage)) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogError("price exceeds slippage", pendingSpeedMarket, requestId);
                 continue;
             }
 
-            try
-                iSpeedMarketsAMM.createNewMarket(
-                    SpeedMarketsAMM.CreateMarketParams(
-                        pendingSpeedMarket.user,
-                        pendingSpeedMarket.asset,
-                        pendingSpeedMarket.strikeTime,
-                        pendingSpeedMarket.delta,
-                        price,
-                        publishTime,
-                        pendingSpeedMarket.direction,
-                        pendingSpeedMarket.collateral,
-                        pendingSpeedMarket.buyinAmount,
-                        pendingSpeedMarket.referrer,
-                        pendingSpeedMarket.skewImpact
-                    )
-                )
-            returns (address speedMarketAddress) {
+            SpeedMarketsAMM.CreateMarketParams memory marketParams = SpeedMarketsAMM.CreateMarketParams({
+                user: pendingSpeedMarket.user,
+                asset: pendingSpeedMarket.asset,
+                strikeTime: pendingSpeedMarket.strikeTime,
+                delta: pendingSpeedMarket.delta,
+                strikePrice: price,
+                strikePricePublishTime: publishTime,
+                oracleSource: _params.oracleSource,
+                direction: pendingSpeedMarket.direction,
+                collateral: pendingSpeedMarket.collateral,
+                collateralAmount: pendingSpeedMarket.buyinAmount,
+                referrer: pendingSpeedMarket.referrer,
+                skewImpact: pendingSpeedMarket.skewImpact
+            });
+
+            try iSpeedMarketsAMM.createNewMarket(marketParams) returns (address speedMarketAddress) {
                 requestIdToMarket[requestId] = speedMarketAddress;
                 createdSize++;
             } catch Error(string memory reason) {
@@ -230,56 +238,34 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         emit CreateSpeedMarkets(pendingSize, createdSize);
     }
 
-    /// @notice create speed market
-    /// @param _speedMarketParams parameters for creating speed market
-    /// @param _priceUpdateData oracle priceUpdateData for all supported assets
-    function createSpeedMarket(SpeedMarketParams calldata _speedMarketParams, bytes[] calldata _priceUpdateData)
-        external
-        payable
-        nonReentrant
-        notPaused
-        isAddressWhitelisted
-    {
-        require(_priceUpdateData.length > 0, "Empty price update data");
-
-        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        if (oracleSource == ISpeedMarketsAMM.OracleSource.Pyth) {
-            _updatePythPrice(contractsAddresses.pyth, _priceUpdateData);
+    /// @notice Deletes pending speed markets.
+    /// @dev Can delete all markets or only those for specific users.
+    /// @param _all If true, deletes all pending markets. If false, deletes only markets for `_users`.
+    /// @param _users An array of addresses whose pending markets should be removed. Ignored if `_all` is true.
+    function deletePendingSpeedMarkets(bool _all, address[] calldata _users) external isAddressWhitelisted {
+        if (_all) {
+            delete pendingSpeedMarkets;
+            return;
         }
 
-        ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
+        uint i = 0;
+        while (i < pendingSpeedMarkets.length) {
+            bool shouldDelete = false;
+            for (uint j = 0; j < _users.length; j++) {
+                if (pendingSpeedMarkets[i].user == _users[j]) {
+                    shouldDelete = true;
+                    break;
+                }
+            }
 
-        (int64 price, uint64 publishTime) = _getPriceAndPublishTime(
-            contractsAddresses,
-            _speedMarketParams.asset,
-            _priceUpdateData
-        );
-
-        require((publishTime + iSpeedMarketsAMM.maximumPriceDelay()) > block.timestamp && price > 0, "Stale price");
-
-        int64 maxPrice = int64(
-            uint64((_speedMarketParams.strikePrice * (ONE + _speedMarketParams.strikePriceSlippage)) / ONE)
-        );
-        int64 minPrice = int64(
-            uint64((_speedMarketParams.strikePrice * (ONE - _speedMarketParams.strikePriceSlippage)) / ONE)
-        );
-        require(price <= maxPrice && price >= minPrice, "price exceeds slippage");
-
-        iSpeedMarketsAMM.createNewMarket(
-            SpeedMarketsAMM.CreateMarketParams(
-                msg.sender,
-                _speedMarketParams.asset,
-                _speedMarketParams.strikeTime,
-                _speedMarketParams.delta,
-                price,
-                publishTime,
-                _speedMarketParams.direction,
-                _speedMarketParams.collateral,
-                _speedMarketParams.buyinAmount,
-                _speedMarketParams.referrer,
-                _speedMarketParams.skewImpact
-            )
-        );
+            if (shouldDelete) {
+                // Swap with last element and pop
+                pendingSpeedMarkets[i] = pendingSpeedMarkets[pendingSpeedMarkets.length - 1];
+                pendingSpeedMarkets.pop();
+            } else {
+                i++;
+            }
+        }
     }
 
     //////////////////chained/////////////////
@@ -317,21 +303,19 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     /// @notice create all chained speed markets from pending using latest price feeds from param
+    /// @param _oracleSource oracle source for priceUpdateData
     /// @param _priceUpdateData oracle priceUpdateData for all supported assets
-    function createFromPendingChainedSpeedMarkets(bytes[] calldata _priceUpdateData)
-        external
-        payable
-        nonReentrant
-        notPaused
-        isAddressWhitelisted
-    {
+    function createFromPendingChainedSpeedMarkets(
+        ISpeedMarketsAMM.OracleSource _oracleSource,
+        bytes[] calldata _priceUpdateData
+    ) external payable nonReentrant notPaused isAddressWhitelisted {
         if (pendingChainedSpeedMarkets.length == 0) {
             return;
         }
         require(_priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        if (oracleSource == ISpeedMarketsAMM.OracleSource.Pyth) {
+        if (_oracleSource == ISpeedMarketsAMM.OracleSource.Pyth) {
             _updatePythPrice(contractsAddresses.pyth, _priceUpdateData);
         }
 
@@ -344,7 +328,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             PendingChainedSpeedMarket memory pendingChainedSpeedMarket = pendingChainedSpeedMarkets[i];
             bytes32 requestId = keccak256(abi.encode(pendingChainedSpeedMarket));
 
-            if ((pendingChainedSpeedMarket.createdAt + maxCreationDelay) <= block.timestamp) {
+            if (_isExpired(pendingChainedSpeedMarket.createdAt)) {
                 // too late for processing
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogChainedError("maxCreationDelay expired", pendingChainedSpeedMarket, requestId);
@@ -354,41 +338,42 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             (int64 price, uint64 publishTime) = _getPriceAndPublishTime(
                 contractsAddresses,
                 pendingChainedSpeedMarket.asset,
+                _oracleSource,
                 _priceUpdateData
             );
 
-            bool isStalePrice = (publishTime + maximumPriceDelay) <= block.timestamp || price <= 0;
-            if (isStalePrice) {
+            if (_isStalePrice(price, publishTime, maximumPriceDelay)) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogChainedError("Stale price", pendingChainedSpeedMarket, requestId);
                 continue;
             }
 
-            int64 maxPrice = int64(
-                uint64((pendingChainedSpeedMarket.strikePrice * (ONE + pendingChainedSpeedMarket.strikePriceSlippage)) / ONE)
-            );
-            int64 minPrice = int64(
-                uint64((pendingChainedSpeedMarket.strikePrice * (ONE - pendingChainedSpeedMarket.strikePriceSlippage)) / ONE)
-            );
-            if (price > maxPrice || price < minPrice) {
+            if (
+                _isPriceSlippageExceeded(
+                    price,
+                    pendingChainedSpeedMarket.strikePrice,
+                    pendingChainedSpeedMarket.strikePriceSlippage
+                )
+            ) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogChainedError("price exceeds slippage", pendingChainedSpeedMarket, requestId);
                 continue;
             }
 
+            ChainedSpeedMarketsAMM.CreateMarketParams memory marketParams = ChainedSpeedMarketsAMM.CreateMarketParams({
+                user: pendingChainedSpeedMarket.user,
+                asset: pendingChainedSpeedMarket.asset,
+                timeFrame: pendingChainedSpeedMarket.timeFrame,
+                strikePrice: price,
+                oracleSource: _oracleSource,
+                directions: pendingChainedSpeedMarket.directions,
+                collateral: pendingChainedSpeedMarket.collateral,
+                collateralAmount: pendingChainedSpeedMarket.buyinAmount,
+                referrer: pendingChainedSpeedMarket.referrer
+            });
+
             try
-                IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(
-                    ChainedSpeedMarketsAMM.CreateMarketParams(
-                        pendingChainedSpeedMarket.user,
-                        pendingChainedSpeedMarket.asset,
-                        pendingChainedSpeedMarket.timeFrame,
-                        price,
-                        pendingChainedSpeedMarket.directions,
-                        pendingChainedSpeedMarket.collateral,
-                        pendingChainedSpeedMarket.buyinAmount,
-                        pendingChainedSpeedMarket.referrer
-                    )
-                )
+                IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(marketParams)
             returns (address chainedSpeedMarketAddress) {
                 requestIdToMarket[requestId] = chainedSpeedMarketAddress;
                 createdSize++;
@@ -407,52 +392,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         emit CreateSpeedMarkets(pendingSize, createdSize);
     }
 
-    /// @notice create chained speed market
-    /// @param _chainedMarketParams parameters for creating chained speed market
-    /// @param _priceUpdateData oracle priceUpdateData for all supported assets
-    function createChainedSpeedMarket(
-        ChainedSpeedMarketParams calldata _chainedMarketParams,
-        bytes[] calldata _priceUpdateData
-    ) external payable nonReentrant notPaused isAddressWhitelisted {
-        require(_priceUpdateData.length > 0, "Empty price update data");
-
-        IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        if (oracleSource == ISpeedMarketsAMM.OracleSource.Pyth) {
-            _updatePythPrice(contractsAddresses.pyth, _priceUpdateData);
-        }
-
-        ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(contractsAddresses.speedMarketsAMM);
-
-        (int64 price, uint64 publishTime) = _getPriceAndPublishTime(
-            contractsAddresses,
-            _chainedMarketParams.asset,
-            _priceUpdateData
-        );
-
-        require((publishTime + iSpeedMarketsAMM.maximumPriceDelay()) > block.timestamp && price > 0, "Stale price");
-
-        int64 maxPrice = int64(
-            uint64((_chainedMarketParams.strikePrice * (ONE + _chainedMarketParams.strikePriceSlippage)) / ONE)
-        );
-        int64 minPrice = int64(
-            uint64((_chainedMarketParams.strikePrice * (ONE - _chainedMarketParams.strikePriceSlippage)) / ONE)
-        );
-        require(price <= maxPrice && price >= minPrice, "price exceeds slippage");
-
-        IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(
-            ChainedSpeedMarketsAMM.CreateMarketParams(
-                msg.sender,
-                _chainedMarketParams.asset,
-                _chainedMarketParams.timeFrame,
-                price,
-                _chainedMarketParams.directions,
-                _chainedMarketParams.collateral,
-                _chainedMarketParams.buyinAmount,
-                _chainedMarketParams.referrer
-            )
-        );
-    }
-
     /**
      * @notice Withdraw all balance of an ERC-20 token held by this contract.
      * @param _destination Address that receives the tokens.
@@ -469,6 +408,38 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     /// ========== INTERNAL FUNCTIONS ==========
+
+    function _isExpired(uint256 _createdAt) internal view returns (bool) {
+        return (_createdAt + maxCreationDelay) <= block.timestamp;
+    }
+
+    function _isInvalidDelta(
+        uint64 _strikeTime,
+        uint64 _delta,
+        uint64 _minDelta
+    ) internal view returns (bool) {
+        if (_strikeTime == 0) return _delta < _minDelta;
+        if (_strikeTime <= block.timestamp) return true;
+        return (_strikeTime - block.timestamp) < _minDelta;
+    }
+
+    function _isStalePrice(
+        int64 _price,
+        uint64 _publishTime,
+        uint64 _maximumPriceDelay
+    ) internal view returns (bool) {
+        return (_publishTime + _maximumPriceDelay) <= block.timestamp || _price <= 0;
+    }
+
+    function _isPriceSlippageExceeded(
+        int64 _price,
+        uint _strikePrice,
+        uint _slippage
+    ) internal view returns (bool) {
+        int64 maxPrice = int64(uint64((_strikePrice * (ONE + _slippage)) / ONE));
+        int64 minPrice = int64(uint64((_strikePrice * (ONE - _slippage)) / ONE));
+        return _price > maxPrice || _price < minPrice;
+    }
 
     function _updatePythPrice(address _pyth, bytes[] calldata _priceUpdateData) internal {
         IPyth iPyth = IPyth(_pyth);
@@ -522,9 +493,10 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     function _getPriceAndPublishTime(
         IAddressManager.Addresses memory _contractsAddresses,
         bytes32 _asset,
+        ISpeedMarketsAMM.OracleSource _oracleSource,
         bytes[] memory _unverifiedReports
     ) internal returns (int64 price, uint64 publishTime) {
-        if (oracleSource == ISpeedMarketsAMM.OracleSource.Chainlink) {
+        if (_oracleSource == ISpeedMarketsAMM.OracleSource.Chainlink) {
             // Chainlink
             ISpeedMarketsAMM iSpeedMarketsAMM = ISpeedMarketsAMM(_contractsAddresses.speedMarketsAMM);
             bytes32 requiredFeedId = iSpeedMarketsAMM.assetToChainlinkId(_asset);
@@ -590,13 +562,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         emit AddedIntoWhitelist(_whitelistAddress, _flag);
     }
 
-    /// @notice Sets the oracle source (Pyth or Chainlink) that will be used for fetching prices.
-    /// @param _source The oracle source to use (default Pyth): 0 for Pyth Network or 1 for Chainlink Feeds
-    function setOracleSource(ISpeedMarketsAMM.OracleSource _source) external onlyOwner {
-        oracleSource = _source;
-        emit OracleSourceSet(_source);
-    }
-
     //////////////////modifiers/////////////////
 
     modifier isAddressWhitelisted() {
@@ -614,7 +579,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
     event SetAddressManager(address _addressManager);
     event SetMaxCreationDelay(uint64 _maxCreationDelay);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
-    event OracleSourceSet(ISpeedMarketsAMM.OracleSource _source);
 
     event LogError(string _errorMessage, PendingSpeedMarket _pendingSpeedMarket, bytes32 _requestId);
     event LogErrorData(bytes _data, PendingSpeedMarket _pendingSpeedMarket, bytes32 _requestId);

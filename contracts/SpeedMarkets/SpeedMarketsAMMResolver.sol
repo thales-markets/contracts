@@ -50,7 +50,6 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
     IAddressManager public addressManager;
     ISpeedMarketsAMM public speedMarketsAMM;
     IChainedSpeedMarketsAMM public chainedSpeedMarketsAMM;
-    ISpeedMarketsAMM.OracleSource public oracleSource;
 
     receive() external payable {}
 
@@ -213,11 +212,12 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
     function _getOraclePrice(
         bytes32 _asset,
         uint64 _strikeTime,
+        ISpeedMarketsAMM.OracleSource _oracleSource,
         bytes[] memory _priceUpdateData
     ) internal returns (int64 price) {
         uint64 maximumPriceDelayForResolving = speedMarketsAMM.maximumPriceDelayForResolving();
 
-        if (oracleSource == ISpeedMarketsAMM.OracleSource.Chainlink) {
+        if (_oracleSource == ISpeedMarketsAMM.OracleSource.Chainlink) {
             ChainlinkStructs.ReportV3 memory verifiedReport = _verifyChainlinkReport(_priceUpdateData[0]);
 
             bytes32 requiredFeedId = speedMarketsAMM.assetToChainlinkId(_asset);
@@ -250,7 +250,15 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         if (!speedMarketsAMM.canResolveMarket(market)) revert CanNotResolve();
         SpeedMarket sm = SpeedMarket(market);
 
-        int64 price = _getOraclePrice(sm.asset(), sm.strikeTime(), priceUpdateData);
+        ISpeedMarketsAMM.OracleSource oracleSource;
+        try sm.oracleSource() returns (ISpeedMarketsAMM.OracleSource _oracleSource) {
+            oracleSource = _oracleSource;
+        } catch {
+            // Default to Pyth for legacy contracts
+            oracleSource = ISpeedMarketsAMM.OracleSource.Pyth;
+        }
+
+        int64 price = _getOraclePrice(sm.asset(), sm.strikeTime(), oracleSource, priceUpdateData);
         if (price <= 0) revert InvalidPrice();
 
         speedMarketsAMM.resolveMarketWithPrice(market, price);
@@ -391,12 +399,20 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
         ChainedSpeedMarket cs = ChainedSpeedMarket(market);
 
+        ISpeedMarketsAMM.OracleSource oracleSource;
+        try cs.oracleSource() returns (ISpeedMarketsAMM.OracleSource _oracleSource) {
+            oracleSource = _oracleSource;
+        } catch {
+            // Default to Pyth for legacy contracts
+            oracleSource = ISpeedMarketsAMM.OracleSource.Pyth;
+        }
+
         int64[] memory prices = new int64[](priceUpdateData.length);
         uint64 strikeTimePerDirection;
         for (uint i; i < priceUpdateData.length; ++i) {
             strikeTimePerDirection = cs.initialStrikeTime() + uint64(i * cs.timeFrame());
 
-            int64 price = _getOraclePrice(cs.asset(), strikeTimePerDirection, priceUpdateData[i]);
+            int64 price = _getOraclePrice(cs.asset(), strikeTimePerDirection, oracleSource, priceUpdateData[i]);
             if (price <= 0) revert InvalidPrice();
             prices[i] = price;
         }
@@ -478,15 +494,7 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         emit ChainedSpeedMarketsAMMSet(_chainedSpeedMarketsAMM);
     }
 
-    /// @notice Sets the oracle source (Pyth or Chainlink) that will be used for fetching prices.
-    /// @param _source The oracle source to use (default Pyth): 0 for Pyth Network or 1 for Chainlink Feeds
-    function setOracleSource(ISpeedMarketsAMM.OracleSource _source) external onlyOwner {
-        oracleSource = _source;
-        emit OracleSourceSet(_source);
-    }
-
     event ChainedSpeedMarketsAMMSet(address indexed _chainedSpeedMarketsAMM);
     event SetMulticollateralApproval(uint amount);
     event AmountTransfered(address _destination, address _collateral, uint256 _amount);
-    event OracleSourceSet(ISpeedMarketsAMM.OracleSource _source);
 }

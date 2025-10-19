@@ -123,6 +123,11 @@
             "type": "uint64"
           },
           {
+            "internalType": "enum ISpeedMarketsAMM.OracleSource",
+            "name": "oracleSource",
+            "type": "uint8"
+          },
+          {
             "internalType": "enum SpeedMarket.Direction",
             "name": "direction",
             "type": "uint8"

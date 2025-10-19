@@ -6,7 +6,7 @@ const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { ZERO_ADDRESS } = require('../../utils/helpers');
-const { getPendingSpeedParams } = require('../../utils/speedMarkets');
+const { getPendingSpeedParamsZkSync } = require('../../utils/speedMarkets');
 const { toBN } = require('web3-utils');
 
 contract('SpeedMarketsCreator', (accounts) => {
@@ -109,7 +109,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
 			const BUYIN_AMOUNT = 10;
 
-			const pendingSpeedParams = getPendingSpeedParams(
+			const pendingSpeedParams = getPendingSpeedParamsZkSync(
 				'ETH',
 				DELTA_TIME,
 				ETH_STRIKE_PRICE,
@@ -163,7 +163,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
 			const BUYIN_AMOUNT = 10;
 
-			const pendingSpeedParams = getPendingSpeedParams(
+			const pendingSpeedParams = getPendingSpeedParamsZkSync(
 				'ETH',
 				DELTA_TIME,
 				ETH_STRIKE_PRICE,
@@ -198,7 +198,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
 			const BUYIN_AMOUNT = 10;
 
-			const pendingSpeedParams = getPendingSpeedParams(
+			const pendingSpeedParams = getPendingSpeedParamsZkSync(
 				'ETH',
 				DELTA_TIME,
 				ETH_STRIKE_PRICE,
@@ -270,7 +270,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
 			const BUYIN_AMOUNT = 10;
 
-			const pendingSpeedParams = getPendingSpeedParams(
+			const pendingSpeedParams = getPendingSpeedParamsZkSync(
 				'ETH',
 				DELTA_TIME,
 				ETH_STRIKE_PRICE,
@@ -315,7 +315,7 @@ contract('SpeedMarketsCreator', (accounts) => {
 			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
 			const BUYIN_AMOUNT = 10;
 
-			let pendingSpeedParams = getPendingSpeedParams(
+			let pendingSpeedParams = getPendingSpeedParamsZkSync(
 				'ETH',
 				DELTA_TIME,
 				ETH_STRIKE_PRICE,

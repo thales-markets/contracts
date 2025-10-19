@@ -77,6 +77,61 @@ const getCreateSpeedAMMParams = (
 	skewImpact || 0,
 ];
 
+const getCreateChainedSpeedAMMParams = (
+	user,
+	asset,
+	timeFrame,
+	pythPrice,
+	publishTime,
+	buyinAmount,
+	directions,
+	collateral,
+	referrer
+) => [
+	user,
+	toBytes32(asset),
+	timeFrame,
+	pythPrice,
+	0,
+	directions || [0, 1, 0, 0, 0, 0], // UP, DOWN, UP, UP, UP, UP
+	collateral || ZERO_ADDRESS,
+	toUnit(buyinAmount),
+	referrer || ZERO_ADDRESS,
+];
+
+const getSkewImpact = (riskPerAssetAndDirectionData, maxSkewImpact) => {
+	const skewImapctDecimal =
+		(riskPerAssetAndDirectionData[0].current /
+			1e18 /
+			(riskPerAssetAndDirectionData[0].max / 1e18)) *
+		maxSkewImpact;
+	return toUnit(skewImapctDecimal.toFixed(5));
+};
+
+const getPendingSpeedParamsZkSync = (
+	asset,
+	deltaTime,
+	strikePrice,
+	strikePriceSlippage,
+	buyinAmount,
+	direction,
+	skewImpact,
+	strikeTime,
+	collateral,
+	referrer
+) => [
+	toBytes32(asset),
+	strikeTime || 0,
+	deltaTime,
+	toBN(strikePrice * 1e8), // pyth price is with 8 decimals
+	toUnit(strikePriceSlippage),
+	direction || 0,
+	collateral || ZERO_ADDRESS,
+	toUnit(buyinAmount),
+	referrer || ZERO_ADDRESS,
+	skewImpact || 0,
+];
+
 const getCreateSpeedAMMParamsZkSync = (
 	user,
 	asset,
@@ -111,42 +166,12 @@ const getCreateSpeedAMMParamsZkSync = (
 	return params;
 };
 
-const getCreateChainedSpeedAMMParams = (
-	user,
-	asset,
-	timeFrame,
-	pythPrice,
-	publishTime,
-	buyinAmount,
-	directions,
-	collateral,
-	referrer
-) => [
-	user,
-	toBytes32(asset),
-	timeFrame,
-	pythPrice,
-	0,
-	directions || [0, 1, 0, 0, 0, 0], // UP, DOWN, UP, UP, UP, UP
-	collateral || ZERO_ADDRESS,
-	toUnit(buyinAmount),
-	referrer || ZERO_ADDRESS,
-];
-
-const getSkewImpact = (riskPerAssetAndDirectionData, maxSkewImpact) => {
-	const skewImapctDecimal =
-		(riskPerAssetAndDirectionData[0].current /
-			1e18 /
-			(riskPerAssetAndDirectionData[0].max / 1e18)) *
-		maxSkewImpact;
-	return toUnit(skewImapctDecimal.toFixed(5));
-};
-
 module.exports = {
 	getPendingSpeedParams,
 	getPendingChainedSpeedParams,
 	getCreateSpeedAMMParams,
-	getCreateSpeedAMMParamsZkSync,
 	getCreateChainedSpeedAMMParams,
 	getSkewImpact,
+	getPendingSpeedParamsZkSync,
+	getCreateSpeedAMMParamsZkSync,
 };

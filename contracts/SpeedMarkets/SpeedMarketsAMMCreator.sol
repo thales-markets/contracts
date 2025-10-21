@@ -36,7 +36,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         uint64 delta;
         uint strikePrice;
         uint strikePriceSlippage;
-        ISpeedMarketsAMM.OracleSource oracleSource;
         SpeedMarket.Direction direction;
         address collateral;
         uint buyinAmount;
@@ -64,7 +63,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         uint64 timeFrame;
         uint strikePrice;
         uint strikePriceSlippage;
-        ISpeedMarketsAMM.OracleSource oracleSource;
         SpeedMarket.Direction[] directions;
         address collateral;
         uint buyinAmount;

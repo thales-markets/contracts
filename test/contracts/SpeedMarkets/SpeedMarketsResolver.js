@@ -237,8 +237,7 @@ contract('SpeedMarketsAMMResolver', (accounts) => {
 				DELTA_TIME,
 				ETH_STRIKE_PRICE,
 				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT,
-				true
+				BUYIN_AMOUNT
 			);
 
 			await exoticUSD.approve(speedMarketsAMM.address, toUnit(100), { from: user });
@@ -345,8 +344,7 @@ contract('SpeedMarketsAMMResolver', (accounts) => {
 				TIME_FRAME,
 				ETH_STRIKE_PRICE,
 				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT,
-				true
+				BUYIN_AMOUNT
 			);
 
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });

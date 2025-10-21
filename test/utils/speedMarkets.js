@@ -9,7 +9,6 @@ const getPendingSpeedParams = (
 	strikePrice,
 	strikePriceSlippage,
 	buyinAmount,
-	isChainlink = false,
 	direction,
 	skewImpact,
 	strikeTime,
@@ -21,7 +20,6 @@ const getPendingSpeedParams = (
 	deltaTime,
 	toBN(strikePrice * 1e8), // pyth price is with 8 decimals
 	toUnit(strikePriceSlippage),
-	isChainlink ? 1 : 0,
 	direction || 0,
 	collateral || ZERO_ADDRESS,
 	toUnit(buyinAmount),
@@ -35,7 +33,6 @@ const getPendingChainedSpeedParams = (
 	strikePrice,
 	strikePriceSlippage,
 	buyinAmount,
-	isChainlink = false,
 	directions,
 	collateral,
 	referrer
@@ -44,7 +41,6 @@ const getPendingChainedSpeedParams = (
 	timeFrame,
 	toBN(strikePrice * 1e8), // pyth price is with 8 decimals
 	toUnit(strikePriceSlippage),
-	isChainlink ? 1 : 0,
 	directions || [0, 0],
 	collateral || ZERO_ADDRESS,
 	toUnit(buyinAmount),

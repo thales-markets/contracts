@@ -413,8 +413,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				DELTA_TIME,
 				ETH_STRIKE_PRICE,
 				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT,
-				true
+				BUYIN_AMOUNT
 			);
 
 			await creator.addPendingSpeedMarket(pendingSpeedParams, { from: user });
@@ -690,8 +689,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				TIME_FRAME,
 				ETH_STRIKE_PRICE,
 				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT,
-				true
+				BUYIN_AMOUNT
 			);
 
 			await creator.addPendingChainedSpeedMarket(pendingChainedSpeedParams, { from: user });

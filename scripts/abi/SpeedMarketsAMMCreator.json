@@ -645,11 +645,6 @@
             "type": "uint256"
           },
           {
-            "internalType": "enum ISpeedMarketsAMM.OracleSource",
-            "name": "oracleSource",
-            "type": "uint8"
-          },
-          {
             "internalType": "enum SpeedMarket.Direction[]",
             "name": "directions",
             "type": "uint8[]"
@@ -714,11 +709,6 @@
             "internalType": "uint256",
             "name": "strikePriceSlippage",
             "type": "uint256"
-          },
-          {
-            "internalType": "enum ISpeedMarketsAMM.OracleSource",
-            "name": "oracleSource",
-            "type": "uint8"
           },
           {
             "internalType": "enum SpeedMarket.Direction",

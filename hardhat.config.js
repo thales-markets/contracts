@@ -45,11 +45,35 @@ module.exports = {
 				},
 			},
 			{
+				network: 'optimisticEthereum',
+				chainId: 10,
+				urls: {
+					apiURL: 'https://api.etherscan.io/v2/api?chainid=10',
+					browserURL: 'https://optimistic.etherscan.io/',
+				},
+			},
+			{
+				network: 'arbitrumOne',
+				chainId: 42161,
+				urls: {
+					apiURL: 'https://api.etherscan.io/v2/api?chainid=42161',
+					browserURL: 'https://arbiscan.io/',
+				},
+			},
+			{
 				network: 'baseMainnet',
 				chainId: 8453,
 				urls: {
 					apiURL: 'https://api.etherscan.io/v2/api?chainid=8453',
 					browserURL: 'https://basescan.org/',
+				},
+			},
+			{
+				network: 'polygon',
+				chainId: 137,
+				urls: {
+					apiURL: 'https://api.etherscan.io/v2/api?chainid=137',
+					browserURL: 'https://polygonscan.com/',
 				},
 			},
 			{

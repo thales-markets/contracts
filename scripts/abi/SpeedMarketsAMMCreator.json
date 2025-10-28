@@ -59,6 +59,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
         "name": "_pendingChainedSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "AddChainedSpeedMarket",
@@ -134,6 +140,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
         "name": "_pendingSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "AddSpeedMarket",
@@ -156,6 +168,31 @@
       }
     ],
     "name": "AddedIntoWhitelist",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_destination",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "AmountTransfered",
     "type": "event"
   },
   {
@@ -243,6 +280,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
         "name": "_pendingChainedSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "LogChainedError",
@@ -314,6 +357,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
         "name": "_pendingChainedSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "LogChainedErrorData",
@@ -395,6 +444,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
         "name": "_pendingSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "LogError",
@@ -476,6 +531,12 @@
         "internalType": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
         "name": "_pendingSpeedMarket",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
       }
     ],
     "name": "LogErrorData",
@@ -610,7 +671,13 @@
       }
     ],
     "name": "addPendingChainedSpeedMarket",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -675,7 +742,13 @@
       }
     ],
     "name": "addPendingSpeedMarket",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -713,65 +786,10 @@
   {
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint64",
-            "name": "timeFrame",
-            "type": "uint64"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePrice",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePriceSlippage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum SpeedMarket.Direction[]",
-            "name": "directions",
-            "type": "uint8[]"
-          },
-          {
-            "internalType": "address",
-            "name": "collateral",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "referrer",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMMCreator.ChainedSpeedMarketParams",
-        "name": "_chainedMarketParams",
-        "type": "tuple"
+        "internalType": "enum ISpeedMarketsAMM.OracleSource",
+        "name": "_oracleSource",
+        "type": "uint8"
       },
-      {
-        "internalType": "bytes[]",
-        "name": "_priceUpdateData",
-        "type": "bytes[]"
-      }
-    ],
-    "name": "createChainedSpeedMarket",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
       {
         "internalType": "bytes[]",
         "name": "_priceUpdateData",
@@ -786,9 +804,26 @@
   {
     "inputs": [
       {
-        "internalType": "bytes[]",
-        "name": "_priceUpdateData",
-        "type": "bytes[]"
+        "components": [
+          {
+            "internalType": "enum ISpeedMarketsAMM.OracleSource",
+            "name": "oracleSource",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "priceUpdateData",
+            "type": "bytes[]"
+          },
+          {
+            "internalType": "uint64",
+            "name": "minDelta",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct SpeedMarketsAMMCreator.CreateFromPendingSpeedParams",
+        "name": "_params",
+        "type": "tuple"
       }
     ],
     "name": "createFromPendingSpeedMarkets",
@@ -799,71 +834,19 @@
   {
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "asset",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint64",
-            "name": "strikeTime",
-            "type": "uint64"
-          },
-          {
-            "internalType": "uint64",
-            "name": "delta",
-            "type": "uint64"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePrice",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "strikePriceSlippage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "enum SpeedMarket.Direction",
-            "name": "direction",
-            "type": "uint8"
-          },
-          {
-            "internalType": "address",
-            "name": "collateral",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "buyinAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "referrer",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "skewImpact",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct SpeedMarketsAMMCreator.SpeedMarketParams",
-        "name": "_speedMarketParams",
-        "type": "tuple"
+        "internalType": "bool",
+        "name": "_all",
+        "type": "bool"
       },
       {
-        "internalType": "bytes[]",
-        "name": "_priceUpdateData",
-        "type": "bytes[]"
+        "internalType": "address[]",
+        "name": "_users",
+        "type": "address[]"
       }
     ],
-    "name": "createSpeedMarket",
+    "name": "deletePendingSpeedMarkets",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1131,6 +1114,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "requestIdToMarket",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_addressManager",
         "type": "address"
@@ -1184,6 +1186,29 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_destination",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "proxyAddress",
         "type": "address"
       }
@@ -1211,5 +1236,9 @@
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]

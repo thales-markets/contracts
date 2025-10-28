@@ -30,6 +30,7 @@ contract('SpeedMarketsBonus', (accounts) => {
 	const BTC = toBytes32('BTC');
 	const ETH_PYTH_ID = '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace';
 	const BTC_PYTH_ID = '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43'; // Real BTC pyth ID
+	const BTC_CHAINLINK_ID = '0x00037da06d56d083fe599397a4769a042d63aa73dc4ef57709d31e9971a5b439';
 
 	beforeEach(async () => {
 		const initializeSpeedMarketsData = await speedMarketsInit(accounts);
@@ -77,7 +78,9 @@ contract('SpeedMarketsBonus', (accounts) => {
 
 		// Pyth IDs are already set in speedMarketsInit for ETH
 		// We need to set BTC pyth ID and configure it as supported asset
-		await speedMarketsAMM.setAssetToPythID(BTC, BTC_PYTH_ID, { from: owner });
+		await speedMarketsAMM.setAssetToPriceOracleID(BTC, BTC_PYTH_ID, BTC_CHAINLINK_ID, {
+			from: owner,
+		});
 		await speedMarketsAMM.setSupportedAsset(BTC, true, { from: owner });
 		await speedMarketsAMM.setMaxRisks(BTC, toUnit(10000), toUnit(5000), { from: owner });
 	});
@@ -299,12 +302,9 @@ contract('SpeedMarketsBonus', (accounts) => {
 				BTC,
 				strikeTime,
 				0, // deltaTime
-				{
-					price: btcStrikePrice * 1e8, // 45000 with 8 decimals
-					conf: 1742265769,
-					expo: -8,
-					publishTime: now,
-				},
+				btcStrikePrice * 1e8, // 45000 with 8 decimals
+				now,
+				0, // Pyth
 				1, // DOWN direction
 				exoticUSD.address,
 				toUnit(buyinAmount),
@@ -913,12 +913,9 @@ contract('SpeedMarketsBonus', (accounts) => {
 				BTC,
 				strikeTime,
 				0, // deltaTime
-				{
-					price: btcStrikePrice * 1e8,
-					conf: 1742265769,
-					expo: -8,
-					publishTime: now,
-				},
+				btcStrikePrice * 1e8,
+				now,
+				0, // Pyth
 				1, // DOWN
 				exoticUSD.address,
 				toUnit(buyinAmount),
@@ -1372,12 +1369,9 @@ contract('SpeedMarketsBonus', (accounts) => {
 				BTC,
 				strikeTime,
 				0, // deltaTime
-				{
-					price: btcStrikePrice * 1e8,
-					conf: 1742265769,
-					expo: -8,
-					publishTime: now,
-				},
+				btcStrikePrice * 1e8,
+				now,
+				0, // Pyth
 				1, // DOWN
 				collateral3.address,
 				toUnit(buyinAmount),

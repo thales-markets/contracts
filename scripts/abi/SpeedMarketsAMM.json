@@ -493,9 +493,15 @@
         "internalType": "bytes32",
         "name": "pythId",
         "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "chainlinkId",
+        "type": "bytes32"
       }
     ],
-    "name": "SetAssetToPythID",
+    "name": "SetAssetToPriceOracleID",
     "type": "event"
   },
   {
@@ -679,6 +685,25 @@
         "type": "bytes32"
       }
     ],
+    "name": "assetToChainlinkId",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
     "name": "assetToPythId",
     "outputs": [
       {
@@ -753,31 +778,19 @@
             "type": "uint64"
           },
           {
-            "components": [
-              {
-                "internalType": "int64",
-                "name": "price",
-                "type": "int64"
-              },
-              {
-                "internalType": "uint64",
-                "name": "conf",
-                "type": "uint64"
-              },
-              {
-                "internalType": "int32",
-                "name": "expo",
-                "type": "int32"
-              },
-              {
-                "internalType": "uint256",
-                "name": "publishTime",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct PythStructs.Price",
-            "name": "pythPrice",
-            "type": "tuple"
+            "internalType": "int64",
+            "name": "strikePrice",
+            "type": "int64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "strikePricePublishTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "enum ISpeedMarketsAMM.OracleSource",
+            "name": "oracleSource",
+            "type": "uint8"
           },
           {
             "internalType": "enum SpeedMarket.Direction",
@@ -811,7 +824,13 @@
       }
     ],
     "name": "createNewMarket",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "marketAddress",
+        "type": "address"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -1369,9 +1388,14 @@
         "internalType": "bytes32",
         "name": "pythId",
         "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "chainlinkId",
+        "type": "bytes32"
       }
     ],
-    "name": "setAssetToPythID",
+    "name": "setAssetToPriceOracleID",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

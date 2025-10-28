@@ -66,15 +66,21 @@ async function main() {
 
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
+	const addressManager = getTargetAddress('AddressManager', network);
+
+	if (!addressManager || addressManager === '') {
+		throw new Error('AddressManager address not found for network: ' + network);
+	}
 
 	console.log('Owner is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
+	console.log('AddressManager address:', addressManager);
 
 	const SpeedMarketsAMMCreator = await ethers.getContractFactory('SpeedMarketsAMMCreator');
 	let SpeedMarketsAMMCreatorDeployed = await upgrades.deployProxy(SpeedMarketsAMMCreator, [
 		owner.address,
-		proxySUSD,
+		addressManager,
 	]);
 	await SpeedMarketsAMMCreatorDeployed.deployed();
 

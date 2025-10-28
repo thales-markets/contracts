@@ -13,7 +13,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 
 import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
-import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
 
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
@@ -125,11 +124,14 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @notice Bonus percentage per collateral token (e.g., 0.02e18 for 2%)
     mapping(address => uint) public bonusPerCollateral;
 
+    mapping(bytes32 => bytes32) public assetToChainlinkId;
+
     /// @param user user wallet address
     /// @param asset market asset
     /// @param strikeTime strike time, if zero delta time is used
     /// @param delta delta time, used if strike time is zero
-    /// @param pythPrice structure with pyth price and publish time
+    /// @param strikePrice oracle price
+    /// @param strikePricePublishTime oracle publish time for strike price
     /// @param direction direction (UP/DOWN)
     /// @param collateral collateral address, for default collateral use zero address
     /// @param collateralAmount collateral amount, for non default includes fees
@@ -140,7 +142,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         bytes32 asset;
         uint64 strikeTime;
         uint64 delta;
-        PythStructs.Price pythPrice;
+        int64 strikePrice;
+        uint64 strikePricePublishTime;
+        ISpeedMarketsAMM.OracleSource oracleSource;
         SpeedMarket.Direction direction;
         address collateral;
         uint collateralAmount;
@@ -168,8 +172,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
 
     /// @notice create new market for a given delta/strike time
     /// @param _params parameters for creating market
-    /// @dev This function is used to create a new market
-    function createNewMarket(CreateMarketParams calldata _params) external nonReentrant notPaused onlyCreator {
+    function createNewMarket(CreateMarketParams calldata _params)
+        external
+        nonReentrant
+        notPaused
+        onlyCreator
+        returns (address marketAddress)
+    {
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
 
         // Calculate strike time: use provided strikeTime or current timestamp + delta
@@ -190,7 +199,8 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             defaultCollateral: defaultCollateral,
             buyinAmountInUSD: buyinAmountInUSD
         });
-        _createNewMarket(internalParams, contractsAddresses);
+
+        marketAddress = _createNewMarket(internalParams, contractsAddresses);
     }
 
     /// @notice Determines collateral configuration and calculates buyin amount
@@ -385,6 +395,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     /// @param contractsAddresses Contract addresses from address manager
     function _createNewMarket(InternalCreateParams memory params, IAddressManager.Addresses memory contractsAddresses)
         internal
+        returns (address)
     {
         if (!supportedAsset[params.createMarketParams.asset]) revert AssetNotSupported();
         if (params.buyinAmountInUSD < minBuyinAmount || params.buyinAmountInUSD > maxBuyinAmount) {
@@ -426,8 +437,9 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
                 params.createMarketParams.user,
                 params.createMarketParams.asset,
                 params.strikeTime,
-                params.createMarketParams.pythPrice.price,
-                uint64(params.createMarketParams.pythPrice.publishTime),
+                params.createMarketParams.strikePrice,
+                params.createMarketParams.strikePricePublishTime,
+                params.createMarketParams.oracleSource,
                 params.createMarketParams.direction,
                 params.defaultCollateral,
                 params.buyinAmount,
@@ -457,7 +469,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             params.createMarketParams.user,
             params.createMarketParams.asset,
             params.strikeTime,
-            params.createMarketParams.pythPrice.price,
+            params.createMarketParams.strikePrice,
             params.createMarketParams.direction,
             params.buyinAmount
         );
@@ -466,12 +478,13 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             params.createMarketParams.user,
             params.createMarketParams.asset,
             params.strikeTime,
-            params.createMarketParams.pythPrice.price,
+            params.createMarketParams.strikePrice,
             params.createMarketParams.direction,
             params.buyinAmountInUSD,
             safeBoxImpact,
             lpFeeWithSkew
         );
+        return address(srm);
     }
 
     /// @notice owner can resolve market for a given market address with finalPrice
@@ -484,11 +497,11 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     }
 
     function _resolveMarketWithPrice(address market, int64 _finalPrice) internal {
-        SpeedMarket(market).resolve(_finalPrice);
+        SpeedMarket sm = SpeedMarket(market);
+        sm.resolve(_finalPrice);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
-        address user = SpeedMarket(market).user();
-
+        address user = sm.user();
         if (_activeMarketsPerUser[user].contains(market)) {
             _activeMarketsPerUser[user].remove(market);
         }
@@ -506,7 +519,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             currentRiskPerAssetAndDirection[asset][direction] = 0;
         }
 
-        if (!SpeedMarket(market).isUserWinner()) {
+        if (!sm.isUserWinner()) {
             if (currentRiskPerAsset[asset] > 2 * buyinAmountInUSD) {
                 currentRiskPerAsset[asset] -= (2 * buyinAmountInUSD);
             } else {
@@ -514,7 +527,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
             }
         }
 
-        emit MarketResolved(market, SpeedMarket(market).result(), SpeedMarket(market).isUserWinner());
+        emit MarketResolved(market, sm.result(), sm.isUserWinner());
     }
 
     function offrampHelper(address user, uint amount) external {
@@ -693,10 +706,15 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
         emit SetSupportedAsset(asset, _supported);
     }
 
-    /// @notice map asset to PythID, e.g. "ETH" as bytes 32 to an equivalent ID from pyth docs
-    function setAssetToPythID(bytes32 asset, bytes32 pythId) external onlyOwner {
+    /// @notice map asset to PythID/ChainlinkID, e.g. "ETH" as bytes 32 to an equivalent ID from pyth/chainlink docs
+    function setAssetToPriceOracleID(
+        bytes32 asset,
+        bytes32 pythId,
+        bytes32 chainlinkId
+    ) external onlyOwner {
         assetToPythId[asset] = pythId;
-        emit SetAssetToPythID(asset, pythId);
+        assetToChainlinkId[asset] = chainlinkId;
+        emit SetAssetToPriceOracleID(asset, pythId, chainlinkId);
     }
 
     /// @notice set sUSD address (default collateral)
@@ -790,7 +808,7 @@ contract SpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReent
     event SafeBoxAndMaxSkewImpactChanged(uint _safeBoxImpact, uint _maxSkewImpact, uint _skewSlippage);
     event SetLPFeeParams(uint[] _timeThresholds, uint[] _lpFees, uint _lpFee);
     event SetSupportedAsset(bytes32 asset, bool _supported);
-    event SetAssetToPythID(bytes32 asset, bytes32 pythId);
+    event SetAssetToPriceOracleID(bytes32 asset, bytes32 pythId, bytes32 chainlinkId);
     event SusdAddressChanged(address _sUSD);
     event MultiCollateralOnOffRampEnabled(bool _enabled);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);

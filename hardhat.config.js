@@ -45,11 +45,35 @@ module.exports = {
 				},
 			},
 			{
+				network: 'optimisticEthereum',
+				chainId: 10,
+				urls: {
+					apiURL: 'https://api.etherscan.io/v2/api?chainid=10',
+					browserURL: 'https://optimistic.etherscan.io/',
+				},
+			},
+			{
+				network: 'arbitrumOne',
+				chainId: 42161,
+				urls: {
+					apiURL: 'https://api.etherscan.io/v2/api?chainid=42161',
+					browserURL: 'https://arbiscan.io/',
+				},
+			},
+			{
 				network: 'baseMainnet',
 				chainId: 8453,
 				urls: {
-					apiURL: 'https://api.basescan.org/api',
+					apiURL: 'https://api.etherscan.io/v2/api?chainid=8453',
 					browserURL: 'https://basescan.org/',
+				},
+			},
+			{
+				network: 'polygon',
+				chainId: 137,
+				urls: {
+					apiURL: 'https://api.etherscan.io/v2/api?chainid=137',
+					browserURL: 'https://polygonscan.com/',
 				},
 			},
 			{
@@ -81,7 +105,7 @@ module.exports = {
 				network: 'optimisticSepolia',
 				chainId: 11155420,
 				urls: {
-					apiURL: 'https://api-sepolia-optimistic.etherscan.io/api',
+					apiURL: 'https://api.etherscan.io/v2/api?chainid=11155420',
 					browserURL: 'https://sepolia-optimism.etherscan.io/',
 				},
 			},
@@ -91,19 +115,19 @@ module.exports = {
 		apiKey: {
 			mainnet: ETHERSCAN_KEY,
 			// optimism
-			optimisticEthereum: OP_ETHERSCAN_KEY,
+			optimisticEthereum: ETHERSCAN_KEY,
 			optimisticGoerli: OP_ETHERSCAN_KEY,
 			// polygon
-			polygon: POLYGONSCAN_API_KEY,
+			polygon: ETHERSCAN_KEY,
 			polygonMumbai: POLYGONSCAN_API_KEY,
 			bsc: BSC_API_KEY,
-			arbitrumOne: ARBITRUM_API_KEY,
+			arbitrumOne: ETHERSCAN_KEY,
 			arbitrumGoerli: ARBITRUM_API_KEY,
-			baseMainnet: BASESCAN_API_KEY,
+			baseMainnet: ETHERSCAN_KEY,
 			baseGoerli: BASESCAN_API_KEY,
 			opbnbtest: OPBNBTEST_API_KEY,
 			blastSepolia: 'blast_sepolia',
-			optimisticSepolia: OP_ETHERSCAN_KEY,
+			optimisticSepolia: ETHERSCAN_KEY,
 		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
@@ -160,6 +184,15 @@ module.exports = {
 			},
 			{
 				version: '0.8.4',
+				settings: {
+					optimizer: {
+						enabled: true,
+						runs: 100,
+					},
+				},
+			},
+			{
+				version: '0.8.16',
 				settings: {
 					optimizer: {
 						enabled: true,

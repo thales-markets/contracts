@@ -224,8 +224,8 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
             if (verifiedReport.feedId != requiredFeedId) {
                 revert InvalidPriceFeedId();
             }
-            uint64 validFromTimestamp = uint64(verifiedReport.validFromTimestamp);
-            if (validFromTimestamp < _strikeTime || validFromTimestamp > _strikeTime + maximumPriceDelayForResolving) {
+            uint64 observationsTimestamp = uint64(verifiedReport.observationsTimestamp);
+            if (observationsTimestamp < _strikeTime || observationsTimestamp > _strikeTime + maximumPriceDelayForResolving) {
                 revert InvalidPriceTime();
             }
             price = int64(verifiedReport.price / PRICE_DIVISOR); // safe only for assets on 18 decimals (max decimal price: 92,233,720.36854775)

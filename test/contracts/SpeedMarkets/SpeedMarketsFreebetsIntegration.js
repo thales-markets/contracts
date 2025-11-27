@@ -12,6 +12,10 @@ const { toBN } = require('web3-utils');
 
 contract('SpeedMarketsFreebetsIntegration', (accounts) => {
 	const [owner, user, user2, safeBox, referrer, referrer2] = accounts;
+	const oracleSource = {
+		Pyth: 0,
+		Chainlink: 1,
+	};
 
 	describe('Speed Markets Freebets Integration Tests', () => {
 		let mockFreeBetsHolder;
@@ -192,15 +196,22 @@ contract('SpeedMarketsFreebetsIntegration', (accounts) => {
 				);
 
 				// Process both types of pending markets
-				await speedMarketsAMMCreator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [priceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
-				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets(
+					oracleSource.Pyth,
+					[priceFeedUpdateData],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
 				// Check remaining balance
 				const remainingBalance = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);
@@ -233,15 +244,22 @@ contract('SpeedMarketsFreebetsIntegration', (accounts) => {
 				);
 
 				// Process all pending markets
-				await speedMarketsAMMCreator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [priceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
-				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets(
+					oracleSource.Pyth,
+					[priceFeedUpdateData],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
 				// Check remaining balances
 				const balance1 = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);
@@ -276,10 +294,13 @@ contract('SpeedMarketsFreebetsIntegration', (accounts) => {
 				);
 
 				// Process pending markets
-				await speedMarketsAMMCreator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [priceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
 				// Verify freebet balance decreased correctly
 				const remainingBalance = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);
@@ -311,14 +332,21 @@ contract('SpeedMarketsFreebetsIntegration', (accounts) => {
 				);
 
 				// Process markets
-				await speedMarketsAMMCreator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
-				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [priceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
+				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets(
+					oracleSource.Pyth,
+					[priceFeedUpdateData],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
 				// Should have zero balance
 				const remainingBalance = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);
@@ -366,14 +394,21 @@ contract('SpeedMarketsFreebetsIntegration', (accounts) => {
 				);
 
 				// Process markets
-				await speedMarketsAMMCreator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
-				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [priceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
+				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets(
+					oracleSource.Pyth,
+					[priceFeedUpdateData],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
 				// Check both balances
 				const balance1 = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);
@@ -403,10 +438,13 @@ contract('SpeedMarketsFreebetsIntegration', (accounts) => {
 				);
 
 				// Process the market to confirm it works
-				await speedMarketsAMMCreator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [priceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
 				// Verify balance reduced
 				let balance = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);
@@ -470,14 +508,21 @@ contract('SpeedMarketsFreebetsIntegration', (accounts) => {
 				);
 
 				// Process all pending markets
-				await speedMarketsAMMCreator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
-				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [priceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
+				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets(
+					oracleSource.Pyth,
+					[priceFeedUpdateData],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
 				// Verify balances
 				const balance1 = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);

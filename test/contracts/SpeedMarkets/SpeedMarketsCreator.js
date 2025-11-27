@@ -341,28 +341,6 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			);
 			createdMarketAddress = await creator.requestIdToMarket(requestId);
 			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
-			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Pyth price exceeds slippage');
-		});
-
-		it('Should create speed market directly (no pending)', async () => {
-			const DELTA_TIME = 5 * 60; // 5 min
-			const ETH_STRIKE_PRICE = 1856;
-			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
-			const BUYIN_AMOUNT = 10;
-
-			const pendingSpeedParams = getPendingSpeedParams(
-				'ETH',
-				DELTA_TIME,
-				ETH_STRIKE_PRICE,
-				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT
-			);
-			tx = await creator.createFromPendingSpeedMarkets(
-				[oracleSource.Pyth, [priceFeedUpdateDataLocal], 0],
-				{ value: fee, from: user }
-			);
-			createdMarketAddress = await creator.requestIdToMarket(requestId);
-			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
 			assert.equal(tx.receipt.logs[0].args._errorMessage, 'price exceeds slippage');
 		});
 
@@ -631,51 +609,6 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				[priceFeedUpdateDataLocal],
 				{ value: fee, from: user }
 			);
-			createdMarketAddress = await creator.requestIdToMarket(requestId);
-			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
-			assert.equal(tx.receipt.logs[0].args._errorMessage, 'Pyth price exceeds slippage');
-		});
-
-		it('Should create chained speed market directly (no pending)', async () => {
-			const TIME_FRAME = 5 * 60; // 5 min
-			const ETH_STRIKE_PRICE = 1856;
-			const STRIKE_PRICE_SLIPPAGE = 0.02; // 2%
-			const BUYIN_AMOUNT = 10;
-
-			const pendingChainedSpeedParams = getPendingChainedSpeedParams(
-				'ETH',
-				TIME_FRAME,
-				ETH_STRIKE_PRICE,
-				STRIKE_PRICE_SLIPPAGE,
-				BUYIN_AMOUNT
-			);
-
-			const nowLocal = await currentTime();
-			const priceFeedUpdateDataLocal = await mockPyth.createPriceFeedUpdateData(
-				'0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace', // ETH pyth ID
-				PYTH_ETH_PRICE,
-				74093100,
-				-8,
-				PYTH_ETH_PRICE,
-				74093100,
-				nowLocal // publishTime
-			);
-
-			await expect(
-				creator.createChainedSpeedMarket(pendingChainedSpeedParams, [], {
-					value: fee,
-					from: user,
-				})
-			).to.be.revertedWith('Empty price update data');
-
-			const activeSpeedMarketsSizeBefore = (await chainedSpeedMarketsAMM.activeMarkets(0, 10))
-				.length;
-
-			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
-			await creator.createChainedSpeedMarket(oracleSource.Pyth, [priceFeedUpdateDataLocal], {
-				value: fee,
-				from: user,
-			});
 			createdMarketAddress = await creator.requestIdToMarket(requestId);
 			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
 			assert.equal(tx.receipt.logs[0].args._errorMessage, 'price exceeds slippage');

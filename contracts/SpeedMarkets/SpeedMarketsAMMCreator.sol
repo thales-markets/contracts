@@ -339,7 +339,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         require(_priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
-        address freeBetsHolder = addressManager.getAddress("FreeBetsHolder");
         if (_oracleSource == ISpeedMarketsAMM.OracleSource.Pyth) {
             _updatePythPrice(contractsAddresses.pyth, _priceUpdateData);
         }
@@ -366,17 +365,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 _oracleSource,
                 _priceUpdateData
             );
-            int64 maxPrice = int64(
-                uint64((pendingChainedSpeedMarket.strikePrice * (ONE + pendingChainedSpeedMarket.strikePriceSlippage)) / ONE)
-            );
-            int64 minPrice = int64(
-                uint64((pendingChainedSpeedMarket.strikePrice * (ONE - pendingChainedSpeedMarket.strikePriceSlippage)) / ONE)
-            );
-            if (pythPrice.price > maxPrice || pythPrice.price < minPrice) {
-                requestIdToMarket[requestId] = DEAD_ADDRESS;
-                emit LogChainedError("Pyth price exceeds slippage", pendingChainedSpeedMarket);
-                continue;
-            }
 
             if (_isStalePrice(price, publishTime, maximumPriceDelay)) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
@@ -411,6 +399,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             try
                 IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(marketParams)
             returns (address chainedSpeedMarketAddress) {
+                address freeBetsHolder = addressManager.getAddress("FreeBetsHolder");
                 if (chainedSpeedMarketAddress != address(0) && pendingChainedSpeedMarket.user == freeBetsHolder) {
                     uint buyAmount = pendingChainedSpeedMarket.buyinAmount;
                     if (iSpeedMarketsAMM.supportedNativeCollateral(pendingChainedSpeedMarket.collateral)) {

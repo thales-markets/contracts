@@ -32,6 +32,10 @@ contract('SpeedMarketsFreebets', (accounts) => {
 		let requestId1;
 		let requestId2;
 		let addressManager;
+		const oracleSource = {
+			Pyth: 0,
+			Chainlink: 1,
+		};
 
 		beforeEach(async () => {
 			// Initialize speed markets
@@ -246,10 +250,13 @@ contract('SpeedMarketsFreebets', (accounts) => {
 				await speedMarketsAMMCreator.addToWhitelist(owner, true, { from: owner });
 
 				// Process pending markets through creator
-				await speedMarketsAMMCreator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [priceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
 				// Check remaining balance
 				const remainingBalance = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);
@@ -327,10 +334,13 @@ contract('SpeedMarketsFreebets', (accounts) => {
 
 				// Whitelist owner and process pending markets
 				await speedMarketsAMMCreator.addToWhitelist(owner, true, { from: owner });
-				await speedMarketsAMMCreator.createFromPendingSpeedMarkets([freshPriceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [freshPriceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
 				const remainingBalance = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);
 				assert.bnEqual(remainingBalance, toBN(0));
@@ -365,10 +375,13 @@ contract('SpeedMarketsFreebets', (accounts) => {
 
 				// Whitelist owner and process pending markets
 				await speedMarketsAMMCreator.addToWhitelist(owner, true, { from: owner });
-				await speedMarketsAMMCreator.createFromPendingSpeedMarkets([priceFeedUpdateData], {
-					from: owner,
-					value: fee,
-				});
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [priceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
 
 				// Simple verification that we can still use freebets after one market
 				const remainingBalance = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);

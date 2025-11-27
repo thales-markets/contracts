@@ -283,7 +283,7 @@
   {
     "inputs": [
       {
-        "internalType": "address",
+        "internalType": "address payable",
         "name": "_speedMarketsAMMCreator",
         "type": "address"
       },
@@ -354,7 +354,7 @@
   {
     "inputs": [
       {
-        "internalType": "address",
+        "internalType": "address payable",
         "name": "_speedMarketsAMMCreator",
         "type": "address"
       },

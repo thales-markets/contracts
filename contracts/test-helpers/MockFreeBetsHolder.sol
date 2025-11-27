@@ -132,7 +132,7 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
     /// @param _params The market creation parameters
     /// @param _freebetRequestId The freebet request ID to use
     function createSpeedMarketWithFreebets(
-        address _speedMarketsAMMCreator,
+        address payable _speedMarketsAMMCreator,
         SpeedMarketsAMMCreator.SpeedMarketParams memory _params,
         bytes32 _freebetRequestId
     ) external returns (bytes32 creatorRequestId) {
@@ -169,7 +169,7 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
     /// @param _params The market creation parameters
     /// @param _freebetRequestId The freebet request ID to use
     function createChainedSpeedMarketWithFreebets(
-        address _speedMarketsAMMCreator,
+        address payable _speedMarketsAMMCreator,
         SpeedMarketsAMMCreator.ChainedSpeedMarketParams memory _params,
         bytes32 _freebetRequestId
     ) external returns (bytes32 creatorRequestId) {

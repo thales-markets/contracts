@@ -87,11 +87,7 @@ const defaults = {
 	WAITING_PERIOD_SECS: (60 * 5).toString(), // 5 mins
 	PRICE_DEVIATION_THRESHOLD_FACTOR: w3utils.toWei('3'),
 	TRADING_REWARDS_ENABLED: false,
-	ISSUANCE_RATIO: w3utils
-		.toBN(1)
-		.mul(w3utils.toBN(1e18))
-		.div(w3utils.toBN(6))
-		.toString(), // 1/6 = 0.16666666667
+	ISSUANCE_RATIO: w3utils.toBN(1).mul(w3utils.toBN(1e18)).div(w3utils.toBN(6)).toString(), // 1/6 = 0.16666666667
 	FEE_PERIOD_DURATION: (3600 * 24 * 7).toString(), // 1 week
 	TARGET_THRESHOLD: '1', // 1% target threshold (it will be converted to a decimal when set)
 	LIQUIDATION_DELAY: (3600 * 24 * 3).toString(), // 3 days
@@ -156,8 +152,8 @@ const defaults = {
 /**
  * Converts a string into a hex representation of bytes32, with right padding
  */
-const toBytes32 = key => w3utils.rightPad(w3utils.asciiToHex(key), 64);
-const fromBytes32 = key => w3utils.hexToAscii(key);
+const toBytes32 = (key) => w3utils.rightPad(w3utils.asciiToHex(key), 64);
+const fromBytes32 = (key) => w3utils.hexToAscii(key);
 
 const getFolderNameForNetwork = ({ network, useOvm = false }) => {
 	if (network.includes('ovm')) {
@@ -169,7 +165,6 @@ const getFolderNameForNetwork = ({ network, useOvm = false }) => {
 
 const getPathToNetwork = ({ network = 'mainnet', file = '', useOvm = false, path } = {}) =>
 	path.join(__dirname, 'publish', 'deployed', getFolderNameForNetwork({ network, useOvm }), file);
-
 
 /**
  * Retrieve the list of targets for the network - returning the name, address, source file and link to etherscan
@@ -239,9 +234,9 @@ const getUsers = ({ network = 'mainnet', user, useOvm = false } = {}) => {
 		}),
 	};
 
-	const users = Object.entries(
-		map[getFolderNameForNetwork({ network, useOvm })]
-	).map(([key, value]) => ({ name: key, address: value }));
+	const users = Object.entries(map[getFolderNameForNetwork({ network, useOvm })]).map(
+		([key, value]) => ({ name: key, address: value })
+	);
 
 	return user ? users.find(({ name }) => name === user) : users;
 };

@@ -26,7 +26,7 @@ contract OwnedWithInit {
         nominatedOwner = address(0);
     }
 
-    modifier onlyOwner {
+    modifier onlyOwner() {
         _onlyOwner();
         _;
     }

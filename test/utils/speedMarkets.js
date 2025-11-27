@@ -63,12 +63,64 @@ const getCreateSpeedAMMParams = (
 	toBytes32(asset),
 	strikeTime,
 	deltaTime || 0,
-	{
-		price: 186342931000,
-		conf: 1742265769,
-		expo: -8,
-		publishTime,
-	},
+	186342931000,
+	publishTime,
+	0,
+	direction || 0,
+	collateral || ZERO_ADDRESS,
+	toUnit(buyinAmount),
+	referrer || ZERO_ADDRESS,
+	skewImpact || 0,
+];
+
+const getCreateChainedSpeedAMMParams = (
+	user,
+	asset,
+	timeFrame,
+	pythPrice,
+	publishTime,
+	buyinAmount,
+	directions,
+	collateral,
+	referrer
+) => [
+	user,
+	toBytes32(asset),
+	timeFrame,
+	pythPrice,
+	0,
+	directions || [0, 1, 0, 0, 0, 0], // UP, DOWN, UP, UP, UP, UP
+	collateral || ZERO_ADDRESS,
+	toUnit(buyinAmount),
+	referrer || ZERO_ADDRESS,
+];
+
+const getSkewImpact = (riskPerAssetAndDirectionData, maxSkewImpact) => {
+	const skewImapctDecimal =
+		(riskPerAssetAndDirectionData[0].current /
+			1e18 /
+			(riskPerAssetAndDirectionData[0].max / 1e18)) *
+		maxSkewImpact;
+	return toUnit(skewImapctDecimal.toFixed(5));
+};
+
+const getPendingSpeedParamsZkSync = (
+	asset,
+	deltaTime,
+	strikePrice,
+	strikePriceSlippage,
+	buyinAmount,
+	direction,
+	skewImpact,
+	strikeTime,
+	collateral,
+	referrer
+) => [
+	toBytes32(asset),
+	strikeTime || 0,
+	deltaTime,
+	toBN(strikePrice * 1e8), // pyth price is with 8 decimals
+	toUnit(strikePriceSlippage),
 	direction || 0,
 	collateral || ZERO_ADDRESS,
 	toUnit(buyinAmount),
@@ -88,77 +140,34 @@ const getCreateSpeedAMMParamsZkSync = (
 	collateral,
 	referrer
 ) => {
-	const params = getCreateSpeedAMMParams(
+	const params = [
 		user,
-		asset,
+		toBytes32(asset),
 		strikeTime,
-		publishTime,
-		buyinAmount,
-		direction,
-		skewImpact,
-		deltaTime,
-		collateral,
-		referrer
-	);
-	params.push(0);
+		deltaTime || 0,
+		{
+			price: 186342931000,
+			conf: 1742265769,
+			expo: -8,
+			publishTime,
+		},
+		direction || 0,
+		collateral || ZERO_ADDRESS,
+		toUnit(buyinAmount),
+		referrer || ZERO_ADDRESS,
+		skewImpact || 0,
+		0,
+	];
 
 	return params;
-};
-
-const getCreateChainedSpeedAMMParams = (
-	user,
-	asset,
-	timeFrame,
-	pythPrice,
-	publishTime,
-	buyinAmount,
-	directions,
-	collateral,
-	referrer
-) => [
-	user,
-	toBytes32(asset),
-	timeFrame,
-	{
-		price: pythPrice,
-		conf: 1742265769,
-		expo: -8,
-		publishTime,
-	},
-	directions || [0, 1, 0, 0, 0, 0], // UP, DOWN, UP, UP, UP, UP
-	collateral || ZERO_ADDRESS,
-	toUnit(buyinAmount),
-	referrer || ZERO_ADDRESS,
-];
-
-const getCreateSpeedParams = (asset, strikeTime, buyinAmount) => [
-	toBytes32(asset),
-	strikeTime,
-	0,
-	186342931000,
-	2000000, // 2 %
-	0,
-	ZERO_ADDRESS,
-	toUnit(buyinAmount),
-	ZERO_ADDRESS,
-	0,
-];
-
-const getSkewImpact = (riskPerAssetAndDirectionData, maxSkewImpact) => {
-	const skewImapctDecimal =
-		(riskPerAssetAndDirectionData[0].current /
-			1e18 /
-			(riskPerAssetAndDirectionData[0].max / 1e18)) *
-		maxSkewImpact;
-	return toUnit(skewImapctDecimal.toFixed(5));
 };
 
 module.exports = {
 	getPendingSpeedParams,
 	getPendingChainedSpeedParams,
 	getCreateSpeedAMMParams,
-	getCreateSpeedAMMParamsZkSync,
 	getCreateChainedSpeedAMMParams,
-	getCreateSpeedParams,
 	getSkewImpact,
+	getPendingSpeedParamsZkSync,
+	getCreateSpeedAMMParamsZkSync,
 };

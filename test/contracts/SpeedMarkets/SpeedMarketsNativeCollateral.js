@@ -31,6 +31,8 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 	const BTC = toBytes32('BTC');
 	const ETH_PYTH_ID = '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace';
 	const BTC_PYTH_ID = '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43';
+	const ETH_CHAINLINK_ID = '0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782';
+	const BTC_CHAINLINK_ID = '0x00037da06d56d083fe599397a4769a042d63aa73dc4ef57709d31e9971a5b439';
 
 	const ONE = toUnit(1);
 
@@ -112,11 +114,15 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 		await exoticUSDT.approve(speedMarketsAMM.address, MAX_UINT, { from: user2 });
 
 		// Configure assets
-		await speedMarketsAMM.setAssetToPythID(ETH, ETH_PYTH_ID, { from: owner });
+		await speedMarketsAMM.setAssetToPriceOracleID(ETH, ETH_PYTH_ID, ETH_CHAINLINK_ID, {
+			from: owner,
+		});
 		await speedMarketsAMM.setSupportedAsset(ETH, true, { from: owner });
 		await speedMarketsAMM.setMaxRisks(ETH, toUnit(10000), toUnit(5000), { from: owner });
 
-		await speedMarketsAMM.setAssetToPythID(BTC, BTC_PYTH_ID, { from: owner });
+		await speedMarketsAMM.setAssetToPriceOracleID(BTC, BTC_PYTH_ID, BTC_CHAINLINK_ID, {
+			from: owner,
+		});
 		await speedMarketsAMM.setSupportedAsset(BTC, true, { from: owner });
 		await speedMarketsAMM.setMaxRisks(BTC, toUnit(10000), toUnit(5000), { from: owner });
 	});
@@ -143,10 +149,10 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 		// For non-18 decimal collaterals, we need to override the buyinAmount
 		if (collateral === exoticUSDC.address) {
 			// For USDC (6 decimals), use the raw amount without toUnit conversion
-			params[7] = buyinAmount;
+			params[9] = buyinAmount;
 		} else if (collateral === exoticUSDT.address) {
 			// For USDT (18 decimals), override with the actual amount
-			params[7] = buyinAmount;
+			params[9] = buyinAmount;
 		}
 
 		const tx = await speedMarketsAMM.createNewMarket(params, { from: creatorAccount });
@@ -315,7 +321,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 			);
 
 			// Override buyinAmount for USDC (6 decimals)
-			params[7] = buyinAmount;
+			params[9] = buyinAmount;
 
 			const balanceBefore = await exoticUSDC.balanceOf(user);
 			const tx = await speedMarketsAMM.createNewMarket(params, { from: creatorAccount });
@@ -383,7 +389,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 			);
 
 			// Override with actual 18-decimal amount
-			params[7] = buyinAmount;
+			params[9] = buyinAmount;
 
 			const balanceBefore = await exoticUSDT.balanceOf(user);
 			await speedMarketsAMM.createNewMarket(params, { from: creatorAccount });
@@ -481,7 +487,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 			);
 
 			// Override buyinAmount for USDC (6 decimals)
-			params[7] = buyinAmount;
+			params[9] = buyinAmount;
 
 			const balanceBefore = await exoticUSDC.balanceOf(user);
 			const tx = await speedMarketsAMM.createNewMarket(params, { from: creatorAccount });
@@ -647,7 +653,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 				ZERO_ADDRESS
 			);
 			// Override buyinAmount for USDC (6 decimals)
-			createParams[7] = buyinAmount;
+			createParams[9] = buyinAmount;
 
 			const tx = await speedMarketsAMM.createNewMarket(createParams, { from: creatorAccount });
 			const marketAddress = tx.logs.find((log) => log.event === 'MarketCreated').args._market;
@@ -787,7 +793,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 				ZERO_ADDRESS
 			);
 			// Override buyinAmount for USDC (6 decimals)
-			createParams[7] = buyinAmount;
+			createParams[9] = buyinAmount;
 
 			const tx = await speedMarketsAMM.createNewMarket(createParams, { from: creatorAccount });
 			const marketAddress = tx.logs.find((log) => log.event === 'MarketCreated').args._market;
@@ -838,7 +844,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 				ZERO_ADDRESS
 			);
 			// Override buyinAmount with the actual 18-decimal value
-			params[7] = buyinAmount;
+			params[9] = buyinAmount;
 
 			const tx = await speedMarketsAMM.createNewMarket(params, { from: creatorAccount });
 			const marketAddress = tx.logs.find((log) => log.event === 'MarketCreated').args._market;
@@ -896,7 +902,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 					collateral,
 					ZERO_ADDRESS
 				);
-				params[7] = buyinAmount;
+				params[9] = buyinAmount;
 
 				const tx = await speedMarketsAMM.createNewMarket(params, { from: creatorAccount });
 				const marketAddress = tx.logs.find((log) => log.event === 'MarketCreated').args._market;
@@ -951,7 +957,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 					testCase.collateral.address,
 					ZERO_ADDRESS
 				);
-				params[7] = testCase.buyinAmount;
+				params[9] = testCase.buyinAmount;
 
 				const balanceBefore = await testCase.collateral.balanceOf(user);
 				const tx = await speedMarketsAMM.createNewMarket(params, { from: creatorAccount });
@@ -1011,7 +1017,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 				exoticUSDC.address,
 				ZERO_ADDRESS
 			);
-			params[7] = buyinAmount;
+			params[9] = buyinAmount;
 
 			const tx = await speedMarketsAMM.createNewMarket(params, { from: creatorAccount });
 			const marketAddress = tx.logs.find((log) => log.event === 'MarketCreated').args._market;
@@ -1186,7 +1192,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 				ZERO_ADDRESS
 			);
 			// Override with actual 6-decimal amount
-			params1[7] = 100 * 1e6;
+			params1[9] = 100 * 1e6;
 
 			const params2 = getCreateSpeedAMMParams(
 				user,
@@ -1201,7 +1207,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 				ZERO_ADDRESS
 			);
 			// Override with actual 18-decimal amount
-			params2[7] = toUnit(125);
+			params2[9] = toUnit(125);
 
 			// Create both markets
 			const tx1 = await speedMarketsAMM.createNewMarket(params1, { from: creatorAccount });
@@ -1259,7 +1265,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 				referrer
 			);
 			// Override with actual 6-decimal amount
-			createParams[7] = buyinAmount;
+			createParams[9] = buyinAmount;
 
 			await speedMarketsAMM.createNewMarket(createParams, { from: creatorAccount });
 
@@ -1381,7 +1387,7 @@ contract('SpeedMarketsNativeCollateral', (accounts) => {
 				0,
 				exoticUSDC.address
 			);
-			paramsUSDC[7] = 100 * 1e6; // Override with 6 decimal amount
+			paramsUSDC[9] = 100 * 1e6; // Override with 6 decimal amount
 			const tx2 = await speedMarketsAMM.createNewMarket(paramsUSDC, { from: creatorAccount });
 			console.log('\nCreated USDC market (UP direction)');
 

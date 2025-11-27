@@ -187,6 +187,11 @@
             "type": "int64"
           },
           {
+            "internalType": "enum ISpeedMarketsAMM.OracleSource",
+            "name": "_oracleSource",
+            "type": "uint8"
+          },
+          {
             "internalType": "enum SpeedMarket.Direction[]",
             "name": "_directions",
             "type": "uint8[]"
@@ -274,6 +279,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "oracleSource",
+    "outputs": [
+      {
+        "internalType": "enum ISpeedMarketsAMM.OracleSource",
+        "name": "",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",

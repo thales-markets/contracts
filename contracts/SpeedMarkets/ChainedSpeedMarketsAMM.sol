@@ -99,7 +99,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
         address user;
         bytes32 asset;
         uint64 timeFrame;
-        PythStructs.Price pythPrice;
+        int64 strikePrice;
+        ISpeedMarketsAMM.OracleSource oracleSource;
         SpeedMarket.Direction[] directions;
         address collateral;
         uint collateralAmount;
@@ -359,7 +360,8 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                         internalParams.createMarketParams.timeFrame *
                         internalParams.createMarketParams.directions.length
                 ), // strike time
-                internalParams.createMarketParams.pythPrice.price,
+                internalParams.createMarketParams.strikePrice,
+                internalParams.createMarketParams.oracleSource,
                 internalParams.createMarketParams.directions,
                 internalParams.buyinAmount,
                 tempData.speedAMMParams.safeBoxImpact,
@@ -396,7 +398,7 @@ contract ChainedSpeedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, Pro
                     internalParams.createMarketParams.timeFrame *
                     internalParams.createMarketParams.directions.length
             ), // strike time
-            internalParams.createMarketParams.pythPrice.price,
+            internalParams.createMarketParams.strikePrice,
             internalParams.createMarketParams.directions,
             internalParams.buyinAmount,
             tempData.payoutMultiplier,

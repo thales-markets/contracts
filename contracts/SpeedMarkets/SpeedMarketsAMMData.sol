@@ -29,6 +29,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         bytes32 asset;
         uint64 strikeTime;
         int64 strikePrice;
+        ISpeedMarketsAMM.OracleSource oracleSource;
         SpeedMarket.Direction direction;
         uint buyinAmount;
         address collateral;
@@ -51,6 +52,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         uint64 initialStrikeTime;
         uint64 strikeTime;
         int64 initialStrikePrice;
+        ISpeedMarketsAMM.OracleSource oracleSource;
         SpeedMarket.Direction[] directions;
         int64[] strikePrices;
         int64[] finalPrices;
@@ -203,6 +205,13 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].result = market.result();
             markets[i].isUserWinner = market.isUserWinner();
 
+            try market.oracleSource() returns (ISpeedMarketsAMM.OracleSource oracleSource) {
+                markets[i].oracleSource = oracleSource;
+            } catch {
+                // Default to Pyth for legacy contracts
+                markets[i].oracleSource = ISpeedMarketsAMM.OracleSource.Pyth;
+            }
+
             address defaultCollateral = address(ISpeedMarketsAMM(speedMarketsAMM).sUSD());
             address marketCollateral = _getMarketCollateralOrFallback(address(market), defaultCollateral);
 
@@ -238,6 +247,13 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
             markets[i].initialStrikeTime = market.initialStrikeTime();
             markets[i].strikeTime = market.strikeTime();
             markets[i].initialStrikePrice = market.initialStrikePrice();
+
+            try market.oracleSource() returns (ISpeedMarketsAMM.OracleSource oracleSource) {
+                markets[i].oracleSource = oracleSource;
+            } catch {
+                // Default to Pyth for legacy contracts
+                markets[i].oracleSource = ISpeedMarketsAMM.OracleSource.Pyth;
+            }
 
             SpeedMarket.Direction[] memory marketDirections = new SpeedMarket.Direction[](market.numOfDirections());
             int64[] memory marketStrikePrices = new int64[](market.numOfPrices());

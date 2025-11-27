@@ -21,6 +21,7 @@ contract ChainedSpeedMarket {
         uint64 _initialStrikeTime;
         uint64 _strikeTime;
         int64 _initialStrikePrice;
+        ISpeedMarketsAMM.OracleSource _oracleSource;
         SpeedMarket.Direction[] _directions;
         uint _buyinAmount;
         uint _safeBoxImpact;
@@ -37,6 +38,7 @@ contract ChainedSpeedMarket {
     uint64 public strikeTime;
     int64 public initialStrikePrice;
     int64[] public strikePrices;
+    ISpeedMarketsAMM.OracleSource public oracleSource;
     SpeedMarket.Direction[] public directions;
     uint public buyinAmount;
     uint public payout;
@@ -64,6 +66,7 @@ contract ChainedSpeedMarket {
         initialStrikeTime = params._initialStrikeTime;
         strikeTime = params._strikeTime;
         initialStrikePrice = params._initialStrikePrice;
+        oracleSource = params._oracleSource;
         directions = params._directions;
         buyinAmount = params._buyinAmount;
         safeBoxImpact = params._safeBoxImpact;

@@ -18,15 +18,20 @@ import "../interfaces/ISpeedMarketsAMM.sol";
 import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import "../interfaces/IChainedSpeedMarketsAMM.sol";
 import "../interfaces/IFreeBetsHolder.sol";
+import "../interfaces/IChainlinkVerifierProxy.sol";
+import "../interfaces/IChainlinkFeeManager.sol";
+import "../interfaces/IWeth.sol";
 
 import "./SpeedMarket.sol";
 import "./ChainedSpeedMarket.sol";
+import "./ChainlinkStructs.sol";
 
 /// @title An AMM for Overtime Speed Markets
 contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     uint private constant ONE = 1e18;
+    int192 private constant PRICE_DIVISOR = 1e10;
     uint private constant MAX_APPROVAL = type(uint256).max;
 
     /// ========== Custom Errors ==========
@@ -38,6 +43,8 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
     error InvalidOffRampCollateral();
     error CanNotResolve();
     error InvalidPrice();
+    error InvalidPriceTime();
+    error InvalidPriceFeedId();
     error MulticollateralOnrampDisabled();
 
     /// @return The address of the address manager contract
@@ -153,28 +160,109 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         }
     }
 
+    /**
+     * @notice Withdraw all balance of an ERC-20 token held by this contract.
+     * @param _destination Address that receives the tokens.
+     * @param _collateral  ERC-20 token address.
+     * @param _amount      ERC-20 token amount.
+     */
+    function transferAmount(
+        address _destination,
+        address _collateral,
+        uint256 _amount
+    ) external onlyOwner {
+        IERC20Upgradeable(_collateral).safeTransfer(_destination, _amount);
+        emit AmountTransfered(_collateral, _destination, _amount);
+    }
+
     /// ========== INTERNAL FUNCTIONS ==========
+
+    function _verifyChainlinkReport(bytes memory unverifiedReport)
+        internal
+        returns (ChainlinkStructs.ReportV3 memory verifiedReport)
+    {
+        IChainlinkVerifierProxy iChainlinkVerifier = IChainlinkVerifierProxy(
+            address(addressManager.getAddress("ChainlinkVerifier"))
+        );
+
+        IChainlinkFeeManager iChainlinkFeeManager = IChainlinkFeeManager(address(iChainlinkVerifier.s_feeManager()));
+
+        bytes memory parameterPayload;
+        if (address(iChainlinkFeeManager) != address(0)) {
+            // FeeManager exists — always quote & approve
+            address feeToken = iChainlinkFeeManager.i_nativeAddress();
+
+            (, bytes memory reportData) = abi.decode(unverifiedReport, (bytes32[3], bytes));
+
+            (Common.Asset memory fee, , ) = iChainlinkFeeManager.getFeeAndReward(address(this), reportData, feeToken);
+
+            if (fee.amount > 0) {
+                IWeth(feeToken).deposit{value: fee.amount}();
+                IERC20Upgradeable(feeToken).approve(address(iChainlinkFeeManager), fee.amount);
+            }
+            parameterPayload = abi.encode(feeToken);
+        } else {
+            // No FeeManager deployed on this chain
+            parameterPayload = bytes("");
+        }
+
+        bytes memory verified = iChainlinkVerifier.verify(unverifiedReport, parameterPayload);
+        verifiedReport = abi.decode(verified, (ChainlinkStructs.ReportV3));
+    }
+
+    function _getOraclePrice(
+        bytes32 _asset,
+        uint64 _strikeTime,
+        ISpeedMarketsAMM.OracleSource _oracleSource,
+        bytes[] memory _priceUpdateData
+    ) internal returns (int64 price) {
+        uint64 maximumPriceDelayForResolving = speedMarketsAMM.maximumPriceDelayForResolving();
+
+        if (_oracleSource == ISpeedMarketsAMM.OracleSource.Chainlink) {
+            ChainlinkStructs.ReportV3 memory verifiedReport = _verifyChainlinkReport(_priceUpdateData[0]);
+
+            bytes32 requiredFeedId = speedMarketsAMM.assetToChainlinkId(_asset);
+            if (verifiedReport.feedId != requiredFeedId) {
+                revert InvalidPriceFeedId();
+            }
+            uint64 observationsTimestamp = uint64(verifiedReport.observationsTimestamp);
+            if (observationsTimestamp < _strikeTime || observationsTimestamp > _strikeTime + maximumPriceDelayForResolving) {
+                revert InvalidPriceTime();
+            }
+            price = int64(verifiedReport.price / PRICE_DIVISOR); // safe only for assets on 18 decimals (max decimal price: 92,233,720.36854775)
+        } else {
+            IPyth iPyth = IPyth(addressManager.pyth());
+            bytes32[] memory priceIds = new bytes32[](1);
+            priceIds[0] = speedMarketsAMM.assetToPythId(_asset);
+
+            PythStructs.PriceFeed[] memory prices = iPyth.parsePriceFeedUpdates{value: iPyth.getUpdateFee(_priceUpdateData)}(
+                _priceUpdateData,
+                priceIds,
+                _strikeTime,
+                _strikeTime + maximumPriceDelayForResolving
+            );
+
+            PythStructs.Price memory pythPrice = prices[0].price;
+            price = pythPrice.price;
+        }
+    }
 
     function _resolveMarket(address market, bytes[] memory priceUpdateData) internal {
         if (!speedMarketsAMM.canResolveMarket(market)) revert CanNotResolve();
         SpeedMarket sm = SpeedMarket(market);
-        IPyth iPyth = IPyth(addressManager.pyth());
-        bytes32[] memory priceIds = new bytes32[](1);
-        priceIds[0] = speedMarketsAMM.assetToPythId(sm.asset());
-        uint64 maximumPriceDelayForResolving = speedMarketsAMM.maximumPriceDelayForResolving();
-        PythStructs.PriceFeed[] memory prices = iPyth.parsePriceFeedUpdates{value: iPyth.getUpdateFee(priceUpdateData)}(
-            priceUpdateData,
-            priceIds,
-            sm.strikeTime(),
-            sm.strikeTime() + maximumPriceDelayForResolving
-        );
 
-        PythStructs.Price memory price = prices[0].price;
+        ISpeedMarketsAMM.OracleSource oracleSource;
+        try sm.oracleSource() returns (ISpeedMarketsAMM.OracleSource _oracleSource) {
+            oracleSource = _oracleSource;
+        } catch {
+            // Default to Pyth for legacy contracts
+            oracleSource = ISpeedMarketsAMM.OracleSource.Pyth;
+        }
 
-        if (price.price <= 0) revert InvalidPrice();
+        int64 price = _getOraclePrice(sm.asset(), sm.strikeTime(), oracleSource, priceUpdateData);
+        if (price <= 0) revert InvalidPrice();
 
-        speedMarketsAMM.resolveMarketWithPrice(market, price.price);
-
+        speedMarketsAMM.resolveMarketWithPrice(market, price);
         IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
         if (address(sm.user()) == address(iFreeBetsHolder)) {
             uint buyAmount = sm.buyinAmount();
@@ -326,28 +414,24 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
     function _resolveChainedMarket(address market, bytes[][] memory priceUpdateData) internal {
         if (!chainedSpeedMarketsAMM.canResolveMarket(market)) revert CanNotResolve();
 
-        IPyth iPyth = IPyth(addressManager.pyth());
-        bytes32[] memory priceIds = new bytes32[](1);
         ChainedSpeedMarket cs = ChainedSpeedMarket(market);
-        priceIds[0] = speedMarketsAMM.assetToPythId(cs.asset());
+
+        ISpeedMarketsAMM.OracleSource oracleSource;
+        try cs.oracleSource() returns (ISpeedMarketsAMM.OracleSource _oracleSource) {
+            oracleSource = _oracleSource;
+        } catch {
+            // Default to Pyth for legacy contracts
+            oracleSource = ISpeedMarketsAMM.OracleSource.Pyth;
+        }
 
         int64[] memory prices = new int64[](priceUpdateData.length);
         uint64 strikeTimePerDirection;
         for (uint i; i < priceUpdateData.length; ++i) {
             strikeTimePerDirection = cs.initialStrikeTime() + uint64(i * cs.timeFrame());
 
-            PythStructs.PriceFeed[] memory pricesPerDirection = iPyth.parsePriceFeedUpdates{
-                value: iPyth.getUpdateFee(priceUpdateData[i])
-            }(
-                priceUpdateData[i],
-                priceIds,
-                strikeTimePerDirection,
-                strikeTimePerDirection + speedMarketsAMM.maximumPriceDelayForResolving()
-            );
-
-            PythStructs.Price memory price = pricesPerDirection[0].price;
-            if (price.price <= 0) revert InvalidPrice();
-            prices[i] = price.price;
+            int64 price = _getOraclePrice(cs.asset(), strikeTimePerDirection, oracleSource, priceUpdateData[i]);
+            if (price <= 0) revert InvalidPrice();
+            prices[i] = price;
         }
 
         chainedSpeedMarketsAMM.resolveMarketWithPrices(market, prices, false);
@@ -453,4 +537,5 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
     event ChainedSpeedMarketsAMMSet(address indexed _chainedSpeedMarketsAMM);
     event SetMulticollateralApproval(uint amount);
+    event AmountTransfered(address _destination, address _collateral, uint256 _amount);
 }

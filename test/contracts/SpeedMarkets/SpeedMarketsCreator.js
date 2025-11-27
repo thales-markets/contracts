@@ -165,9 +165,11 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 			mockChainlinkVerifier.address
 		);
 
+		// Get fresh timestamp for Chainlink report (must fit in uint32)
+		const chainlinkTimestamp = await currentTime();
 		unverifiedReport = await mockChainlinkVerifier.createUnverifiedReport(
 			'0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782', // ETH feed ID
-			now, // validFromTimestamp
+			chainlinkTimestamp, // validFromTimestamp
 			'0x3d9c4bf380da', // nativeFee
 			'0x2d299261f9bc63', // linkFee
 			CHAINLINK_ETH_PRICE

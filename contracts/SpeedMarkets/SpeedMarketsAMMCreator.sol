@@ -246,7 +246,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                     );
                 }
                 createdSize++;
-                requestIdToMarket[requestId] = speedMarketAddress;
             } catch Error(string memory reason) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogError(reason, pendingSpeedMarket, requestId);

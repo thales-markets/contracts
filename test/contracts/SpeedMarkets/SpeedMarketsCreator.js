@@ -672,14 +672,10 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				.length;
 
 			await exoticUSD.approve(chainedSpeedMarketsAMM.address, toUnit(100), { from: user });
-			await creator.createChainedSpeedMarket(
-				oracleSource.Pyth,
-				[priceFeedUpdateDataLocal],
-				{
-					value: fee,
-					from: user,
-				}
-			);
+			await creator.createChainedSpeedMarket(oracleSource.Pyth, [priceFeedUpdateDataLocal], {
+				value: fee,
+				from: user,
+			});
 			createdMarketAddress = await creator.requestIdToMarket(requestId);
 			assert.equal(createdMarketAddress, DEAD_ADDRESS, 'Market should not be created');
 			assert.equal(tx.receipt.logs[0].args._errorMessage, 'price exceeds slippage');

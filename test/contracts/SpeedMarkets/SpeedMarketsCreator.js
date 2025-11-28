@@ -167,6 +167,19 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 		// Get fresh timestamp for Chainlink report (must fit in uint32)
 		const chainlinkTimestamp = await currentTime();
+		console.log('chainlinkTimestamp', chainlinkTimestamp);
+		console.log('max uint32', Number(2 ** 32 - 1));
+		console.log(
+			'chainlinkTimestamp is within uint32 range:',
+			chainlinkTimestamp <= Number(2 ** 32 - 1)
+		);
+		if (chainlinkTimestamp > Number(2 ** 32 - 1)) {
+			throw new Error(
+				`Chainlink timestamp is out of uint32 range: ${chainlinkTimestamp}, max: ${Number(
+					2 ** 32 - 1
+				)}`
+			);
+		}
 		unverifiedReport = await mockChainlinkVerifier.createUnverifiedReport(
 			'0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782', // ETH feed ID
 			chainlinkTimestamp, // validFromTimestamp

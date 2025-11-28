@@ -170,7 +170,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		let blockTimestamp = await web3.eth.getBlock('latest');
 		console.log('blockTimestamp:', blockTimestamp.timestamp);
 		if (Number(blockTimestamp.timestamp) > Number(2 ** 32 - 1)) {
-			blockTimestamp.timestamp = Number(blockTimestamp.timestamp) / 1000;
+			blockTimestamp.timestamp = Math.floor(Number(blockTimestamp.timestamp) / 1000).toString();
 		}
 		console.log('after blockTimestamp:', blockTimestamp.timestamp);
 		unverifiedReport = await mockChainlinkVerifier.createUnverifiedReport(

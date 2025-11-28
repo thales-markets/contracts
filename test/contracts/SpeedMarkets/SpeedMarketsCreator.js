@@ -167,13 +167,9 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 
 		// Get fresh timestamp for Chainlink report (must fit in uint32)
 		//get block timestamp
-		const blockTimestamp = await web3.eth.getBlock('latest');
+		let blockTimestamp = await web3.eth.getBlock('latest');
 		if (Number(blockTimestamp.timestamp) > Number(2 ** 32 - 1)) {
-			throw new Error(
-				`Block timestamp is out of uint32 range: ${blockTimestamp.timestamp}, max: ${Number(
-					2 ** 32 - 1
-				)}`
-			);
+			blockTimestamp.timestamp = Number(blockTimestamp.timestamp) / 1000;
 		}
 		unverifiedReport = await mockChainlinkVerifier.createUnverifiedReport(
 			'0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782', // ETH feed ID

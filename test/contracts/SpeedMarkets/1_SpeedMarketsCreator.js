@@ -24,17 +24,8 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		Pyth: 0,
 		Chainlink: 1,
 	};
-	let onlyOnce = false;
 
 	beforeEach(async () => {
-		const resetTime = Math.floor(Date.now() / 1000);
-		if (!onlyOnce) {
-			await network.provider.send('evm_setNextBlockTimestamp', [resetTime]);
-			await network.provider.send('evm_mine');
-			onlyOnce = true;
-		}
-		const newTimeCurrent = await currentTime();
-		console.log('newTimeCurrent:', newTimeCurrent);
 		// -------------------------- Speed Markets --------------------------
 		let SpeedMarketsAMMContract = artifacts.require('SpeedMarketsAMM');
 		speedMarketsAMM = await SpeedMarketsAMMContract.new();
@@ -177,6 +168,15 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		// Get fresh timestamp for Chainlink report (must fit in uint32)
 		//get block timestamp
 		let blockTimestamp = await web3.eth.getBlock('latest');
+		console.log('blockTimestamp:', blockTimestamp.timestamp);
+		if (Number(blockTimestamp.timestamp) > Number(2 ** 32 - 1)) {
+			throw new Error(
+				`Block timestamp is out of uint32 range: ${blockTimestamp.timestamp}, max: ${Number(
+					2 ** 32 - 1
+				)}`
+			);
+		}
+		console.log('after blockTimestamp:', blockTimestamp.timestamp);
 		unverifiedReport = await mockChainlinkVerifier.createUnverifiedReport(
 			'0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782', // ETH feed ID
 			blockTimestamp.timestamp, // validFromTimestamp

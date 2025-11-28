@@ -58,6 +58,7 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
     address public speedMarketsAMMCreator;
     address public speedMarketsAMM;
     address public chainedSpeedMarketsAMM;
+    address public speedMarketsAMMResolver;
 
     bytes32[] public allRequestIds;
 
@@ -147,7 +148,9 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
         (address chainedAMM, address speedAMM) = SpeedMarketsAMMCreator(_speedMarketsAMMCreator)
             .getChainedAndSpeedMarketsAMMAddresses();
 
-        IERC20Upgradeable(_params.collateral).approve(speedAMM, _params.buyinAmount);
+        // Approve with extra for fees (safeBoxImpact + lpFee can be up to ~20%)
+        uint256 approvalAmount = (_params.buyinAmount * 130) / 100;
+        IERC20Upgradeable(_params.collateral).approve(speedAMM, approvalAmount);
 
         creatorRequestId = SpeedMarketsAMMCreator(_speedMarketsAMMCreator).addPendingSpeedMarket(_params);
 
@@ -181,10 +184,11 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
 
         allocation.usedAmount += _params.buyinAmount;
 
-        (address chainedAMM, address speedAMM) = SpeedMarketsAMMCreator(_speedMarketsAMMCreator)
-            .getChainedAndSpeedMarketsAMMAddresses();
+        (address chainedAMM, ) = SpeedMarketsAMMCreator(_speedMarketsAMMCreator).getChainedAndSpeedMarketsAMMAddresses();
 
-        IERC20Upgradeable(_params.collateral).approve(chainedAMM, _params.buyinAmount);
+        // Approve with extra for fees (safeBoxImpact can be up to ~10%)
+        uint256 approvalAmount = (_params.buyinAmount * 120) / 100;
+        IERC20Upgradeable(_params.collateral).approve(chainedAMM, approvalAmount);
 
         creatorRequestId = SpeedMarketsAMMCreator(_speedMarketsAMMCreator).addPendingChainedSpeedMarket(_params);
 
@@ -253,7 +257,10 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
         address _collateral,
         bool _isChained
     ) external override {
-        require(msg.sender == speedMarketsAMM || msg.sender == chainedSpeedMarketsAMM, "Caller not allowed");
+        require(
+            msg.sender == speedMarketsAMM || msg.sender == chainedSpeedMarketsAMM || msg.sender == speedMarketsAMMResolver,
+            "Caller not allowed"
+        );
 
         bytes32 freebetRequestId = marketToRequestId[_resolvedTicket];
         require(freebetRequestId != bytes32(0), "Unknown market");
@@ -289,9 +296,14 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
     }
 
     /// @notice Set the AMM addresses
-    function setAMMAddresses(address _speedMarketsAMM, address _chainedSpeedMarketsAMM) external {
+    function setAMMAddresses(
+        address _speedMarketsAMM,
+        address _chainedSpeedMarketsAMM,
+        address _speedMarketsAMMResolver
+    ) external {
         speedMarketsAMM = _speedMarketsAMM;
         chainedSpeedMarketsAMM = _chainedSpeedMarketsAMM;
+        speedMarketsAMMResolver = _speedMarketsAMMResolver;
     }
 
     /// @notice Set the speed markets AMM creator address

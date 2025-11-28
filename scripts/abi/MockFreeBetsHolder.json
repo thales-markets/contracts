@@ -735,6 +735,11 @@
         "internalType": "address",
         "name": "_chainedSpeedMarketsAMM",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_speedMarketsAMMResolver",
+        "type": "address"
       }
     ],
     "name": "setAMMAddresses",
@@ -812,6 +817,19 @@
   {
     "inputs": [],
     "name": "speedMarketsAMMCreator",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "speedMarketsAMMResolver",
     "outputs": [
       {
         "internalType": "address",

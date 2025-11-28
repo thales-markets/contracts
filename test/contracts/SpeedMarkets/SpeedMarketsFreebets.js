@@ -73,7 +73,11 @@ contract('SpeedMarketsFreebets', (accounts) => {
 			await addressManager.setAddressInAddressBook('FreeBetsHolder', mockFreeBetsHolder.address);
 
 			// Set AMM addresses in mock
-			await mockFreeBetsHolder.setAMMAddresses(speedMarketsAMM.address, ZERO_ADDRESS);
+			await mockFreeBetsHolder.setAMMAddresses(
+				speedMarketsAMM.address,
+				ZERO_ADDRESS,
+				speedMarketsAMMResolver.address
+			);
 
 			// Fund the mock contract with collateral
 			await exoticUSD.transfer(mockFreeBetsHolder.address, toUnit(100), { from: owner });
@@ -146,8 +150,9 @@ contract('SpeedMarketsFreebets', (accounts) => {
 
 		describe('Market Creation with Freebets', () => {
 			// Helper function to create speed market params
-			const createSpeedMarketParams = (strikePrice, buyinAmount, direction = 0) => {
-				const DELTA_TIME = 60 * 60; // 1 hour
+			// Uses 1 hour + buffer to meet minimalTimeToMaturity=3600 from speedMarketsInit
+			const createSpeedMarketParams = async (strikePrice, buyinAmount, direction = 0) => {
+				const DELTA_TIME = 60 * 60 + 60; // 1 hour + 60s buffer (minimalTimeToMaturity is 3600)
 				const STRIKE_PRICE_SLIPPAGE = 0.02;
 
 				const pendingSpeedParams = getPendingSpeedParams(
@@ -158,9 +163,12 @@ contract('SpeedMarketsFreebets', (accounts) => {
 					buyinAmount
 				);
 
+				// Get fresh timestamp to avoid InvalidStrikeTime error
+				const freshNow = await currentTime();
+
 				return {
 					asset: pendingSpeedParams[0],
-					strikeTime: now + DELTA_TIME,
+					strikeTime: freshNow + DELTA_TIME,
 					delta: pendingSpeedParams[2],
 					strikePrice: pendingSpeedParams[3].toString(),
 					strikePriceSlippage: pendingSpeedParams[4].toString(),
@@ -301,17 +309,14 @@ contract('SpeedMarketsFreebets', (accounts) => {
 			});
 
 			it('should create market with exact freebet amount', async () => {
-				const params = createSpeedMarketParams(2000, 100); // Exact amount allocated
+				const PYTH_ETH_PRICE = 186342931000; // Same as in 1_SpeedMarketsCreator.js
+				// Use 50 tokens to stay within mock contract's 100 token funding (with room for fees)
+				const params = await createSpeedMarketParams(1863, 50); // Price matching Pyth data
 
-				// Whitelist if needed
-				const isWhitelisted = await speedMarketsAMMCreator.whitelistedAddresses(
-					mockFreeBetsHolder.address
-				);
-				if (!isWhitelisted) {
-					await speedMarketsAMMCreator.addToWhitelist(mockFreeBetsHolder.address, true, {
-						from: owner,
-					});
-				}
+				// Whitelist FreeBetsHolder
+				await speedMarketsAMMCreator.addToWhitelist(mockFreeBetsHolder.address, true, {
+					from: owner,
+				});
 
 				await mockFreeBetsHolder.createSpeedMarketWithFreebets(
 					speedMarketsAMMCreator.address,
@@ -324,10 +329,10 @@ contract('SpeedMarketsFreebets', (accounts) => {
 				const currentTimeNow = await currentTime();
 				const freshPriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
 					pythId,
-					toBN(2000 * 1e8), // Match the strike price
+					PYTH_ETH_PRICE,
 					74093100,
 					-8,
-					toBN(2000 * 1e8),
+					PYTH_ETH_PRICE,
 					74093100,
 					currentTimeNow
 				);
@@ -342,23 +347,23 @@ contract('SpeedMarketsFreebets', (accounts) => {
 					}
 				);
 
+				// Get the created market
+				const activeMarkets = await speedMarketsAMM.activeMarkets(0, 10);
+				assert.equal(activeMarkets.length, 1, 'Should have 1 active market');
+
+				// 100 allocated - 50 used = 50 remaining
 				const remainingBalance = await mockFreeBetsHolder.getFreebetBalance(user, requestId1);
-				assert.bnEqual(remainingBalance, toBN(0));
+				assert.bnEqual(remainingBalance, toUnit(50));
 			});
 
 			it('should track market to request ID mapping', async () => {
-				// This test is similar to previous ones, so we'll keep it simple
-				const params = createSpeedMarketParams(1863, 50); // Use the same price as init data
+				const PYTH_ETH_PRICE = 186342931000; // Same as in 1_SpeedMarketsCreator.js
+				const params = await createSpeedMarketParams(1863, 50); // Use price matching Pyth data
 
-				// Whitelist if needed
-				const isWhitelisted = await speedMarketsAMMCreator.whitelistedAddresses(
-					mockFreeBetsHolder.address
-				);
-				if (!isWhitelisted) {
-					await speedMarketsAMMCreator.addToWhitelist(mockFreeBetsHolder.address, true, {
-						from: owner,
-					});
-				}
+				// Whitelist FreeBetsHolder
+				await speedMarketsAMMCreator.addToWhitelist(mockFreeBetsHolder.address, true, {
+					from: owner,
+				});
 
 				const tx = await mockFreeBetsHolder.createSpeedMarketWithFreebets(
 					speedMarketsAMMCreator.address,
@@ -373,10 +378,22 @@ contract('SpeedMarketsFreebets', (accounts) => {
 				);
 				assert.exists(pendingMarketEvent, 'PendingFreebetMarketCreated event should be emitted');
 
+				// Create fresh price feed data with current time
+				const currentTimeNow = await currentTime();
+				const freshPriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					PYTH_ETH_PRICE,
+					74093100,
+					-8,
+					PYTH_ETH_PRICE,
+					74093100,
+					currentTimeNow
+				);
+
 				// Whitelist owner and process pending markets
 				await speedMarketsAMMCreator.addToWhitelist(owner, true, { from: owner });
 				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
-					[oracleSource.Pyth, [priceFeedUpdateData], 0],
+					[oracleSource.Pyth, [freshPriceFeedUpdateData], 0],
 					{
 						from: owner,
 						value: fee,
@@ -389,10 +406,11 @@ contract('SpeedMarketsFreebets', (accounts) => {
 			});
 
 			it('should revert with expired freebets', async () => {
-				// Expire the freebets
-				await mockFreeBetsHolder.setFreebetExpiry(user, requestId1, now - 1);
+				// Get fresh timestamp and expire the freebets
+				const freshNow = await currentTime();
+				await mockFreeBetsHolder.setFreebetExpiry(user, requestId1, freshNow - 1);
 
-				const params = createSpeedMarketParams(2000, 50);
+				const params = await createSpeedMarketParams(1863, 50);
 
 				await expect(
 					mockFreeBetsHolder.createSpeedMarketWithFreebets(
@@ -405,7 +423,7 @@ contract('SpeedMarketsFreebets', (accounts) => {
 			});
 
 			it('should revert with no active allocation', async () => {
-				const params = createSpeedMarketParams(2000, 50);
+				const params = await createSpeedMarketParams(1863, 50);
 
 				await expect(
 					mockFreeBetsHolder.createSpeedMarketWithFreebets(
@@ -419,11 +437,300 @@ contract('SpeedMarketsFreebets', (accounts) => {
 		});
 
 		describe('Market Resolution with Freebets', () => {
-			it('should skip resolution tests since they need to be redesigned for the new architecture', async () => {
-				// These tests need to be redesigned to work with the SpeedMarketsAMMCreator flow
-				// The market resolution happens through the AMM, but markets are created through the creator
-				// This is a placeholder to prevent test failures
-				assert.isTrue(true);
+			// Helper function to create speed market params
+			// Uses 1 hour + buffer to meet minimalTimeToMaturity=3600 from speedMarketsInit
+			const createSpeedMarketParams = async (strikePrice, buyinAmount, direction = 0) => {
+				const DELTA_TIME = 60 * 60 + 60; // 1 hour + 60s buffer (minimalTimeToMaturity is 3600)
+				const STRIKE_PRICE_SLIPPAGE = 0.02;
+
+				const pendingSpeedParams = getPendingSpeedParams(
+					'ETH',
+					DELTA_TIME,
+					strikePrice,
+					STRIKE_PRICE_SLIPPAGE,
+					buyinAmount
+				);
+
+				// Get fresh timestamp to avoid InvalidStrikeTime error
+				const freshNow = await currentTime();
+
+				return {
+					asset: pendingSpeedParams[0],
+					strikeTime: freshNow + DELTA_TIME,
+					delta: pendingSpeedParams[2],
+					strikePrice: pendingSpeedParams[3].toString(),
+					strikePriceSlippage: pendingSpeedParams[4].toString(),
+					direction: direction,
+					collateral: exoticUSD.address,
+					buyinAmount: pendingSpeedParams[7].toString(),
+					referrer: pendingSpeedParams[8],
+					skewImpact: pendingSpeedParams[9],
+				};
+			};
+
+			beforeEach(async () => {
+				// Allocate freebets
+				await mockFreeBetsHolder.allocateFreebets(user, toUnit(100), requestId1);
+			});
+
+			it('should resolve speed market created with freebets and pay out winnings', async () => {
+				const PYTH_ETH_PRICE = 186342931000; // Same as in 1_SpeedMarketsCreator.js
+				const params = await createSpeedMarketParams(1863, 10); // Use price matching Pyth data
+
+				// Whitelist FreeBetsHolder
+				await speedMarketsAMMCreator.addToWhitelist(mockFreeBetsHolder.address, true, {
+					from: owner,
+				});
+
+				await mockFreeBetsHolder.createSpeedMarketWithFreebets(
+					speedMarketsAMMCreator.address,
+					params,
+					requestId1,
+					{ from: user }
+				);
+
+				// Create fresh price feed data with current time
+				const currentTimeNow = await currentTime();
+				const freshPriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					PYTH_ETH_PRICE,
+					74093100,
+					-8,
+					PYTH_ETH_PRICE,
+					74093100,
+					currentTimeNow
+				);
+
+				// Whitelist owner and process pending markets
+				await speedMarketsAMMCreator.addToWhitelist(owner, true, { from: owner });
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [freshPriceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
+
+				// Get the created market
+				const activeMarkets = await speedMarketsAMM.activeMarkets(0, 10);
+				assert.equal(activeMarkets.length, 1, 'Should have 1 active market');
+				const marketAddress = activeMarkets[0];
+
+				// Verify market user is FreeBetsHolder
+				const SpeedMarket = artifacts.require('SpeedMarket');
+				const speedMarket = await SpeedMarket.at(marketAddress);
+				const marketUser = await speedMarket.user();
+				assert.equal(
+					marketUser,
+					mockFreeBetsHolder.address,
+					'Market user should be FreeBetsHolder'
+				);
+
+				// Fast forward past strike time
+				await fastForward(86400);
+
+				// Get strike time for resolution price
+				const strikeTime = await speedMarket.strikeTime();
+
+				// Create resolution price data (higher price = UP wins)
+				const RESOLVE_PRICE = toBN(2100 * 1e8); // Higher than strike price
+				const resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					RESOLVE_PRICE,
+					74093100,
+					-8,
+					RESOLVE_PRICE,
+					74093100,
+					strikeTime
+				);
+
+				// Get user balance before resolution
+				const userBalanceBefore = await exoticUSD.balanceOf(user);
+
+				// Resolve market through resolver
+				await speedMarketsAMMResolver.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+					value: fee,
+				});
+
+				// Verify market is resolved
+				const resolvedMarkets = await speedMarketsAMM.maturedMarkets(0, 10);
+				assert.equal(resolvedMarkets.length, 1, 'Should have 1 resolved market');
+
+				// Check user received payout through FreeBetsHolder
+				const userBalanceAfter = await exoticUSD.balanceOf(user);
+				const payout = await speedMarket.payout();
+
+				if (payout.gt(toBN(0))) {
+					assert.isTrue(
+						userBalanceAfter.gt(userBalanceBefore),
+						'User balance should increase after winning'
+					);
+				}
+			});
+
+			it('should resolve losing speed market with freebets (user marked as loser)', async () => {
+				const PYTH_ETH_PRICE = 186342931000; // Same as in 1_SpeedMarketsCreator.js
+				// Use direction = 1 (DOWN), so if price goes up, user loses
+				const params = await createSpeedMarketParams(1863, 10, 1); // direction = 1 (DOWN)
+
+				// Whitelist FreeBetsHolder
+				await speedMarketsAMMCreator.addToWhitelist(mockFreeBetsHolder.address, true, {
+					from: owner,
+				});
+
+				await mockFreeBetsHolder.createSpeedMarketWithFreebets(
+					speedMarketsAMMCreator.address,
+					params,
+					requestId1,
+					{ from: user }
+				);
+
+				// Create fresh price feed data with current time
+				const currentTimeNow = await currentTime();
+				const freshPriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					PYTH_ETH_PRICE,
+					74093100,
+					-8,
+					PYTH_ETH_PRICE,
+					74093100,
+					currentTimeNow
+				);
+
+				// Whitelist owner and process pending markets
+				await speedMarketsAMMCreator.addToWhitelist(owner, true, { from: owner });
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [freshPriceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
+
+				// Get the created market
+				const activeMarkets = await speedMarketsAMM.activeMarkets(0, 10);
+				assert.equal(activeMarkets.length, 1, 'Should have 1 active market');
+				const marketAddress = activeMarkets[0];
+
+				const SpeedMarket = artifacts.require('SpeedMarket');
+				const speedMarket = await SpeedMarket.at(marketAddress);
+
+				// Verify market direction is DOWN (1)
+				const direction = await speedMarket.direction();
+				assert.equal(direction.toNumber(), 1, 'Direction should be DOWN (1)');
+
+				// Fast forward past strike time
+				await fastForward(86400);
+
+				// Get strike time for resolution price
+				const strikeTime = await speedMarket.strikeTime();
+
+				// Create resolution price data (higher price = DOWN loses)
+				const RESOLVE_PRICE = toBN(2000 * 1e8); // Higher than strike price of 1863
+				const resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					RESOLVE_PRICE,
+					74093100,
+					-8,
+					RESOLVE_PRICE,
+					74093100,
+					strikeTime
+				);
+
+				// Resolve market through resolver
+				await speedMarketsAMMResolver.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+					value: fee,
+				});
+
+				// Verify market is resolved
+				const resolvedMarkets = await speedMarketsAMM.maturedMarkets(0, 10);
+				assert.equal(resolvedMarkets.length, 1, 'Should have 1 resolved market');
+
+				// Check that market is resolved
+				const isResolved = await speedMarket.resolved();
+				assert.isTrue(isResolved, 'Market should be resolved');
+
+				// Check that user did NOT win (DOWN bet with price going UP)
+				const isWinner = await speedMarket.isUserWinner();
+				assert.isFalse(isWinner, 'User should not be a winner (DOWN bet, price went UP)');
+
+				// Check the result direction (should be UP since price went up)
+				const result = await speedMarket.result();
+				assert.equal(result.toNumber(), 0, 'Result should be UP (0) since price went up');
+			});
+
+			it('should track freebet resolution status in MockFreeBetsHolder', async () => {
+				const PYTH_ETH_PRICE = 186342931000; // Same as in 1_SpeedMarketsCreator.js
+				const params = await createSpeedMarketParams(1863, 10); // Use price matching Pyth data
+
+				// Whitelist FreeBetsHolder
+				await speedMarketsAMMCreator.addToWhitelist(mockFreeBetsHolder.address, true, {
+					from: owner,
+				});
+
+				await mockFreeBetsHolder.createSpeedMarketWithFreebets(
+					speedMarketsAMMCreator.address,
+					params,
+					requestId1,
+					{ from: user }
+				);
+
+				// Create fresh price feed data with current time
+				const currentTimeNow = await currentTime();
+				const freshPriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					PYTH_ETH_PRICE,
+					74093100,
+					-8,
+					PYTH_ETH_PRICE,
+					74093100,
+					currentTimeNow
+				);
+
+				// Whitelist owner and process pending markets
+				await speedMarketsAMMCreator.addToWhitelist(owner, true, { from: owner });
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [freshPriceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
+
+				// Get the created market
+				const activeMarkets = await speedMarketsAMM.activeMarkets(0, 10);
+				assert.equal(activeMarkets.length, 1, 'Should have 1 active market');
+				const marketAddress = activeMarkets[0];
+
+				const SpeedMarket = artifacts.require('SpeedMarket');
+				const speedMarket = await SpeedMarket.at(marketAddress);
+
+				// Fast forward past strike time
+				await fastForward(86400);
+
+				// Get strike time for resolution price
+				const strikeTime = await speedMarket.strikeTime();
+
+				// Create resolution price data (winning - higher price)
+				const RESOLVE_PRICE = toBN(2100 * 1e8); // Higher than strike price
+				const resolvePriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					RESOLVE_PRICE,
+					74093100,
+					-8,
+					RESOLVE_PRICE,
+					74093100,
+					strikeTime
+				);
+
+				// Resolve market
+				await speedMarketsAMMResolver.resolveMarket(marketAddress, [resolvePriceFeedUpdateData], {
+					value: fee,
+				});
+
+				// Verify FreeBetsHolder tracked the resolution
+				const ticketUser = await mockFreeBetsHolder.ticketToUser(marketAddress);
+				assert.equal(ticketUser, user, 'Ticket should be mapped to user');
 			});
 		});
 

@@ -77,7 +77,8 @@ contract('SpeedMarketsFreebetsIntegration', (accounts) => {
 			// Set AMM addresses in mock
 			await mockFreeBetsHolder.setAMMAddresses(
 				speedMarketsAMM.address,
-				chainedSpeedMarketsAMM.address
+				chainedSpeedMarketsAMM.address,
+				speedMarketsAMMResolver.address
 			);
 
 			// Fund the mock contract with multiple collaterals

@@ -71,6 +71,34 @@ contract('ChainedSpeedMarketsFreebets', (accounts) => {
 				speedMarketsAMMCreator.address
 			);
 
+			// Configure ChainedSpeedMarketsAMM (required for creating chained markets)
+			const ChainedSpeedMarketMastercopy = artifacts.require('ChainedSpeedMarketMastercopy');
+			const chainedSpeedMarketMastercopy = await ChainedSpeedMarketMastercopy.new();
+
+			await chainedSpeedMarketsAMM.setSusdAddress(exoticUSD.address);
+			await chainedSpeedMarketsAMM.setMastercopy(chainedSpeedMarketMastercopy.address);
+			await chainedSpeedMarketsAMM.setAddressManager(addressManager.address);
+			await chainedSpeedMarketsAMM.setLimitParams(
+				600, // minTimeFrame
+				86400, // maxTimeFrame (24 hours)
+				2, // minChainedMarkets
+				6, // maxChainedMarkets
+				toUnit(5), // minBuyinAmount
+				toUnit(200), // maxBuyinAmount
+				toUnit(500), // maxProfitPerIndividualMarket
+				toUnit(1100), // maxRisk
+				PAYOUT_MULTIPLIERS
+			);
+
+			// Fund ChainedSpeedMarketsAMM (need to mint enough tokens)
+			await exoticUSD.setDefaultAmount(toUnit(5000));
+			await exoticUSD.mintForUser(owner);
+			await exoticUSD.transfer(chainedSpeedMarketsAMM.address, toUnit(5000), { from: owner });
+			await exoticUSD.setDefaultAmount(toUnit(100)); // Reset to default amount
+
+			// Set ChainedSpeedMarketsAMM on resolver (required for chained market resolution)
+			await speedMarketsAMMResolver.setChainedSpeedMarketsAMM(chainedSpeedMarketsAMM.address);
+
 			// Deploy enhanced MockFreeBetsHolder
 			const MockFreeBetsHolder = artifacts.require('MockFreeBetsHolder');
 			mockFreeBetsHolder = await MockFreeBetsHolder.new(speedMarketsAMMCreator.address);
@@ -354,11 +382,154 @@ contract('ChainedSpeedMarketsFreebets', (accounts) => {
 		});
 
 		describe('Chained Market Resolution with Freebets', () => {
-			it('should skip resolution tests since they need to be redesigned for the new architecture', async () => {
-				// These tests need to be redesigned to work with the SpeedMarketsAMMCreator flow
-				// The market resolution happens through the AMM, but markets are created through the creator
-				// This is a placeholder to prevent test failures
-				assert.isTrue(true);
+			it('should resolve chained speed market with native collateral (covers lines 443, 498 in resolver and 404 in creator)', async () => {
+				// Register exoticUSD as native collateral to hit the native collateral code path
+				await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
+					exoticUSD.address,
+					true,
+					toUnit(0.02),
+					toBytes32('ExoticUSD')
+				);
+
+				// Allocate freebets to user
+				await mockFreeBetsHolder.allocateFreebets(user, toUnit(500), requestId1);
+
+				const directions = [0, 1]; // UP, DOWN - two-step chain
+				const STRIKE_PRICE = 1863;
+				const STRIKE_PRICE_SLIPPAGE = 0.02;
+				const TIME_FRAME = 60 * 60; // 1 hour
+
+				const pendingChainedParams = getPendingChainedSpeedParams(
+					'ETH',
+					TIME_FRAME,
+					STRIKE_PRICE,
+					STRIKE_PRICE_SLIPPAGE,
+					50, // 50 units buyin
+					directions,
+					exoticUSD.address,
+					ZERO_ADDRESS
+				);
+
+				const params = {
+					asset: pendingChainedParams[0],
+					timeFrame: pendingChainedParams[1],
+					strikePrice: pendingChainedParams[2].toString(),
+					strikePriceSlippage: pendingChainedParams[3].toString(),
+					directions: pendingChainedParams[4],
+					collateral: pendingChainedParams[5],
+					buyinAmount: pendingChainedParams[6].toString(),
+					referrer: pendingChainedParams[7],
+				};
+
+				// Whitelist FreeBetsHolder
+				await speedMarketsAMMCreator.addToWhitelist(mockFreeBetsHolder.address, true, {
+					from: owner,
+				});
+
+				// Create chained market through freebet holder
+				await mockFreeBetsHolder.createChainedSpeedMarketWithFreebets(
+					speedMarketsAMMCreator.address,
+					params,
+					requestId1,
+					{ from: user }
+				);
+
+				// Create fresh price feed data with current time to avoid stale price error
+				const currentTimeNow = await currentTime();
+				const freshPriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					PYTH_ETH_PRICE,
+					74093100,
+					-8,
+					PYTH_ETH_PRICE,
+					74093100,
+					currentTimeNow
+				);
+
+				// Whitelist user and process pending chained markets
+				// This covers line 404 in SpeedMarketsAMMCreator.sol (native collateral adjustment)
+				await speedMarketsAMMCreator.addToWhitelist(user, true, { from: owner });
+				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets(
+					oracleSource.Pyth,
+					[freshPriceFeedUpdateData],
+					{
+						value: fee,
+						from: user,
+					}
+				);
+
+				// Verify native collateral is registered
+				const isNativeCollateral = await speedMarketsAMM.supportedNativeCollateral(
+					exoticUSD.address
+				);
+				assert.isTrue(isNativeCollateral, 'exoticUSD should be registered as native collateral');
+
+				// Get the created chained market
+				const activeChainedMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
+				assert.equal(activeChainedMarkets.length, 1, 'Should have 1 active chained market');
+				const chainedMarketAddress = activeChainedMarkets[0];
+
+				const ChainedSpeedMarket = artifacts.require('ChainedSpeedMarket');
+				const chainedMarket = await ChainedSpeedMarket.at(chainedMarketAddress);
+
+				// Fast forward past all strike times
+				await fastForward(3 * 60 * 60); // 3 hours
+
+				// Get strike times for resolution prices
+				// For chained markets: initialStrikeTime is the first strike, then each subsequent is +timeFrame
+				const initialStrikeTime = await chainedMarket.initialStrikeTime();
+				const timeFrame = await chainedMarket.timeFrame();
+				const strikeTime1 = initialStrikeTime;
+				const strikeTime2 = toBN(initialStrikeTime.toString()).add(toBN(timeFrame.toString()));
+
+				// Create resolution price data for each step
+				// Step 1: UP direction wins if final price > strike price
+				const RESOLVE_PRICE_1 = toBN(2100 * 1e8); // Higher than strike price (UP wins)
+				const resolvePriceFeedUpdateData1 = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					RESOLVE_PRICE_1,
+					74093100,
+					-8,
+					RESOLVE_PRICE_1,
+					74093100,
+					strikeTime1
+				);
+
+				// Step 2: DOWN direction wins if final price < previous final price
+				const RESOLVE_PRICE_2 = toBN(2000 * 1e8); // Lower than previous (DOWN wins)
+				const resolvePriceFeedUpdateData2 = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					RESOLVE_PRICE_2,
+					74093100,
+					-8,
+					RESOLVE_PRICE_2,
+					74093100,
+					strikeTime2
+				);
+
+				// Verify market can be resolved
+				const canResolve = await chainedSpeedMarketsAMM.canResolveMarket(chainedMarketAddress);
+				assert.isTrue(canResolve, 'Market should be resolvable');
+
+				// Calculate proper fee for all price updates
+				const updateDataArray = [[resolvePriceFeedUpdateData1], [resolvePriceFeedUpdateData2]];
+				const flattenedUpdateData = updateDataArray.flat();
+				const resolveFee = await mockPyth.getUpdateFee(flattenedUpdateData);
+
+				// Resolve chained market through resolver
+				// This covers lines 443/498 in SpeedMarketsAMMResolver.sol (native collateral adjustment for chained markets)
+				// Note: Each price feed update data needs to be wrapped in an array
+				await speedMarketsAMMResolver.resolveChainedMarket(chainedMarketAddress, updateDataArray, {
+					value: resolveFee,
+				});
+
+				// Verify market is resolved
+				const resolvedMarkets = await chainedSpeedMarketsAMM.maturedMarkets(0, 10);
+				assert.equal(resolvedMarkets.length, 1, 'Should have 1 resolved chained market');
+
+				// Verify market was resolved successfully
+				const isResolved = await chainedMarket.resolved();
+				assert.isTrue(isResolved, 'Chained market should be resolved');
 			});
 		});
 

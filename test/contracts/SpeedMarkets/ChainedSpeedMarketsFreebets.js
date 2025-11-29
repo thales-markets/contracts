@@ -531,6 +531,133 @@ contract('ChainedSpeedMarketsFreebets', (accounts) => {
 				const isResolved = await chainedMarket.resolved();
 				assert.isTrue(isResolved, 'Chained market should be resolved');
 			});
+
+			it('should resolve chained speed market manually with native collateral (covers line 498 in resolver)', async () => {
+				// Fund MockFreeBetsHolder with extra tokens for payout (even though user loses, the resolver passes cs.payout())
+				await exoticUSD.setDefaultAmount(toUnit(500));
+				await exoticUSD.mintForUser(owner);
+				await exoticUSD.transfer(mockFreeBetsHolder.address, toUnit(500), { from: owner });
+				await exoticUSD.setDefaultAmount(toUnit(100)); // Reset
+
+				// Register exoticUSD as native collateral to hit the native collateral code path
+				await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
+					exoticUSD.address,
+					true,
+					toUnit(0.02),
+					toBytes32('ExoticUSD')
+				);
+
+				// Allocate freebets to user
+				await mockFreeBetsHolder.allocateFreebets(user, toUnit(500), requestId1);
+
+				const directions = [0, 1]; // UP, DOWN - two-step chain
+				const STRIKE_PRICE = 1863;
+				const STRIKE_PRICE_SLIPPAGE = 0.02;
+				const TIME_FRAME = 60 * 60; // 1 hour
+
+				const pendingChainedParams = getPendingChainedSpeedParams(
+					'ETH',
+					TIME_FRAME,
+					STRIKE_PRICE,
+					STRIKE_PRICE_SLIPPAGE,
+					50, // 50 units buyin
+					directions,
+					exoticUSD.address,
+					ZERO_ADDRESS
+				);
+
+				const params = {
+					asset: pendingChainedParams[0],
+					timeFrame: pendingChainedParams[1],
+					strikePrice: pendingChainedParams[2].toString(),
+					strikePriceSlippage: pendingChainedParams[3].toString(),
+					directions: pendingChainedParams[4],
+					collateral: pendingChainedParams[5],
+					buyinAmount: pendingChainedParams[6].toString(),
+					referrer: pendingChainedParams[7],
+				};
+
+				// Whitelist FreeBetsHolder
+				await speedMarketsAMMCreator.addToWhitelist(mockFreeBetsHolder.address, true, {
+					from: owner,
+				});
+
+				// Create chained market through freebet holder
+				await mockFreeBetsHolder.createChainedSpeedMarketWithFreebets(
+					speedMarketsAMMCreator.address,
+					params,
+					requestId1,
+					{ from: user }
+				);
+
+				// Create fresh price feed data with current time to avoid stale price error
+				const currentTimeNow = await currentTime();
+				const freshPriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					PYTH_ETH_PRICE,
+					74093100,
+					-8,
+					PYTH_ETH_PRICE,
+					74093100,
+					currentTimeNow
+				);
+
+				// Whitelist user and process pending chained markets
+				await speedMarketsAMMCreator.addToWhitelist(user, true, { from: owner });
+				await speedMarketsAMMCreator.createFromPendingChainedSpeedMarkets(
+					oracleSource.Pyth,
+					[freshPriceFeedUpdateData],
+					{
+						value: fee,
+						from: user,
+					}
+				);
+
+				// Verify native collateral is registered
+				const isNativeCollateral = await speedMarketsAMM.supportedNativeCollateral(
+					exoticUSD.address
+				);
+				assert.isTrue(isNativeCollateral, 'exoticUSD should be registered as native collateral');
+
+				// Get the created chained market
+				const activeChainedMarkets = await chainedSpeedMarketsAMM.activeMarkets(0, 10);
+				assert.equal(activeChainedMarkets.length, 1, 'Should have 1 active chained market');
+				const chainedMarketAddress = activeChainedMarkets[0];
+
+				const ChainedSpeedMarket = artifacts.require('ChainedSpeedMarket');
+				const chainedMarket = await ChainedSpeedMarket.at(chainedMarketAddress);
+
+				// Fast forward past all strike times
+				await fastForward(3 * 60 * 60); // 3 hours
+
+				// Whitelist owner for manual resolution
+				await speedMarketsAMM.addToWhitelist(owner, true, { from: owner });
+
+				// Manual resolution requires user to lose
+				// First direction is UP (0), so we use a LOWER price to make user lose on first step
+				// Strike price is ~1863, so use a lower price
+				const LOSING_PRICE_1 = toBN(1800 * 1e8); // Lower than strike price (UP loses)
+
+				// Resolve chained market manually through resolver
+				// This covers line 498 in SpeedMarketsAMMResolver.sol (native collateral adjustment in manual resolution)
+				await speedMarketsAMMResolver.resolveChainedMarketManually(
+					chainedMarketAddress,
+					[LOSING_PRICE_1],
+					{ from: owner }
+				);
+
+				// Verify market is resolved
+				const resolvedMarkets = await chainedSpeedMarketsAMM.maturedMarkets(0, 10);
+				assert.equal(resolvedMarkets.length, 1, 'Should have 1 resolved chained market');
+
+				// Verify market was resolved successfully
+				const isResolved = await chainedMarket.resolved();
+				assert.isTrue(isResolved, 'Chained market should be resolved');
+
+				// Verify user lost
+				const isUserWinner = await chainedMarket.isUserWinner();
+				assert.isFalse(isUserWinner, 'User should have lost');
+			});
 		});
 
 		describe('Complex Scenarios', () => {

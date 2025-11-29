@@ -827,6 +827,102 @@ contract('SpeedMarketsFreebets', (accounts) => {
 				const isResolved = await speedMarket.resolved();
 				assert.isTrue(isResolved, 'Market should be resolved');
 			});
+
+			it('should resolve speed market manually with native collateral (covers line 318 in resolver)', async () => {
+				const PYTH_ETH_PRICE = 186342931000; // Same as in 1_SpeedMarketsCreator.js
+
+				// Register exoticUSD as native collateral to hit the native collateral code path
+				await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
+					exoticUSD.address,
+					true,
+					toUnit(0.02),
+					toBytes32('ExoticUSD')
+				);
+
+				// Use the helper to create params (uses exoticUSD by default)
+				// Direction 0 = UP
+				const params = await createSpeedMarketParams(1863, 10);
+
+				// Whitelist FreeBetsHolder
+				await speedMarketsAMMCreator.addToWhitelist(mockFreeBetsHolder.address, true, {
+					from: owner,
+				});
+
+				await mockFreeBetsHolder.createSpeedMarketWithFreebets(
+					speedMarketsAMMCreator.address,
+					params,
+					requestId1,
+					{ from: user }
+				);
+
+				// Create fresh price feed data with current time
+				const currentTimeNow = await currentTime();
+				const freshPriceFeedUpdateData = await mockPyth.createPriceFeedUpdateData(
+					pythId,
+					PYTH_ETH_PRICE,
+					74093100,
+					-8,
+					PYTH_ETH_PRICE,
+					74093100,
+					currentTimeNow
+				);
+
+				// Whitelist owner and process pending markets
+				await speedMarketsAMMCreator.addToWhitelist(owner, true, { from: owner });
+				await speedMarketsAMMCreator.createFromPendingSpeedMarkets(
+					[oracleSource.Pyth, [freshPriceFeedUpdateData], 0],
+					{
+						from: owner,
+						value: fee,
+					}
+				);
+
+				// Get the created market
+				const activeMarkets = await speedMarketsAMM.activeMarkets(0, 10);
+				assert.equal(activeMarkets.length, 1, 'Should have 1 active market');
+				const marketAddress = activeMarkets[0];
+
+				const SpeedMarket = artifacts.require('SpeedMarket');
+				const speedMarket = await SpeedMarket.at(marketAddress);
+
+				// Verify direction is UP (0)
+				const direction = await speedMarket.direction();
+				assert.equal(direction.toString(), '0', 'Direction should be UP');
+
+				// Verify collateral is now registered as native
+				const isNativeCollateral = await speedMarketsAMM.supportedNativeCollateral(
+					exoticUSD.address
+				);
+				assert.isTrue(isNativeCollateral, 'exoticUSD should be registered as native collateral');
+
+				// Fast forward past strike time
+				await fastForward(86400);
+
+				// Whitelist owner for manual resolution
+				await speedMarketsAMM.addToWhitelist(owner, true, { from: owner });
+
+				// Manual resolution requires user to lose
+				// Direction is UP, so we use a LOWER final price than strike price
+				const LOSING_PRICE = toBN(1800 * 1e8); // Lower than strike price (UP loses)
+
+				// Resolve market manually through resolver - this covers line 318 in SpeedMarketsAMMResolver.sol
+				// (native collateral adjustment in manual resolution)
+				await speedMarketsAMMResolver.resolveMarketManually(marketAddress, LOSING_PRICE, {
+					from: owner,
+				});
+
+				// Verify market is resolved
+				const resolvedMarkets = await speedMarketsAMM.maturedMarkets(0, 10);
+				assert.equal(resolvedMarkets.length, 1, 'Should have 1 resolved market');
+
+				// Verify market was resolved successfully
+				const isResolved = await speedMarket.resolved();
+				assert.isTrue(isResolved, 'Market should be resolved');
+
+				// Verify user lost (isUserWinner should be false)
+				const isUserWinner = await speedMarket.isUserWinner();
+				assert.isFalse(isUserWinner, 'User should have lost');
+			});
 		});
 
 		describe('Edge Cases', () => {

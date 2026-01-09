@@ -25,6 +25,7 @@ import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/IAddressManager.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
+import "../interfaces/IFreeBetsHolder.sol";
 
 import "./SpeedMarket.sol";
 import "../interfaces/ISpeedMarketsAMMUtils.sol";

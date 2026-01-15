@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "../utils/libraries/AddressSetLib.sol";
 import "../interfaces/IFreeBetsHolder.sol";
+import "../interfaces/IAddressManager.sol";
 import "../SpeedMarkets/SpeedMarketsAMMCreator.sol";
 import "../SpeedMarkets/SpeedMarket.sol";
 
@@ -59,6 +60,7 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
     address public speedMarketsAMM;
     address public chainedSpeedMarketsAMM;
     address public speedMarketsAMMResolver;
+    IAddressManager public addressManager;
 
     bytes32[] public allRequestIds;
 
@@ -76,8 +78,9 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
 
     mapping(address => address) public override ticketToUser;
 
-    constructor(address _speedMarketsAMMCreator) {
+    constructor(address _speedMarketsAMMCreator, address _addressManager) {
         speedMarketsAMMCreator = _speedMarketsAMMCreator;
+        addressManager = IAddressManager(_addressManager);
     }
 
     /// @notice Allocate freebets to a user with a specific request ID
@@ -145,8 +148,7 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
 
         allocation.usedAmount += _params.buyinAmount;
 
-        (address chainedAMM, address speedAMM) = SpeedMarketsAMMCreator(_speedMarketsAMMCreator)
-            .getChainedAndSpeedMarketsAMMAddresses();
+        address speedAMM = addressManager.speedMarketsAMM();
 
         // Approve with extra for fees (safeBoxImpact + lpFee can be up to ~20%)
         uint256 approvalAmount = (_params.buyinAmount * 130) / 100;
@@ -184,7 +186,7 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
 
         allocation.usedAmount += _params.buyinAmount;
 
-        (address chainedAMM, ) = SpeedMarketsAMMCreator(_speedMarketsAMMCreator).getChainedAndSpeedMarketsAMMAddresses();
+        address chainedAMM = addressManager.getAddress("ChainedSpeedMarketsAMM");
 
         // Approve with extra for fees (safeBoxImpact can be up to ~10%)
         uint256 approvalAmount = (_params.buyinAmount * 120) / 100;
@@ -310,6 +312,12 @@ contract MockFreeBetsHolder is IFreeBetsHolder {
     function setSpeedMarketsAMMCreator(address _speedMarketsAMMCreator) external {
         require(_speedMarketsAMMCreator != address(0), "Invalid address");
         speedMarketsAMMCreator = _speedMarketsAMMCreator;
+    }
+
+    /// @notice Set the address manager
+    function setAddressManager(address _addressManager) external {
+        require(_addressManager != address(0), "Invalid address");
+        addressManager = IAddressManager(_addressManager);
     }
 
     /// @notice Get all request IDs for a user

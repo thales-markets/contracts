@@ -5,6 +5,11 @@
         "internalType": "address",
         "name": "_speedMarketsAMMCreator",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_addressManager",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -158,6 +163,19 @@
     ],
     "name": "SpeedMarketTradeConfirmed",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "addressManager",
+    "outputs": [
+      {
+        "internalType": "contract IAddressManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [
@@ -743,6 +761,19 @@
       }
     ],
     "name": "setAMMAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_addressManager",
+        "type": "address"
+      }
+    ],
+    "name": "setAddressManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

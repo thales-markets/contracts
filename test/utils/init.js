@@ -18,7 +18,7 @@ module.exports = {
 		});
 
 		let FreeBetsHolderContract = artifacts.require('MockFreeBetsHolder');
-		let freeBetsHolder = await FreeBetsHolderContract.new(speedMarketsAMM.address);
+		let freeBetsHolder = await FreeBetsHolderContract.new(speedMarketsAMM.address, ZERO_ADDRESS);
 
 		const Over = artifacts.require('ExoticUSD');
 		const over = await Over.new();
@@ -175,7 +175,7 @@ module.exports = {
 		);
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMM', speedMarketsAMM.address);
 		await addressManager.setAddressInAddressBook('PriceFeed', MockPriceFeedDeployed.address);
-
+		await freeBetsHolder.setAddressManager(addressManager.address);
 		await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 			over.address,
 			true,

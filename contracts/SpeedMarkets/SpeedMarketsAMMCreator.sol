@@ -226,26 +226,17 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
             try iSpeedMarketsAMM.createNewMarket(marketParams) returns (address speedMarketAddress) {
                 requestIdToMarket[requestId] = speedMarketAddress;
-                if (
-                    speedMarketAddress != address(0) &&
-                    freeBetsHolder != address(0) &&
-                    pendingSpeedMarket.user == freeBetsHolder
-                ) {
-                    uint buyAmount = pendingSpeedMarket.buyinAmount;
-                    if (iSpeedMarketsAMM.supportedNativeCollateral(pendingSpeedMarket.collateral)) {
-                        SpeedMarket sm = SpeedMarket(speedMarketAddress);
-                        buyAmount = (pendingSpeedMarket.buyinAmount * (ONE + sm.safeBoxImpact() + sm.lpFee())) / ONE;
-                    }
-                    IFreeBetsHolder(freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
-                        requestId,
-                        speedMarketAddress,
-                        pendingSpeedMarket.collateral,
-                        buyAmount,
-                        false
-                    );
-                }
+                _confirmFreeBetTrade(
+                    iSpeedMarketsAMM,
+                    requestId,
+                    speedMarketAddress,
+                    freeBetsHolder,
+                    pendingSpeedMarket.user,
+                    pendingSpeedMarket.collateral,
+                    pendingSpeedMarket.buyinAmount,
+                    false
+                );
                 createdSize++;
-                emit LogCreatedSpeedMarket(speedMarketAddress, freeBetsHolder, pendingSpeedMarket.user);
             } catch Error(string memory reason) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogError(reason, pendingSpeedMarket, requestId);
@@ -399,21 +390,17 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                 IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(marketParams)
             returns (address chainedSpeedMarketAddress) {
                 address freeBetsHolder = addressManager.getAddress("FreeBetsHolder");
-                if (chainedSpeedMarketAddress != address(0) && pendingChainedSpeedMarket.user == freeBetsHolder) {
-                    uint buyAmount = pendingChainedSpeedMarket.buyinAmount;
-                    if (iSpeedMarketsAMM.supportedNativeCollateral(pendingChainedSpeedMarket.collateral)) {
-                        ChainedSpeedMarket csm = ChainedSpeedMarket(chainedSpeedMarketAddress);
-                        buyAmount = (pendingChainedSpeedMarket.buyinAmount * (ONE + csm.safeBoxImpact())) / ONE;
-                    }
-                    IFreeBetsHolder(freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
-                        requestId,
-                        chainedSpeedMarketAddress,
-                        pendingChainedSpeedMarket.collateral,
-                        pendingChainedSpeedMarket.buyinAmount,
-                        true
-                    );
-                }
                 requestIdToMarket[requestId] = chainedSpeedMarketAddress;
+                _confirmFreeBetTrade(
+                    iSpeedMarketsAMM,
+                    requestId,
+                    chainedSpeedMarketAddress,
+                    freeBetsHolder,
+                    pendingChainedSpeedMarket.user,
+                    pendingChainedSpeedMarket.collateral,
+                    pendingChainedSpeedMarket.buyinAmount,
+                    true
+                );
                 createdSize++;
             } catch Error(string memory reason) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
@@ -477,6 +464,40 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         int64 maxPrice = int64(uint64((_strikePrice * (ONE + _slippage)) / ONE));
         int64 minPrice = int64(uint64((_strikePrice * (ONE - _slippage)) / ONE));
         return _price > maxPrice || _price < minPrice;
+    }
+
+    function _confirmFreeBetTrade(
+        ISpeedMarketsAMM _iSpeedMarketsAMM,
+        bytes32 _requestId,
+        address _marketAddress,
+        address _freeBetsHolder,
+        address _user,
+        address _collateral,
+        uint _buyinAmount,
+        bool _isChained
+    ) internal {
+        if (_marketAddress == address(0) || _freeBetsHolder == address(0) || _user != _freeBetsHolder) {
+            return;
+        }
+
+        uint buyAmount = _buyinAmount;
+        if (_iSpeedMarketsAMM.supportedNativeCollateral(_collateral)) {
+            if (_isChained) {
+                ChainedSpeedMarket csm = ChainedSpeedMarket(_marketAddress);
+                buyAmount = (_buyinAmount * (ONE + csm.safeBoxImpact())) / ONE;
+            } else {
+                SpeedMarket sm = SpeedMarket(_marketAddress);
+                buyAmount = (_buyinAmount * (ONE + sm.safeBoxImpact() + sm.lpFee())) / ONE;
+            }
+        }
+
+        IFreeBetsHolder(_freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
+            _requestId,
+            _marketAddress,
+            _collateral,
+            buyAmount,
+            _isChained
+        );
     }
 
     function _updatePythPrice(address _pyth, bytes[] calldata _priceUpdateData) internal {
@@ -576,18 +597,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         return pendingChainedSpeedMarkets.length;
     }
 
-    function getChainedAndSpeedMarketsAMMAddresses()
-        external
-        view
-        returns (address chainedSpeedMarketsAMM, address speedMarketsAMM)
-    {
-        string[] memory contractNames = new string[](2);
-        contractNames[0] = "ChainedSpeedMarketsAMM";
-        contractNames[1] = "SpeedMarketsAMM";
-        address[] memory addresses = addressManager.getAddresses(contractNames);
-        return (addresses[0], addresses[1]);
-    }
-
     //////////////////setters/////////////////
 
     /// @notice Set address of address manager
@@ -635,5 +644,4 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
     event LogChainedError(string _errorMessage, PendingChainedSpeedMarket _pendingChainedSpeedMarket, bytes32 _requestId);
     event LogChainedErrorData(bytes _data, PendingChainedSpeedMarket _pendingChainedSpeedMarket, bytes32 _requestId);
-    event LogCreatedSpeedMarket(address _speedMarketAddress, address _freeBetsHolder, address _user);
 }

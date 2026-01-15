@@ -172,7 +172,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 
 		// -------------------------- Price Feed --------------------------
 		let MockFreeBetsHolder = artifacts.require('MockFreeBetsHolder');
-		let mockFreeBetsHolder = await MockFreeBetsHolder.new(creatorAccount);
+		let mockFreeBetsHolder = await MockFreeBetsHolder.new(creatorAccount, addressManager.address);
 		await addressManager.setAddressInAddressBook('FreeBetsHolder', mockFreeBetsHolder.address);
 		await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(toBytes32('eUSD'), toUnit(1));
 		await MockPriceFeedDeployed.setStaticPricePerCurrencyKey(toBytes32('ExoticUSD'), toUnit(2));

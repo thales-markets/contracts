@@ -157,7 +157,7 @@ contract('ChainedSpeedMarkets', (accounts) => {
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
 
 		const MockFreeBetsHolder = artifacts.require('MockFreeBetsHolder');
-		const mockFreeBetsHolder = await MockFreeBetsHolder.new(creatorAccount);
+		const mockFreeBetsHolder = await MockFreeBetsHolder.new(creatorAccount, addressManager.address);
 		await addressManager.setAddressInAddressBook('FreeBetsHolder', mockFreeBetsHolder.address);
 
 		await speedMarketsAMM.setAMMAddresses(

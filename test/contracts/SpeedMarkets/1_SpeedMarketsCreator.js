@@ -149,7 +149,7 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 		const Creator = artifacts.require('SpeedMarketsAMMCreator');
 		creator = await Creator.new();
 		let MockFreeBetsHolder = artifacts.require('MockFreeBetsHolder');
-		let mockFreeBetsHolder = await MockFreeBetsHolder.new(creator.address);
+		let mockFreeBetsHolder = await MockFreeBetsHolder.new(creator.address, addressManager.address);
 
 		await creator.initialize(owner, addressManager.address);
 		await creator.setAddressManager(addressManager.address);
@@ -684,67 +684,6 @@ contract('SpeedMarketsAMMCreator', (accounts) => {
 				activeMarketsSize,
 				activeMarketsSizeBefore,
 				'Should not be created any new chained speed markets!'
-			);
-		});
-	});
-
-	describe('Test getChainedAndSpeedMarketsAMMAddresses', () => {
-		it('Should return correct SpeedMarketsAMM and ChainedSpeedMarketsAMM addresses', async () => {
-			const addresses = await creator.getChainedAndSpeedMarketsAMMAddresses();
-			const returnedChainedAMM = addresses.chainedSpeedMarketsAMM;
-			const returnedSpeedAMM = addresses.speedMarketsAMM;
-
-			console.log('Returned ChainedSpeedMarketsAMM:', returnedChainedAMM);
-			console.log('Returned SpeedMarketsAMM:', returnedSpeedAMM);
-			console.log('Expected ChainedSpeedMarketsAMM:', chainedSpeedMarketsAMM.address);
-			console.log('Expected SpeedMarketsAMM:', speedMarketsAMM.address);
-
-			assert.equal(
-				returnedChainedAMM,
-				chainedSpeedMarketsAMM.address,
-				'ChainedSpeedMarketsAMM address should match'
-			);
-			assert.equal(
-				returnedSpeedAMM,
-				speedMarketsAMM.address,
-				'SpeedMarketsAMM address should match'
-			);
-		});
-
-		it('Should correctly update addresses when AMMs are changed in AddressManager', async () => {
-			// Deploy new AMM contracts
-			const SpeedMarketsAMMContract = artifacts.require('SpeedMarketsAMM');
-			const newSpeedMarketsAMM = await SpeedMarketsAMMContract.new();
-
-			const ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
-			const newChainedSpeedMarketsAMM = await ChainedSpeedMarketsAMMContract.new();
-
-			// Update the addresses in AddressManager
-			await addressManager.setAddressInAddressBook('SpeedMarketsAMM', newSpeedMarketsAMM.address);
-			await addressManager.setAddressInAddressBook(
-				'ChainedSpeedMarketsAMM',
-				newChainedSpeedMarketsAMM.address
-			);
-
-			// Get updated addresses from creator
-			const addresses = await creator.getChainedAndSpeedMarketsAMMAddresses();
-			const returnedChainedAMM = addresses.chainedSpeedMarketsAMM;
-			const returnedSpeedAMM = addresses.speedMarketsAMM;
-
-			console.log('Updated ChainedSpeedMarketsAMM:', returnedChainedAMM);
-			console.log('Updated SpeedMarketsAMM:', returnedSpeedAMM);
-			console.log('Expected new ChainedSpeedMarketsAMM:', newChainedSpeedMarketsAMM.address);
-			console.log('Expected new SpeedMarketsAMM:', newSpeedMarketsAMM.address);
-
-			assert.equal(
-				returnedChainedAMM,
-				newChainedSpeedMarketsAMM.address,
-				'Should return updated ChainedSpeedMarketsAMM address'
-			);
-			assert.equal(
-				returnedSpeedAMM,
-				newSpeedMarketsAMM.address,
-				'Should return updated SpeedMarketsAMM address'
 			);
 		});
 	});

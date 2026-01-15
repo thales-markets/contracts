@@ -73166,293 +73166,293 @@
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
           },
           {
             "contract": "ProxyOwned",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
           },
           {
             "contract": "ProxyOwned",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
           },
           {
             "contract": "ProxyOwned",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
           },
           {
             "contract": "ProxyOwned",
             "label": "_transferredAtInit",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
           },
           {
             "contract": "ProxyPausable",
             "label": "lastPauseTime",
             "type": "t_uint256",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
           },
           {
             "contract": "ProxyPausable",
             "label": "paused",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:12"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
           },
           {
             "contract": "ProxyReentrancyGuard",
             "label": "_guardCounter",
             "type": "t_uint256",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
           },
           {
             "contract": "ProxyReentrancyGuard",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "_activeMarkets",
-            "type": "t_struct(AddressSet)4836_storage",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:37"
+            "type": "t_struct(AddressSet)4901_storage",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:38"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "_maturedMarkets",
-            "type": "t_struct(AddressSet)4836_storage",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:38"
+            "type": "t_struct(AddressSet)4901_storage",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:39"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "sUSD",
             "type": "t_contract(IERC20Upgradeable)470",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:65"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:66"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "speedMarketMastercopy",
             "type": "t_address",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:67"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:68"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "safeBoxImpact",
             "type": "t_uint256",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:69"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:70"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "lpFee",
             "type": "t_uint256",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:70"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:71"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "safeBox",
             "type": "t_address",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:72"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:73"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "supportedAsset",
             "type": "t_mapping(t_bytes32,t_bool)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:74"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:75"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "minimalTimeToMaturity",
             "type": "t_uint256",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:76"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:77"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "maximalTimeToMaturity",
             "type": "t_uint256",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:77"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:78"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "minBuyinAmount",
             "type": "t_uint256",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:79"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:80"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "maxBuyinAmount",
             "type": "t_uint256",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:80"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:81"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "maxRiskPerAsset",
             "type": "t_mapping(t_bytes32,t_uint256)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:82"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:83"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "currentRiskPerAsset",
             "type": "t_mapping(t_bytes32,t_uint256)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:83"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:84"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "assetToPythId",
             "type": "t_mapping(t_bytes32,t_bytes32)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:85"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:86"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "pyth",
             "type": "t_contract(IPyth)1502",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:87"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:88"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "maximumPriceDelay",
             "type": "t_uint64",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:89"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:90"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "stakingThales",
-            "type": "t_contract(IStakingThales)4826",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:91"
+            "type": "t_contract(IStakingThales)4891",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:92"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "_activeMarketsPerUser",
-            "type": "t_mapping(t_address,t_struct(AddressSet)4836_storage)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:93"
+            "type": "t_mapping(t_address,t_struct(AddressSet)4901_storage)",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:94"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "_maturedMarketsPerUser",
-            "type": "t_mapping(t_address,t_struct(AddressSet)4836_storage)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:94"
+            "type": "t_mapping(t_address,t_struct(AddressSet)4901_storage)",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:95"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "whitelistedAddresses",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:96"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:97"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "multiCollateralOnOffRamp",
-            "type": "t_contract(IMultiCollateralOnOffRamp)4407",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:97"
+            "type": "t_contract(IMultiCollateralOnOffRamp)4472",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:98"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "multicollateralEnabled",
             "type": "t_bool",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:98"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:99"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "maxRiskPerAssetAndDirection",
             "type": "t_mapping(t_bytes32,t_mapping(t_enum(Direction)1586,t_uint256))",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:100"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:101"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "currentRiskPerAssetAndDirection",
             "type": "t_mapping(t_bytes32,t_mapping(t_enum(Direction)1586,t_uint256))",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:101"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:102"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "maximumPriceDelayForResolving",
             "type": "t_uint64",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:103"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:104"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "marketHasCreatedAtAttribute",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:105"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:106"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "referrals",
             "type": "t_address",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:107"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:108"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "timeThresholdsForFees",
             "type": "t_array(t_uint256)dyn_storage",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:109"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:110"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "lpFees",
             "type": "t_array(t_uint256)dyn_storage",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:110"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:111"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "speedMarketsAMMUtils",
-            "type": "t_contract(ISpeedMarketsAMMUtils)4717",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:112"
+            "type": "t_contract(ISpeedMarketsAMMUtils)4782",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:113"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "marketHasFeeAttribute",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:114"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:115"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "addressManager",
-            "type": "t_contract(IAddressManager)4324",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:117"
+            "type": "t_contract(IAddressManager)4325",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:118"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "maxSkewImpact",
             "type": "t_uint256",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:119"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:120"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "skewSlippage",
             "type": "t_uint256",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:120"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:121"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "supportedNativeCollateral",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:122"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:123"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "bonusPerCollateral",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:125"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:126"
           },
           {
             "contract": "SpeedMarketsAMM",
             "label": "assetToChainlinkId",
             "type": "t_mapping(t_bytes32,t_bytes32)",
-            "src": "contracts\\SpeedMarkets\\SpeedMarketsAMM.sol:127"
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMM.sol:128"
           }
         ],
         "types": {
-          "t_struct(AddressSet)4836_storage": {
+          "t_struct(AddressSet)4901_storage": {
             "label": "struct AddressSetLib.AddressSet",
             "members": [
               {
@@ -73501,16 +73501,16 @@
           "t_uint64": {
             "label": "uint64"
           },
-          "t_contract(IStakingThales)4826": {
+          "t_contract(IStakingThales)4891": {
             "label": "contract IStakingThales"
           },
-          "t_mapping(t_address,t_struct(AddressSet)4836_storage)": {
+          "t_mapping(t_address,t_struct(AddressSet)4901_storage)": {
             "label": "mapping(address => struct AddressSetLib.AddressSet)"
           },
           "t_mapping(t_address,t_bool)": {
             "label": "mapping(address => bool)"
           },
-          "t_contract(IMultiCollateralOnOffRamp)4407": {
+          "t_contract(IMultiCollateralOnOffRamp)4472": {
             "label": "contract IMultiCollateralOnOffRamp"
           },
           "t_mapping(t_bytes32,t_mapping(t_enum(Direction)1586,t_uint256))": {
@@ -73529,10 +73529,10 @@
           "t_array(t_uint256)dyn_storage": {
             "label": "uint256[]"
           },
-          "t_contract(ISpeedMarketsAMMUtils)4717": {
+          "t_contract(ISpeedMarketsAMMUtils)4782": {
             "label": "contract ISpeedMarketsAMMUtils"
           },
-          "t_contract(IAddressManager)4324": {
+          "t_contract(IAddressManager)4325": {
             "label": "contract IAddressManager"
           }
         }
@@ -74296,6 +74296,435 @@
           },
           "t_address": {
             "label": "address"
+          }
+        }
+      }
+    },
+    "bab688d2b929b1a349022eab555fccf6eee9a87a0dd3910605552845d3c4cbb8": {
+      "address": "0x524ebb4DB0B92FDdbA9B33ff16eD0D28818fa39B",
+      "txHash": "0x2e3c1ad03cec77c6781c347f7223f940e2e312739b998b36270d1ef46d4f4ab6",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "SpeedMarketsAMMCreator",
+            "label": "maxCreationDelay",
+            "type": "t_uint64",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMCreator.sol:96"
+          },
+          {
+            "contract": "SpeedMarketsAMMCreator",
+            "label": "pendingSpeedMarkets",
+            "type": "t_array(t_struct(PendingSpeedMarket)6798_storage)dyn_storage",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMCreator.sol:98"
+          },
+          {
+            "contract": "SpeedMarketsAMMCreator",
+            "label": "pendingChainedSpeedMarkets",
+            "type": "t_array(t_struct(PendingChainedSpeedMarket)6840_storage)dyn_storage",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMCreator.sol:99"
+          },
+          {
+            "contract": "SpeedMarketsAMMCreator",
+            "label": "addressManager",
+            "type": "t_contract(IAddressManager)8631",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMCreator.sol:101"
+          },
+          {
+            "contract": "SpeedMarketsAMMCreator",
+            "label": "whitelistedAddresses",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMCreator.sol:103"
+          },
+          {
+            "contract": "SpeedMarketsAMMCreator",
+            "label": "requestIdToMarket",
+            "type": "t_mapping(t_bytes32,t_address)",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMCreator.sol:105"
+          }
+        ],
+        "types": {
+          "t_uint64": {
+            "label": "uint64"
+          },
+          "t_array(t_struct(PendingSpeedMarket)6798_storage)dyn_storage": {
+            "label": "struct SpeedMarketsAMMCreator.PendingSpeedMarket[]"
+          },
+          "t_struct(PendingSpeedMarket)6798_storage": {
+            "label": "struct SpeedMarketsAMMCreator.PendingSpeedMarket",
+            "members": [
+              {
+                "label": "user",
+                "type": "t_address"
+              },
+              {
+                "label": "asset",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "strikeTime",
+                "type": "t_uint64"
+              },
+              {
+                "label": "delta",
+                "type": "t_uint64"
+              },
+              {
+                "label": "strikePrice",
+                "type": "t_uint256"
+              },
+              {
+                "label": "strikePriceSlippage",
+                "type": "t_uint256"
+              },
+              {
+                "label": "direction",
+                "type": "t_enum(Direction)4046"
+              },
+              {
+                "label": "collateral",
+                "type": "t_address"
+              },
+              {
+                "label": "buyinAmount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "referrer",
+                "type": "t_address"
+              },
+              {
+                "label": "skewImpact",
+                "type": "t_uint256"
+              },
+              {
+                "label": "createdAt",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_enum(Direction)4046": {
+            "label": "enum SpeedMarket.Direction",
+            "members": [
+              "Up",
+              "Down"
+            ]
+          },
+          "t_array(t_struct(PendingChainedSpeedMarket)6840_storage)dyn_storage": {
+            "label": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket[]"
+          },
+          "t_struct(PendingChainedSpeedMarket)6840_storage": {
+            "label": "struct SpeedMarketsAMMCreator.PendingChainedSpeedMarket",
+            "members": [
+              {
+                "label": "user",
+                "type": "t_address"
+              },
+              {
+                "label": "asset",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "timeFrame",
+                "type": "t_uint64"
+              },
+              {
+                "label": "strikePrice",
+                "type": "t_uint256"
+              },
+              {
+                "label": "strikePriceSlippage",
+                "type": "t_uint256"
+              },
+              {
+                "label": "directions",
+                "type": "t_array(t_enum(Direction)4046)dyn_storage"
+              },
+              {
+                "label": "collateral",
+                "type": "t_address"
+              },
+              {
+                "label": "buyinAmount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "referrer",
+                "type": "t_address"
+              },
+              {
+                "label": "createdAt",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_array(t_enum(Direction)4046)dyn_storage": {
+            "label": "enum SpeedMarket.Direction[]"
+          },
+          "t_contract(IAddressManager)8631": {
+            "label": "contract IAddressManager"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_bytes32,t_address)": {
+            "label": "mapping(bytes32 => address)"
+          }
+        }
+      }
+    },
+    "6ac9756a79b2c8d4471272944334f50860f79537f8826ab7b71d59a28b6bedc0": {
+      "address": "0xD2026cf7a0F3871370570eb80a4ed3F0aEf82505",
+      "txHash": "0x26cae6d059d70d402be1bda92d4e6fe917fe969bf9d9c5a27439c3175ba57978",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "SpeedMarketsAMMResolver",
+            "label": "addressManager",
+            "type": "t_contract(IAddressManager)8703",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMResolver.sol:51"
+          },
+          {
+            "contract": "SpeedMarketsAMMResolver",
+            "label": "speedMarketsAMM",
+            "type": "t_contract(ISpeedMarketsAMM)9295",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMResolver.sol:52"
+          },
+          {
+            "contract": "SpeedMarketsAMMResolver",
+            "label": "chainedSpeedMarketsAMM",
+            "type": "t_contract(IChainedSpeedMarketsAMM)8814",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMResolver.sol:53"
+          }
+        ],
+        "types": {
+          "t_contract(IAddressManager)8703": {
+            "label": "contract IAddressManager"
+          },
+          "t_contract(ISpeedMarketsAMM)9295": {
+            "label": "contract ISpeedMarketsAMM"
+          },
+          "t_contract(IChainedSpeedMarketsAMM)8814": {
+            "label": "contract IChainedSpeedMarketsAMM"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
+          }
+        }
+      }
+    },
+    "4975720aa96d4ee9c000f1ca123767ab712fab3ca73724beabf3cfcb9d4e66b7": {
+      "address": "0x80831D3Ba21284267e31015E8319fe22E32469d4",
+      "txHash": "0xf71b7a24d9cbf202cb9ba945ef97800bf2d617bad9f696f6de6a8b39e83861b2",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "SpeedMarketsAMMData",
+            "label": "speedMarketsAMM",
+            "type": "t_address",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMData.sol:22"
+          },
+          {
+            "contract": "SpeedMarketsAMMData",
+            "label": "chainedSpeedMarketsAMM",
+            "type": "t_address",
+            "src": "contracts/SpeedMarkets/SpeedMarketsAMMData.sol:24"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
           }
         }
       }

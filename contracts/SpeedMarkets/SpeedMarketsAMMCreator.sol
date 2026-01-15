@@ -226,7 +226,6 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
             try iSpeedMarketsAMM.createNewMarket(marketParams) returns (address speedMarketAddress) {
                 requestIdToMarket[requestId] = speedMarketAddress;
-                emit LogCreatedSpeedMarket(speedMarketAddress, freeBetsHolder, pendingSpeedMarket.user);
                 if (
                     speedMarketAddress != address(0) &&
                     freeBetsHolder != address(0) &&
@@ -246,6 +245,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
                     );
                 }
                 createdSize++;
+                emit LogCreatedSpeedMarket(speedMarketAddress, freeBetsHolder, pendingSpeedMarket.user);
             } catch Error(string memory reason) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
                 emit LogError(reason, pendingSpeedMarket, requestId);

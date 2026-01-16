@@ -23,8 +23,6 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
 
     address public chainedSpeedMarketsAMM;
 
-    bool public freeBetsEnabled;
-
     struct MarketData {
         address user;
         address freeBetUser;
@@ -133,12 +131,21 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         emit SetSpeedMarketsAMM(_speedMarketsAMM, _chainedSpeedMarketsAMM);
     }
 
-    function setFreeBetsEnabled(bool _freeBetsEnabled) external onlyOwner {
-        freeBetsEnabled = _freeBetsEnabled;
-        emit SetFreeBetsEnabled(_freeBetsEnabled);
-    }
-
     //////////////////getters/////////////////
+
+    function _getFreeBetsHolder(address addressManager)
+        internal
+        view
+        returns (address freeBetsHolder, bool freeBetsEnabled)
+    {
+        try IAddressManager(addressManager).getAddress("FreeBetsHolder") returns (address _freeBetsHolder) {
+            freeBetsHolder = _freeBetsHolder;
+            freeBetsEnabled = _freeBetsHolder != address(0);
+        } catch {
+            freeBetsHolder = address(0);
+            freeBetsEnabled = false;
+        }
+    }
 
     function _getMarketCollateralOrFallback(address market, address fallbackCollateral) internal view returns (address) {
         // This is the function selector for "collateral()"
@@ -196,7 +203,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         MarketData[] memory markets = new MarketData[](marketsArray.length);
 
         address addressManager = ISpeedMarketsAMM(speedMarketsAMM).addressManager();
-        address freeBetsHolder = freeBetsEnabled ? IAddressManager(addressManager).getAddress("FreeBetsHolder") : address(0);
+        (address freeBetsHolder, bool freeBetsEnabled) = _getFreeBetsHolder(addressManager);
 
         for (uint i = 0; i < marketsArray.length; i++) {
             SpeedMarket market = SpeedMarket(marketsArray[i]);
@@ -245,7 +252,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         ChainedMarketData[] memory markets = new ChainedMarketData[](marketsArray.length);
 
         address addressManager = ISpeedMarketsAMM(speedMarketsAMM).addressManager();
-        address freeBetsHolder = freeBetsEnabled ? IAddressManager(addressManager).getAddress("FreeBetsHolder") : address(0);
+        (address freeBetsHolder, bool freeBetsEnabled) = _getFreeBetsHolder(addressManager);
 
         for (uint i = 0; i < marketsArray.length; i++) {
             ChainedSpeedMarket market = ChainedSpeedMarket(marketsArray[i]);
@@ -339,7 +346,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         }
 
         address addressManager = ISpeedMarketsAMM(speedMarketsAMM).addressManager();
-        address freeBetsHolder = freeBetsEnabled ? IAddressManager(addressManager).getAddress("FreeBetsHolder") : address(0);
+        (address freeBetsHolder, bool freeBetsEnabled) = _getFreeBetsHolder(addressManager);
 
         return
             SpeedMarketsAMMParameters(
@@ -390,7 +397,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         }
 
         address addressManager = ISpeedMarketsAMM(speedMarketsAMM).addressManager();
-        address freeBetsHolder = freeBetsEnabled ? IAddressManager(addressManager).getAddress("FreeBetsHolder") : address(0);
+        (address freeBetsHolder, bool freeBetsEnabled) = _getFreeBetsHolder(addressManager);
 
         return
             ChainedSpeedMarketsAMMParameters(
@@ -431,5 +438,4 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
     //////////////////events/////////////////
 
     event SetSpeedMarketsAMM(address _speedMarketsAMM, address _chainedSpeedMarketsAMM);
-    event SetFreeBetsEnabled(bool _freeBetsEnabled);
 }

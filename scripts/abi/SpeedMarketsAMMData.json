@@ -49,6 +49,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "_freeBetsEnabled",
+        "type": "bool"
+      }
+    ],
+    "name": "SetFreeBetsEnabled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_speedMarketsAMM",
         "type": "address"
@@ -78,6 +91,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "freeBetsEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -701,6 +727,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_freeBetsEnabled",
+        "type": "bool"
+      }
+    ],
+    "name": "setFreeBetsEnabled",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

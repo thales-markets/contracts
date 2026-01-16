@@ -17,6 +17,9 @@ module.exports = {
 			from: owner,
 		});
 
+		let FreeBetsHolderContract = artifacts.require('MockFreeBetsHolder');
+		let freeBetsHolder = await FreeBetsHolderContract.new(speedMarketsAMM.address, ZERO_ADDRESS);
+
 		const Over = artifacts.require('ExoticUSD');
 		const over = await Over.new();
 
@@ -126,6 +129,7 @@ module.exports = {
 		);
 
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMMCreator', creatorAccount);
+		await addressManager.setAddressInAddressBook('FreeBetsHolder', freeBetsHolder.address);
 
 		// Deploy a minimal ChainedSpeedMarketsAMM to satisfy resolver initialization
 		let ChainedSpeedMarketsAMMContract = artifacts.require('ChainedSpeedMarketsAMM');
@@ -171,7 +175,7 @@ module.exports = {
 		);
 		await addressManager.setAddressInAddressBook('SpeedMarketsAMM', speedMarketsAMM.address);
 		await addressManager.setAddressInAddressBook('PriceFeed', MockPriceFeedDeployed.address);
-
+		await freeBetsHolder.setAddressManager(addressManager.address);
 		await speedMarketsAMM.setSupportedNativeCollateralAndBonus(
 			over.address,
 			true,

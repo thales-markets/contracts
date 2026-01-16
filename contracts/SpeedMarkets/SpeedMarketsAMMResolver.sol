@@ -17,6 +17,7 @@ import "../interfaces/IAddressManager.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
 import "../interfaces/IMultiCollateralOnOffRamp.sol";
 import "../interfaces/IChainedSpeedMarketsAMM.sol";
+import "../interfaces/IFreeBetsHolder.sol";
 import "../interfaces/IChainlinkVerifierProxy.sol";
 import "../interfaces/IChainlinkFeeManager.sol";
 import "../interfaces/IWeth.sol";
@@ -176,6 +177,28 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
 
     /// ========== INTERNAL FUNCTIONS ==========
 
+    function _confirmFreeBetResolved(
+        address _market,
+        address _user,
+        uint _payout,
+        uint _buyinAmount,
+        address _collateral,
+        uint _safeBoxImpact,
+        uint _lpFee,
+        bool _isChained
+    ) internal {
+        IFreeBetsHolder iFreeBetsHolder = IFreeBetsHolder(addressManager.getAddress("FreeBetsHolder"));
+        if (_user != address(iFreeBetsHolder)) {
+            return;
+        }
+
+        uint buyAmount = _buyinAmount;
+        if (speedMarketsAMM.supportedNativeCollateral(_collateral)) {
+            buyAmount = (_buyinAmount * (ONE + _safeBoxImpact + _lpFee)) / ONE;
+        }
+        iFreeBetsHolder.confirmSpeedMarketResolved(_market, _payout, buyAmount, _collateral, _isChained);
+    }
+
     function _verifyChainlinkReport(bytes memory unverifiedReport)
         internal
         returns (ChainlinkStructs.ReportV3 memory verifiedReport)
@@ -262,6 +285,16 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         if (price <= 0) revert InvalidPrice();
 
         speedMarketsAMM.resolveMarketWithPrice(market, price);
+        _confirmFreeBetResolved(
+            market,
+            sm.user(),
+            sm.payout(),
+            sm.buyinAmount(),
+            sm.collateral(),
+            sm.safeBoxImpact(),
+            sm.lpFee(),
+            false
+        );
     }
 
     function _resolveMarketWithOfframp(
@@ -303,6 +336,16 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         if (!speedMarketsAMM.canResolveMarket(_market) || isUserWinner) revert CanNotResolve();
 
         speedMarketsAMM.resolveMarketWithPrice(_market, _finalPrice);
+        _confirmFreeBetResolved(
+            _market,
+            sm.user(),
+            sm.payout(),
+            sm.buyinAmount(),
+            sm.collateral(),
+            sm.safeBoxImpact(),
+            sm.lpFee(),
+            false
+        );
     }
 
     /// ========== CHAINED MARKETS FUNCTIONS ==========
@@ -418,6 +461,17 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
         }
 
         chainedSpeedMarketsAMM.resolveMarketWithPrices(market, prices, false);
+
+        _confirmFreeBetResolved(
+            market,
+            cs.user(),
+            cs.payout(),
+            cs.buyinAmount(),
+            cs.collateral(),
+            cs.safeBoxImpact(),
+            0, // no lpFee for chained markets
+            true
+        );
     }
 
     function _resolveChainedMarketWithOfframp(
@@ -465,6 +519,16 @@ contract SpeedMarketsAMMResolver is Initializable, ProxyOwned, ProxyPausable, Pr
             if (userLostDirection) {
                 // User lost, manual resolution is allowed
                 chainedSpeedMarketsAMM.resolveMarketWithPrices(_market, _finalPrices, true);
+                _confirmFreeBetResolved(
+                    _market,
+                    chainedMarket.user(),
+                    chainedMarket.payout(),
+                    chainedMarket.buyinAmount(),
+                    chainedMarket.collateral(),
+                    chainedMarket.safeBoxImpact(),
+                    0, // no lpFee for chained markets
+                    true
+                );
                 return;
             }
             currentPrice = _finalPrices[i];

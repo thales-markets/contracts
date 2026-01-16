@@ -18,6 +18,11 @@ import "./ChainlinkStructs.sol";
 import "../interfaces/IAddressManager.sol";
 import "../interfaces/ISpeedMarketsAMM.sol";
 import "../interfaces/IChainedSpeedMarketsAMM.sol";
+import "../interfaces/IFreeBetsHolder.sol";
+
+import "./SpeedMarketsAMM.sol";
+
+/// @title speed/chained markets prepared for creation with latest Pyth price
 import "../interfaces/IChainlinkVerifierProxy.sol";
 import "../interfaces/IChainlinkFeeManager.sol";
 import "../interfaces/IWeth.sol";
@@ -158,6 +163,7 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         require(_params.priceUpdateData.length > 0, "Empty price update data");
 
         IAddressManager.Addresses memory contractsAddresses = addressManager.getAddresses();
+        address freeBetsHolder = addressManager.getAddress("FreeBetsHolder");
         if (_params.oracleSource == ISpeedMarketsAMM.OracleSource.Pyth) {
             _updatePythPrice(contractsAddresses.pyth, _params.priceUpdateData);
         }
@@ -220,6 +226,16 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
 
             try iSpeedMarketsAMM.createNewMarket(marketParams) returns (address speedMarketAddress) {
                 requestIdToMarket[requestId] = speedMarketAddress;
+                _confirmFreeBetTrade(
+                    iSpeedMarketsAMM,
+                    requestId,
+                    speedMarketAddress,
+                    freeBetsHolder,
+                    pendingSpeedMarket.user,
+                    pendingSpeedMarket.collateral,
+                    pendingSpeedMarket.buyinAmount,
+                    false
+                );
                 createdSize++;
             } catch Error(string memory reason) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
@@ -373,7 +389,18 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
             try
                 IChainedSpeedMarketsAMM(addressManager.getAddress("ChainedSpeedMarketsAMM")).createNewMarket(marketParams)
             returns (address chainedSpeedMarketAddress) {
+                address freeBetsHolder = addressManager.getAddress("FreeBetsHolder");
                 requestIdToMarket[requestId] = chainedSpeedMarketAddress;
+                _confirmFreeBetTrade(
+                    iSpeedMarketsAMM,
+                    requestId,
+                    chainedSpeedMarketAddress,
+                    freeBetsHolder,
+                    pendingChainedSpeedMarket.user,
+                    pendingChainedSpeedMarket.collateral,
+                    pendingChainedSpeedMarket.buyinAmount,
+                    true
+                );
                 createdSize++;
             } catch Error(string memory reason) {
                 requestIdToMarket[requestId] = DEAD_ADDRESS;
@@ -437,6 +464,40 @@ contract SpeedMarketsAMMCreator is Initializable, ProxyOwned, ProxyPausable, Pro
         int64 maxPrice = int64(uint64((_strikePrice * (ONE + _slippage)) / ONE));
         int64 minPrice = int64(uint64((_strikePrice * (ONE - _slippage)) / ONE));
         return _price > maxPrice || _price < minPrice;
+    }
+
+    function _confirmFreeBetTrade(
+        ISpeedMarketsAMM _iSpeedMarketsAMM,
+        bytes32 _requestId,
+        address _marketAddress,
+        address _freeBetsHolder,
+        address _user,
+        address _collateral,
+        uint _buyinAmount,
+        bool _isChained
+    ) internal {
+        if (_marketAddress == address(0) || _freeBetsHolder == address(0) || _user != _freeBetsHolder) {
+            return;
+        }
+
+        uint buyAmount = _buyinAmount;
+        if (_iSpeedMarketsAMM.supportedNativeCollateral(_collateral)) {
+            if (_isChained) {
+                ChainedSpeedMarket csm = ChainedSpeedMarket(_marketAddress);
+                buyAmount = (_buyinAmount * (ONE + csm.safeBoxImpact())) / ONE;
+            } else {
+                SpeedMarket sm = SpeedMarket(_marketAddress);
+                buyAmount = (_buyinAmount * (ONE + sm.safeBoxImpact() + sm.lpFee())) / ONE;
+            }
+        }
+
+        IFreeBetsHolder(_freeBetsHolder).confirmSpeedOrChainedSpeedMarketTrade(
+            _requestId,
+            _marketAddress,
+            _collateral,
+            buyAmount,
+            _isChained
+        );
     }
 
     function _updatePythPrice(address _pyth, bytes[] calldata _priceUpdateData) internal {

@@ -133,6 +133,20 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
 
     //////////////////getters/////////////////
 
+    function _getFreeBetsHolder(address addressManager)
+        internal
+        view
+        returns (address freeBetsHolder, bool freeBetsEnabled)
+    {
+        try IAddressManager(addressManager).getAddress("FreeBetsHolder") returns (address _freeBetsHolder) {
+            freeBetsHolder = _freeBetsHolder;
+            freeBetsEnabled = _freeBetsHolder != address(0);
+        } catch {
+            freeBetsHolder = address(0);
+            freeBetsEnabled = false;
+        }
+    }
+
     function _getMarketCollateralOrFallback(address market, address fallbackCollateral) internal view returns (address) {
         // This is the function selector for "collateral()"
         bytes4 selector = bytes4(keccak256("collateral()"));
@@ -189,12 +203,14 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         MarketData[] memory markets = new MarketData[](marketsArray.length);
 
         address addressManager = ISpeedMarketsAMM(speedMarketsAMM).addressManager();
-        address freeBetsHolder = IAddressManager(addressManager).getAddress("FreeBetsHolder");
+        (address freeBetsHolder, bool freeBetsEnabled) = _getFreeBetsHolder(addressManager);
 
         for (uint i = 0; i < marketsArray.length; i++) {
             SpeedMarket market = SpeedMarket(marketsArray[i]);
             markets[i].user = market.user();
-            markets[i].freeBetUser = IFreeBetsHolder(freeBetsHolder).ticketToUser(address(market));
+            markets[i].freeBetUser = freeBetsEnabled
+                ? IFreeBetsHolder(freeBetsHolder).ticketToUser(address(market))
+                : address(0);
             markets[i].asset = market.asset();
             markets[i].strikeTime = market.strikeTime();
             markets[i].strikePrice = market.strikePrice();
@@ -236,12 +252,14 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         ChainedMarketData[] memory markets = new ChainedMarketData[](marketsArray.length);
 
         address addressManager = ISpeedMarketsAMM(speedMarketsAMM).addressManager();
-        address freeBetsHolder = IAddressManager(addressManager).getAddress("FreeBetsHolder");
+        (address freeBetsHolder, bool freeBetsEnabled) = _getFreeBetsHolder(addressManager);
 
         for (uint i = 0; i < marketsArray.length; i++) {
             ChainedSpeedMarket market = ChainedSpeedMarket(marketsArray[i]);
             markets[i].user = market.user();
-            markets[i].freeBetUser = IFreeBetsHolder(freeBetsHolder).ticketToUser(address(market));
+            markets[i].freeBetUser = freeBetsEnabled
+                ? IFreeBetsHolder(freeBetsHolder).ticketToUser(address(market))
+                : address(0);
             markets[i].asset = market.asset();
             markets[i].timeFrame = market.timeFrame();
             markets[i].initialStrikeTime = market.initialStrikeTime();
@@ -328,7 +346,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         }
 
         address addressManager = ISpeedMarketsAMM(speedMarketsAMM).addressManager();
-        address freeBetsHolder = IAddressManager(addressManager).getAddress("FreeBetsHolder");
+        (address freeBetsHolder, bool freeBetsEnabled) = _getFreeBetsHolder(addressManager);
 
         return
             SpeedMarketsAMMParameters(
@@ -336,11 +354,11 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
                 allLengths[1], // numMaturedMarkets
                 _walletAddress != address(0) ? allLengths[2] : 0, // numActiveMarketsPerUser
                 _walletAddress != address(0)
-                    ? IFreeBetsHolder(freeBetsHolder).numOfActiveSpeedMarketsPerUser(_walletAddress)
+                    ? freeBetsEnabled ? IFreeBetsHolder(freeBetsHolder).numOfActiveSpeedMarketsPerUser(_walletAddress) : 0
                     : 0, // numFreeBetActiveMarketsPerUser
                 _walletAddress != address(0) ? allLengths[3] : 0, // numMaturedMarketsPerUser
                 _walletAddress != address(0)
-                    ? IFreeBetsHolder(freeBetsHolder).numOfResolvedSpeedMarketsPerUser(_walletAddress)
+                    ? freeBetsEnabled ? IFreeBetsHolder(freeBetsHolder).numOfResolvedSpeedMarketsPerUser(_walletAddress) : 0
                     : 0, // numFreeBetMaturedMarketsPerUser
                 ISpeedMarketsAMM(speedMarketsAMM).minBuyinAmount(),
                 ISpeedMarketsAMM(speedMarketsAMM).maxBuyinAmount(),
@@ -379,7 +397,7 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
         }
 
         address addressManager = ISpeedMarketsAMM(speedMarketsAMM).addressManager();
-        address freeBetsHolder = IAddressManager(addressManager).getAddress("FreeBetsHolder");
+        (address freeBetsHolder, bool freeBetsEnabled) = _getFreeBetsHolder(addressManager);
 
         return
             ChainedSpeedMarketsAMMParameters(
@@ -387,11 +405,15 @@ contract SpeedMarketsAMMData is Initializable, ProxyOwned, ProxyPausable {
                 allLengths[1], // numMaturedMarkets
                 _walletAddress != address(0) ? allLengths[2] : 0, // numActiveMarketsPerUser
                 _walletAddress != address(0)
-                    ? IFreeBetsHolder(freeBetsHolder).numOfActiveChainedSpeedMarketsPerUser(_walletAddress)
+                    ? freeBetsEnabled
+                        ? IFreeBetsHolder(freeBetsHolder).numOfActiveChainedSpeedMarketsPerUser(_walletAddress)
+                        : 0
                     : 0, // numFreeBetActiveMarketsPerUser
                 _walletAddress != address(0) ? allLengths[3] : 0, // numMaturedMarketsPerUser
                 _walletAddress != address(0)
-                    ? IFreeBetsHolder(freeBetsHolder).numOfResolvedChainedSpeedMarketsPerUser(_walletAddress)
+                    ? freeBetsEnabled
+                        ? IFreeBetsHolder(freeBetsHolder).numOfResolvedChainedSpeedMarketsPerUser(_walletAddress)
+                        : 0
                     : 0, // numFreeBetMaturedMarketsPerUser
                 minChainedMarkets,
                 maxChainedMarkets,

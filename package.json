@@ -37,7 +37,7 @@
 		"dotenv": "^6.1.0",
 		"eslint": "7.6.0",
 		"ethers": "^5.5.1",
-		"hardhat": "~2.1.2",
+		"hardhat": "~2.28.3",
 		"hardhat-gas-reporter": "~1.0.4",
 		"husky": "^8.0.0",
 		"prettier": "^2.8.8",

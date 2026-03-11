@@ -196,7 +196,7 @@
 		"PositionalMarketDataImplementationUSDC": "0xDb36A40e866c2ef7ba30385AbFD6335580631eaf",
 		"RangedPositionMastercopyUSDC": "0xB79bb051a80a8c4330ce3875d56061712ea8d88b",
 		"RangedMarketMastercopyUSDC": "0x13DC6B44f6604695704ED3892ea0D5BA86becffd",
-		"MarchMadnessV2": "0x74A498769a6B9E5c6C89bd28a4720c52C904b81f",
+		"MarchMadnessV2": "0x30B887a0ef84C65624518ca749fE0fbBaaf404dF",
 		"SpeedMarketsAMMUtilsImplementation": "0x9F14ED1fD19b102AFD873690031266fACfB34288",
 		"SpeedMarketsAMMResolver": "0x012Aed94088c09B082A783C3D053C0e9FD14f052",
 		"SpeedMarketsAMMResolverImplementation": "0x689fbE4f1ABADe46846CC01DA2dA9488c85aF049"
@@ -344,7 +344,7 @@
 		"CrossChainCollectorImplementation": "0x8b186D1C759e4d37471A89821c7f0a68E10C5F5F",
 		"SafeBoxBuffer": "0xEd31481E4B1ded06ee5ed48C0205fA479Ffeb866",
 		"SafeBoxBufferImplementation": "0x38a50ebB6b299361D4492D488F95e13bE0A6b693",
-		"MarchMadnessV2": "0xb3b8F1d9525A5128F2A4C6Da657c08ecd210ad79",
+		"MarchMadnessV2": "0x94dBB1B8D4FCD49252c6f452f679d75c70b02c07",
 		"MarchMadnessV2Data": "0x9A978c08e1874b24E391E7772707CcB39bd8fB7C",
 		"PriceFeedWithTHALES": "0x18bD8BEF64285BF9ff6fC0c94607dDcF2eFaB182",
 		"PriceFeedWithTHALESImplementation": "0xdD462615884E70C80037cCf8Aa0f82cb06056D81",
@@ -476,7 +476,7 @@
 		"SpeedMarketsAMMCreator": "0x6B5FE966Ea9B05d8E628E772B0b745734D069983",
 		"SpeedMarketsAMMCreatorImplementation": "0xB79bb051a80a8c4330ce3875d56061712ea8d88b",
 		"SessionValidationModule": "0x1E82dbfb6BefF4b4799a1a688d09B259eb173F64",
-		"MarchMadnessV2": "0xd56e477a63C5b20959E1B93bB436cBF0179e2F19",
+		"MarchMadnessV2": "0x94A00A4501780fca8a1657C6a454Afe67e2DA207",
 		"SpeedMarketsAMMResolver": "0x629F065DFDD9141Dec49782E25Bf2B7E510585E6",
 		"SpeedMarketsAMMResolverImplementation": "0x13DC6B44f6604695704ED3892ea0D5BA86becffd",
 		"SpeedMarketsAMMUtilsImplementation": "0x91244D1924Db9B301473f395be8075eAD9C7a66C"
@@ -598,7 +598,7 @@
 		"StakingDataImplementation": "0xce05F7481Fe2F6668189D941563b560772068f13",
 		"PriceFeedNew": "0x7f2B26AD4Cf0811247A74B0a7dC5959D80321572",
 		"PriceFeedNewImplementation": "0xf55b63C7A692be226EddBEe56EF2b84a25f3212F",
-		"MarchMadnessV2": "0x748aCe6036061D965566d62ae103a56efE86C23d",
+		"MarchMadnessV2": "0x9416194621DC9034D1947646708b6B4F974b1Ae8",
 		"SpeedMarketsAMMResolver": "0xB823AfB72fa23b0Af90b7E1891c2C0864eE82c3b",
 		"SpeedMarketsAMMResolverImplementation": "0x365c703220421Cd4986169dbEdD6B050dd7294c0",
 		"SpeedMarketsAMMUtilsImplementation": "0x8C506C5d4119cC740Af32290398BE687c74D598d"

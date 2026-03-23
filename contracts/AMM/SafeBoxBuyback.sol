@@ -12,9 +12,14 @@ import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "../utils/libraries/UniswapMath.sol";
+import "../interfaces/IPriceFeed.sol";
 
 contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
+
+    uint private constant ONE = 1e18;
+    uint private constant DEFAULT_MAX_ALLOWED_SLIPPAGE = 1e17; // 10%
+    bytes32 private constant DEFAULT_OVER_KEY = 0x4f56455200000000000000000000000000000000000000000000000000000000;
 
     IERC20Upgradeable public sUSD;
     IERC20Upgradeable public thalesToken;
@@ -32,6 +37,9 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
     uint256 public minAccepted;
 
     bytes public pathToUse;
+
+    // append only for proxy safety
+    IPriceFeed public priceFeed;
 
     function initialize(address _owner, IERC20Upgradeable _sUSD) public initializer {
         setOwner(_owner);
@@ -70,11 +78,18 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
         // Approve the router to spend tokenIn.
         TransferHelper.safeApprove(tokenIn, address(swapRouter), amountIn);
 
+        uint256 uniswapMinAccepted;
         uint256 _minAccepted = minAccepted == 0 ? 95 : minAccepted;
         uint256 ratio;
+
         if (pathToUse.length == 0) {
             ratio = _getRatio(tokenIn, tokenOut, poolFee);
+            uniswapMinAccepted = (amountIn * ratio * _minAccepted) / (100 * 10**18);
+        } else {
+            uniswapMinAccepted = minAccepted;
         }
+
+        uint256 oracleMinAccepted = _getOracleMinAccepted(amountIn);
 
         // Multiple pool swaps are encoded through bytes called a `path`. A path is a sequence of token addresses and poolFees that define the pools used in the swaps.
         // The format for pool encoding is (tokenIn, fee, tokenOut/tokenIn, fee, tokenOut) where tokenIn/tokenOut parameter is the shared token across the pools.
@@ -85,11 +100,23 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
             recipient: address(this),
             deadline: block.timestamp + 15,
             amountIn: amountIn,
-            amountOutMinimum: pathToUse.length == 0 ? (amountIn * ratio * _minAccepted) / (100 * 10**18) : minAccepted
+            amountOutMinimum: _max(uniswapMinAccepted, oracleMinAccepted)
         });
 
         // The call to `exactInput` executes the swap.
         amountOut = swapRouter.exactInput(params);
+    }
+
+    function _getOracleMinAccepted(uint256 amountIn) internal view returns (uint256) {
+        require(address(priceFeed) != address(0), "Price feed not set");
+
+        uint256 thalesRate = priceFeed.rateForCurrency(DEFAULT_OVER_KEY);
+        require(thalesRate > 0, "Invalid THALES rate");
+
+        // assumes sUSD = $1 and THALES/OVER feed is returned in 18 decimals
+        uint256 expectedThalesOut = (amountIn * ONE) / thalesRate;
+
+        return (expectedThalesOut * (ONE - DEFAULT_MAX_ALLOWED_SLIPPAGE)) / ONE;
     }
 
     /// @notice _getRatio returns ratio between tokenA and tokenB based on prices fetched from
@@ -215,7 +242,7 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
         sUSD.transfer(account, amount);
     }
 
-    /// @notice retrieveThalesAmount retrieves THALES from this contract
+    /// @notice retrieveWETHAmount retrieves WETH from this contract
     /// @param account where to send the tokens
     /// @param amount how much to retrieve
     function retrieveThalesAmount(address payable account, uint amount) external onlyOwner {
@@ -234,14 +261,30 @@ contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
         pathToUse = path;
     }
 
+    /// @notice Sets the address of the price feed used for oracle-based slippage protection
+    /// @dev The price feed is used to derive a minimum acceptable output for buybacks,
+    /// preventing manipulation of AMM prices (e.g. via flashloans).
+    /// Can only be called by the contract owner.
+    /// @param _priceFeed Address of the price feed contract
+    function setPriceFeed(address _priceFeed) external onlyOwner {
+        require(_priceFeed != address(0), "Invalid address");
+        priceFeed = IPriceFeed(_priceFeed);
+        emit PriceFeedAddressChanged(_priceFeed);
+    }
+
+    function _max(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a >= b ? a : b;
+    }
+
     event TickRateChanged(uint256 _sUSDperTick);
-    event MinAcceptedChanged(uint256 _minAccepted);
     event TickLengthChanged(uint256 _tickLength);
     event ThalesTokenAddressChanged(address _tokenAddress);
     event SUSDTokenAddressChanged(address _tokenAddress);
     event WETHTokenAddressChanged(address _tokenAddress);
     event SwapRouterAddressChanged(address _swapRouter);
     event UniswapV3FactoryAddressChanged(address _uniswapFactory);
+    event MinAcceptedChanged(uint256 _minAccepted);
     event SetBuybacksEnabled(bool _buybacksEnabled);
     event BuybackExecuted(uint256 _amountIn, uint256 _amountOut);
+    event PriceFeedAddressChanged(address _priceFeed);
 }

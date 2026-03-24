@@ -69,6 +69,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_priceFeed",
+        "type": "address"
+      }
+    ],
+    "name": "PriceFeedAddressChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_tokenAddress",
         "type": "address"
       }
@@ -324,6 +337,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "priceFeed",
+    "outputs": [
+      {
+        "internalType": "contract IPriceFeed",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address payable",
@@ -451,6 +477,19 @@
       }
     ],
     "name": "setPath",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_priceFeed",
+        "type": "address"
+      }
+    ],
+    "name": "setPriceFeed",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
